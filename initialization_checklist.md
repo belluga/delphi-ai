@@ -28,7 +28,8 @@ If the script reports missing links:
 ## 4. Bootloader Expectations
 After verification:
 1. Open `delphi-ai/main_instructions.md` to load the Delphi persona.
-2. Read `foundation_documentation/project_mandate.md` and `foundation_documentation/domain_entities.md` before touching code.
-3. Consult each submodule’s `AGENTS.md`. Confirm it points to `../delphi-ai/main_instructions.md`, references the verification script, and enumerates the scope-specific duties before proceeding.
+2. Read `delphi-ai/system_architecture_principles.md` (including appendices) to refresh the cross-stack mandates.
+3. Review `foundation_documentation/project_mandate.md` (confirm current architecture mode), `foundation_documentation/domain_entities.md`, _and_ `foundation_documentation/persona_roadmaps.md` so active initiatives per persona are understood before touching code.
+4. Consult each submodule’s `AGENTS.md`. Confirm it points to `../delphi-ai/main_instructions.md`, references the verification script, and enumerates the scope-specific duties before proceeding.
 
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.

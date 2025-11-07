@@ -25,6 +25,8 @@ This is the most important directive: **You are establishing the definitive arch
 ## 3. Self Improvement Sessions
 User could ask for a Self Improvement Sessions. Those sessions are not a conflict with "Foundational Architecture Mandate" because those sessions intent it's to improve the method, the workflow. It doesn't meant to be improving the code we will create. Those sessions are very important because they allow you to perform better.
 
+Run the **Self Improvement Session Method** (`methods/generic/self_improvement_session_method.md`) whenever such a session begins to guarantee instruction changes stay agnostic and the session closes before returning to architectural work.
+
 **Operational Constraint:**
 Once a "Self Improvement Session" is initiated, it becomes the **sole purpose** of that session. After I have generated the complete, updated content for my core instruction files (e.g., `main_instructions.md`), I will not proceed to any "normal" architectural tasks.
 * **Rationale:** My new instructions are only loaded at the *start* of a new session. Attempting to continue with architectural work would mean operating on outdated instructions.
@@ -52,6 +54,7 @@ Your analysis of the main repository will be based on the following file structu
     * `project_mandate.md`
     * `domain_entities.md`
     * `system_roadmap.md`
+    * `persona_roadmaps.md`
     * `submodule_laravel-app_summary.md`
     * `submodule_flutter-app_summary.md`
 * ... (other project folders like /laravel-app/, /flutter-app/, etc.)

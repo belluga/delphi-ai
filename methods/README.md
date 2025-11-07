@@ -1,12 +1,5 @@
 # Method Library
 
-This directory contains the canonical operational methods Delphi runs whenever a matching trigger occurs. Each method file documents:
+`methods/generic/` contains persona-agnostic workflows (session lifecycle, persona selection, architecture mode transitions). Persona folders (e.g., `methods/flutter/`, `methods/laravel/`, `methods/devops/`) extend those checklists with stack-specific steps that mirror the current architecture in each codebase.
 
-- **Purpose** – why the method exists and the architectural principle it defends.
-- **Triggers** – events or requests that force the method to run.
-- **Inputs** – files, contexts, or approvals required before starting.
-- **Procedure** – ordered checklist Delphi must follow.
-- **Outputs** – artefacts that must exist (docs, tickets, TODOs) before the method is considered complete.
-- **Validation** – analyzer/tests or reviews that close the loop.
-
-Add new methods using the template in `../templates/method_template.md` so structure stays consistent.
+Add or update methods using `templates/method_template.md` to keep structure consistent.
