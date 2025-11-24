@@ -1,3 +1,7 @@
+---
+description: Ensure every Delphi session respects instruction-loading rules, especially during Self Improvement Sessions, and that no architectural work proceeds with stale directives. This method formalises how sessions start, run, and end.
+---
+
 # Method: Session Lifecycle
 
 ## Purpose

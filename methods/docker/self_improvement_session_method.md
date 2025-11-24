@@ -1,3 +1,7 @@
+---
+description: Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnostic and no architectural work proceeds under stale directives, per Section 3 of `main_instructions.md`.
+---
+
 # Method: Self Improvement Session
 
 ## Purpose

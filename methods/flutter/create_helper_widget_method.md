@@ -1,5 +1,5 @@
 ---
-description: Create a helper widget in the Flutter application
+description: Create reusable, pure UI widgets following the "one widget per file" rule and proper dependency injection patterns.
 ---
 
 # Create Helper Widget Method

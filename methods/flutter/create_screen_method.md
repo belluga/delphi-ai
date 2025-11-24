@@ -1,5 +1,5 @@
 ---
-description: Create a new screen in the Flutter application
+description: Scaffold a new feature screen following the Feature-First architecture with proper separation between Controller (state) and Screen (UI).
 ---
 
 # Create Screen Method

@@ -1,3 +1,7 @@
+---
+description: Add or modify Laravel API endpoints (controller + routes) while honoring the documented route groups, Sanctum abilities, and client contracts defined by Flutter repositories.
+---
+
 # Method: Create/Update API Endpoint (Laravel)
 
 ## Purpose

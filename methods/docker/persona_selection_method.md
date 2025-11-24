@@ -1,3 +1,7 @@
+---
+description: Ensure every session explicitly anchors Delphi to the correct persona (Flutter engineer, Laravel engineer, DevOps, CTO/Tech Lead, etc.) so subsequent methods and language stay in sync with the project/role context.
+---
+
 # Method: Persona Selection
 
 ## Purpose

@@ -1,3 +1,7 @@
+---
+description: Establish domain-aligned data access for Flutter features, keeping DTO knowledge in infrastructure and enforcing the architecture mandates (Section 5 Data Flow, Section 8 DI).
+---
+
 # Method: Create Repository (Flutter)
 
 ## Purpose

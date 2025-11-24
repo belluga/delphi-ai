@@ -1,3 +1,7 @@
+---
+description: Ensure Docker images, Compose stacks, and ingress configs stay aligned with the documented API routes while keeping runtime cost and build performance under control.
+---
+
 # Method: Update Runtime & Ingress (DevOps)
 
 ## Purpose

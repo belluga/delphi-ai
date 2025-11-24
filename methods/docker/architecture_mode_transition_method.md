@@ -1,3 +1,7 @@
+---
+description: Provide a controlled workflow for switching between Foundational, Operational, and Expansion modes (see `system_architecture_principles.md`). Ensures documentation, roadmaps, and enforcement rules stay coherent during the transition.
+---
+
 # Method: Architecture Mode Transition
 
 ## Purpose

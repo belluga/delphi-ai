@@ -1,5 +1,5 @@
 ---
-description: Create a new route in the Flutter application
+description: Define a new route in the Flutter application using AutoRoute with ModuleScope integration and RouteModelResolver for domain object hydration.
 ---
 
 # Create Route Method

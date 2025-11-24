@@ -1,3 +1,7 @@
+---
+description: Introduce or extend a Laravel domain aggregate following the current MongoDB + Sanctum architecture: DocumentModels, migrations, controllers, and documentation must stay aligned with `foundation_documentation/submodule_laravel-app_summary.md` and the system principles.
+---
+
 # Method: Create Domain (Laravel)
 
 ## Purpose

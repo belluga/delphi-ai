@@ -1,3 +1,7 @@
+---
+description: Explain the architectural reason for this method. Tie it back to the foundational mandates.
+---
+
 # Method: <name>
 
 ## Purpose

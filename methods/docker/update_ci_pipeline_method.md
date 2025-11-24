@@ -1,3 +1,7 @@
+---
+description: Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer/test steps for Flutter, Laravel, and Docker stay intact and cost-effective.
+---
+
 # Method: Update CI / Pipeline (DevOps)
 
 ## Purpose
