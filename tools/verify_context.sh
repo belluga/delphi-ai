@@ -1,8 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$ROOT_DIR/.."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
+resolve_repo_root() {
+  local dir="$1"
+  while [ "$dir" != "/" ]; do
+    if [ -d "$dir/foundation_documentation" ] && [ -d "$dir/flutter-app" ] && [ -d "$dir/laravel-app" ]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1
+}
+
+if ! REPO_ROOT="$(resolve_repo_root "$(pwd -P)")"; then
+  if ! REPO_ROOT="$(resolve_repo_root "$SCRIPT_DIR")"; then
+    echo "Unable to determine repository root. Run this script from within the monorepo checkout." >&2
+    exit 1
+  fi
+fi
 
 declare -a errors=()
 
@@ -29,18 +47,64 @@ check_symlink_target() {
   fi
 }
 
-check_foundation_link() {
+check_module_links() {
   local module_path="$1"
   local module_name="$2"
-  local link="$module_path/foundation_documentation"
-  check_symlink_target "$link" "../foundation_documentation" "$module_name foundation_documentation link"
+  check_symlink_target "$module_path/foundation_documentation" "../foundation_documentation" "$module_name foundation_documentation link"
+  check_symlink_target "$module_path/delphi-ai" "../delphi-ai" "$module_name delphi-ai link"
+
+  local agent_target
+  case "$module_name" in
+    flutter-app)
+      agent_target="../delphi-ai/templates/agents/flutter.md"
+      check_symlink_target "$module_path/scripts" "../delphi-ai/scripts/flutter" "$module_name scripts link"
+      ;;
+    laravel-app)
+      agent_target="../delphi-ai/templates/agents/laravel.md"
+      ;;
+  esac
+  check_symlink_target "$module_path/AGENTS.md" "$agent_target" "$module_name AGENTS.md link"
 }
 
 echo "Running Delphi context verification..."
 
 check_path_exists "$REPO_ROOT/foundation_documentation" "Root foundation documentation directory"
-check_foundation_link "$REPO_ROOT/flutter-app" "flutter-app"
-check_foundation_link "$REPO_ROOT/laravel-app" "laravel-app"
+check_module_links "$REPO_ROOT/flutter-app" "flutter-app"
+check_module_links "$REPO_ROOT/laravel-app" "laravel-app"
+
+# Validate Laravel env connection names are distinct
+check_env_connection_uniqueness() {
+  local env_file="$REPO_ROOT/laravel-app/.env"
+  if [ ! -f "$env_file" ]; then
+    return
+  fi
+
+  local get_env_value
+  get_env_value() {
+    local key="$1"
+    local file="$2"
+    # Take last occurrence, strip surrounding quotes if present
+    local line
+    line="$(grep -E "^${key}=" "$file" | tail -n 1)"
+    line="${line#${key}=}"
+    line="${line%\"}"
+    line="${line#\"}"
+    printf '%s' "$line"
+  }
+
+  local db_conn db_conn_landlord db_conn_tenants
+  db_conn="$(get_env_value "DB_CONNECTION" "$env_file")"
+  db_conn_landlord="$(get_env_value "DB_CONNECTION_LANDLORD" "$env_file")"
+  db_conn_tenants="$(get_env_value "DB_CONNECTION_TENANTS" "$env_file")"
+
+  if [ -n "$db_conn" ] && [ -n "$db_conn_landlord" ] && [ -n "$db_conn_tenants" ]; then
+    if [ "$db_conn" = "$db_conn_landlord" ] || [ "$db_conn" = "$db_conn_tenants" ] || [ "$db_conn_landlord" = "$db_conn_tenants" ]; then
+      errors+=("DB connection names must be distinct (DB_CONNECTION, DB_CONNECTION_LANDLORD, DB_CONNECTION_TENANTS). Current values: \"$db_conn\", \"$db_conn_landlord\", \"$db_conn_tenants\"")
+    fi
+  fi
+}
+
+check_env_connection_uniqueness
 
 if [ ${#errors[@]} -gt 0 ]; then
   printf 'Context verification FAILED:\n'
