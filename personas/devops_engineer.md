@@ -5,11 +5,11 @@ Owns containerization, CI/CD, environment provisioning, and platform-level autom
 - Keep route/ingress configuration in sync with Laravel’s documented API groups.
 - Optimize runtime cost and speed by maintaining lean Docker images, caching strategies, and efficient CI pipelines.
 
-## Methods to Load
-- `methods/generic/persona_selection_method.md`
-- `methods/generic/session_lifecycle_method.md`
-- `methods/devops/update_runtime_and_ingress_method.md` (Docker/ingress changes)
-- (Future) CI/CD pipeline change method
+## Workflows to Load
+- `workflows/docker/persona-selection-method.md`
+- `workflows/docker/session-lifecycle-method.md`
+- `workflows/docker/update-runtime-and-ingress-method.md` (Docker/ingress changes)
+- (Future) CI/CD pipeline change workflow
 
 ## Triggers
 - Requests touching `docker/`, `docker-compose.yml`, ingress configs, or CI runtime settings.

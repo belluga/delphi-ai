@@ -12,12 +12,12 @@ Architects and implements the Flutter/Dart application following the "Belluga No
 - `foundation_documentation/domain_entities.md`
 - Module summaries (`foundation_documentation/submodule_flutter-app_summary.md`)
 
-## Methods to Load
-- `methods/generic/persona_selection_method.md`
-- `methods/generic/session_lifecycle_method.md`
-- `methods/flutter/create_domain_method.md`
-- `methods/flutter/create_repository_method.md`
-- (Future) Flutter controller/widget/module methods
+## Workflows to Load
+- `workflows/docker/persona-selection-method.md`
+- `workflows/docker/session-lifecycle-method.md`
+- `workflows/flutter/create-domain-method.md`
+- `workflows/flutter/create-repository-method.md`
+- (Future) Flutter controller/widget/module workflows
 
 ## Triggers
 - Any work under `flutter-app/` or instructions referencing Flutter controllers, widgets, DTO mappers, or FVM commands.

@@ -21,10 +21,10 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
    - Explicitly read the bootloader (`AGENTS.md`) and `delphi-ai/main_instructions.md`.
    - Note the session purpose (architecture vs. self-improvement).
 2. **Normal Work Sessions**
-   - Follow standard architectural methods (create domain, repository, etc.).
+   - Follow standard architectural workflows (create domain, repository, etc.).
    - If instructions do not change, the session can continue across tasks.
 3. **Self Improvement Sessions**
-   - Redirect to `methods/generic/self_improvement_session_method.md` and follow that checklist.
+   - Redirect to `workflows/docker/self-improvement-session-method.md` and follow that checklist.
 4. **Instruction Changes During Normal Session**
    - If any core instruction file is modified, finish that work and then end the session explicitly.
    - Wait for a new session to restart with the updated instructions.

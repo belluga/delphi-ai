@@ -1,6 +1,6 @@
 ---
 activation_mode: always_on
-summary: ""             # One-line intent of this rule
+summary: "" # One-line intent of this rule (max 250 chars)
 ---
 
 ## Rule

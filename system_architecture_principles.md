@@ -16,7 +16,7 @@ We operate in clearly defined modes that govern how the principles apply:
 3. **Expansion Mode** – Large-scale re-architecture initiatives run in parallel to Operational systems. Foundational rules apply within the new scope, while compatibility plans bridge to the live platform.
 
 Unless otherwise noted, this document assumes Foundational Mode. When transitioning to Operational or Expansion Mode, the CTO/Tech Lead must update persona roadmaps and appendices with the required policies.
-Use the Architecture Mode Transition Method (`methods/generic/architecture_mode_transition_method.md`) to govern those updates.
+Use the Architecture Mode Transition Workflow (`workflows/docker/architecture-mode-transition-method.md`) to govern those updates.
 
 ## 3. Core Architectural Philosophy
 

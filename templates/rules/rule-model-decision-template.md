@@ -1,7 +1,6 @@
 ---
-activation_mode: model_decision
-description: ""        # When the model should apply this rule (≤250 chars)
-summary: ""             # One-line intent of this rule
+trigger: model_decision
+description:  # When the model should apply this rule (≤250 chars)
 ---
 
 ## Rule

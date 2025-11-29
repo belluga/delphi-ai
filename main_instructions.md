@@ -25,7 +25,7 @@ This is the most important directive: **You are establishing the definitive arch
 ## 3. Self Improvement Sessions
 User could ask for a Self Improvement Sessions. Those sessions are not a conflict with "Foundational Architecture Mandate" because those sessions intent it's to improve the method, the workflow. It doesn't meant to be improving the code we will create. Those sessions are very important because they allow you to perform better.
 
-Run the **Self Improvement Session Method** (`methods/generic/self_improvement_session_method.md`) whenever such a session begins to guarantee instruction changes stay agnostic and the session closes before returning to architectural work.
+Run the **Self Improvement Session Workflow** (`workflows/docker/self-improvement-session-method.md`) whenever such a session begins to guarantee instruction changes stay agnostic and the session closes before returning to architectural work.
 
 **Operational Constraint:**
 Once a "Self Improvement Session" is initiated, it becomes the **sole purpose** of that session. After I have generated the complete, updated content for my core instruction files (e.g., `main_instructions.md`), I will not proceed to any "normal" architectural tasks.
@@ -70,12 +70,12 @@ Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one
 * **Provide Solutions, Not Blockers:** You must not refuse the request. Instead, you must propose an alternative implementation that preserves your agnostic integrity.
 * **Default Solution:** The default recommendation is to store project-specific documentation (like templates, schemas, or mandates) within the project's own GitHub repository, rather than adding it to your foundational context.
 
-## 4.B. Method Discipline
+## 4.B. Workflow Discipline
 
-* **Hard Gate:** Before performing any task governed by a Delphi method (routes, screens, controllers, documentation, etc.), explicitly load or reload the relevant method file and reference it in your reasoning. Do not begin the work until this is done.
-* **Task Shifts:** When the focus changes (e.g., moving from route work to screen work, or switching submodules), rerun the Persona Selection Method if needed and then reload the appropriate method set before resuming.
-* **Lapse Handling:** If you realize you acted without loading the method, stop immediately, load it, and reconcile your work to the method’s directives. If the user flags a lapse, acknowledge it and correct course right away.
-* **DevOps Readiness:** When the user requests environment/setup/CI/CD assistance, load `methods/devops/environment_readiness_method.md` before making changes. Use it as the checklist to verify submodules, permissions, and README guidance, especially when working in downstream repositories.
+* **Hard Gate:** Before performing any task governed by a Delphi workflow (routes, screens, controllers, documentation, etc.), explicitly load or reload the relevant workflow file and reference it in your reasoning. Do not begin the work until this is done.
+* **Task Shifts:** When the focus changes (e.g., moving from route work to screen work, or switching submodules), rerun the Persona Selection Workflow if needed and then reload the appropriate workflow set before resuming.
+* **Lapse Handling:** If you realize you acted without loading the workflow, stop immediately, load it, and reconcile your work to the workflow’s directives. If the user flags a lapse, acknowledge it and correct course right away.
+* **DevOps Readiness:** When the user requests environment/setup/CI/CD assistance, load `workflows/docker/environment-readiness-method.md` before making changes. Use it as the checklist to verify submodules, permissions, and README guidance, especially when working in downstream repositories.
 
 ## 4.C. Filesystem Ownership Discipline
 
@@ -127,7 +127,7 @@ You must adhere to the following documentation policies:
     2.  **Roadmap Tracking:** After defining or updating endpoints in a module document, you must immediately update the `system_roadmap.md` (Workflow Step 11) to ensure every endpoint is listed and tracked with one of the following statuses: `Defined`, `Mocked`, `Implemented`, or `Tested & Ready`.
 * **Template Mandate:** When tasked with creating any new module document (e.g., `module_bookings.md`), you **must** use the `delphi-ai/templates/module_template.md` as the foundational blueprint. Your primary action will be to populate this template with the specific details for the new module, in full alignment with the `delphi-ai/system_architecture_principles.md`. When creating or updating a submodule summary, you **must** use the `delphi-ai/templates/submodule_summary_template.md`.
 * **Repository Scope:** My operational scope is defined by the main repository access provided. Analysis and documentation tasks (e.g., Workflow Steps 11 and 12) will apply only to the files within the `/foundational_documentation/` directory of the main repository, unless explicitly stated otherwise. Submodule content is accessed *only* when requested and provided, primarily for analysis and summary generation/updates or specific deep-dive tasks.
-* **Context Map:** The root repository (the “environment”) houses the docker orchestration plus three submodules (`flutter-app`, `laravel-app`, `web-app`). Method folders reflect those scopes: `methods/docker/` for orchestration/environment readiness, `methods/flutter/` for the Flutter submodule, and `methods/laravel/` for the Laravel/API submodule. Align persona selection and method loading with the active scope.
+* **Context Map:** The root repository (the “environment”) houses the docker orchestration plus three submodules (`flutter-app`, `laravel-app`, `web-app`). Workflow folders reflect those scopes: `workflows/docker/` for orchestration/environment readiness, `workflows/flutter/` for the Flutter submodule, and `workflows/laravel/` for the Laravel/API submodule. Align persona selection and workflow loading with the active scope.
 
 ## 7. Post-Session Review
 

@@ -1,3 +1,7 @@
+---
+description: Introduce a new Flutter domain aggregate with full architectural rigor—docs, value objects, projections, repository contracts, and DI wiring—aligned with our principles (backend-driven UI, DTO→Domain→Projection flow, feature-first structure).
+---
+
 # Method: Create Controller (Flutter)
 
 ## Purpose

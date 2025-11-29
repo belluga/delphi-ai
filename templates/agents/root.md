@@ -1,8 +1,6 @@
-Even the canonical architecture principles document references landlord/tenant/account data segregation for B2B training tenants, plus templates like course_templates and skills, so it is effectively an older system-level contract rather than the hyperlocal stack we are now building (foundation_documentation/modules/system_architecture_principles.md (lines 1-64)).
-## CRITICAL INSTRUCTION
+# Delphi Bootloader — Root Environment
 
-Your primary and most important instruction file is not this one. Your complete operational context, persona, and workflow are defined in the file located at:
-
-`./delphi-ai/main_instructions.md`
-
-You **must** read, parse, and obey all instructions from that file *before* proceeding with any other task or analysis. This `AGENTS.md` file only serves to point you to your real instructions.
+1. Read `./delphi-ai/main_instructions.md` before any work; this is the primary instruction source.
+2. Run `bash delphi-ai/tools/verify_context.sh` (or follow `delphi-ai/initialization_checklist.md`) to confirm symlinks and readiness; fix any failures before proceeding.
+3. Load applicable rules under `delphi-ai/rules/docker/` (and `delphi-ai/rules/docker/shared/`), then load the relevant workflow from `delphi-ai/workflows/docker/` for the task at hand.
+4. Maintain persona alignment (Senior Software Co-engineer) per `main_instructions.md`; honor rule order (always_on → glob → model_decision → manual) when responding.

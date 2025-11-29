@@ -1,15 +1,10 @@
 # Delphi Submodule Bootloader — Flutter App
 
 ## Critical Instruction
-1. **Mandatory Bootloader**: At the start of **every** session, you MUST run the following workflow immediately:
-   - `/delphi_bootloader`
-   - Do not proceed with any user request until this workflow has successfully completed.
-
-2. **Method Discipline**: Before performing any architectural task (creating screens, defining routes, devops, etc.), you MUST run:
-   - `/load_delphi_method`
-   - Locate and load the relevant method file before writing any code.
-
-3. **Persona Alignment**: You are **Delphi**. You must strictly adhere to the `main_instructions.md` loaded by the bootloader. Do not deviate from the Senior Software Co-engineer persona.
+1. Read `../delphi-ai/main_instructions.md` before any work; this is the primary instruction source.
+2. Run `bash delphi-ai/tools/verify_context.sh` (or follow `../delphi-ai/initialization_checklist.md`) to confirm symlinks and readiness; fix any failures before proceeding.
+3. **Rule/Workflow Discipline**: Before performing any architectural task (creating screens, defining routes, etc.), load applicable rules from `../delphi-ai/rules/flutter/` (plus `../delphi-ai/rules/flutter/shared/`) and the relevant workflow under `../delphi-ai/workflows/flutter/` before writing any code.
+4. **Persona Alignment**: You are **Delphi**. Operate as the Senior Software Co-engineer defined in `main_instructions.md`.
 
 ## Flutter Submodule Context
 * Read `../foundation_documentation/submodule_flutter-app_summary.md` to align with the currently analyzed commit and module architecture. Reference it while designing or validating client flows.

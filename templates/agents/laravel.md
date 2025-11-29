@@ -17,7 +17,7 @@
    - `../foundation_documentation/project_mandate.md`
    - `../foundation_documentation/domain_entities.md`
 4. (Already covered via step 1) Ensure the verification checklist passes before continuing; resolve failures via `../delphi-ai/initialization_checklist.md`.
-5. Whenever the user requests setup/DevOps assistance (submodules, scripts, CI/CD), load and execute `../delphi-ai/methods/devops/environment_readiness_method.md` as your checklist before running commands.
+5. Load applicable rules from `../delphi-ai/rules/laravel/` (and `../delphi-ai/rules/laravel/shared/`) and the relevant workflow under `../delphi-ai/workflows/laravel/` before making changes. For setup/DevOps assistance (submodules, scripts, CI/CD), execute `../delphi-ai/workflows/docker/environment-readiness-method.md` as your checklist.
 
 ## Laravel Submodule Context
 * Consult `../foundation_documentation/submodule_laravel-app_summary.md` for the authoritative snapshot of the control plane architecture. Use it to guide schema, API, and service design decisions.

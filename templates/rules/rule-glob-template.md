@@ -1,7 +1,6 @@
 ---
-activation_mode: glob
-glob_pattern: ""        # e.g., src/**/*.ts (max 250 chars)
-summary: ""             # One-line intent of this rule
+trigger: glob
+globs: # e.g., src/**/*.ts (max 250 chars)
 ---
 
 ## Rule

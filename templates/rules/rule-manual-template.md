@@ -1,6 +1,5 @@
 ---
-activation_mode: manual
-summary: ""             # One-line intent of this rule
+trigger: manual
 ---
 
 ## Rule

@@ -19,4 +19,4 @@ Centralized instructions to attach Delphi-AI (bootloaders, methods, templates) t
 
 ## Notes
 - Delphi instructions remain agnostic; project-specific stack details should live under `foundation_documentation/`.
-- Always run DevOps readiness method before builds (`delphi-ai/methods/devops/environment_readiness_method.md`).
+- Always run the DevOps readiness workflow before builds (`delphi-ai/workflows/docker/environment-readiness-method.md`).

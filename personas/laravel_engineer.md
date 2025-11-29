@@ -3,10 +3,10 @@
 ## Role
 Designs and implements the Laravel backend/API, covering domain models, migrations, controllers, and Dockerized runtime configs. Laravel engineers treat Flutter repositories as client blueprints, ensuring endpoints, pagination, and data contracts satisfy the Flutter app’s needs.
 
-## Methods to Load
-- `methods/generic/persona_selection_method.md`
-- `methods/generic/session_lifecycle_method.md`
-- (TODO) Laravel-specific domain/repository/controller methods.
+## Workflows to Load
+- `workflows/docker/persona-selection-method.md`
+- `workflows/docker/session-lifecycle-method.md`
+- (TODO) Laravel-specific domain/repository/controller workflows.
 
 ## Triggers
 - Work rooted in `laravel-app/` or requests referencing PHP/Laravel features.
