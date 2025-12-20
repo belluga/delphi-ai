@@ -56,6 +56,76 @@ echo "== docker compose config (--profile local-db) =="
 docker compose --profile local-db config >/dev/null
 echo "OK"
 
+echo "== submodule status =="
+submodule_status="$(git submodule status --recursive || true)"
+if [[ -z "$submodule_status" ]]; then
+  warn "No submodules detected or git not initialized."
+else
+  if echo "$submodule_status" | rg -n '^-'; then
+    warn "Uninitialized submodule(s) detected. Auto-initializing..."
+    git submodule update --init --recursive
+    submodule_status="$(git submodule status --recursive || true)"
+    if echo "$submodule_status" | rg -n '^-'; then
+      die "Uninitialized submodule(s) remain after auto-init."
+    fi
+  fi
+  if echo "$submodule_status" | rg -n '^\\+'; then
+    warn "Submodule(s) out of sync with recorded commit (+)."
+  fi
+fi
+
+echo "== shared doc symlinks =="
+submodule_paths="$(git config --file .gitmodules --get-regexp path | awk '{print $2}' || true)"
+for submodule_path in $submodule_paths; do
+  if [[ ! -d "$submodule_path" ]]; then
+    warn "Submodule path missing on disk: ${submodule_path}"
+    continue
+  fi
+
+  if [[ "$submodule_path" == "web-app" ]]; then
+    continue
+  fi
+
+  if [[ ! -e "${submodule_path}/foundation_documentation" ]]; then
+    ln -s ../foundation_documentation "${submodule_path}/foundation_documentation"
+    echo "FIXED: ${submodule_path}/foundation_documentation symlink created."
+  elif [[ ! -L "${submodule_path}/foundation_documentation" ]]; then
+    warn "${submodule_path}/foundation_documentation exists but is not a symlink."
+  fi
+
+  if [[ ! -e "${submodule_path}/delphi-ai" ]]; then
+    ln -s ../delphi-ai "${submodule_path}/delphi-ai"
+    echo "FIXED: ${submodule_path}/delphi-ai symlink created."
+  elif [[ ! -L "${submodule_path}/delphi-ai" ]]; then
+    warn "${submodule_path}/delphi-ai exists but is not a symlink."
+  fi
+done
+
+echo "== flutter scripts symlink =="
+if [[ ! -L "flutter-app/scripts" ]]; then
+  ln -s ../delphi-ai/scripts/flutter flutter-app/scripts
+  echo "FIXED: flutter-app/scripts symlink created."
+else
+  scripts_target="$(readlink "flutter-app/scripts" || true)"
+  if [[ "$scripts_target" != "../delphi-ai/scripts/flutter" ]]; then
+    warn "flutter-app/scripts points to '${scripts_target}', expected ../delphi-ai/scripts/flutter."
+  fi
+fi
+
+echo "== compose profile sanity =="
+if [[ -z "${COMPOSE_PROFILES_EFFECTIVE:-}" ]]; then
+  warn "COMPOSE_PROFILES not set; default profile (staging) will be used."
+fi
+
+echo "== submodule remotes =="
+if [[ -f ".gitmodules" ]]; then
+  if rg -n "boilerplate" .gitmodules >/dev/null; then
+    warn "Submodule URLs still reference boilerplate repos; update them to your forks."
+  fi
+else
+  warn ".gitmodules not found; submodule remotes not checked."
+fi
+
 echo "== submodule invariants (web-app) =="
 expected_web_url="https://github.com/belluga/belluga_now_web.git"
 web_url="$(git config -f .gitmodules --get submodule.web-app.url 2>/dev/null || true)"
