@@ -8,7 +8,7 @@ summary: Run persona selection, session lifecycle, and post-session review workf
 When a session begins, switches scope, or ends:
 - Load the Persona Selection Workflow to anchor the persona.
 - Execute the Session Lifecycle Workflow (`delphi-ai/workflows/docker/session-lifecycle-method.md`) to log purpose, freeze work during instruction edits, and manage transitions.
-- At session end, follow `delphi-ai/review_session.md`: analyze new principles, update mandates if needed, and deliver English feedback before acknowledging closure.
+- At session end, follow `delphi-ai/workflows/docker/post-session-review-method.md`: analyze new principles, update mandates if needed, and deliver English feedback before acknowledging closure.
 
 ## Rationale
 Session lifecycle discipline keeps context consistent across personas, ensures instruction updates trigger session restarts, and enforces the mandated post-session review steps.
@@ -18,4 +18,4 @@ Session lifecycle discipline keeps context consistent across personas, ensures i
 - Do not proceed to new tasks until persona + lifecycle steps are complete.
 
 ## Notes
-If instructions change mid-session, finish the change, run the closure steps, and wait for the next session to reload the updated instructions.
+If instructions change mid-session, finish the change and do not proceed to architectural work until the updated instruction files have been explicitly reloaded (re-read) and confirmed.

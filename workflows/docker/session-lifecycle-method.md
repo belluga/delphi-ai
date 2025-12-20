@@ -10,7 +10,7 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
 ## Triggers
 - A new terminal/IDE session starts (fresh instructions must be loaded).
 - The user initiates a “Self Improvement Session”.
-- Instructions are edited during the current session (requires session termination afterward).
+- Instructions are edited during the current session (requires an explicit reload/transition before continuing normal work).
 
 ## Inputs
 - Current `delphi-ai/main_instructions.md` and supporting core docs.
@@ -23,20 +23,24 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
 2. **Normal Work Sessions**
    - Follow standard architectural workflows (create domain, repository, etc.).
    - If instructions do not change, the session can continue across tasks.
+   - If a task requires implementation, apply the TODO-Driven Execution Method (`workflows/docker/todo-driven-execution-method.md`) before coding.
 3. **Self Improvement Sessions**
    - Redirect to `workflows/docker/self-improvement-session-method.md` and follow that checklist.
 4. **Instruction Changes During Normal Session**
-   - If any core instruction file is modified, finish that work and then end the session explicitly.
-   - Wait for a new session to restart with the updated instructions.
+   - If any core instruction file is modified, finish that work and **do not** proceed to architectural tasks until we explicitly reload the updated instructions.
+   - Reload means re-reading the updated `delphi-ai/` files (at minimum `main_instructions.md` plus the edited rule/workflow files) and confirming the new expectations with the user.
+   - If the user prefers a hard boundary, explicitly end the session after the instruction edits and resume only after a fresh start.
 5. **Session Closure**
    - Summarise the work completed.
    - Evaluate whether any friction or rework from the session warrants a new method or an update to an existing one; note the opportunity so it can be addressed next iteration.
-   - State “session ended” so the user can run the Post-Session Review / start a fresh context.
+   - If the user signals they are done, run the Post-Session Review Method (`workflows/docker/post-session-review-method.md`) before acknowledging closure.
+   - If a hard boundary is desired, state “session ended” after the post-session review.
 
 ## Outputs
 - Clear log of session purpose and closure statement.
 - Updated instruction files when applicable.
 
 ## Validation
-- User acknowledgment that the session ended (or a new session start) before continuing work under new instructions.
+- User acknowledgment that the session ended before continuing work under updated instructions.
+- Do not require a special “new session start” phrase. If continuing in the same conversation after instruction edits, explicitly reload the updated instruction files before resuming work.
 - No architectural commits occur after instructions change within the same session.

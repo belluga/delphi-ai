@@ -13,7 +13,7 @@ When defining or editing a workflow:
 - Remove or archive obsolete workflows/rules together to avoid drift.
 
 ## Rationale
-Workflows are only effective when triggered by rules. This rule keeps procedures consistent and ensures they’re callable by Antigravity/Codex.
+Workflows are only effective when triggered by rules. This rule keeps procedures consistent and ensures they’re callable by the agent in Codex CLI (and similar harnesses).
 
 ## Enforcement
 - Block additions/edits that lack a matching rule or deviate from the template.

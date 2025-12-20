@@ -10,11 +10,16 @@ This checklist ensures every working copy—full repository or scoped submodule�
    - (optional) `delphi-ai -> ../delphi-ai` if the submodule is opened standalone.
 
 ## 2. Verification Script
-Run the automated check from the repository root:
+Run the automated check (recommended from the repository root; safe from subdirectories as well):
 ```bash
 bash delphi-ai/tools/verify_context.sh
 ```
 The script validates the presence of the root documentation and confirms each submodule links to it. Extend the script as additional shared artifacts become necessary.
+
+Optional: if you want Delphi’s tactical TODO folders created, run:
+```bash
+bash delphi-ai/tools/verify_context.sh --fix-todos
+```
 
 ## 3. Manual Remediation Steps
 If the script reports missing links:

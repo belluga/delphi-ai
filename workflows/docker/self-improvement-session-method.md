@@ -17,7 +17,7 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 
 ## Procedure
 1. **Persona Selection** – run the Persona Selection Method; typically CTO/Tech Lead persona.
-2. **Freeze architectural work** – acknowledge that only instruction files may change this session.
+2. **Freeze architectural work** – acknowledge that implementation work (project code, submodule code, and project-specific docs) is paused; this session is for discussion + instruction refinement only. Editing within `delphi-ai/` is permitted.
 3. **Plan updates** – list the instruction files to edit and the rationale.
 4. **Apply changes** – edit `delphi-ai/*.md` (and templates) as required.
 5. **Agnosticism & consistency verification**
@@ -27,7 +27,9 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 6. **Documentation sync** – if instruction changes affect project docs (e.g., new templates), note the required updates.
 7. **Session closure**
    - Summarise instruction changes.
-   - Explicitly state "session ended" so the next session reloads the updated instructions.
+   - Do **not** prematurely end the session during discussion. Close only when the user confirms the self-improvement scope is complete for this session.
+   - If we will resume normal work in the same conversation, explicitly reload the updated instruction files (re-read the changed docs) before proceeding.
+   - If the user prefers a hard boundary, explicitly state "session ended" after the summary so normal work resumes under a fresh start.
 
 ## Outputs
 - Updated instruction/template files.

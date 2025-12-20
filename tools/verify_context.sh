@@ -13,7 +13,40 @@ if [ -z "$REPO_ROOT" ]; then
   REPO_ROOT="$ROOT_DIR/.."
 fi
 
+find_environment_root() {
+  local start="$1"
+  local current="$start"
+  for _ in 1 2 3 4 5; do
+    if [ -d "$current/foundation_documentation" ] && [ -d "$current/delphi-ai" ] && [ -d "$current/flutter-app" ] && [ -d "$current/laravel-app" ]; then
+      echo "$current"
+      return 0
+    fi
+    current="$(cd "$current/.." && pwd 2>/dev/null || echo "")"
+    if [ -z "$current" ]; then
+      break
+    fi
+  done
+  return 1
+}
+
+# If invoked from inside a submodule (flutter-app/laravel-app) or a nested folder, normalize to the environment root.
+if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
+  if [ -n "$ENV_ROOT" ]; then
+    REPO_ROOT="$ENV_ROOT"
+  fi
+fi
+
 declare -a errors=()
+declare -a warnings=()
+
+FIX_TODOS=false
+for arg in "$@"; do
+  case "$arg" in
+    --fix-todos)
+      FIX_TODOS=true
+      ;;
+  esac
+done
 
 check_path_exists() {
   local path="$1"
@@ -86,6 +119,36 @@ check_agent_rules "$REPO_ROOT" "../delphi-ai/rules/docker" "root .agent"
 check_agent_rules "$REPO_ROOT/flutter-app" "../../delphi-ai/rules/flutter" "flutter-app .agent"
 check_agent_rules "$REPO_ROOT/laravel-app" "../../delphi-ai/rules/laravel" "laravel-app .agent"
 
+TODOS_ACTIVE_DIR="$REPO_ROOT/foundation_documentation/todos/active"
+TODOS_COMPLETED_DIR="$REPO_ROOT/foundation_documentation/todos/completed"
+ensure_todos_structure() {
+  mkdir -p "$TODOS_ACTIVE_DIR" "$TODOS_COMPLETED_DIR"
+  touch "$TODOS_ACTIVE_DIR/.gitkeep" "$TODOS_COMPLETED_DIR/.gitkeep"
+}
+
+TODOS_MISSING=false
+if [ ! -d "$TODOS_ACTIVE_DIR" ] || [ ! -d "$TODOS_COMPLETED_DIR" ]; then
+  TODOS_MISSING=true
+fi
+
+if [ "$FIX_TODOS" = true ]; then
+  ensure_todos_structure
+elif [ "$TODOS_MISSING" = true ]; then
+  if [ -t 0 ] && [ -t 1 ]; then
+    printf 'Optional TODO structure missing at foundation_documentation/todos/.\n'
+    read -r -p "Create it now? [y/N] " reply || true
+    reply="${reply:-}"
+    if [[ "$reply" =~ ^[Yy]$ ]]; then
+      ensure_todos_structure
+      printf 'Created foundation_documentation/todos/{active,completed} with .gitkeep files.\n'
+    else
+      warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/tools/verify_context.sh --fix-todos")
+    fi
+  else
+    warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/tools/verify_context.sh --fix-todos")
+  fi
+fi
+
 ROOT_ENV="$REPO_ROOT/.env"
 if [ -f "$ROOT_ENV" ]; then
   project_name_val="$(get_env_value "PROJECT_NAME" "$ROOT_ENV")"
@@ -111,6 +174,13 @@ if [ ${#errors[@]} -gt 0 ]; then
     printf ' - %s\n' "$err"
   done
   exit 1
+fi
+
+if [ ${#warnings[@]} -gt 0 ]; then
+  printf 'Context verification WARNINGS:\n'
+  for warn in "${warnings[@]}"; do
+    printf ' - %s\n' "$warn"
+  done
 fi
 
 echo "All required context links and directories are in place."

@@ -10,6 +10,7 @@
      ln -s ../delphi-ai delphi-ai
      ```
    - Only after both links exist should you run `bash delphi-ai/tools/verify_context.sh` (or follow `../delphi-ai/initialization_checklist.md`). Report any missing link in your opening message until it is resolved.
+   - Optional: create tactical TODO folders with `bash delphi-ai/tools/verify_context.sh --fix-todos` (run from the environment root).
 2. Activate the Delphi persona by reading `../delphi-ai/main_instructions.md` before interacting with this submodule. All subsequent actions must honor the Senior Software Co-engineer mandate.
 3. Immediately load the core architectural canon:
    - `../delphi-ai/system_architecture_principles.md`

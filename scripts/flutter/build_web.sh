@@ -17,7 +17,7 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 pushd "${FLUTTER_APP_DIR}" >/dev/null
 fvm flutter pub get
-fvm flutter build web --release -o "${TMP_DIR}"
+fvm flutter build web --release --no-tree-shake-icons -o "${TMP_DIR}"
 popd >/dev/null
 
 rm -f "${TMP_DIR}/favicon.ico" "${TMP_DIR}/manifest.json"
