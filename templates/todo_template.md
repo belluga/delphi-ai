@@ -11,6 +11,15 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
 ## Scope
 - [ ] <What will be done>
 
+## Delivery Stages
+- [ ] **Provisional** (unblocks dependencies; requires revisit before production-ready)
+- [ ] **Production-Ready** (complete, hardened, ready for release)
+
+## Provisional Notes (Required if Provisional)
+- **Missing for production-ready:** <What is intentionally incomplete>
+- **Revisit criteria:** <What must be done to exit provisional>
+- **Dependencies unblocked:** <What work can now proceed>
+
 ## Out of Scope
 - [ ] <What will NOT be done>
 

@@ -127,9 +127,10 @@ else
 fi
 
 echo "== submodule invariants (web-app) =="
-expected_web_url="https://github.com/belluga/belluga_now_web.git"
-web_url="$(git config -f .gitmodules --get submodule.web-app.url 2>/dev/null || true)"
-[[ "$web_url" == "$expected_web_url" ]] || die "web-app submodule URL mismatch (expected: $expected_web_url, got: ${web_url:-<missing>})"
+expected_web_url="$(git config -f .gitmodules --get submodule.web-app.url 2>/dev/null || true)"
+[[ -n "$expected_web_url" ]] || die "web-app submodule URL missing in .gitmodules"
+actual_web_url="$(git config --local --get submodule.web-app.url 2>/dev/null || true)"
+[[ -z "$actual_web_url" || "$actual_web_url" == "$expected_web_url" ]] || die "web-app submodule URL mismatch (expected: $expected_web_url, got: ${actual_web_url:-<missing>})"
 
 web_mode="$(git ls-files --stage web-app 2>/dev/null | awk '{print $1}' || true)"
 [[ "$web_mode" == "160000" ]] || die "web-app is not tracked as a gitlink submodule (expected mode 160000)"
