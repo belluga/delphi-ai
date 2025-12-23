@@ -1,8 +1,8 @@
 ---
-activation_mode: model_decision
+trigger: model_decision
 description: "When changing architecture mode or governance policies."
-summary: Load the architecture mode transition workflow before updating mode/policies.
 ---
+
 
 ## Rule
 If adjusting architecture modes or related governance (Foundational/Operational/Expansion):

@@ -1,8 +1,8 @@
 ---
-activation_mode: glob
-glob_pattern: "flutter-app/lib/domain/**"
-summary: Apply the domain modeling workflow whenever Flutter domain files change.
+trigger: glob
+description: Apply the domain modeling workflow whenever Flutter domain files change.
 ---
+
 
 ## Rule
 When editing `flutter-app/lib/domain/**`, run the Domain Workflow:

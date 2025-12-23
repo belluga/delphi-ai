@@ -1,7 +1,8 @@
 ---
-activation_mode: always_on
-summary: Keep Flutter contracts aligned with domain entities and downstream teams.
+trigger: always_on
+description: Keep Flutter contracts aligned with domain entities and downstream teams.
 ---
+
 
 ## Rule
 Maintain bidirectional contract alignment:

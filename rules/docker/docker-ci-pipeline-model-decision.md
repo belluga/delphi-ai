@@ -1,8 +1,8 @@
 ---
-activation_mode: model_decision
+trigger: model_decision
 description: "When updating CI/CD pipelines or build/runtime images."
-summary: Load the CI pipeline workflow before changing CI/CD configs.
 ---
+
 
 ## Rule
 For CI/CD changes (pipelines, build images, caching, test stages):

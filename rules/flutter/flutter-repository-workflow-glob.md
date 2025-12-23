@@ -1,8 +1,8 @@
 ---
-activation_mode: glob
-glob_pattern: "flutter-app/lib/infrastructure/repositories/**"
-summary: Apply the repository workflow whenever Flutter repositories change.
+trigger: glob
+description: Apply the repository workflow whenever Flutter repositories change.
 ---
+
 
 ## Rule
 Edits in `flutter-app/lib/infrastructure/repositories/**` must run the Repository Workflow:

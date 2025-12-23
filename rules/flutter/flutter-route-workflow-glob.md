@@ -1,8 +1,8 @@
 ---
-activation_mode: glob
-glob_pattern: "flutter-app/lib/**/routes/**"
-summary: Apply the route workflow whenever Flutter routing files are edited.
+trigger: glob
+description: Apply the route workflow whenever Flutter routing files are edited.
 ---
+
 
 ## Rule
 Edits under `flutter-app/lib/**/routes/**` must follow the Route Workflow:

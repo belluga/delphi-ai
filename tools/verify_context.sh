@@ -80,20 +80,22 @@ check_foundation_link() {
 
 check_agent_workflows() {
   local module_path="$1"
-  local expected_target="$2"
-  local label="$3"
+  local label="$2"
   local agent_dir="$module_path/.agent"
   check_path_exists "$agent_dir" "$label directory"
-  check_symlink_target "$agent_dir/workflows" "$expected_target" "$label workflows link"
+  if [ ! -d "$agent_dir/workflows" ]; then
+    errors+=("$label workflows directory missing at $agent_dir/workflows")
+  fi
 }
 
 check_agent_rules() {
   local module_path="$1"
-  local expected_target="$2"
-  local label="$3"
+  local label="$2"
   local agent_dir="$module_path/.agent"
   check_path_exists "$agent_dir" "$label directory"
-  check_symlink_target "$agent_dir/rules" "$expected_target" "$label rules link"
+  if [ ! -d "$agent_dir/rules" ]; then
+    errors+=("$label rules directory missing at $agent_dir/rules")
+  fi
 }
 
 get_env_value() {
@@ -109,15 +111,20 @@ get_env_value() {
 
 echo "Running Delphi context verification..."
 
+# Sync agent rules and workflows (ensures real files for IDE visibility)
+if [ -f "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh" ]; then
+  bash "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh"
+fi
+
 check_path_exists "$REPO_ROOT/foundation_documentation" "Root foundation documentation directory"
 check_foundation_link "$REPO_ROOT/flutter-app" "flutter-app"
 check_foundation_link "$REPO_ROOT/laravel-app" "laravel-app"
-check_agent_workflows "$REPO_ROOT" "../delphi-ai/workflows/docker" "root .agent"
-check_agent_workflows "$REPO_ROOT/flutter-app" "../../delphi-ai/workflows/flutter" "flutter-app .agent"
-check_agent_workflows "$REPO_ROOT/laravel-app" "../../delphi-ai/workflows/laravel" "laravel-app .agent"
-check_agent_rules "$REPO_ROOT" "../delphi-ai/rules/docker" "root .agent"
-check_agent_rules "$REPO_ROOT/flutter-app" "../../delphi-ai/rules/flutter" "flutter-app .agent"
-check_agent_rules "$REPO_ROOT/laravel-app" "../../delphi-ai/rules/laravel" "laravel-app .agent"
+check_agent_workflows "$REPO_ROOT" "root .agent"
+check_agent_workflows "$REPO_ROOT/flutter-app" "flutter-app .agent"
+check_agent_workflows "$REPO_ROOT/laravel-app" "laravel-app .agent"
+check_agent_rules "$REPO_ROOT" "root .agent"
+check_agent_rules "$REPO_ROOT/flutter-app" "flutter-app .agent"
+check_agent_rules "$REPO_ROOT/laravel-app" "laravel-app .agent"
 
 TODOS_ACTIVE_DIR="$REPO_ROOT/foundation_documentation/todos/active"
 TODOS_COMPLETED_DIR="$REPO_ROOT/foundation_documentation/todos/completed"

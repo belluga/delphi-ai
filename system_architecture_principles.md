@@ -69,6 +69,9 @@ All data entering the API (from any client) must be rigorously validated by the 
 ### P-14: Defended Input Surfaces
 Every externally supplied string or array is constrained to a documented, finite size that aligns with business intent (e.g., passwords 8–32 characters, display strings ≤255, email lists ≤10, permission lists ≤64, metadata payloads ≤8 KB). These bounds protect API surfaces from resource-exhaustion attacks, simplify capacity planning, and provide a repeatable contract for client implementers.
 
+### P-15: Deterministic Pagination + Delta Streams
+List endpoints are page-based by default to ensure predictable load and client caching. Real-time updates are delivered through delta streams (e.g., SSE) that emit only change events and never replace paginated listing contracts. Cursor pagination is reserved for narrowly scoped feeds where page-based ordering is insufficient.
+
 ## 5. Security & Identity Principles
 
 ### P-15: Principle of Least Privilege

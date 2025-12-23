@@ -29,7 +29,10 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 5. **UI controllers** – if `TextEditingController`, `ScrollController`, etc. are needed, instantiate and dispose them inside the controller (`onDispose`). Widgets obtain them via getters.
 6. **BuildContext independence** – controllers must not receive `BuildContext`. Any navigation/dialog work happens in widgets via callbacks.
 7. **DI registration** – register the controller in the feature module (`GetIt.registerFactory` or `registerLazySingleton`) and ensure the ModuleScope provides it.
-8. **Tests/analyzer** – add controller tests if behaviour is complex; run `fvm flutter analyze`.
+8. **Realtime delta handling (when applicable)** – if the feature has SSE delta streams:
+   - Maintain a paginated cache in the controller and apply delta updates by `id`.
+   - On stream reconnect, re-fetch the first page to resync.
+9. **Tests/analyzer** – add controller tests if behaviour is complex; run `fvm flutter analyze`.
 
 ## Outputs
 - Controller file with documented responsibilities and StreamValue exposure.

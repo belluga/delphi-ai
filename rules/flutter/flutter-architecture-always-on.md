@@ -1,7 +1,8 @@
 ---
-activation_mode: always_on
-summary: Enforce Flutter architectural tenets across all tasks.
+trigger: always_on
+description: Enforce Flutter architectural tenets across all tasks.
 ---
+
 
 ## Rule
 Apply these Flutter architectural tenets on every task:

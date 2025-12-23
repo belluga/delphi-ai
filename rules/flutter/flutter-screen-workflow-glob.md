@@ -1,6 +1,8 @@
 ---
 trigger: always_on
+description: 
 ---
+
 
 ## Rule
 Whenever a file under `flutter-app/lib/presentation/**/screens/**` is active or modified, run the Screen Workflow:

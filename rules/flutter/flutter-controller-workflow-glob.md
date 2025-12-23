@@ -1,8 +1,8 @@
 ---
 trigger: glob
-globs: flutter-app/lib/presentation/**/controllers/**
-summary: Apply the controller workflow whenever controller files are edited.
+description: Apply the controller workflow whenever controller files are edited.
 ---
+
 
 ## Rule
 When working inside `flutter-app/lib/presentation/**/controllers/**`, run the Controller Workflow:

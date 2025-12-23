@@ -1,7 +1,8 @@
 ---
-activation_mode: always_on
-summary: Document every Flutter change in foundation docs before code merges.
+trigger: always_on
+description: Document every Flutter change in foundation docs before code merges.
 ---
+
 
 ## Rule
 Before touching Flutter code or mocks, update the authoritative documentation:

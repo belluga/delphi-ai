@@ -1,8 +1,8 @@
 ---
-activation_mode: model_decision
+trigger: model_decision
 description: "When modifying Docker runtime, compose, ingress, or host/env settings."
-summary: Load the runtime and ingress workflow before changing Docker/ingress configs.
 ---
+
 
 ## Rule
 When the task involves `docker/`, `docker-compose.yml`, ingress proxies, or host runtime settings:

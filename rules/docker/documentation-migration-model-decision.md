@@ -1,8 +1,8 @@
 ---
-activation_mode: model_decision
+trigger: model_decision
 description: "When migrating temporary/legacy docs into Delphi templates and producing milestones/task lists."
-summary: Load the Documentation Migration & Expansion workflow before converting ad-hoc docs to canonical templates.
 ---
+
 
 ## Rule
 If working from temporary notes (e.g., `temporary_files/*`, scratch specs, prototype screens) to produce canonical docs:
