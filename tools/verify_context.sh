@@ -71,6 +71,25 @@ check_symlink_target() {
   fi
 }
 
+check_submodule_initialized() {
+  local path="$1"
+  local label="$2"
+  local status
+  status="$(git -C "$REPO_ROOT" submodule status -- "$path" 2>/dev/null || true)"
+  if [ -z "$status" ]; then
+    errors+=("$label submodule missing from .gitmodules at $path")
+    return
+  fi
+  case "${status:0:1}" in
+    -)
+      errors+=("$label submodule not initialized at $path (run: git submodule update --init --recursive)")
+      ;;
+    +)
+      warnings+=("$label submodule is not at recorded commit at $path (run: git submodule update --init --recursive)")
+      ;;
+  esac
+}
+
 check_foundation_link() {
   local module_path="$1"
   local module_name="$2"
@@ -98,6 +117,32 @@ check_agent_rules() {
   fi
 }
 
+ensure_codex_skills_link() {
+  local module_path="$1"
+  local label="$2"
+  local codex_dir="$module_path/.codex"
+  local link_path="$codex_dir/skills"
+  local target="../delphi-ai/skills"
+
+  mkdir -p "$codex_dir"
+  if [ -L "$link_path" ]; then
+    local actual
+    actual="$(readlink "$link_path")"
+    if [ "$actual" != "$target" ]; then
+      rm -f "$link_path"
+      ln -s "$target" "$link_path"
+      warnings+=("$label .codex/skills updated to $target")
+    fi
+  elif [ -e "$link_path" ]; then
+    rm -f "$link_path"
+    ln -s "$target" "$link_path"
+    warnings+=("$label .codex/skills replaced with symlink to $target")
+  else
+    ln -s "$target" "$link_path"
+    warnings+=("$label .codex/skills created -> $target")
+  fi
+}
+
 get_env_value() {
   local key="$1"
   local file="$2"
@@ -117,6 +162,7 @@ if [ -f "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh" ]; then
 fi
 
 check_path_exists "$REPO_ROOT/foundation_documentation" "Root foundation documentation directory"
+check_submodule_initialized "$REPO_ROOT/foundation_documentation" "foundation_documentation"
 check_foundation_link "$REPO_ROOT/flutter-app" "flutter-app"
 check_foundation_link "$REPO_ROOT/laravel-app" "laravel-app"
 check_agent_workflows "$REPO_ROOT" "root .agent"
@@ -125,6 +171,9 @@ check_agent_workflows "$REPO_ROOT/laravel-app" "laravel-app .agent"
 check_agent_rules "$REPO_ROOT" "root .agent"
 check_agent_rules "$REPO_ROOT/flutter-app" "flutter-app .agent"
 check_agent_rules "$REPO_ROOT/laravel-app" "laravel-app .agent"
+ensure_codex_skills_link "$REPO_ROOT" "root"
+ensure_codex_skills_link "$REPO_ROOT/flutter-app" "flutter-app"
+ensure_codex_skills_link "$REPO_ROOT/laravel-app" "laravel-app"
 
 TODOS_ACTIVE_DIR="$REPO_ROOT/foundation_documentation/todos/active"
 TODOS_COMPLETED_DIR="$REPO_ROOT/foundation_documentation/todos/completed"

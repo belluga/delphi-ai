@@ -48,3 +48,4 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 ## Validation
 - `php artisan test` (or targeted suites) succeeds.
 - Schema updates are reflected in docs; Flutter roadmap entries mention any new payloads.
+- Do not add Eloquent casts for arrays or objects on MongoDB-backed models; leave these fields uncast so the MongoDB driver persists native BSON types.

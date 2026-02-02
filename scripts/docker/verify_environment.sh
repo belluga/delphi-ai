@@ -82,7 +82,7 @@ for submodule_path in $submodule_paths; do
     continue
   fi
 
-  if [[ "$submodule_path" == "web-app" ]]; then
+  if [[ "$submodule_path" == "web-app" ]] || [[ "$submodule_path" == "foundation_documentation" ]]; then
     continue
   fi
 

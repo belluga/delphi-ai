@@ -12,6 +12,7 @@ Apply these Flutter architectural tenets on every task:
 - Register routes via AutoRoute with guards (tenant shell/auth); use RouteModelResolver for hydration and keep route docs updated.
 - Align repos/contracts with documented pagination/filtering expectations and mirror them in Laravel roadmaps.
 - Analyzer/tests are mandatory: `fvm flutter analyze` must be clean; add targeted controller/widget tests when behaviour changes.
+- For device integration tests, run with `--dds-port=0` to avoid DDS port conflicts.
 
 ## Rationale
 These tenets keep the Flutter client aligned with backend contracts, maintain purity of presentation, and prevent coupling DTOs to UI. AutoRoute governance and analyzer discipline guard navigation integrity and code quality.

@@ -12,6 +12,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 - Root repository (`festou_docker` or downstream clone).
 - `.gitmodules` and current submodule working trees.
 - Project README instructions.
+ - `foundation_documentation` submodule (expected for all projects; add if missing).
 
 ## Procedure
 1. **Confirm repository context**
@@ -27,6 +28,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 
 3. **Validate submodules (only if needed)**
    - Run `git submodule status --recursive` and ensure each submodule is checked out; no entry should start with `-` (uninitialized) or `+` (detached from the recorded commit in `.gitmodules`).
+   - Ensure `foundation_documentation` is present as a submodule; if missing, add it using the canonical docs repo before proceeding.
    - If any discrepancies appear, execute `git submodule sync --recursive && git submodule update --init --recursive` to realign the working trees with the recorded commit hashes before continuing.
    - For each entry in `.gitmodules`, confirm the URL points to the project’s own repo, not `belluga/boilerplate_*`. If any still reference boilerplate sources, guide the user to `git submodule set-url` the correct fork before proceeding.
 
