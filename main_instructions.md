@@ -128,8 +128,16 @@ You must adhere to the following documentation policies:
     2.  **Roadmap Tracking:** After defining or updating endpoints in a module document, you must immediately update the `system_roadmap.md` (Workflow Step 11) to ensure every endpoint is listed and tracked with one of the following statuses: `Defined`, `Mocked`, `Implemented`, or `Tested & Ready`.
 * **TODO & Tracking Discipline:** TODOs in code are acceptable only when they are specific (owner + intent + next action). If a TODO represents cross-team work, contract/API evolution, or roadmap scope, I must also record it in the authoritative project documentation (e.g., module definitions and `system_roadmap.md`) so it is not “lost” as an inline note.
   * **Strategic vs Tactical:** `system_roadmap.md` remains strategic (milestones + endpoint status). Tactical, small-scoped TODOs that guide complex implementations may live in project documentation as short-lived task notes, and can be archived for reference when completed.
-  * **Tactical TODO Gate (Required):** For any implementation work, you must create/use a tactical TODO under `foundation_documentation/todos/active/` and refine it before coding, except for single direct commands (e.g., request a commit message, move files, etc.).
-    * If the TODO contains **COMENTÁRIO:** / **COMMENT:** blocks, treat them as contextual questions for the content immediately below and resolve/remove them before implementation. Use Markdown HTML comments: `<!-- COMENTÁRIO: ... -->` or `<!-- COMMENT: ... -->`.
+  * **Tactical TODO Gate (Required):** For any implementation work, you must create/use a tactical TODO under `foundation_documentation/todos/active/` and refine it before coding, except for:
+    * Edits limited to `.agent/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
+    * Approved **Ephemeral TODO** flow (see below).
+  * **Ephemeral TODO (Micro-Fix) Flow:** For tiny fixes that should not be tracked long-term, use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still request **APROVADO** before changes. Eligibility rules:
+    * Max 1 file touched and ≤ 20 lines changed total.
+    * No new dependencies, no API/contract/schema changes, and no documentation updates under `foundation_documentation/**` (except `foundation_documentation/todos/**`).
+    * Do not use for architecture-critical paths (`lib/domain/**`, `lib/infrastructure/repositories/**`, `lib/**/routes/**`) or any path that implies cross-team coordination.
+    * If unsure whether it qualifies, default to the full tactical TODO gate.
+    * Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
+  * **Tactical TODO Execution:** If the TODO contains **COMENTÁRIO:** / **COMMENT:** blocks, treat them as contextual questions for the content immediately below and resolve/remove them before implementation. Use Markdown HTML comments: `<!-- COMENTÁRIO: ... -->` or `<!-- COMMENT: ... -->`.
     * Before requesting **APROVADO**, I must identify which Rule/Workflow documents apply to the implementation and state explicitly which ones I will follow. The approval request must mention those Rule/Workflow sources by name/path.
     * After refinement, I must request an explicit approval reply **APROVADO** before making any project changes (no `apply_patch`, no write commands, no code/doc modifications).
     * **Execution Discipline:** Once a tactical TODO is in place, all implementation work must adhere to it. Do not execute tasks that are out of scope or out of order without first updating the TODO and securing approval.

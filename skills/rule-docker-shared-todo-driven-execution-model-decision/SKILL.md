@@ -4,7 +4,19 @@ description: "Rule: MUST use whenever the scope matches this purpose: Before sta
 ---
 
 ## Rule
-Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`.
+Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions and micro-fix flow below.
+
+### Exemptions (no TODO required)
+- Edits limited to `.agent/**` (local run logs/checklists).
+- Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
+
+### Ephemeral TODO (Micro-Fix) Flow
+If the change is tiny and should not be tracked long-term, Delphi may use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still require **APROVADO** before changes. Eligibility:
+- Max 1 file touched and ≤ 20 lines changed total.
+- No new dependencies, no API/contract/schema changes, and no documentation updates under `foundation_documentation/**` (except `foundation_documentation/todos/**`).
+- Do not use for architecture-critical paths (`lib/domain/**`, `lib/infrastructure/repositories/**`, `lib/**/routes/**`) or any path that implies cross-team coordination.
+- If uncertain, default to the full tactical TODO gate.
+- Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
 
 ### Gate A — TODO existence
 - If no relevant TODO exists, do not start implementation.
@@ -33,7 +45,7 @@ Before starting any implementation work that changes project code, submodule cod
 This prevents scope creep and “hub refactors” by forcing a written, reviewable contract (scope + DoD) that must be validated before code begins.
 
 ## Enforcement
-- If the user requests implementation without a TODO, block and request the TODO.
+- If the user requests implementation without a TODO and the work is not exempt or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
 - If COMMENT blocks exist, block implementation until they are resolved and removed.
 
 ## Notes

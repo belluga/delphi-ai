@@ -11,31 +11,41 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 - The user asks for feature work, bugfixes, refactors, or documentation updates that change project artifacts.
 
 ## Inputs
-- A TODO file under `foundation_documentation/todos/active/`.
+- A TODO file under `foundation_documentation/todos/active/`, or an ephemeral TODO under `foundation_documentation/todos/ephemeral/` when eligible.
 
 ## Procedure
-1. **Locate or create TODO**
+1. **Determine which lane applies**
+   - If changes are limited to `.agent/**` or `foundation_documentation/todos/**`, proceed without a TODO and still describe intent + results in your response.
+   - If the work qualifies for the Ephemeral TODO flow, use the micro-fix lane below.
+   - Otherwise, use the full tactical TODO lane.
+2. **Ephemeral TODO lane (micro-fix)**
+   - Confirm eligibility: max 1 file, ≤ 20 lines changed, no new dependencies, no API/contract/schema changes, no documentation updates under `foundation_documentation/**` (except `foundation_documentation/todos/**`), and not in `lib/domain/**`, `lib/infrastructure/repositories/**`, or `lib/**/routes/**`.
+   - Ensure `foundation_documentation/todos/ephemeral/` contains `.gitkeep` and a `.gitignore` that ignores all other files.
+   - Create a short TODO in `foundation_documentation/todos/ephemeral/` capturing `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
+   - Request **APROVADO** before any change.
+   - Execute within scope, validate, and leave the ephemeral TODO as a local-only record (do not commit).
+3. **Tactical TODO lane (default)**
    - Find the relevant TODO in `foundation_documentation/todos/active/`.
    - If none exists, ask the user to create one or ask permission to draft one.
-2. **Read and restate**
+4. **Read and restate**
    - Restate the TODO in 1–2 lines.
    - Restate `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
-3. **Raise missing decisions (refinement)**
+5. **Raise missing decisions (refinement)**
    - Identify questions that would change implementation (UX, routes, contracts, data, privacy, fallbacks).
    - Add them under `questions_to_close` and propose options under `decisions` (A/B with short impact).
    - Iterate with the user until resolved; then update `decisions` with the chosen outcome.
-4. **Resolve COMMENT blocks (mandatory gate)**
+6. **Resolve COMMENT blocks (mandatory gate)**
    - Treat each **COMENTÁRIO:** / **COMMENT:** block as a question/consideration for the content immediately following it.
    - Resolve by updating the TODO (e.g., `decisions`, `scope`, `definition_of_done`) and then remove the comment block.
    - If resolution requires user input, stop and wait for confirmation before removing.
-5. **Request explicit approval**
+7. **Request explicit approval**
    - Ask the user to reply with **APROVADO** to confirm the refined TODO.
    - Do not implement anything until approval is received.
-6. **Execute implementation**
+8. **Execute implementation**
    - Load the relevant stack workflows (Flutter/Laravel/etc.) and proceed with implementation strictly within `scope`.
-7. **Validate**
+9. **Validate**
    - Run the `validation_steps` from the TODO (or explicitly report what cannot be run and why).
-8. **Close TODO**
+10. **Close TODO**
    - Update the TODO with outcome notes and move it to `foundation_documentation/todos/completed/` (or mark canceled).
 
 ## Outputs
