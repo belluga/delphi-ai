@@ -10,6 +10,7 @@ If a task touches routes, screens, repositories, or domain models:
 - Align domain vocabulary with `foundation_documentation/domain_entities_sections/*` and refresh summaries in `domain_entities.md` when fields change.
 - Update `foundation_documentation/system_roadmap.md`, backlog, and submodule summaries with new API/contract work; ensure submodule hashes are noted when relevant.
 - Notify downstream teams by recording roadmap deltas before code merges.
+ - **Exception (Maintenance/Regression Fix lane):** If restoring previously documented behavior and the existing docs already match the intended behavior, documentation updates are not required. Record the evidence in the ephemeral TODO; if docs are missing or incorrect, use the tactical TODO lane and update docs first.
 
 ## Rationale
 Foundation docs are the contract source for all stacks. Keeping them synchronized with route/screen/repo/domain changes prevents drift and preserves traceability.

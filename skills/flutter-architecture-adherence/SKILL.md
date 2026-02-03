@@ -23,6 +23,7 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - Form keys (`GlobalKey<FormState>`) must live in controllers; screens/widgets only reference `_controller.formKey`.
 - Screens resolve controllers via GetIt; routes should not pass controllers.
 - Widgets may accept controllers for testability, but default to resolving via GetIt when needed.
+- Child widgets should resolve their own controllers via GetIt; screens must not instantiate “pass‑through” child controllers just to forward them.
 - UI controllers (TextEditingController/ScrollController/AnimationController/GlobalKey<FormState>/etc.) live in feature controllers, not screens/widgets.
 - Form keys (`GlobalKey<FormState>`) must live in controllers to centralize validation/submit decisions.
 - Screens/widgets only accept `_controller` and static view data parameters; any controlling parameter belongs in the controller.
@@ -163,10 +164,14 @@ class BadFormScreenState extends State<BadFormScreen> {
 - Screens/widgets with controlling parameters (callbacks, state flags, stream values, controllers) passed in instead of owned by controller.
 - `stream.listen` subscriptions inside widgets/screens (use `StreamValueBuilder`-driven UI only; effect handling must be centralized and explicitly approved).
 - Widgets/screens calling controller `onDispose()`/`dispose()` (ModuleScope owns controller lifecycles unless explicitly approved).
+- Screens instantiating child widget controllers solely to pass into widgets (child should resolve via GetIt; only pass for tests).
 
 ### Soft NO (allowed only if truly ephemeral)
 - `setState` in presentation (allowed only for tiny, local, UI-only, single-route lifespan).
 - Local mutable fields in State classes (same rule as `setState`).
+  - Two acceptable paths:
+    - Create a small **ephemeral wrapper widget** that owns the mutable fields and keeps them UI-only.
+    - Move the fields into the **controller** when they represent cross-widget/stateful behavior or outlive the widget.
 
 ### Conditional (flag + explicit decision required)
 - Disposing controllers in widgets (flag unless explicitly approved).

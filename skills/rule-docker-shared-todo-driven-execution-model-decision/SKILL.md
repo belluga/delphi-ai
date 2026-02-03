@@ -4,18 +4,18 @@ description: "Rule: MUST use whenever the scope matches this purpose: Before sta
 ---
 
 ## Rule
-Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions and micro-fix flow below.
+Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions and Maintenance/Regression Fix flow below.
 
 ### Exemptions (no TODO required)
 - Edits limited to `.agent/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
 
-### Ephemeral TODO (Micro-Fix) Flow
-If the change is tiny and should not be tracked long-term, Delphi may use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still require **APROVADO** before changes. Eligibility:
-- Max 1 file touched and ≤ 20 lines changed total.
-- No new dependencies, no API/contract/schema changes, and no documentation updates under `foundation_documentation/**` (except `foundation_documentation/todos/**`).
-- Do not use for architecture-critical paths (`lib/domain/**`, `lib/infrastructure/repositories/**`, `lib/**/routes/**`) or any path that implies cross-team coordination.
-- If uncertain, default to the full tactical TODO gate.
+### Maintenance/Regression Fix Flow (Ephemeral TODO)
+If the change restores previously documented or verifiably working behavior (including test failures), Delphi may use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still require **APROVADO** before changes. Eligibility:
+- Must restore previously documented behavior or a known working baseline; reference the evidence in the TODO (doc/test/issue/prior commit).
+- No net-new features and no API/contract/schema changes. If contracts must change or new behavior is added, use the full tactical TODO gate.
+- Documentation updates are **not** required if the existing docs already match the intended behavior. If docs are missing or incorrect, use a tactical TODO and update docs first.
+- Any files may be touched if necessary to restore the known behavior.
 - Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
 
 ### Gate A — TODO existence

@@ -9,6 +9,7 @@ description: "MUST use whenever `mounted`/`context.mounted` checks, setState-aft
 - `if (!mounted)` / `if (!context.mounted)`
 - `setState` after an `await`
 - `Navigator` calls after async gaps in UI
+  - **Note:** `mounted` guards used only for UI effects (snackbars/toasts) are not navigation smells but must be documented as exceptions.
 
 ## Root-cause questions (must answer)
 - Why is async work owned by the widget instead of a controller?
@@ -22,4 +23,10 @@ description: "MUST use whenever `mounted`/`context.mounted` checks, setState-aft
 
 ## Acceptable exceptions (document explicitly)
 - Tiny, local, UI-only widgets (ephemeral rule).
+- UI-only effect callbacks (e.g., snackbars/toasts) scheduled post-frame or via stream reactions; no navigation or controller ownership.
 - Legacy migration where refactor is out of scope (must add TODO).
+
+## Exception logging (required)
+- Record every accepted `mounted`/`context.mounted` exception in a project artifact.
+- Preferred location (if available): `foundation_documentation/artifacts/flutter-mounted-exceptions.md`.
+- The artifact must include: file path, decision (Deferred/Canceled/Resolved), rationale, date, and owner.

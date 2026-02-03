@@ -9,6 +9,7 @@ Before touching Flutter code or mocks, update the authoritative documentation:
 - Record every mock payload/schema change in `foundation_documentation/screens/prototype_data.md` and refresh DTO notes in `foundation_documentation/domain_entities.md` when vocabulary evolves.
 - Update module/roadmap entries (`mock_roadmap.md`, `system_roadmap.md`, `submodule_flutter-app_summary.md`) so Laravel and other consumers see the new scope before implementation starts.
 - Reject any Flutter change whose documentation counterpart is missing or outdated.
+ - **Exception (Maintenance/Regression Fix lane):** If restoring previously documented behavior and the existing docs already match the intended behavior, documentation updates are not required. Record the evidence in the ephemeral TODO; if docs are missing or incorrect, use the tactical TODO lane and update docs first.
 
 ## Rationale
 Per Project Mandate P‑B6 (“Documentation Before Code”), the Flutter prototype defines launch contracts for Laravel and future clients. Keeping docs ahead of code prevents schema drift and maintains domain traceability.

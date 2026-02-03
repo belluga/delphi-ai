@@ -16,12 +16,13 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 ## Procedure
 1. **Determine which lane applies**
    - If changes are limited to `.agent/**` or `foundation_documentation/todos/**`, proceed without a TODO and still describe intent + results in your response.
-   - If the work qualifies for the Ephemeral TODO flow, use the micro-fix lane below.
+   - If the work qualifies for the Maintenance/Regression Fix flow, use the corresponding lane below.
    - Otherwise, use the full tactical TODO lane.
-2. **Ephemeral TODO lane (micro-fix)**
-   - Confirm eligibility: max 1 file, ≤ 20 lines changed, no new dependencies, no API/contract/schema changes, no documentation updates under `foundation_documentation/**` (except `foundation_documentation/todos/**`), and not in `lib/domain/**`, `lib/infrastructure/repositories/**`, or `lib/**/routes/**`.
+2. **Maintenance/Regression Fix lane (Ephemeral TODO)**
+   - Confirm eligibility: restore previously documented or verifiably working behavior (including test failures); no net-new features and no API/contract/schema changes.
+   - If documentation must change because the existing docs are missing or incorrect, use the tactical TODO lane instead.
    - Ensure `foundation_documentation/todos/ephemeral/` contains `.gitkeep` and a `.gitignore` that ignores all other files.
-   - Create a short TODO in `foundation_documentation/todos/ephemeral/` capturing `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
+   - Create a short TODO in `foundation_documentation/todos/ephemeral/` capturing `scope`, `out_of_scope`, `definition_of_done`, `validation_steps`, and the **evidence** (doc/test/issue/prior commit) that proves the expected behavior.
    - Request **APROVADO** before any change.
    - Execute within scope, validate, and leave the ephemeral TODO as a local-only record (do not commit).
 3. **Tactical TODO lane (default)**

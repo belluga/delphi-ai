@@ -130,12 +130,12 @@ You must adhere to the following documentation policies:
   * **Strategic vs Tactical:** `system_roadmap.md` remains strategic (milestones + endpoint status). Tactical, small-scoped TODOs that guide complex implementations may live in project documentation as short-lived task notes, and can be archived for reference when completed.
   * **Tactical TODO Gate (Required):** For any implementation work, you must create/use a tactical TODO under `foundation_documentation/todos/active/` and refine it before coding, except for:
     * Edits limited to `.agent/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
-    * Approved **Ephemeral TODO** flow (see below).
-  * **Ephemeral TODO (Micro-Fix) Flow:** For tiny fixes that should not be tracked long-term, use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still request **APROVADO** before changes. Eligibility rules:
-    * Max 1 file touched and ≤ 20 lines changed total.
-    * No new dependencies, no API/contract/schema changes, and no documentation updates under `foundation_documentation/**` (except `foundation_documentation/todos/**`).
-    * Do not use for architecture-critical paths (`lib/domain/**`, `lib/infrastructure/repositories/**`, `lib/**/routes/**`) or any path that implies cross-team coordination.
-    * If unsure whether it qualifies, default to the full tactical TODO gate.
+    * Approved **Maintenance/Regression Fix** flow (see below).
+  * **Maintenance/Regression Fix Flow:** For restoring previously documented or verifiably working behavior (including test failures), use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still request **APROVADO** before changes. Eligibility rules:
+    * Must restore previously documented behavior or a known working baseline (reference the evidence in the TODO: doc, test, issue, or prior commit).
+    * No net-new features and no API/contract/schema changes. If contracts must change or new behavior is added, use the full tactical TODO gate.
+    * Documentation updates are **not** required if the existing docs already match the intended behavior. If docs are missing or incorrect, use a tactical TODO and update docs first.
+    * Any files may be touched if necessary to restore the known behavior.
     * Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
   * **Tactical TODO Execution:** If the TODO contains **COMENTÁRIO:** / **COMMENT:** blocks, treat them as contextual questions for the content immediately below and resolve/remove them before implementation. Use Markdown HTML comments: `<!-- COMENTÁRIO: ... -->` or `<!-- COMMENT: ... -->`.
     * Before requesting **APROVADO**, I must identify which Rule/Workflow documents apply to the implementation and state explicitly which ones I will follow. The approval request must mention those Rule/Workflow sources by name/path.
