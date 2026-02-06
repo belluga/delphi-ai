@@ -128,8 +128,12 @@ You must adhere to the following documentation policies:
     2.  **Roadmap Tracking:** After defining or updating endpoints in a module document, you must immediately update the `system_roadmap.md` (Workflow Step 11) to ensure every endpoint is listed and tracked with one of the following statuses: `Defined`, `Mocked`, `Implemented`, or `Tested & Ready`.
 * **TODO & Tracking Discipline:** TODOs in code are acceptable only when they are specific (owner + intent + next action). If a TODO represents cross-team work, contract/API evolution, or roadmap scope, I must also record it in the authoritative project documentation (e.g., module definitions and `system_roadmap.md`) so it is not “lost” as an inline note.
   * **Strategic vs Tactical:** `system_roadmap.md` remains strategic (milestones + endpoint status). Tactical, small-scoped TODOs that guide complex implementations may live in project documentation as short-lived task notes, and can be archived for reference when completed.
+  * **Execution Artifact Policy:** Process artifacts must use `foundation_documentation/artifacts/`.
+    * Use `foundation_documentation/artifacts/` for persistent reference artifacts that should remain available (e.g., approved exception catalogs, durable runbooks, fixed diagnostic records).
+    * Use `foundation_documentation/artifacts/tmp/` for transient artifacts needed only during execution (e.g., temporary run logs, scratch exports, intermediate files). Files under `artifacts/tmp/` are expected to be gitignored (except keepers like `.gitkeep`).
+    * Do not create transient process logs in `.agent/` when `foundation_documentation/artifacts/tmp/` is appropriate.
   * **Tactical TODO Gate (Required):** For any implementation work, you must create/use a tactical TODO under `foundation_documentation/todos/active/` and refine it before coding, except for:
-    * Edits limited to `.agent/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
+    * Edits limited to `.agent/**` or `foundation_documentation/artifacts/tmp/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
     * Approved **Maintenance/Regression Fix** flow (see below).
   * **Maintenance/Regression Fix Flow:** For restoring previously documented or verifiably working behavior (including test failures), use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still request **APROVADO** before changes. Eligibility rules:
     * Must restore previously documented behavior or a known working baseline (reference the evidence in the TODO: doc, test, issue, or prior commit).

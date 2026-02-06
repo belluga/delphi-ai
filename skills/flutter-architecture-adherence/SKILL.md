@@ -24,6 +24,9 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - Screens resolve controllers via GetIt; routes should not pass controllers.
 - Widgets may accept controllers for testability, but default to resolving via GetIt when needed.
 - Child widgets should resolve their own controllers via GetIt; screens must not instantiate “pass‑through” child controllers just to forward them.
+- Controllers must depend on repositories/services/contracts (or value objects), never on other feature controllers.
+- Global DI registration must only host true app-lifecycle dependencies; feature/module controllers must be registered in their owning module.
+- Do not introduce ad-hoc mutable global stores for navigation/UI flow handoff; prefer route model/query params and controller state.
 - UI controllers (TextEditingController/ScrollController/AnimationController/GlobalKey<FormState>/etc.) live in feature controllers, not screens/widgets.
 - Form keys (`GlobalKey<FormState>`) must live in controllers to centralize validation/submit decisions.
 - Screens/widgets only accept `_controller` and static view data parameters; any controlling parameter belongs in the controller.
@@ -33,6 +36,18 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 ## Quick boundary check
 - If it touches a repository, router, domain model, or persists across navigation → controller + StreamValue.
 - If it is a transient UI-only interaction (single sheet/dialog, no side effects) → local state allowed.
+
+## State Management Baseline (must enforce)
+- Official state pattern: `StreamValue` + `StreamValueBuilder` (controller-owned streams only).
+- Allowed local exception: constrained `setState` for ephemeral widget concerns only.
+- Any residual/legacy manager is a deviation that must be removed or justified with explicit architecture decision.
+- Residual scan targets:
+  - `ChangeNotifier` / `ValueNotifier`
+  - `Provider` / `Riverpod`
+  - `Bloc` / `Cubit`
+  - `MobX` (`Observable`, `Observer`)
+  - `GetX` (`Rx`, `Obx`, `GetBuilder`)
+  - Ad-hoc `StreamController` owned by widgets/screens.
 
 ## Concrete examples (preferred pattern)
 
@@ -165,6 +180,9 @@ class BadFormScreenState extends State<BadFormScreen> {
 - `stream.listen` subscriptions inside widgets/screens (use `StreamValueBuilder`-driven UI only; effect handling must be centralized and explicitly approved).
 - Widgets/screens calling controller `onDispose()`/`dispose()` (ModuleScope owns controller lifecycles unless explicitly approved).
 - Screens instantiating child widget controllers solely to pass into widgets (child should resolve via GetIt; only pass for tests).
+- Controller depending on another feature controller (constructor/field/GetIt lookup) instead of repository/service contract.
+- Registering feature/module controllers inside global dependency bootstrap (e.g., `registerGlobalDependencies`) instead of module registration.
+- Mutable singleton store used as cross-layer navigation handoff (guard -> widget/screen) when route/query parameters can carry the intent.
 
 ### Soft NO (allowed only if truly ephemeral)
 - `setState` in presentation (allowed only for tiny, local, UI-only, single-route lifespan).
@@ -185,6 +203,14 @@ class BadFormScreenState extends State<BadFormScreen> {
 - Screen edits without running Screen Workflow.
 - Domain edits without running Domain Workflow.
 - Repository edits without running Repository Workflow.
+
+## Fast Audit Commands (recommended)
+- `rg -n "\\bsetState\\b" flutter-app/lib/presentation`
+- `rg -n "ChangeNotifier|ValueNotifier|Provider|Riverpod|Bloc|Cubit|MobX|Observable|Observer|GetBuilder|Obx|\\bRx\\b" flutter-app/lib`
+- `rg -n "StreamController<" flutter-app/lib/presentation`
+- `rg -n "FutureBuilder|StreamBuilder" flutter-app/lib/presentation`
+- `rg -n "class .*Controller|Controller\\(" flutter-app/lib/presentation/**/controllers`
+- `rg -n "GetIt\\.I\\.get<.*Controller>|final .*Controller|.*Controller\\?" flutter-app/lib/presentation/**/controllers`
 
 ## Data/Domain boundaries adherence flags
 
