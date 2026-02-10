@@ -10,11 +10,16 @@ This checklist ensures every working copy—full repository or scoped submodule�
    - (optional) `delphi-ai -> ../delphi-ai` if the submodule is opened standalone.
 
 ## 2. Verification Script
-Run the automated check from the repository root:
+Run the automated check (recommended from the repository root; safe from subdirectories as well):
 ```bash
 bash delphi-ai/tools/verify_context.sh
 ```
 The script validates the presence of the root documentation and confirms each submodule links to it. Extend the script as additional shared artifacts become necessary.
+
+Optional: if you want Delphi’s tactical TODO folders created, run:
+```bash
+bash delphi-ai/tools/verify_context.sh --fix-todos
+```
 
 ## 3. Manual Remediation Steps
 If the script reports missing links:
@@ -28,7 +33,8 @@ If the script reports missing links:
 ## 4. Bootloader Expectations
 After verification:
 1. Open `delphi-ai/main_instructions.md` to load the Delphi persona.
-2. Read `foundation_documentation/project_mandate.md` and `foundation_documentation/domain_entities.md` before touching code.
-3. Consult each submodule’s `AGENTS.md`. Confirm it points to `../delphi-ai/main_instructions.md`, references the verification script, and enumerates the scope-specific duties before proceeding.
+2. Read `delphi-ai/system_architecture_principles.md` (including appendices) to refresh the cross-stack mandates.
+3. Review `foundation_documentation/project_mandate.md` (confirm current architecture mode), `foundation_documentation/domain_entities.md`, _and_ `foundation_documentation/persona_roadmaps.md` so active initiatives per persona are understood before touching code.
+4. Consult each submodule’s `AGENTS.md`. Confirm it points to `../delphi-ai/main_instructions.md`, references the verification script, and enumerates the scope-specific duties before proceeding.
 
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.
