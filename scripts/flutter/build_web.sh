@@ -179,16 +179,16 @@ RSYNC_ARGS=(
 )
 
 if [[ "${PRESERVE_OUTPUT}" == "1" ]]; then
-  # Protect common non-bundle files if they exist in the output directory.
-  # This keeps deploy/governance assets intact while refreshing the generated web bundle.
+  # Preserve governance/deploy repo files while refreshing only the generated bundle.
+  # Use --exclude patterns (recursive) so rsync --delete never wipes .github/workflows, tests, etc.
   RSYNC_ARGS+=(
-    --filter='P .github/'
-    --filter='P .gitignore'
-    --filter='P build_metadata.json'
-    --filter='P package.json'
-    --filter='P package-lock.json'
-    --filter='P playwright.config.js'
-    --filter='P tests/'
+    --exclude '.github/***'
+    --exclude '.gitignore'
+    --exclude 'build_metadata.json'
+    --exclude 'package.json'
+    --exclude 'package-lock.json'
+    --exclude 'playwright.config.js'
+    --exclude 'tests/***'
   )
 fi
 
