@@ -197,3 +197,87 @@ rsync "${RSYNC_ARGS[@]}" "${TMP_DIR}/" "${OUTPUT_DIR}/"
 chmod -R a+rX "${OUTPUT_DIR}"
 
 echo "Flutter web bundle available at: ${OUTPUT_DIR} (lane: ${LANE})"
+
+resolve_landlord_domain() {
+  local lane_file="$1"
+  local override_file="$2"
+
+  local from_override=""
+  if [[ -f "${override_file}" ]]; then
+    from_override="$(jq -r '.LANDLORD_DOMAIN // empty' "${override_file}" 2>/dev/null || true)"
+  fi
+  if [[ -n "${from_override}" && "${from_override}" != "null" ]]; then
+    printf '%s' "${from_override}"
+    return 0
+  fi
+
+  local from_lane=""
+  from_lane="$(jq -r '.LANDLORD_DOMAIN // empty' "${lane_file}" 2>/dev/null || true)"
+  if [[ -n "${from_lane}" && "${from_lane}" != "null" ]]; then
+    printf '%s' "${from_lane}"
+    return 0
+  fi
+
+  return 1
+}
+
+inject_landlord_host() {
+  local index_html="$1"
+  local landlord_domain="$2"
+  local build_sha="$3"
+
+  if [[ ! -f "${index_html}" ]]; then
+    echo "ERROR: index.html not found for landlord host injection: ${index_html}" >&2
+    exit 1
+  fi
+
+  local landlord_host=""
+  landlord_host="$(
+    python3 - "${landlord_domain}" <<'PY'
+import sys
+from urllib.parse import urlparse
+u = sys.argv[1]
+p = urlparse(u)
+if not p.scheme or not p.netloc:
+  raise SystemExit(1)
+if not p.hostname:
+  raise SystemExit(1)
+print(p.hostname.lower())
+PY
+  )"
+
+  if [[ ! "${landlord_host}" =~ ^[a-z0-9.-]+$ ]]; then
+    echo "ERROR: invalid landlord host parsed from LANDLORD_DOMAIN (${landlord_domain}): ${landlord_host}" >&2
+    exit 1
+  fi
+
+  python3 - "${index_html}" "${landlord_host}" "${build_sha}" <<'PY'
+import sys, re
+path = sys.argv[1]
+host = sys.argv[2]
+sha = sys.argv[3]
+marker = "<!-- DELPHI_INJECT__LANDLORD_HOST__ -->"
+inject = f'<script>window.__LANDLORD_HOST__ = "{host}"; window.__WEB_BUILD_SHA__ = "{sha}";</script>'
+with open(path, "r", encoding="utf-8") as f:
+  s = f.read()
+if marker in s:
+  s = s.replace(marker, inject, 1)
+else:
+  s = re.sub(r"(<head[^>]*>)", r"\\1\\n  " + inject, s, count=1, flags=re.I)
+with open(path, "w", encoding="utf-8") as f:
+  f.write(s)
+PY
+}
+
+landlord_domain="$(resolve_landlord_domain "${LANE_FILE}" "${LOCAL_OVERRIDE_FILE}" || true)"
+if [[ -z "${landlord_domain}" ]]; then
+  echo "ERROR: LANDLORD_DOMAIN is required (set it in ${LANE_FILE} or ${LOCAL_OVERRIDE_FILE})." >&2
+  exit 1
+fi
+
+build_sha="$(git -C "${FLUTTER_APP_DIR}" rev-parse --short HEAD 2>/dev/null || true)"
+if [[ -z "${build_sha}" ]]; then
+  build_sha="local"
+fi
+
+inject_landlord_host "${OUTPUT_DIR}/index.html" "${landlord_domain}" "${build_sha}"
