@@ -74,6 +74,7 @@ check_symlink_target() {
 check_submodule_initialized() {
   local path="$1"
   local label="$2"
+  local ignore_recorded_commit_mismatch="${3:-false}"
   local status
   status="$(git -C "$REPO_ROOT" submodule status -- "$path" 2>/dev/null || true)"
   if [ -z "$status" ]; then
@@ -85,7 +86,9 @@ check_submodule_initialized() {
       errors+=("$label submodule not initialized at $path (run: git submodule update --init --recursive)")
       ;;
     +)
-      warnings+=("$label submodule is not at recorded commit at $path (run: git submodule update --init --recursive)")
+      if [ "$ignore_recorded_commit_mismatch" != "true" ]; then
+        warnings+=("$label submodule is not at recorded commit at $path (run: git submodule update --init --recursive)")
+      fi
       ;;
   esac
 }
@@ -143,6 +146,87 @@ ensure_codex_skills_link() {
   fi
 }
 
+# Ensure Cline artifacts are properly symlinked
+# Per Cline documentation:
+# - Skills: .cline/skills/ (directories with SKILL.md)
+# - Workflows: .clinerules/workflows/ (markdown files)
+# - Hooks: .clinerules/hooks/ (executable scripts)
+# - Rules: .clinerules/ (markdown files, auto-loaded)
+ensure_cline_artifacts() {
+  local module_path="$1"
+  local label="$2"
+  local delphi_path="$module_path/delphi-ai"
+  local cline_dir="$module_path/.cline"
+
+  # Check if delphi-ai symlink exists and points to correct target
+  if [ ! -L "$delphi_path" ]; then
+    warnings+=("$label delphi-ai symlink missing, Cline artifacts require delphi-ai link")
+    return
+  fi
+
+  # Determine relative path based on whether this is root or a submodule
+  local rel_prefix
+  if [ "$module_path" = "$REPO_ROOT" ]; then
+    # Root level - no ../ prefix needed
+    rel_prefix="delphi-ai"
+  else
+    # Submodule - need ../ prefix
+    rel_prefix="../delphi-ai"
+  fi
+
+  # Create .cline directory for skills
+  mkdir -p "$cline_dir"
+
+  # Symlink .cline/skills/ (skills are directories with SKILL.md)
+  local skills_path="$cline_dir/skills"
+  local skills_target="$rel_prefix/.cline/skills"
+  if [ -L "$skills_path" ]; then
+    local actual
+    actual="$(readlink "$skills_path")"
+    if [ "$actual" != "$skills_target" ]; then
+      rm -f "$skills_path"
+      ln -s "$skills_target" "$skills_path"
+      warnings+=("$label .cline/skills updated to $skills_target")
+    fi
+  elif [ -e "$skills_path" ]; then
+    rm -f "$skills_path"
+    ln -s "$skills_target" "$skills_path"
+    warnings+=("$label .cline/skills replaced with symlink to $skills_target")
+  else
+    ln -s "$skills_target" "$skills_path"
+    warnings+=("$label .cline/skills created -> $skills_target")
+  fi
+
+  # Symlink .clinerules directory (contains rules, workflows, and hooks)
+  # This includes: rules (*.md), workflows/, hooks/, glob/, manual/, model-decision/
+  local clinerules_path="$module_path/.clinerules"
+  local clinerules_target="$rel_prefix/.clinerules"
+  if [ -L "$clinerules_path" ]; then
+    local actual
+    actual="$(readlink "$clinerules_path")"
+    if [ "$actual" != "$clinerules_target" ]; then
+      rm -f "$clinerules_path"
+      ln -s "$clinerules_target" "$clinerules_path"
+      warnings+=("$label .clinerules updated to $clinerules_target")
+    fi
+  elif [ -e "$clinerules_path" ]; then
+    rm -f "$clinerules_path"
+    ln -s "$clinerules_target" "$clinerules_path"
+    warnings+=("$label .clinerules replaced with symlink to $clinerules_target")
+  else
+    ln -s "$clinerules_target" "$clinerules_path"
+    warnings+=("$label .clinerules created -> $clinerules_target")
+  fi
+
+  # Also create CLINE.md symlink at root if it doesn't exist
+  local cline_md="$module_path/CLINE.md"
+  local cline_md_target="$rel_prefix/CLINE.md"
+  if [ ! -e "$cline_md" ]; then
+    ln -s "$cline_md_target" "$cline_md"
+    warnings+=("$label CLINE.md created -> $cline_md_target")
+  fi
+}
+
 get_env_value() {
   local key="$1"
   local file="$2"
@@ -162,7 +246,9 @@ if [ -f "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh" ]; then
 fi
 
 check_path_exists "$REPO_ROOT/foundation_documentation" "Root foundation documentation directory"
-check_submodule_initialized "$REPO_ROOT/foundation_documentation" "foundation_documentation"
+# foundation_documentation may intentionally track a floating/docs-working commit in local flows.
+# Keep existence/initialization checks, but suppress recorded-commit mismatch warning.
+check_submodule_initialized "$REPO_ROOT/foundation_documentation" "foundation_documentation" "true"
 check_foundation_link "$REPO_ROOT/flutter-app" "flutter-app"
 check_foundation_link "$REPO_ROOT/laravel-app" "laravel-app"
 check_agent_workflows "$REPO_ROOT" "root .agent"
@@ -174,6 +260,17 @@ check_agent_rules "$REPO_ROOT/laravel-app" "laravel-app .agent"
 ensure_codex_skills_link "$REPO_ROOT" "root"
 ensure_codex_skills_link "$REPO_ROOT/flutter-app" "flutter-app"
 ensure_codex_skills_link "$REPO_ROOT/laravel-app" "laravel-app"
+
+# Cline artifacts (symlinks to delphi-ai/.cline/*)
+ensure_cline_artifacts "$REPO_ROOT" "root"
+ensure_cline_artifacts "$REPO_ROOT/flutter-app" "flutter-app"
+ensure_cline_artifacts "$REPO_ROOT/laravel-app" "laravel-app"
+
+if [ -f "$REPO_ROOT/delphi-ai/tools/verify_adherence_sync.sh" ]; then
+  if ! bash "$REPO_ROOT/delphi-ai/tools/verify_adherence_sync.sh"; then
+    errors+=("Adherence sync verification failed (delphi-ai/tools/verify_adherence_sync.sh)")
+  fi
+fi
 
 TODOS_ACTIVE_DIR="$REPO_ROOT/foundation_documentation/todos/active"
 TODOS_COMPLETED_DIR="$REPO_ROOT/foundation_documentation/todos/completed"

@@ -1,0 +1,13 @@
+#!/bin/bash
+# TaskStart hook - Initialize session with proper context
+
+INPUT=$(cat)
+WORKSPACE=$(echo "$INPUT" | jq -r '.workspacePath')
+
+# Check for project context file
+CONTEXT=""
+if [[ -f "$WORKSPACE/foundation_documentation/project_mandate.md" ]]; then
+  CONTEXT="Project mandate found. Remember to load context from foundation_documentation/"
+fi
+
+echo "{\"cancel\":false,\"contextModification\":\"$CONTEXT\"}"

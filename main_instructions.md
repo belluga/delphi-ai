@@ -56,6 +56,7 @@ Your analysis of the main repository will be based on the following file structu
     * `domain_entities.md`
     * `system_roadmap.md`
     * `persona_roadmaps.md`
+    * `policies/scope_subscope_governance.md` (mandatory for route/module/screen ownership work)
     * `submodule_laravel-app_summary.md`
     * `submodule_flutter-app_summary.md`
 * ... (other project folders like /laravel-app/, /flutter-app/, etc.)
@@ -78,6 +79,13 @@ Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one
 * **Lapse Handling:** If you realize you acted without loading the workflow, stop immediately, load it, and reconcile your work to the workflow’s directives. If the user flags a lapse, acknowledge it and correct course right away.
 * **DevOps Readiness:** When the user requests environment/setup/CI/CD assistance, load `workflows/docker/environment-readiness-method.md` before making changes. Use it as the checklist to verify submodules, permissions, and README guidance, especially when working in downstream repositories.
 
+## 4.D. Scope/Subscope Governance Discipline
+
+* **Mandatory Scope Context:** Any route/screen/module task is invalid until `foundation_documentation/policies/scope_subscope_governance.md` is loaded and referenced.
+* **Canonical Vocabulary:** Use `EnvironmentType` (`landlord|tenant`), main scope, and subscope terms exactly as defined in the policy.
+* **No Implicit Scope Expansion:** Do not create or imply new subscope keys/folders without explicit decision and policy update first.
+* **Ownership Declaration:** Route/module/screen outputs must explicitly declare scope/subscope ownership when they affect navigation or placement.
+
 ## 4.C. Filesystem Ownership Discipline
 
 * **Host-User Edits Only:** When modifying tracked files (especially configuration files such as `.env`), perform the edits from the host/WSL user environment. Do not edit or save repository files from inside containers or as `root`, because that changes file ownership (UID 0/1000) and prevents the host editor from saving subsequent updates.
@@ -98,7 +106,7 @@ Our collaboration will follow this pattern:
 1.  **Confirm Repository Context:** At the start of each session I will acknowledge that the local repository context is available and note any sandboxing or file-access constraints communicated in the environment preamble.
 2.  **Fetch and Analyze Context:** After I have loaded my core instructions, I will gather context in a staged sequence that minimizes unnecessary file reads while preserving architectural diligence.
     * **Agnostic Context (Always Load):** I will read my core principles (`delphi-ai/system_architecture_principles.md`) and configuration (`delphi-ai/ecosystem_template_configuration.md`). Templates within `delphi-ai/templates/` are treated as deferred context; I will only load them when the session scope requires specific template details.
-    * **Project Context – Core Set (Always Load):** I will read `foundation_documentation/project_mandate.md`, `foundation_documentation/domain_entities.md`, and the root `.gitmodules` file (if present) to anchor the session in the mandate, domain vocabulary, and submodule inventory.
+    * **Project Context – Core Set (Always Load):** I will read `foundation_documentation/project_mandate.md`, `foundation_documentation/domain_entities.md`, `foundation_documentation/policies/scope_subscope_governance.md`, and the root `.gitmodules` file (if present) to anchor the session in the mandate, domain vocabulary, canonical scope ownership, and submodule inventory.
     * **Project Context – Deferred (Load on Demand):** I will defer reading `foundation_documentation/system_roadmap.md`, every populated `foundation_documentation/submodule_*_summary.md`, and individual module documents under `foundation_documentation/modules/` until the session scope (as defined by the user request, the roadmap, or subsequent analysis) requires them. When any of these resources become relevant, I will explicitly note that I am loading the document before proceeding. If a file is missing or empty (e.g., `foundation_documentation/persona_roadmaps.md`), I will log the absence and continue with the remaining sources rather than blocking the session.
     * **Change Detection:** Before loading deferred documents, I may inspect directory listings or file metadata produced earlier in the session to avoid re-reading content that is already known to be unchanged. I will not rely on cached summaries; every time a document is needed, I will read the authoritative source file directly.
 
