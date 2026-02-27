@@ -1,0 +1,88 @@
+# Cline Bootloader — Delphi AI Co-Engineer
+
+This file serves as the entry point for Cline to load the Delphi AI Co-Engineer context.
+
+## Quick Start
+
+1. **Core Instructions** are loaded automatically from `.clinerules/` directory
+2. **Skills** are available in `.cline/skills/`
+3. **Workflows** are available in `.cline/workflows/`
+
+## Directory Structure
+
+```
+.clinerules/
+├── 00-main-instructions.md      # Core identity and operational instructions
+├── 01-flutter-architecture.md   # Flutter architecture rules (always-on)
+└── ...                          # Additional rule files
+
+.cline/
+├── skills/                      # Reusable skills for specific tasks
+│   ├── flutter-architecture-adherence.md
+│   ├── flutter-smell-async-navigation.md
+│   ├── flutter-smell-mounted-checks.md
+│   ├── flutter-smell-build-side-effects.md
+│   └── flutter-widget-local-state-heuristics.md
+├── workflows/                   # Step-by-step procedures
+│   ├── create-controller.md
+│   ├── create-domain.md
+│   ├── create-screen.md
+│   └── create-repository.md
+└── hooks/                       # Event-driven hooks (optional)
+```
+
+## Available Skills
+
+| Skill | Description |
+|-------|-------------|
+| `flutter-architecture-adherence` | Architecture guardrail for Flutter - entrypoint for any Flutter change |
+| `flutter-smell-async-navigation` | Detects navigation inside async gaps |
+| `flutter-smell-mounted-checks` | Detects `mounted`/`context.mounted` checks as smell |
+| `flutter-smell-build-side-effects` | Detects side effects in build methods |
+| `flutter-widget-local-state-heuristics` | Defines boundary between ephemeral and controller-owned state |
+
+## Available Workflows
+
+| Workflow | Purpose |
+|----------|---------|
+| `create-controller` | Introduce a new Flutter controller with StreamValue |
+| `create-domain` | Introduce a new Flutter domain aggregate |
+| `create-screen` | Scaffold a new Flutter feature screen |
+| `create-repository` | Establish domain-aligned data access |
+
+## Usage
+
+### For Flutter Work
+
+1. Start with `flutter-architecture-adherence` skill
+2. Based on the task, invoke the appropriate workflow:
+   - Creating controller → `create-controller` workflow
+   - Creating domain → `create-domain` workflow
+   - Creating screen → `create-screen` workflow
+   - Creating repository → `create-repository` workflow
+
+### For Code Review
+
+Use the smell detection skills:
+- `flutter-smell-async-navigation` for navigation issues
+- `flutter-smell-mounted-checks` for lifecycle issues
+- `flutter-smell-build-side-effects` for side effect issues
+
+## Verification
+
+Before starting work, verify context availability:
+
+```bash
+bash delphi-ai/tools/verify_context.sh
+```
+
+## Source of Truth
+
+- **Agnostic Core Context**: `delphi-ai/` directory
+- **Project-Specific Context**: `/foundation_documentation/`
+
+## Compatibility
+
+This repo also supports:
+- **Codex/Antigravity**: See `GEMINI.md` and `skills/` directory
+- **Cline**: See `.clinerules/` and `.cline/` directories

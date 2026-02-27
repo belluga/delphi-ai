@@ -202,9 +202,34 @@ resolve_landlord_domain() {
   local lane_file="$1"
   local override_file="$2"
 
+  # Avoid relying on jq for local builds; resolve via Python (available in CI and dev machines).
+  # Returns empty string when missing/unreadable.
+  local read_json_key
+  read_json_key() {
+    local file="$1"
+    local key="$2"
+    python3 - "$file" "$key" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+key = sys.argv[2]
+try:
+  with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+except Exception:
+  raise SystemExit(0)
+value = data.get(key)
+if value is None:
+  raise SystemExit(0)
+if isinstance(value, str):
+  v = value.strip()
+  if v:
+    print(v)
+PY
+  }
+
   local from_override=""
   if [[ -f "${override_file}" ]]; then
-    from_override="$(jq -r '.LANDLORD_DOMAIN // empty' "${override_file}" 2>/dev/null || true)"
+    from_override="$(read_json_key "${override_file}" "LANDLORD_DOMAIN")"
   fi
   if [[ -n "${from_override}" && "${from_override}" != "null" ]]; then
     printf '%s' "${from_override}"
@@ -212,7 +237,7 @@ resolve_landlord_domain() {
   fi
 
   local from_lane=""
-  from_lane="$(jq -r '.LANDLORD_DOMAIN // empty' "${lane_file}" 2>/dev/null || true)"
+  from_lane="$(read_json_key "${lane_file}" "LANDLORD_DOMAIN")"
   if [[ -n "${from_lane}" && "${from_lane}" != "null" ]]; then
     printf '%s' "${from_lane}"
     return 0

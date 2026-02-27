@@ -23,6 +23,11 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 2. **Define contract**
    - Document request/response schema in `foundation_documentation/domain_entities.md` and the Flutter roadmap before coding.
    - If the endpoint is a feed, confirm page-based pagination and decide whether an SSE `/stream` companion is required for deltas.
+   - For partial updates (`PATCH`), default to direct resource-shaped payloads (object/list) and field-presence semantics; do not introduce envelope wrappers (for example `paths`) unless an explicit contract decision is documented.
+   - Omitted fields remain unchanged.
+   - `null` is explicit clear only for nullable fields; `null` for non-nullable fields must return `422`.
+   - Mixed set+clear payloads must be atomic.
+   - When standardizing PATCH semantics, add a side-job in the active TODO to align pre-existing non-conforming endpoints (or document explicit exceptions).
 3. **Route planning**
    - **Separate domain scope from auth scope (do not mix):**
      - Domain decides which route sets are reachable (main domain → landlord; tenant domain → tenant + account).

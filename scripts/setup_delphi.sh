@@ -79,7 +79,53 @@ setup_module_links() {
   ensure_symlink "../delphi-ai/templates/agents/${agent_template}" "${REPO_ROOT}/${module}/AGENTS.md"
 }
 
+# --- Setup Cline artifacts ---
+# Per Cline documentation:
+# - Skills: .cline/skills/ (directories with SKILL.md)
+# - Workflows: .clinerules/workflows/ (markdown files)
+# - Hooks: .clinerules/hooks/ (executable scripts)
+# - Rules: .clinerules/ (markdown files, auto-loaded)
+setup_cline_artifacts() {
+  local module="$1"
+  local base_path="${REPO_ROOT}/${module}"
+  
+  if [[ ! -d "$base_path" ]]; then
+    warn "Submodule ${module} not found; skipping Cline symlinks."
+    return
+  fi
+  
+  # Determine relative path based on whether this is root or a submodule
+  local rel_prefix
+  if [[ -z "$module" ]]; then
+    # Root level - no ../ prefix needed
+    rel_prefix="delphi-ai"
+  else
+    # Submodule - need ../ prefix
+    rel_prefix="../delphi-ai"
+  fi
+  
+  # Create .cline directory for skills
+  mkdir -p "${base_path}/.cline"
+  
+  # Symlink .cline/skills/ (skills are directories with SKILL.md)
+  ensure_symlink "${rel_prefix}/.cline/skills" "${base_path}/.cline/skills"
+  
+  # Symlink CLINE.md bootloader
+  ensure_symlink "${rel_prefix}/CLINE.md" "${base_path}/CLINE.md"
+  
+  # Symlink .clinerules directory (contains rules, workflows, and hooks)
+  # This includes: rules (*.md), workflows/, hooks/, glob/, manual/, model-decision/
+  ensure_symlink "${rel_prefix}/.clinerules" "${base_path}/.clinerules"
+}
+
 setup_module_links "laravel-app" "laravel.md"
 setup_module_links "flutter-app" "flutter.md"
 
+# Setup Cline artifacts for root and submodules
+setup_cline_artifacts ""
+setup_cline_artifacts "laravel-app"
+setup_cline_artifacts "flutter-app"
+
 info "Delphi setup complete. Review 'git status' and commit the updated submodule references if needed."
+info "Cline users: The .clinerules/ directory contains rules loaded automatically."
+info "Cline users: The .cline/ subdirectories are now symlinked to delphi-ai/.cline/."

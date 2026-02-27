@@ -32,6 +32,9 @@ The system is defined as a set of services exposed via a secure, stable, and ver
 ### P-4: Foundational, Not Minimalist
 In Foundational Mode, this architecture is the definitive blueprint, not a minimal viable product (MVP). Schemas and services must incorporate long-term capabilities (analytics, AI, future integrations) from day one to minimize schema-breaking operations. In Operational Mode, new capabilities still target the ideal state but must include migration and compatibility plans before release.
 
+### P-4A: Explicit Scope/Subscope Governance
+Route, screen, and module ownership must be declared against the canonical scope policy (`foundation_documentation/policies/scope_subscope_governance.md`). Every navigation surface must identify `EnvironmentType`, main scope, and subscope (when applicable), and cross-scope transitions must be explicit about guard/identity expectations. New subscopes are not allowed without prior explicit decision and policy update.
+
 ## 3. Data & Schema Design Principles (MongoDB)
 
 ### P-5: Unified Data Modeling (UDM)
