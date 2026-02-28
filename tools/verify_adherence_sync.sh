@@ -69,6 +69,111 @@ compare_rule_body() {
   fi
 }
 
+map_workflow_skill_to_canonical_workflow() {
+  local skill_name="$1"
+  local slug="${skill_name#wf-}"
+
+  case "$slug" in
+    docker-*) echo "$REPO_ROOT/delphi-ai/workflows/docker/${slug#docker-}.md" ;;
+    flutter-*) echo "$REPO_ROOT/delphi-ai/workflows/flutter/${slug#flutter-}.md" ;;
+    laravel-*) echo "$REPO_ROOT/delphi-ai/workflows/laravel/${slug#laravel-}.md" ;;
+    *) echo "$REPO_ROOT/delphi-ai/workflows/${slug}.md" ;;
+  esac
+}
+
+map_workflow_skill_to_cline_workflow() {
+  local skill_name="$1"
+  local slug="${skill_name#wf-}"
+
+  case "$slug" in
+    docker-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/docker-${slug#docker-}.md" ;;
+    flutter-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/${slug#flutter-}.md" ;;
+    laravel-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/laravel-${slug#laravel-}.md" ;;
+    *) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/${slug}.md" ;;
+  esac
+}
+
+verify_workflow_skill_counterparts() {
+  local canonical_root="$REPO_ROOT/delphi-ai/skills"
+  local cline_root="$REPO_ROOT/delphi-ai/.cline/skills"
+
+  while IFS= read -r -d '' skill_dir; do
+    local skill_name
+    skill_name="$(basename "$skill_dir")"
+    local skill_file="$skill_dir/SKILL.md"
+    local workflow_file
+    workflow_file="$(map_workflow_skill_to_canonical_workflow "$skill_name")"
+
+    if [ -f "$skill_file" ] && [ ! -f "$workflow_file" ]; then
+      errors+=("Missing canonical workflow counterpart for $skill_name: $workflow_file")
+    fi
+  done < <(find "$canonical_root" -mindepth 1 -maxdepth 1 -type d -name 'wf-*' -print0 | sort -z)
+
+  if [ -d "$cline_root" ]; then
+    while IFS= read -r -d '' skill_dir; do
+      local skill_name
+      skill_name="$(basename "$skill_dir")"
+      local skill_file="$skill_dir/SKILL.md"
+      local workflow_file
+      workflow_file="$(map_workflow_skill_to_cline_workflow "$skill_name")"
+
+      if [ -f "$skill_file" ] && [ ! -f "$workflow_file" ]; then
+        errors+=("Missing Cline workflow counterpart for $skill_name: $workflow_file")
+      fi
+    done < <(find "$cline_root" -mindepth 1 -maxdepth 1 -type d -name 'wf-*' -print0 | sort -z)
+  fi
+}
+
+verify_public_skill_mirrors() {
+  local public_root="$HOME/.codex/skills/public"
+  local canonical_root="$REPO_ROOT/delphi-ai/skills"
+  local mirrored_skills=(
+    "test-quality-audit"
+    "test-creation-standard"
+    "test-orchestration-suite"
+  )
+
+  if [ ! -d "$public_root" ]; then
+    return
+  fi
+
+  local skill
+  for skill in "${mirrored_skills[@]}"; do
+    local canonical_skill="$canonical_root/$skill/SKILL.md"
+    local public_skill="$public_root/$skill/SKILL.md"
+
+    if require_file "$canonical_skill" && require_file "$public_skill"; then
+      compare_exact "$canonical_skill" "$public_skill" "Public Codex skill mirror $skill"
+    fi
+  done
+}
+
+verify_no_placeholder_artifacts() {
+  local blocked_paths=(
+    "$REPO_ROOT/delphi-ai/skills/wf-docker-asdsadasdas"
+    "$REPO_ROOT/delphi-ai/workflows/docker/asdsadasdas.md"
+  )
+
+  local p
+  for p in "${blocked_paths[@]}"; do
+    if [ -e "$p" ]; then
+      errors+=("Obsolete placeholder artifact must not exist: $p")
+    fi
+  done
+
+  local hits
+  hits="$(grep -RInE 'asdasd|asdsad' \
+    "$REPO_ROOT/delphi-ai/skills" \
+    "$REPO_ROOT/delphi-ai/rules" \
+    "$REPO_ROOT/delphi-ai/workflows" \
+    "$REPO_ROOT/delphi-ai/.clinerules" \
+    "$REPO_ROOT/delphi-ai/.cline/skills" 2>/dev/null || true)"
+
+  if [ -n "$hits" ]; then
+    errors+=("Placeholder tokens detected in governance surfaces. Remove them before completion.")
+  fi
+}
+
 compare_cline_skills() {
   local canonical_root="$REPO_ROOT/delphi-ai/skills"
   local cline_root="$REPO_ROOT/delphi-ai/.cline/skills"
@@ -179,6 +284,8 @@ verify_clinerules_controls() {
     "$root/00-main-instructions.md"
     "$root/model-decision/shared-todo-driven-execution.md"
     "$root/workflows/docker-todo-driven-execution.md"
+    "$root/workflows/docker-update-skill-method.md"
+    "$root/workflows/laravel-create-package-method.md"
     "$manifest"
   )
 
@@ -201,6 +308,50 @@ verify_clinerules_controls() {
   if [ -f "$root/workflows/docker-todo-driven-execution.md" ]; then
     require_contains "$root/workflows/docker-todo-driven-execution.md" "Decision Adherence" "Cline TODO workflow"
     require_contains "$root/workflows/docker-todo-driven-execution.md" "APROVADO" "Cline TODO workflow"
+  fi
+
+  if [ -f "$manifest" ]; then
+    require_contains "$manifest" "docker-update-skill-method\\.md" "Cline manifest"
+    require_contains "$manifest" "laravel-create-package-method\\.md" "Cline manifest"
+    require_contains "$manifest" "test-quality-audit/SKILL\\.md" "Cline manifest"
+    require_contains "$manifest" "test-creation-standard/SKILL\\.md" "Cline manifest"
+    require_contains "$manifest" "test-orchestration-suite/SKILL\\.md" "Cline manifest"
+  fi
+}
+
+verify_workflow_definition_controls() {
+  local docker_rule="$REPO_ROOT/delphi-ai/rules/docker/shared/workflow-definition-model-decision.md"
+  local laravel_rule="$REPO_ROOT/delphi-ai/rules/laravel/shared/workflow-definition-model-decision.md"
+  local cline_rule="$REPO_ROOT/delphi-ai/.clinerules/model-decision/shared-workflow-definition.md"
+  local docker_skill="$REPO_ROOT/delphi-ai/skills/rule-docker-shared-workflow-definition-model-decision/SKILL.md"
+  local laravel_skill="$REPO_ROOT/delphi-ai/skills/rule-laravel-shared-workflow-definition-model-decision/SKILL.md"
+
+  require_file "$docker_rule"
+  require_file "$laravel_rule"
+  require_file "$cline_rule"
+  require_file "$docker_skill"
+  require_file "$laravel_skill"
+
+  if [ -f "$docker_rule" ]; then
+    require_contains "$docker_rule" "workflow-template\\.md" "Docker workflow-definition rule"
+    require_contains "$docker_rule" "APROVADO" "Docker workflow-definition rule"
+    require_contains "$docker_rule" "Decision Adherence" "Docker workflow-definition rule"
+  fi
+  if [ -f "$laravel_rule" ]; then
+    require_contains "$laravel_rule" "workflow-template\\.md" "Laravel workflow-definition rule"
+    require_contains "$laravel_rule" "APROVADO" "Laravel workflow-definition rule"
+    require_contains "$laravel_rule" "Decision Adherence" "Laravel workflow-definition rule"
+  fi
+  if [ -f "$cline_rule" ]; then
+    require_contains "$cline_rule" "workflow-template\\.md" "Cline workflow-definition rule"
+    require_contains "$cline_rule" "APROVADO" "Cline workflow-definition rule"
+    require_contains "$cline_rule" "Decision Adherence" "Cline workflow-definition rule"
+  fi
+  if [ -f "$docker_skill" ]; then
+    require_contains "$docker_skill" "workflow-template\\.md" "Docker workflow-definition skill"
+  fi
+  if [ -f "$laravel_skill" ]; then
+    require_contains "$laravel_skill" "workflow-template\\.md" "Laravel workflow-definition skill"
   fi
 }
 
@@ -229,6 +380,10 @@ compare_agent_workflowset \
   "root"
 
 verify_clinerules_controls
+verify_workflow_skill_counterparts
+verify_workflow_definition_controls
+verify_no_placeholder_artifacts
+verify_public_skill_mirrors
 
 if [ ${#errors[@]} -gt 0 ]; then
   printf 'Adherence sync verification FAILED:\n'

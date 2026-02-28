@@ -27,11 +27,13 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
    - Update the active tactical TODO decision log/tasks/validation gates with explicit convergence work for legacy areas.
    - Update endpoint-related Laravel workflow/skills surfaces so the rule is enforceable for `Cline | Codex | Antigravity`.
 7. When a new canonical pattern impacts existing code, add a mandatory side-job in the active TODO to align non-conforming areas (or record explicit exceptions with rationale/owner/next action).
-8. Validate sync and compatibility:
+8. If the changed skill is a workflow skill (`wf-*`), ensure a canonical workflow file exists under `delphi-ai/workflows/**` and a Cline workflow counterpart exists under `delphi-ai/.clinerules/workflows/**`.
+9. If workflow availability changed, update `.cline/MANIFEST.md` and `CLINE.md` so required artifacts stay explicit.
+10. Validate sync and compatibility:
    - `bash delphi-ai/tools/verify_context.sh`
    - `bash delphi-ai/tools/verify_adherence_sync.sh`
    - Optional explicit diff: `diff -u delphi-ai/skills/<skill-name>/SKILL.md delphi-ai/.cline/skills/<skill-name>/SKILL.md`
-9. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
+11. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
 
 ## Outputs
 - Updated skill in canonical and Cline-compatible locations.
@@ -41,5 +43,6 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 
 ## Validation
 - No mismatch between `delphi-ai/skills/<skill-name>/SKILL.md` and `delphi-ai/.cline/skills/<skill-name>/SKILL.md`.
+- Workflow-skill counterparts exist in both canonical and Cline workflow surfaces.
 - `verify_context.sh` exits successfully.
 - `verify_adherence_sync.sh` exits successfully.

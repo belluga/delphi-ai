@@ -16,9 +16,18 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/workflows/docker-todo-driven-execution.md`
 - `.clinerules/workflows/docker-session-lifecycle.md`
 - `.clinerules/workflows/docker-self-improvement-session.md`
+- `.clinerules/workflows/docker-update-skill-method.md`
+- `.clinerules/workflows/laravel-create-package-method.md`
 
 ### Manual rules
 - `.clinerules/manual/shared-self-improvement.md`
+
+### Skill Mirrors (Critical)
+- `.cline/skills/wf-docker-update-skill-method/SKILL.md`
+- `.cline/skills/wf-laravel-create-package-method/SKILL.md`
+- `.cline/skills/test-quality-audit/SKILL.md`
+- `.cline/skills/test-creation-standard/SKILL.md`
+- `.cline/skills/test-orchestration-suite/SKILL.md`
 
 ### Hooks
 - `.clinerules/hooks/session_start`

@@ -1,3 +1,7 @@
+---
+description: Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before DevOps/CI work proceeds.
+---
+
 # Method: DevOps Environment Readiness
 
 ## Purpose

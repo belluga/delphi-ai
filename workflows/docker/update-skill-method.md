@@ -1,6 +1,5 @@
 ---
-name: wf-docker-update-skill-method
-description: "Workflow: MUST use whenever creating or updating Delphi skills. Enforce consolidation across Codex/Antigravity (`delphi-ai/skills`) and Cline (`delphi-ai/.cline/skills`), and keep related rules/workflows synchronized when applicable."
+description: Keep Delphi skills synchronized across canonical and Cline surfaces while updating any dependent rules/workflows and validating sync integrity.
 ---
 
 # Workflow: Update Skill Across Agent Surfaces
@@ -18,22 +17,21 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 1. Edit the canonical skill in `delphi-ai/skills/<skill-name>/SKILL.md`.
 2. Ensure frontmatter `name` exactly matches the folder name.
 3. Consolidate for Cline by mirroring the same file at `delphi-ai/.cline/skills/<skill-name>/SKILL.md`.
-4. If the skill was created outside the canonical project surfaces (for example under `~/.codex/skills/**`), migrate it to `delphi-ai/skills/<skill-name>/SKILL.md`, mirror to `delphi-ai/.cline/skills/<skill-name>/SKILL.md`, and remove/deprecate the out-of-surface copy to avoid drift.
-5. If the skill introduces or changes operational behavior, update the compatible rule/workflow files too:
+4. If the skill was created outside canonical surfaces (for example under `~/.codex/skills/**`), migrate it into `delphi-ai/skills/<skill-name>/SKILL.md`, mirror into `delphi-ai/.cline/skills/<skill-name>/SKILL.md`, and remove/deprecate the out-of-surface copy to avoid drift.
+5. If the skill introduces or changes operational behavior, update compatible rule/workflow files too:
    - Canonical (Codex/Antigravity): `delphi-ai/rules/**`, `delphi-ai/workflows/**`, and affected `delphi-ai/skills/rule-*` or `delphi-ai/skills/wf-*`.
    - Cline-compatible: `delphi-ai/.clinerules/model-decision/**`, `delphi-ai/.clinerules/glob/**`, `delphi-ai/.clinerules/manual/**`, `delphi-ai/.clinerules/workflows/**`.
-6. If the changed behavior defines/changes an API contract pattern (for example PATCH semantics), consolidation is mandatory in all contract surfaces:
+6. If changed behavior defines/changes an API contract pattern (for example PATCH semantics), consolidate all contract surfaces:
    - Update `foundation_documentation/endpoints_mvp_contracts.md` conventions.
-   - Update the active tactical TODO decision log/tasks/validation gates with explicit convergence work for legacy areas.
+   - Update active tactical TODO decisions/tasks/validation gates with explicit convergence work for legacy areas.
    - Update endpoint-related Laravel workflow/skills surfaces so the rule is enforceable for `Cline | Codex | Antigravity`.
-7. When a new canonical pattern impacts existing code, add a mandatory side-job in the active TODO to align non-conforming areas (or record explicit exceptions with rationale/owner/next action).
+7. If a new canonical pattern impacts existing code, add a mandatory side-job in the active TODO to align non-conforming areas (or record explicit exceptions with rationale/owner/next action).
 8. If the changed skill is a workflow skill (`wf-*`), ensure a canonical workflow file exists under `delphi-ai/workflows/**` and a Cline workflow counterpart exists under `delphi-ai/.clinerules/workflows/**`.
-9. If workflow availability changed, update `.cline/MANIFEST.md` and `CLINE.md` so required artifacts stay explicit.
-10. Validate sync and compatibility:
+9. Validate sync and compatibility:
    - `bash delphi-ai/tools/verify_context.sh`
    - `bash delphi-ai/tools/verify_adherence_sync.sh`
    - Optional explicit diff: `diff -u delphi-ai/skills/<skill-name>/SKILL.md delphi-ai/.cline/skills/<skill-name>/SKILL.md`
-11. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
+10. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
 
 ## Outputs
 - Updated skill in canonical and Cline-compatible locations.

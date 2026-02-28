@@ -77,6 +77,9 @@ sync_workflows() {
     if [ -L "$dest_dir" ]; then
         rm "$dest_dir"
     fi
+    if [ -d "$dest_dir" ]; then
+        rm -rf "$dest_dir"/*
+    fi
     mkdir -p "$dest_dir"
     cp -r "$src_dir"/* "$dest_dir/" 2>/dev/null
 }
