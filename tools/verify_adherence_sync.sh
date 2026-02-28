@@ -31,6 +31,15 @@ require_file() {
   return 0
 }
 
+require_contains() {
+  local path="$1"
+  local pattern="$2"
+  local label="$3"
+  if ! grep -qE "$pattern" "$path"; then
+    errors+=("$label missing pattern '$pattern' in $path")
+  fi
+}
+
 compare_exact() {
   local left="$1"
   local right="$2"
@@ -162,6 +171,39 @@ compare_agent_workflowset() {
   done < <(find "$generated_dir" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
 }
 
+verify_clinerules_controls() {
+  local root="$REPO_ROOT/delphi-ai/.clinerules"
+  local manifest="$REPO_ROOT/delphi-ai/.cline/MANIFEST.md"
+
+  local required_files=(
+    "$root/00-main-instructions.md"
+    "$root/model-decision/shared-todo-driven-execution.md"
+    "$root/workflows/docker-todo-driven-execution.md"
+    "$manifest"
+  )
+
+  local f
+  for f in "${required_files[@]}"; do
+    require_file "$f"
+  done
+
+  if [ -f "$root/00-main-instructions.md" ]; then
+    require_contains "$root/00-main-instructions.md" "APROVADO" "Cline core instructions"
+    require_contains "$root/00-main-instructions.md" "Decision Adherence Gate|Decision Adherence" "Cline core instructions"
+    require_contains "$root/00-main-instructions.md" "advisory" "Cline core instructions"
+  fi
+
+  if [ -f "$root/model-decision/shared-todo-driven-execution.md" ]; then
+    require_contains "$root/model-decision/shared-todo-driven-execution.md" "APROVADO" "Cline TODO model-decision"
+    require_contains "$root/model-decision/shared-todo-driven-execution.md" "Decision Adherence" "Cline TODO model-decision"
+  fi
+
+  if [ -f "$root/workflows/docker-todo-driven-execution.md" ]; then
+    require_contains "$root/workflows/docker-todo-driven-execution.md" "Decision Adherence" "Cline TODO workflow"
+    require_contains "$root/workflows/docker-todo-driven-execution.md" "APROVADO" "Cline TODO workflow"
+  fi
+}
+
 compare_cline_skills
 
 compare_agent_ruleset \
@@ -185,6 +227,8 @@ compare_agent_workflowset \
   "$REPO_ROOT/.agent/workflows" \
   "$REPO_ROOT/delphi-ai/workflows/docker" \
   "root"
+
+verify_clinerules_controls
 
 if [ ${#errors[@]} -gt 0 ]; then
   printf 'Adherence sync verification FAILED:\n'

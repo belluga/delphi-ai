@@ -1,6 +1,6 @@
 ---
 name: rule-docker-shared-todo-driven-execution-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`."
+description: "Rule: MUST use whenever the scope matches this purpose: Before implementation, require a tactical TODO and complete planning/adherence gates."
 ---
 
 ## Rule
@@ -33,21 +33,32 @@ If the change restores previously documented or verifiably working behavior (inc
 - Resolution means: incorporate the outcome into the TODO (e.g., `decisions`, `scope`, `definition_of_done`) and remove the COMMENT block.
 - If ambiguous, promote to `questions_to_close` and wait for user confirmation before removing.
 
-### Gate D — Explicit approval token (mandatory)
-- After Gates A–C, Delphi must ask for explicit user approval of the TODO before any implementation begins.
+### Gate D — Complexity classification + checkpoint policy (mandatory)
+- Classify the task as `small|medium|big` and record it in the TODO before implementation.
+
+### Gate E — Plan Review Gate (mandatory for `medium|big`)
+- Evaluate Architecture, Code Quality, Tests, Performance, and Security.
+- Include issue cards with options `A/B/C`, tradeoff economics, recommendation, failure modes, and uncertainty register.
+
+### Gate F — Decision baseline freeze (mandatory)
+- Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
+
+### Gate G — Explicit approval token (mandatory)
+- After Gates A-F, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
-- Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
-  - call `apply_patch`,
-  - run write commands that change project files,
-  - or make any project/submodule/code/docs modifications.
+
+### Gate H — Decision Adherence Gate (mandatory before delivery)
+- Before delivery, build a `Decision Adherence Validation` table for every baseline decision ID.
+- For each decision, record `status` (`Adherent` or `Exception`) and supporting evidence (`file:line`, test result, or doc contract).
+- If any decision is `Exception`, delivery is invalid until the decision/baseline is updated and renewed **APROVADO** is obtained.
 
 ## Rationale
-This prevents scope creep and “hub refactors” by forcing a written, reviewable contract (scope + DoD) that must be validated before code begins.
+This prevents scope creep and "hub refactors" by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
 
 ## Enforcement
-- If the user requests implementation without a TODO and the work is not exempt or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
-- If COMMENT blocks exist, block implementation until they are resolved and removed.
+- Block implementation without TODO (unless exempt/ephemeral-eligible).
+- Block implementation with unresolved COMMENT blocks.
+- Block delivery if any baseline decision lacks adherence evidence.
 
 ## Notes
-- This rule is stack-agnostic and applies to Flutter/Laravel/Web as long as the implementation changes project artifacts.
-- After completion, the TODO should be moved to `foundation_documentation/todos/completed/` (or marked canceled).
+- Cline plans and recommendations are advisory by default; implementation authority remains Delphi TODO + **APROVADO** + Decision Adherence Gate.

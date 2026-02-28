@@ -1,46 +1,62 @@
-# The Multi-Layered Document Review Framework
+# Risk-Adaptive Engineering Review Framework
 
 ## Introduction
 
-This document outlines a systematic, multi-layered approach to reviewing technical specifications and architectural documents. Each layer represents a distinct area of focus for the review.
+This framework defines how Delphi runs planning and review before implementation. It prioritizes decision quality over checklist completion and scales depth to task complexity.
 
-## Core Principle: Iteration within Layers
+## Core Principles
 
-This framework is not a rigid checklist. It is an iterative process. It is common and encouraged to perform **multiple review cycles within the same layer** until all identified issues are resolved and the user expresses full satisfaction. **Do not proceed to the next layer until the current one is considered complete and robust.**
+1. **Decision-first**: each material issue must produce explicit options and a recommendation.
+2. **Risk-adaptive depth**: `small|medium|big` determines review depth and checkpoint cadence.
+3. **Evidence discipline**: claims must cite concrete evidence (`file:line`, tests, or documented contract).
+4. **Uncertainty transparency**: assumptions, unknowns, and confidence must be explicit.
+5. **Failure-mode focus**: edge cases and error paths are mandatory, not optional.
 
----
+## Complexity Modes
 
-### Layer 1: High-Level Architectural Review
+### Small
+- Use a consolidated review.
+- Include only material issues.
+- Abbreviated Plan Review Gate is acceptable when risks are local and low.
 
-*   **Objective:** To validate the core design principles, separation of concerns, and major architectural patterns.
-*   **Exit Criteria:** The overall architecture is confirmed to be sound and aligned with the project's strategic goals.
+### Medium
+- Run full Plan Review Gate.
+- Require one explicit user checkpoint before implementation approval.
 
-### Layer 2: Schema Consistency Review
+### Big
+- Run full Plan Review Gate.
+- Use section-by-section checkpoints (Architecture -> Code Quality -> Tests -> Performance -> Security) before approval.
 
-*   **Objective:** To ensure all data models are internally consistent, with consistent data types, field names, and application of core concepts (e.g., `currency`, `status`).
-*   **Exit Criteria:** The data model is free of contradictions and inconsistencies.
+## Plan Review Gate Sections
 
-### Layer 3: Process & Lifecycle Review
+1. Architecture
+2. Code Quality
+3. Tests
+4. Performance
+5. Security
+6. Failure Modes & Edge Cases
+7. Uncertainty Register
 
-*   **Objective:** To define and validate the dynamic behavior of the system (the "verbs"), including state transitions, automated jobs, and the sequence of operations.
-*   **Exit Criteria:** The documentation clearly explains *how* the system operates over time.
+## Issue Card Contract
 
-### Layer 4: Data Governance & Lifecycle Review
+Each material issue must include:
 
-*   **Objective:** To establish clear policies for long-term data management, including archiving, deletion, data retention, and privacy.
-*   **Exit Criteria:** The full lifecycle of the data is explicitly defined and managed.
+- `Issue ID`
+- `Severity`
+- `Evidence` (`file:line`, test result, or contract reference)
+- `Why it matters now`
+- `Option A` (recommended)
+- `Option B` (alternative)
+- `Option C` (do nothing, when reasonable)
+- For each option: `effort`, `risk`, `blast radius`, `maintenance burden`
+- Final recommendation and rationale
 
-### Layer 5: Developer Experience & Implementation Review
+## Exit Criteria
 
-*   **Objective:** To eliminate ambiguity from a developer's perspective by ensuring all schemas are explicit, enumerations are clear, and the document is easy to implement.
-*   **Exit Criteria:** A new developer can build from the document without making assumptions.
+A review is complete only when:
 
-### Layer 6: Final Polish & Cleanup
-
-*   **Objective:** To refine the document's structure, formatting, numbering, and grammar.
-*   **Exit Criteria:** The document is clean, professional, and easy to read.
-
-### Layer 7: Synthesis & Confidence Assessment
-
-*   **Objective:** To perform a final meta-review that summarizes the findings from all layers and provides a concluding confidence statement.
-*   **Exit Criteria:** All stakeholders are confident in the final design.
+1. Complexity mode and checkpoint policy are recorded.
+2. Material issues are captured with complete issue cards.
+3. Failure modes and uncertainty register are documented.
+4. Validation plan is explicit.
+5. User approval is obtained before implementation.

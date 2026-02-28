@@ -97,7 +97,9 @@ Your foundational context must remain project-agnostic.
 - **Initial Versioning:** All docs are Version 1.0/1.1, no reference to previous states.
 - **Enum Definitions:** Create `**Field Definitions**` section for enum fields.
 - **API Sync:** Define endpoints in module docs, track in roadmap.
-- **TODO Discipline:** Record cross-team work in project documentation.
+- **TODO Discipline:** Use tactical TODO flow for implementation work with explicit **APROVADO** gate before code changes.
+- **Decision Adherence Gate:** Delivery is invalid unless approved TODO decisions have adherence evidence (`file:line`, test, or contract/doc).
+- **Cline Authority Boundary:** Cline planning is advisory by default; implementation authority remains Delphi TODO + APROVADO + decision adherence validation.
 - **No Autonomous Commits:** Never run `git commit` without explicit user request and confirmation.
 
 ---

@@ -150,9 +150,22 @@ You must adhere to the following documentation policies:
     * Any files may be touched if necessary to restore the known behavior.
     * Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
   * **Tactical TODO Execution:** If the TODO contains **COMENTÁRIO:** / **COMMENT:** blocks, treat them as contextual questions for the content immediately below and resolve/remove them before implementation. Use Markdown HTML comments: `<!-- COMENTÁRIO: ... -->` or `<!-- COMMENT: ... -->`.
+    * Before requesting **APROVADO**, I must classify the task complexity as `small|medium|big` and record the checkpoint policy in the TODO. `medium|big` tasks require a full Plan Review Gate.
+    * **Plan Review Gate (mandatory for `medium|big`):**
+      * Evaluate: Architecture, Code Quality, Tests, Performance, and Security.
+      * Produce issue cards with: `Issue ID`, `severity`, `evidence (file:line)`, `why now`, options `A/B/C` (including **do nothing** when reasonable), and my recommended option.
+      * For each option, include: implementation effort, risk, blast radius, and maintenance burden.
+      * Include a `Failure Modes & Edge Cases` section and an `Uncertainty Register` (`assumptions`, `unknowns`, `confidence`).
+    * Checkpoint cadence must be explicit: `small` can use a consolidated review; `medium` requires one review checkpoint before approval; `big` requires section-by-section checkpoints.
+    * I must assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
+    * **Decision Adherence Gate (mandatory before delivery):**
+      * Build a `Decision Adherence Validation` table covering every baseline decision.
+      * For each decision, record `status` (`Adherent` or `Exception`) plus evidence (`file:line`, test output, or contract/doc reference).
+      * A delivery with unresolved `Exception` entries is invalid. To proceed, I must challenge/update the decision, refresh the baseline, and request renewed **APROVADO**.
     * Before requesting **APROVADO**, I must identify which Rule/Workflow documents apply to the implementation and state explicitly which ones I will follow. The approval request must mention those Rule/Workflow sources by name/path.
     * After refinement, I must request an explicit approval reply **APROVADO** before making any project changes (no `apply_patch`, no write commands, no code/doc modifications).
     * **Execution Discipline:** Once a tactical TODO is in place, all implementation work must adhere to it. Do not execute tasks that are out of scope or out of order without first updating the TODO and securing approval.
+    * **Cross-agent Authority:** Plans and recommendations from auxiliary agents (including Cline) are advisory by default. Implementation authority remains this TODO contract + **APROVADO** + Decision Adherence Gate.
   * **Delivery Status Markers:** When tracking staged delivery within TODOs, use explicit status markers:
     * `- [ ] ⚪ Pending`
     * `- [ ] 🟡 Provisional` (unblocks dependencies; must include Provisional Notes and what should be filled to upgrade to Production-Ready)

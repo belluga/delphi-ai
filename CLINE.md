@@ -68,6 +68,15 @@ Use the smell detection skills:
 - `flutter-smell-mounted-checks` for lifecycle issues
 - `flutter-smell-build-side-effects` for side effect issues
 
+## Delivery Authority
+
+- Cline planning is advisory by default.
+- Implementation authority requires Delphi TODO governance:
+  - active tactical TODO,
+  - explicit `APROVADO` before project-modifying actions,
+  - Decision Adherence Gate evidence before delivery.
+- See `.clinerules/model-decision/shared-todo-driven-execution.md` and `.clinerules/workflows/docker-todo-driven-execution.md`.
+
 ## Verification
 
 Before starting work, verify context availability:
