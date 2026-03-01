@@ -13,6 +13,34 @@ This document captures the definitive blueprint for every module, schema, API, a
 
 Add or update rows as modules progress from planned to implemented stages. This index provides a fast entry point for readers and AI collaborators.
 
+## 2.1 Canonical Planning & Decision Anchors (Required)
+
+### 2.1.1 Conceptual Delivery Plan (Living)
+
+Document the planned delivery shape before implementation details:
+
+- **Core scope:** `{{CORE_SCOPE}}`
+- **Capability/extension scope:** `{{CAPABILITY_SCOPE}}`
+- **Out-of-scope guardrails:** `{{OUT_OF_SCOPE}}`
+- **Dependency boundaries:** `{{DEPENDENCY_BOUNDARIES}}`
+- **Phase plan summary:** `{{PHASE_PLAN}}`
+
+### 2.1.2 Canonical Decision Baseline
+
+| Decision ID | Status | Decision | Impact | Canonical Evidence |
+|-------------|--------|----------|--------|--------------------|
+| DEC-`{{ID}}` | Proposed/Approved/Superseded | `{{DECISION}}` | `{{IMPACT}}` | `{{FILE:LINE OR SECTION}}` |
+
+Use this table as the stable architectural baseline. Tactical TODOs must reference these decisions, not duplicate them as competing sources of truth.
+
+### 2.1.3 Tactical TODO Linkage & Promotion Ledger
+
+| TODO | Purpose | Promotion Status | Promoted Sections | Notes |
+|------|---------|------------------|-------------------|-------|
+| `foundation_documentation/todos/active/<todo>.md` | `{{PURPOSE}}` | Pending/In progress/Promoted | `{{MODULE_SECTION_IDS}}` | `{{NOTES}}` |
+
+When a TODO is completed, promote stable outcomes here and update `Promotion Status` to `Promoted`.
+
 ## 3. Module Specification Template
 
 ### MOD-`{{NUMBER}}`: `{{MODULE_NAME}}`

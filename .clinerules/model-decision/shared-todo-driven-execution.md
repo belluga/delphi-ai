@@ -9,6 +9,7 @@ Before any implementation work that changes project code, submodule code, or pro
 1. **TODO presence and refinement**
 - Ensure TODO exists.
 - Summarize scope/out-of-scope/DoD/validation.
+- Ensure canonical module anchors are declared (primary module, optional secondary modules, promotion targets).
 - Resolve all COMMENT/COMENTARIO blocks before coding.
 
 2. **Complexity + planning gate**
@@ -23,6 +24,10 @@ Before any implementation work that changes project code, submodule code, or pro
 - Before delivery, produce `Decision Adherence Validation` with evidence per decision.
 - If any baseline decision is `Exception`, delivery is invalid until decisions are updated and renewed **APROVADO** is obtained.
 
+5. **Module consolidation gate**
+- Before closing/moving TODO, promote stable conceptual outcomes and approved decisions into canonical module docs.
+- Record module promotion evidence and TODO ↔ module cross-links.
+
 ### Authority
 - Cline plans/recommendations are advisory by default.
 - Delivery authority remains Delphi TODO + APROVADO + Decision Adherence Gate.
@@ -36,6 +41,7 @@ This prevents non-adherent delivery and enforces full control over implementatio
 - Block implementation without TODO.
 - Block implementation without APROVADO.
 - Block delivery without decision-adherence evidence.
+- Block TODO closure without module consolidation evidence.
 
 ## Workflow Reference
 

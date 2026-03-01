@@ -28,6 +28,13 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
 - **Checkpoint policy:** <consolidated | one checkpoint | section-by-section>
 - **Why this level:** <brief reasoning>
 
+## Canonical Module Anchors (Required Before APROVADO)
+- **Primary module doc:** `foundation_documentation/modules/<primary_module>.md`
+- **Secondary module docs (if any):**
+  - `foundation_documentation/modules/<secondary_module>.md`
+- **Planned decision promotion targets (module sections):**
+  - `<module section where stable decisions/plans will be consolidated>`
+
 ## Decisions
 - [ ] `D-01` <Decision: chosen option + short rationale>
 
@@ -97,6 +104,12 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
 - [ ] **Evidence artifacts recorded:** `foundation_documentation/artifacts/tmp/<run-id>/...`
 - [ ] **Confidence stated:** <high|medium|low> + <known residual risks>
 - [ ] **Release readiness outcome:** <ready|ready_with_waiver|not_ready>
+
+## Module Consolidation Gate (Required Before `Completed`)
+- [ ] Canonical module docs were updated with stable conceptual outcomes and final decisions from this TODO.
+- [ ] Decision promotion ledger (or equivalent trace table) in module docs links back to this TODO.
+- [ ] Superseded/conflicting tactical notes were removed or replaced by canonical module references.
+- [ ] TODO/module cross-links were updated (including active/completed path changes).
 
 ## Definition of Done
 - [ ] <Concrete, testable checklist item>

@@ -26,6 +26,7 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate B — TODO refinement (no code)
 - Read the TODO.
 - Summarize `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
+- Ensure canonical module anchors are declared (`primary` module + optional `secondary` modules + promotion targets).
 - Raise any missing questions/decisions that would materially change implementation, and update the TODO before proceeding.
 
 ### Gate C — COMMENT blocks (mandatory)
@@ -70,14 +71,32 @@ If the change restores previously documented or verifiably working behavior (inc
   - a better alternative is proposed,
   and the TODO decisions/baseline are updated plus renewed **APROVADO** is obtained.
 
+### Gate I — Delivery Confidence Gate (mandatory for `✅ Production-Ready`)
+- Before marking any TODO as `✅ Production-Ready`, classify runtime impact (`none|low|medium|high`).
+- If runtime-impacting, run and record operational confidence checks:
+  - migration/index status;
+  - queue/scheduler/worker health;
+  - targeted load/perf sampling (or explicit N/A + reason);
+  - smoke flow in the best available environment (or explicit N/A + reason).
+- Store evidence artifacts in `foundation_documentation/artifacts/tmp/<run-id>/...`.
+- Record confidence (`high|medium|low`) and residual risks.
+- Record readiness outcome (`ready|ready_with_waiver|not_ready`).
+
+### Gate J — Module Consolidation Gate (mandatory before closing TODO)
+- Before moving a TODO to `completed`, promote stable conceptual outcomes and approved decisions into canonical module docs under `foundation_documentation/modules/`.
+- Record promotion evidence in module decision/promotion sections and ensure TODO ↔ module cross-links are updated.
+- If module docs still conflict with delivered implementation, TODO closure is blocked until conflicts are resolved or explicitly waived.
+
 ## Rationale
 This prevents scope creep and "hub refactors" by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
 
 ## Enforcement
 - If the user requests implementation without a TODO and the work is not exempt or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
 - If COMMENT blocks exist, block implementation until they are resolved and removed.
+- If canonical module anchors are missing in the TODO, block implementation until anchors are added.
 - If `medium|big` work does not contain Plan Review Gate output, block implementation and request completion.
 - If any baseline decision lacks adherence evidence, block delivery.
+- If module consolidation evidence is missing, block TODO closure.
 
 ## Notes
 - This rule is stack-agnostic and applies to Flutter/Laravel/Web as long as the implementation changes project artifacts.

@@ -42,6 +42,8 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `flutter-smell-build-side-effects` | Detects side effects in build methods |
 | `flutter-widget-local-state-heuristics` | Defines boundary between ephemeral and controller-owned state |
 | `wf-docker-update-skill-method` | Keeps Codex/Cline/Antigravity skills and workflow artifacts synchronized |
+| `wf-docker-todo-driven-execution-method` | TODO-driven execution workflow with module-anchor and consolidation gates |
+| `rule-docker-shared-todo-driven-execution-model-decision` | Enforces TODO/APROVADO/adherence/module-consolidation gates before delivery |
 | `wf-laravel-create-package-method` | Laravel package decoupling workflow with mandatory assertions |
 | `test-quality-audit` | Test integrity audit with bypass detection and decision-adherence checks |
 | `test-creation-standard` | Test creation standard with explicit baseline and gate controls |
@@ -56,6 +58,7 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `create-screen` | Scaffold a new Flutter feature screen |
 | `create-repository` | Establish domain-aligned data access |
 | `docker-todo-driven-execution` | Enforce TODO, APROVADO, and Decision Adherence gates |
+| `docker-todo-driven-execution-method` | Method-suffixed counterpart for TODO, APROVADO, and module-consolidation gates |
 | `docker-update-skill-method` | Update skills with cross-surface sync controls |
 | `laravel-create-package-method` | Create/refactor Laravel packages with explicit boundaries |
 
