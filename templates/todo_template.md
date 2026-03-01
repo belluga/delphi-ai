@@ -87,6 +87,17 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
   - a better alternative is proposed,
   and the updated decision/baseline receives renewed **APROVADO**.
 
+## Delivery Confidence Gate (Required for `✅ Production-Ready`)
+- [ ] **Runtime impact classified:** <none | low | medium | high>
+- [ ] **Operational checks run (if runtime-impacting):**
+  - [ ] migration/index status checked
+  - [ ] queue/scheduler/worker health checked
+  - [ ] targeted load/perf sampling executed (or justified as N/A)
+  - [ ] smoke flow executed in the best available environment (or justified as N/A)
+- [ ] **Evidence artifacts recorded:** `foundation_documentation/artifacts/tmp/<run-id>/...`
+- [ ] **Confidence stated:** <high|medium|low> + <known residual risks>
+- [ ] **Release readiness outcome:** <ready|ready_with_waiver|not_ready>
+
 ## Definition of Done
 - [ ] <Concrete, testable checklist item>
 

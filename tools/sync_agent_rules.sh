@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Function to find the environment root (containing delphi-ai, flutter-app, etc.)
 find_environment_root() {
@@ -21,6 +22,14 @@ if [ -z "$ENV_ROOT" ]; then
 fi
 
 DELPHI_SOURCE="$ENV_ROOT/delphi-ai"
+SYNC_LOCK_FILE="$ENV_ROOT/.agent/.sync_agent_rules.lock"
+
+mkdir -p "$ENV_ROOT/.agent"
+exec 9>"$SYNC_LOCK_FILE"
+if command -v flock >/dev/null 2>&1; then
+    flock 9
+fi
+trap 'if command -v flock >/dev/null 2>&1; then flock -u 9; fi; exec 9>&-' EXIT
 
 # Function to copy and fix syntax
 sync_rules() {

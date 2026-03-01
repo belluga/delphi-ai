@@ -20,6 +20,27 @@ if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
   REPO_ROOT="$ENV_ROOT"
 fi
 
+wait_for_sync_agent_rules() {
+  local lock_file="$REPO_ROOT/.agent/.sync_agent_rules.lock"
+
+  if [ ! -f "$lock_file" ]; then
+    return 0
+  fi
+
+  if ! command -v flock >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # Wait until any in-flight sync completes. If no sync is running,
+  # shared lock acquisition/release is effectively immediate.
+  exec 8>"$lock_file"
+  flock -s 8
+  flock -u 8
+  exec 8>&-
+}
+
+wait_for_sync_agent_rules
+
 errors=()
 
 require_file() {
@@ -384,6 +405,13 @@ verify_workflow_skill_counterparts
 verify_workflow_definition_controls
 verify_no_placeholder_artifacts
 verify_public_skill_mirrors
+
+if [ ${#errors[@]} -gt 0 ] && [ "${VERIFY_ADHERENCE_RETRY_ON_SYNC_RACE:-0}" = "0" ]; then
+  if printf '%s\n' "${errors[@]}" | grep -qE 'Missing file: .*/\.agent/(rules|workflows)/'; then
+    sleep 1
+    exec env VERIFY_ADHERENCE_RETRY_ON_SYNC_RACE=1 bash "$0" "$@"
+  fi
+fi
 
 if [ ${#errors[@]} -gt 0 ]; then
   printf 'Adherence sync verification FAILED:\n'

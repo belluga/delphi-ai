@@ -72,9 +72,19 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
      - Challenge the decision with explicit rationale, or
      - Propose a better alternative.
    - In either case, update the TODO decisions, refresh the frozen baseline, and request renewed **APROVADO** before proceeding.
-13. **Validate**
+13. **Delivery Confidence Gate (mandatory for `✅ Production-Ready`)**
+   - Classify runtime impact (`none|low|medium|high`).
+   - If runtime-impacting, run operational confidence checks and capture evidence:
+     - migration/index status;
+     - queue/scheduler/worker health;
+     - targeted load/perf sampling (or explicit N/A + reason);
+     - smoke flow in the best available environment (or explicit N/A + reason).
+   - Record artifacts under `foundation_documentation/artifacts/tmp/<run-id>/...`.
+   - Record a confidence statement (`high|medium|low`) plus residual risks.
+   - Mark release readiness outcome: `ready|ready_with_waiver|not_ready`.
+14. **Validate**
    - Run the `validation_steps` from the TODO (or explicitly report what cannot be run and why).
-14. **Close TODO**
+15. **Close TODO**
    - Only mark delivery complete when all baseline decisions are `Adherent` or explicitly superseded via approved decision changes.
    - Update the TODO with outcome notes and move it to `foundation_documentation/todos/completed/` (or mark canceled).
 
@@ -90,4 +100,5 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 - No `medium|big` implementation begins before Plan Review Gate is completed.
 - No implementation begins before the user replies **APROVADO**.
 - No delivery is considered complete while any baseline decision lacks adherence evidence.
+- No TODO can be marked `✅ Production-Ready` without a completed Delivery Confidence Gate (or explicit waiver rationale).
 - Implementation stays within `scope`; deviations require updating the TODO and re-confirmation.

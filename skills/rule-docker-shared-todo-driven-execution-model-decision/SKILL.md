@@ -52,6 +52,17 @@ If the change restores previously documented or verifiably working behavior (inc
 - For each decision, record `status` (`Adherent` or `Exception`) and supporting evidence (`file:line`, test result, or doc contract).
 - If any decision is `Exception`, delivery is invalid until the decision/baseline is updated and renewed **APROVADO** is obtained.
 
+### Gate I — Delivery Confidence Gate (mandatory for `✅ Production-Ready`)
+- Before marking any TODO as `✅ Production-Ready`, classify runtime impact (`none|low|medium|high`).
+- If runtime-impacting, run and record operational confidence checks:
+  - migration/index status;
+  - queue/scheduler/worker health;
+  - targeted load/perf sampling (or explicit N/A + reason);
+  - smoke flow in the best available environment (or explicit N/A + reason).
+- Store evidence artifacts in `foundation_documentation/artifacts/tmp/<run-id>/...`.
+- Record confidence (`high|medium|low`) and residual risks.
+- Record readiness outcome (`ready|ready_with_waiver|not_ready`).
+
 ## Rationale
 This prevents scope creep and "hub refactors" by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
 
@@ -59,6 +70,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - Block implementation without TODO (unless exempt/ephemeral-eligible).
 - Block implementation with unresolved COMMENT blocks.
 - Block delivery if any baseline decision lacks adherence evidence.
+- Block `✅ Production-Ready` status without Delivery Confidence Gate evidence (or explicit waiver rationale).
 
 ## Notes
 - Cline plans and recommendations are advisory by default; implementation authority remains Delphi TODO + **APROVADO** + Decision Adherence Gate.
