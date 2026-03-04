@@ -44,7 +44,13 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `wf-docker-update-skill-method` | Keeps Codex/Cline/Antigravity skills and workflow artifacts synchronized |
 | `wf-docker-todo-driven-execution-method` | TODO-driven execution workflow with module-anchor and consolidation gates |
 | `rule-docker-shared-todo-driven-execution-model-decision` | Enforces TODO/APROVADO/adherence/module-consolidation gates before delivery |
+| `wf-laravel-create-api-endpoint-method` | Laravel endpoint workflow with domain matrix, ability-catalog sync, and PATCH contract gates |
+| `rule-laravel-shared-tenant-access-guardrails-model-decision` | Enforces tenant route guardrails + route-matrix and domain-param checks |
+| `rule-laravel-shared-todo-driven-execution-model-decision` | Enforces TODO/APROVADO/adherence with module coherence + consolidation gates |
+| `rule-laravel-shared-ability-catalog-sync-model-decision` | Enforces ability string sync across routes/settings/policies and token catalogs |
+| `rule-laravel-shared-settings-kernel-patch-contract-model-decision` | Enforces Settings Kernel PATCH payload contract (dot-path + field-presence semantics) |
 | `wf-laravel-create-package-method` | Laravel package decoupling workflow with mandatory assertions |
+| `wf-laravel-create-domain-method` | Laravel domain workflow with tenant/landlord migration and index lifecycle guardrails |
 | `test-quality-audit` | Test integrity audit with bypass detection and decision-adherence checks |
 | `test-creation-standard` | Test creation standard with explicit baseline and gate controls |
 | `test-orchestration-suite` | Cross-stack orchestration with staged gates and adherence validation |

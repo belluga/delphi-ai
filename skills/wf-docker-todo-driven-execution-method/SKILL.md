@@ -6,7 +6,7 @@ description: "Workflow: MUST use whenever the scope matches this purpose: Execut
 # Method: TODO-Driven Execution
 
 ## Purpose
-Guarantee every implementation starts from a concrete, reviewable contract (scope + DoD), with explicit risk framing, issue-level tradeoff analysis, and decision-adherence proof before delivery.
+Guarantee every implementation starts from a concrete, reviewable contract (scope + DoD), with explicit risk framing, issue-level tradeoff analysis, module-coherence proof, and decision-adherence proof before delivery.
 
 ## Triggers
 - The user asks for feature work, bugfixes, refactors, or documentation updates that change project artifacts.
@@ -52,11 +52,19 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
    - Iterate with the user until resolved; then update `decisions` with the chosen outcome.
 8. **Freeze Decision Baseline (mandatory)**
    - Before implementation, freeze the approved decision IDs and expected outcomes under `Decision Baseline (Frozen)` in the TODO.
-9. **Resolve COMMENT blocks (mandatory gate)**
+9. **Run Module Coherence Gate (mandatory before approval)**
+   - Compare each frozen `D-xx` decision against canonical module docs (`primary` + `secondary` anchors).
+   - Record per decision in the TODO:
+     - `Module Coherence`: `Aligned|Conflict|Supersede`
+     - `Change Intent`: `Preserve|Supersede`
+     - Evidence (`file:line|section`) for the compared module rule/decision.
+   - Block implementation while any decision is `Conflict`.
+   - If `Supersede`, capture why replacement is needed and require explicit approval before implementation.
+10. **Resolve COMMENT blocks (mandatory gate)**
    - Treat each **COMENTÁRIO:** / **COMMENT:** block as a question/consideration for the content immediately following it.
    - Resolve by updating the TODO (e.g., `decisions`, `scope`, `definition_of_done`) and then remove the comment block.
    - If resolution requires user input, stop and wait for confirmation before removing.
-10. **Run Plan Review Gate (mandatory for `medium|big`)**
+11. **Run Plan Review Gate (mandatory for `medium|big`)**
    - Evaluate Architecture, Code Quality, Tests, Performance, and Security.
    - For each material issue, document an issue card with:
      - `Issue ID`, severity, evidence (`file:line`), and why it matters now.
@@ -65,16 +73,16 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
      - Recommended option and rationale.
    - Add a `Failure Modes & Edge Cases` section.
    - Add an `Uncertainty Register` with assumptions, unknowns, and confidence.
-11. **Request explicit approval**
+12. **Request explicit approval**
    - Ask the user to reply with **APROVADO** to confirm the refined TODO and review outcome.
    - Do not implement anything until approval is received.
-12. **Execute implementation**
+13. **Execute implementation**
    - Load the relevant stack workflows (Flutter/Laravel/etc.) and proceed with implementation strictly within `scope` and the frozen decision baseline.
-13. **Decision Adherence Gate (mandatory before delivery)**
+14. **Decision Adherence Gate (mandatory before delivery)**
    - Build a `Decision Adherence Validation` table for every baseline decision ID.
    - For each decision, record: `status` (`Adherent` or `Exception`), evidence (`file:line`, test, or doc contract), and notes.
    - If any decision is `Exception`, block delivery, update decisions/baseline, and request renewed **APROVADO** before continuing.
-14. **Delivery Confidence Gate (mandatory for `✅ Production-Ready`)**
+15. **Delivery Confidence Gate (mandatory for `✅ Production-Ready`)**
    - Classify runtime impact (`none|low|medium|high`).
    - If runtime-impacting, run operational confidence checks and capture evidence:
      - migration/index status;
@@ -84,14 +92,14 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
    - Record artifacts under `foundation_documentation/artifacts/tmp/<run-id>/...`.
    - Record a confidence statement (`high|medium|low`) plus residual risks.
    - Mark release readiness outcome: `ready|ready_with_waiver|not_ready`.
-15. **Validate**
+16. **Validate**
    - Run the `validation_steps` from the TODO (or explicitly report what cannot be run and why).
-16. **Module Consolidation Gate (mandatory before close)**
+17. **Module Consolidation Gate (mandatory before close)**
    - Promote stable conceptual outcomes and finalized decisions from the TODO into canonical module docs.
    - Update module decision/promotion ledgers with traceability to this TODO.
    - Remove/replace superseded tactical notes that conflict with canonical module docs.
    - Update TODO/module cross-links if files moved from `active` to `completed`.
-17. **Close TODO**
+18. **Close TODO**
    - Only mark delivery complete when all baseline decisions are `Adherent` or explicitly superseded via approved decision changes.
    - Update the TODO with outcome notes and move it to `foundation_documentation/todos/completed/` (or mark canceled).
 
@@ -100,12 +108,14 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 - TODO with canonical module anchors recorded.
 - Complexity classification and checkpoint policy recorded in the TODO.
 - Decision baseline and decision-adherence validation table with evidence.
+- Module coherence matrix per decision (`Aligned|Conflict|Supersede` + `Preserve|Supersede`) with evidence.
 - Canonical module docs updated with promoted stable outcomes and decision traceability.
 - Implementation changes aligned with the TODO's scope and DoD.
 
 ## Validation
 - No implementation begins before COMMENT blocks are resolved.
 - No implementation begins without canonical module anchors in the TODO.
+- No implementation begins while any frozen decision remains in `Conflict` with canonical module docs.
 - No implementation begins before the user replies **APROVADO**.
 - No delivery is considered complete while any baseline decision lacks adherence evidence.
 - No TODO can be marked `✅ Production-Ready` without a completed Delivery Confidence Gate (or explicit waiver rationale).

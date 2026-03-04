@@ -11,6 +11,8 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/model-decision/shared-todo-driven-execution.md`
 - `.clinerules/model-decision/shared-session-lifecycle.md`
 - `.clinerules/model-decision/shared-workflow-definition.md`
+- `.clinerules/model-decision/laravel-ability-catalog-sync.md`
+- `.clinerules/model-decision/laravel-settings-kernel-patch-contract.md`
 
 ### Workflows
 - `.clinerules/workflows/docker-todo-driven-execution.md`
@@ -27,7 +29,13 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.cline/skills/wf-docker-update-skill-method/SKILL.md`
 - `.cline/skills/wf-docker-todo-driven-execution-method/SKILL.md`
 - `.cline/skills/rule-docker-shared-todo-driven-execution-model-decision/SKILL.md`
+- `.cline/skills/wf-laravel-create-api-endpoint-method/SKILL.md`
+- `.cline/skills/rule-laravel-shared-tenant-access-guardrails-model-decision/SKILL.md`
+- `.cline/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md`
+- `.cline/skills/rule-laravel-shared-ability-catalog-sync-model-decision/SKILL.md`
+- `.cline/skills/rule-laravel-shared-settings-kernel-patch-contract-model-decision/SKILL.md`
 - `.cline/skills/wf-laravel-create-package-method/SKILL.md`
+- `.cline/skills/wf-laravel-create-domain-method/SKILL.md`
 - `.cline/skills/test-quality-audit/SKILL.md`
 - `.cline/skills/test-creation-standard/SKILL.md`
 - `.cline/skills/test-orchestration-suite/SKILL.md`

@@ -99,15 +99,47 @@ else
   fi
 fi
 
-if ! command -v fvm flutter >/dev/null 2>&1; then
-  echo "flutter command not found. Install Flutter/FVM or run this script via a Docker image that provides it." >&2
+if ! command -v fvm >/dev/null 2>&1; then
+  echo "fvm command not found. Install FVM or run this script via an image that provides FVM/Flutter." >&2
   exit 1
 fi
+
+resolve_flutter_sdk_dir() {
+  local app_dir="$1"
+  local sdk_link="${app_dir}/.fvm/flutter_sdk"
+  if [[ -L "${sdk_link}" || -d "${sdk_link}" ]]; then
+    readlink -f "${sdk_link}"
+    return 0
+  fi
+  return 1
+}
+
+ensure_flutter_sdk_git_metadata() {
+  local sdk_dir="$1"
+  if [[ -z "${sdk_dir}" ]]; then
+    echo "ERROR: Flutter SDK directory could not be resolved from .fvm/flutter_sdk." >&2
+    exit 1
+  fi
+
+  # Some FVM flows can keep git metadata in .git_disabled.
+  # Flutter CLI requires .git to exist.
+  if [[ ! -e "${sdk_dir}/.git" && -d "${sdk_dir}/.git_disabled" ]]; then
+    ln -s .git_disabled "${sdk_dir}/.git"
+    echo "Restored Flutter SDK git metadata link (.git -> .git_disabled)."
+  fi
+
+  if [[ ! -e "${sdk_dir}/.git" ]]; then
+    echo "ERROR: Flutter SDK git metadata is missing at ${sdk_dir}/.git." >&2
+    echo "Run: fvm remove 3.41.2 && fvm install 3.41.2 && fvm use 3.41.2" >&2
+    exit 1
+  fi
+}
 
 OUTPUT_DIR="${1:-${REPO_ROOT}/web-app}"
 LANE="${2:-dev}"
 PRESERVE_OUTPUT="${PRESERVE_OUTPUT:-1}"
 CLEAN_OUTPUT="${CLEAN_OUTPUT:-0}"
+FLUTTER_SDK_DIR="$(resolve_flutter_sdk_dir "${FLUTTER_APP_DIR}" || true)"
 
 if [[ "${3:-}" == "--help" || "${3:-}" == "-h" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   usage
@@ -142,6 +174,8 @@ if [ ! -f "${LANE_FILE}" ]; then
   echo "Usage: scripts/build_web.sh [output_dir] [lane]" >&2
   exit 1
 fi
+
+ensure_flutter_sdk_git_metadata "${FLUTTER_SDK_DIR}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
@@ -198,17 +232,12 @@ chmod -R a+rX "${OUTPUT_DIR}"
 
 echo "Flutter web bundle available at: ${OUTPUT_DIR} (lane: ${LANE})"
 
-resolve_landlord_domain() {
-  local lane_file="$1"
-  local override_file="$2"
-
-  # Avoid relying on jq for local builds; resolve via Python (available in CI and dev machines).
-  # Returns empty string when missing/unreadable.
-  local read_json_key
-  read_json_key() {
-    local file="$1"
-    local key="$2"
-    python3 - "$file" "$key" <<'PY' 2>/dev/null || true
+# Avoid relying on jq for local builds; resolve via Python (available in CI and dev machines).
+# Returns empty string when missing/unreadable.
+read_json_key_from_file() {
+  local json_file="$1"
+  local json_key="$2"
+  python3 - "$json_file" "$json_key" <<'PY' 2>/dev/null || true
 import json, sys
 path = sys.argv[1]
 key = sys.argv[2]
@@ -225,11 +254,15 @@ if isinstance(value, str):
   if v:
     print(v)
 PY
-  }
+}
+
+resolve_landlord_domain() {
+  local lane_file="$1"
+  local override_file="$2"
 
   local from_override=""
   if [[ -f "${override_file}" ]]; then
-    from_override="$(read_json_key "${override_file}" "LANDLORD_DOMAIN")"
+    from_override="$(read_json_key_from_file "${override_file}" "LANDLORD_DOMAIN")"
   fi
   if [[ -n "${from_override}" && "${from_override}" != "null" ]]; then
     printf '%s' "${from_override}"
@@ -237,7 +270,7 @@ PY
   fi
 
   local from_lane=""
-  from_lane="$(read_json_key "${lane_file}" "LANDLORD_DOMAIN")"
+  from_lane="$(read_json_key_from_file "${lane_file}" "LANDLORD_DOMAIN")"
   if [[ -n "${from_lane}" && "${from_lane}" != "null" ]]; then
     printf '%s' "${from_lane}"
     return 0

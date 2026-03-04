@@ -15,10 +15,27 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - `rule-flutter-flutter-route-workflow-glob` for `lib/**/routes/**`
 - `flutter-widget-local-state-heuristics` for any widget state (`setState`, `StatefulWidget`, local mutable fields)
 
+## Canonical Sources (Single Source Policy)
+- Canonical architecture contract: `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1 Presentation DI Matrix (Canonical)`).
+- Executable lint contract and treatments: `flutter-app/tool/belluga_custom_lint/docs/rules.md`.
+- Tactical delivery/debt status: `foundation_documentation/todos/active/mvp_slices/TODO-v1-flutter-architecture-rules-consolidation-and-custom-lint.md`.
+- If wording differs across files, prefer these sources in this exact precedence order.
+
+## Custom Lint Enforcement Contract
+- Mandatory command for architecture checks: `fvm dart run custom_lint`.
+- `SEM EXCEÇÃO`: do not bypass architecture findings with per-file ignores/allowlists.
+- If a finding is wrong, calibrate the lint rule; do not suppress it.
+- Rule IDs currently enforced for architecture governance:
+  - P0: `ui_getit_non_controller_forbidden`, `ui_direct_repository_service_resolution_forbidden`, `ui_cross_feature_controller_resolution_forbidden`, `module_scoped_controller_dispose_forbidden`, `ui_streamvalue_ownership_forbidden`, `ui_dto_import_forbidden`, `domain_dto_dependency_forbidden`, `module_direct_getit_registration_forbidden`.
+  - P1: `ui_navigation_after_await_forbidden`, `controller_direct_navigation_forbidden`, `ui_navigator_usage_forbidden`, `ui_build_side_effects_forbidden`, `ui_future_stream_builder_forbidden`, `ui_controller_ownership_forbidden`.
+  - P2: `screen_controller_resolution_pattern_required`, `multi_widget_file_warning`, `controller_buildcontext_dependency_forbidden`, `global_ui_controller_naming_forbidden`.
+
 ## Core enforcement
 - Screens are pure UI; state/logic lives in controllers.
 - Controllers are the only allowed data ingress gate for screens/widgets.
 - Screens/widgets must never fetch, resolve, or proxy data through repository/service/state-holder directly.
+- In presentation `screens/widgets`, `GetIt` resolution is allowed only for same-feature controllers.
+- In presentation `screens/widgets`, resolving cross-feature controllers is forbidden.
 - Repositories and domain layers must stay aligned with documented contracts.
 - Widget state is only allowed for true ephemeral UI (see local-state heuristics). Anything ModuleScope-adjacent must be controller-driven.
 - UI must not own `StreamValue` instances directly; StreamValue belongs in controllers only.
@@ -31,13 +48,16 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - Screens resolve controllers via GetIt; routes should not pass controllers.
 - Route/screen ownership must follow `foundation_documentation/policies/scope_subscope_governance.md`.
 - Do not create undefined subscopes or ambiguous legacy scope folders; new subscope requires explicit decision + policy update.
+- Screen files must not own UI controllers/keys directly (`TextEditingController`, `FocusNode`, `ScrollController`, `AnimationController`, `GlobalKey<FormState>`, etc.); ownership belongs to the feature controller.
+- Auxiliary widgets may own UI controllers/keys only when fully isolated. If that local UI controller/key is bridged into feature controller calls, ownership must move to the feature controller.
 - Widgets may accept controllers for testability, but default to resolving via GetIt when needed.
 - Child widgets should resolve their own controllers via GetIt; screens must not instantiate “pass‑through” child controllers just to forward them.
 - Controllers must depend on repositories/services/contracts (or value objects), never on other feature controllers.
 - Global DI registration must only host true app-lifecycle dependencies; feature/module controllers must be registered in their owning module.
+- Classes extending `ModuleContract` must not call direct `GetIt.I.register*`; use module lifecycle wrappers (`registerLazySingleton/registerFactory/registerRouteResolver`) for teardown-safe scope ownership.
+- Global app-lifecycle registrations must not use UI controller naming (`*Controller` / `*ControllerContract`).
 - Do not introduce ad-hoc mutable global stores for navigation/UI flow handoff; prefer route model/query params and controller state.
 - UI controllers (TextEditingController/ScrollController/AnimationController/GlobalKey<FormState>/etc.) live in feature controllers, not screens/widgets.
-- Form keys (`GlobalKey<FormState>`) must live in controllers to centralize validation/submit decisions.
 - Screens/widgets only accept `_controller` and static view data parameters; any controlling parameter belongs in the controller.
 - Navigation is owned by widgets/screens; controllers never navigate. Widget calls controller for decisions, then performs non-async navigation.
 - Widgets/screens never construct `StreamValue` or `StreamValueBuilder` sources; they only consume controller-owned `StreamValue`.
@@ -45,6 +65,16 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 ## Quick boundary check
 - If it touches a repository, router, domain model, or persists across navigation → controller + StreamValue.
 - If it is a transient UI-only interaction (single sheet/dialog, no side effects) → local state allowed.
+
+## Presentation DI Matrix (Canonical)
+
+| Context | Allowed | Forbidden |
+|---|---|---|
+| Screen (`presentation/**/screens/**`) | Resolve same-feature controller via `GetIt`; consume controller-owned state/controllers/keys. | Resolve repository/service/DAO/backend/DTO; resolve cross-feature controller; own UI controllers/keys locally. |
+| Auxiliary widget (`presentation/**/widgets/**`) isolated | Local UI controllers/keys only if fully local and not bridged to feature controller API. | Non-controller DI; cross-feature controller DI; side-effectful data ingress bypassing feature controller. |
+| Auxiliary widget interacting with feature controller | Consume UI controllers/keys owned by feature controller; trigger controller intents only. | Keep local UI controller/key and pass/bridge it into feature controller methods. |
+| Module class (`ModuleContract`) | `registerLazySingleton`, `registerFactory`, `registerRouteResolver`. | Direct `GetIt.I.register*` or `GetIt.instance.register*`. |
+| Global bootstrap (`main.dart`, `ModuleSettings`, app bootstrap repository) | App-lifecycle non-UI services/contracts/gates/coordinators. | Any global type named `*Controller` / `*ControllerContract`. |
 
 ## State Management Baseline (must enforce)
 - Official state pattern: `StreamValue` + `StreamValueBuilder` (controller-owned streams only).
@@ -126,6 +156,45 @@ class InviteCard extends StatelessWidget {
 }
 ```
 
+### Auxiliary widget (isolated local state allowed)
+```dart
+class GalleryScroller extends StatefulWidget {
+  const GalleryScroller({super.key});
+
+  @override
+  State<GalleryScroller> createState() => _GalleryScrollerState();
+}
+
+class _GalleryScrollerState extends State<GalleryScroller> {
+  final _scrollController = ScrollController(); // local-only, no controller bridge
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(controller: _scrollController);
+  }
+}
+```
+
+### Auxiliary widget (when interacting with feature controller, ownership moves)
+```dart
+class SearchHeader extends StatelessWidget {
+  const SearchHeader({super.key});
+
+  SearchScreenController get _controller => GetIt.I.get<SearchScreenController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(controller: _controller.searchTextController);
+  }
+}
+```
+
 ### UI controllers (owned by feature controller; screen only consumes)
 ```dart
 class TenantAdminAccountCreateController {
@@ -182,7 +251,8 @@ class BadFormScreenState extends State<BadFormScreen> {
 - Any state manager other than StreamValue (Provider/Bloc/GetX/ChangeNotifier/ValueNotifier/etc.).
 - Multiple widgets or multiple screens in the same file.
 - Business logic in screens (filters, mapping, validation, formatting).
-- Direct GetIt access in widgets (controllers only).
+- Direct GetIt resolution of non-controller types in `screens/widgets`.
+- Direct GetIt resolution of cross-feature controllers in `screens/widgets`.
 - Network calls or side effects inside UI (no async work in widgets).
 - StreamValue instances created/owned inside widgets/screens (must live in controllers).
 - StreamValue passed into widgets/screens as a parameter (must be owned by controller and resolved via GetIt).

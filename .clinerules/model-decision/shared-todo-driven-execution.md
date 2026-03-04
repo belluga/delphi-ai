@@ -21,6 +21,8 @@ Before any implementation work that changes project code, submodule code, or pro
 
 4. **Decision baseline + adherence gate**
 - Assign decision IDs and freeze a `Decision Baseline (Frozen)` before implementation.
+- Compare frozen decisions against canonical module anchors and mark each as `Aligned`, `Conflict`, or `Supersede`.
+- Block implementation while any frozen decision remains in `Conflict`.
 - Before delivery, produce `Decision Adherence Validation` with evidence per decision.
 - If any baseline decision is `Exception`, delivery is invalid until decisions are updated and renewed **APROVADO** is obtained.
 
@@ -40,6 +42,7 @@ This prevents non-adherent delivery and enforces full control over implementatio
 
 - Block implementation without TODO.
 - Block implementation without APROVADO.
+- Block implementation when frozen decisions conflict with canonical module anchors.
 - Block delivery without decision-adherence evidence.
 - Block TODO closure without module consolidation evidence.
 

@@ -55,15 +55,20 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate F — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
 
-### Gate G — Explicit approval token (mandatory)
-- After Gates A-F, Delphi must ask for explicit user approval of the TODO before any implementation begins.
+### Gate G — Module coherence gate (mandatory before implementation)
+- Compare each frozen decision against the canonical module anchors declared in the TODO (`primary` + `secondary`).
+- Record per decision whether it is `Aligned`, `Conflict`, or `Supersede` with evidence (`file:line|section`).
+- If any decision is `Conflict`, block implementation until TODO/module decisions are reconciled and re-approved.
+
+### Gate H — Explicit approval token (mandatory)
+- After Gates A-G, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
   - call `apply_patch`,
   - run write commands that change project files,
   - or make any project/submodule/code/docs modifications.
 
-### Gate H — Decision Adherence Gate (mandatory before delivery)
+### Gate I — Decision Adherence Gate (mandatory before delivery)
 - Before delivery, build a `Decision Adherence Validation` table for every baseline decision ID.
 - For each decision, record `status` (`Adherent` or `Exception`) and supporting evidence (`file:line`, test result, or doc contract).
 - If any decision is `Exception`, delivery is invalid until one of the following happens:
@@ -71,7 +76,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - a better alternative is proposed,
   and the TODO decisions/baseline are updated plus renewed **APROVADO** is obtained.
 
-### Gate I — Delivery Confidence Gate (mandatory for `✅ Production-Ready`)
+### Gate J — Delivery Confidence Gate (mandatory for `✅ Production-Ready`)
 - Before marking any TODO as `✅ Production-Ready`, classify runtime impact (`none|low|medium|high`).
 - If runtime-impacting, run and record operational confidence checks:
   - migration/index status;
@@ -82,7 +87,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - Record confidence (`high|medium|low`) and residual risks.
 - Record readiness outcome (`ready|ready_with_waiver|not_ready`).
 
-### Gate J — Module Consolidation Gate (mandatory before closing TODO)
+### Gate K — Module Consolidation Gate (mandatory before closing TODO)
 - Before moving a TODO to `completed`, promote stable conceptual outcomes and approved decisions into canonical module docs under `foundation_documentation/modules/`.
 - Record promotion evidence in module decision/promotion sections and ensure TODO ↔ module cross-links are updated.
 - If module docs still conflict with delivered implementation, TODO closure is blocked until conflicts are resolved or explicitly waived.
@@ -94,6 +99,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If the user requests implementation without a TODO and the work is not exempt or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
 - If COMMENT blocks exist, block implementation until they are resolved and removed.
 - If canonical module anchors are missing in the TODO, block implementation until anchors are added.
+- If any frozen decision conflicts with canonical module docs, block implementation until coherence is resolved.
 - If `medium|big` work does not contain Plan Review Gate output, block implementation and request completion.
 - If any baseline decision lacks adherence evidence, block delivery.
 - If module consolidation evidence is missing, block TODO closure.

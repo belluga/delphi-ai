@@ -25,7 +25,9 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
    - Update the system/module roadmap plus persona roadmap with the planned work.
 3. **Plan schema + validations**
    - Determine collection name, embedded documents, indexes, and size constraints (per P‑14).
-   - Draft migration/update scripts under `database/migrations/landlord|tenant`.
+   - Draft migration/update scripts under `database/migrations/landlord|tenant` or package migration directories when the domain is package-owned.
+   - For tenant-scoped domains, enforce Spatie tenant migration flow (`tenant_migration_paths` + tenant connection/context).
+   - Do not create indexes in runtime request/query paths; indexes must be provisioned via migration/provisioning flow.
 4. **Implement DocumentModel**
    - Create/extend `App\Models\Landlord|Tenants\...` using `DocumentModel`, `SoftDeletes`, and relevant traits (UsesTenantConnection, HasSlug, etc.).
    - Define `$fillable`, `$casts`, relationships, scopes, and helper methods consistent with existing models.

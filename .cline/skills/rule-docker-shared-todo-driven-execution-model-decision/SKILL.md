@@ -44,6 +44,15 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate F — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
 
+### Gate F2 — Module Coherence Gate (mandatory before approval)
+- Compare every frozen decision (`D-xx`) against canonical module docs declared in the TODO anchors.
+- Record per decision:
+  - `Module Coherence`: `Aligned|Conflict|Supersede`
+  - `Change Intent`: `Preserve|Supersede`
+  - evidence to module source (`file:line` or section).
+- Block implementation while any decision remains `Conflict`.
+- If any decision is `Supersede`, explicit approval is required and the TODO must include planned module update targets before coding.
+
 ### Gate G — Explicit approval token (mandatory)
 - After Gates A-F, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
@@ -76,6 +85,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - Block implementation without TODO (unless exempt/ephemeral-eligible).
 - Block implementation with unresolved COMMENT blocks.
 - Block implementation when canonical module anchors are missing from the TODO.
+- Block implementation when any frozen decision is `Conflict` against canonical module docs.
 - Block delivery if any baseline decision lacks adherence evidence.
 - Block `✅ Production-Ready` status without Delivery Confidence Gate evidence (or explicit waiver rationale).
 - Block TODO closure when module consolidation evidence is missing.

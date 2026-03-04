@@ -28,6 +28,8 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 3. **Decision controls**
 - Assign decision IDs (`D-01`, `D-02`, ...).
 - Freeze approved decisions in `Decision Baseline (Frozen)` before implementation.
+- Compare frozen decisions against canonical module anchors and classify each as `Aligned`, `Conflict`, or `Supersede`.
+- Do not proceed while any decision remains `Conflict`.
 
 4. **Approval gate**
 - Request explicit **APROVADO**.
@@ -55,5 +57,6 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 ## Validation
 
 - No project changes before APROVADO.
+- No project changes while decision/module coherence is unresolved.
 - No delivery with unresolved decision exceptions.
 - No TODO closure without module consolidation evidence.
