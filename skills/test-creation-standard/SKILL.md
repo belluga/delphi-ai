@@ -70,6 +70,9 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that ca
 ## Laravel Guidelines
 - CI must run against local MongoDB service container with replica set enabled.
 - Never use Atlas in CI.
+- Local/manual Docker runs must use the canonical safe runner:
+  - `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh <test-args>`
+  - The runner must fail fast when APP/Mongo hosts are not local-safe.
 - Include migrations/seed steps required for integration scenarios.
 - Add explicit assertions for canonical response semantics (not only status codes).
 - Include regression tests for legacy payload/data migration cases when applicable.

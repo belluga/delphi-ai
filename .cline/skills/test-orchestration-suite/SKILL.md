@@ -55,6 +55,11 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 - Never use Atlas in CI-oriented flows.
 - On failure, stop and escalate with actionable error context.
 - Include contract-critical suites for API payload semantics that power UI critical paths.
+- Local Docker execution must use the canonical safe runner:
+  - `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh <test-args>`
+  - (equivalent canonical source: `delphi-ai/scripts/laravel/run_laravel_tests_safe.sh`)
+- Direct `docker compose exec ... php artisan test` is forbidden in orchestration flows unless the command explicitly overrides `APP_URL/APP_HOST/DB_URI/DB_URI_LANDLORD/DB_URI_TENANTS` to local-safe values.
+- If the safe runner blocks for non-local hosts/URIs, stop and fix environment inputs; do not bypass.
 
 ## Flutter Stage
 - Run unit + widget first.

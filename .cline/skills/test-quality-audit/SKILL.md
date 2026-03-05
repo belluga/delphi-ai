@@ -37,6 +37,7 @@ Detect and eliminate bypasses and weak assertions that let regressions pass unno
    - Ensure negative path tests verify explicit failure/error states.
 7. **Confirm CI environment parity**
    - Laravel tests use local MongoDB with replica set (not Atlas).
+   - Local/manual Laravel test execution uses `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh` (or equivalent local-safe env override) and never raw `php artisan test` with inherited environment.
    - Flutter integration tests use domain/scheme overrides (not hardcoded production domains).
 8. **Web bundle integrity**
    - Confirm bundle metadata matches pinned Flutter commit.
