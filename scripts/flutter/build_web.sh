@@ -219,14 +219,21 @@ if [[ "${PRESERVE_OUTPUT}" == "1" ]]; then
     --exclude '.github/***'
     --exclude '.gitignore'
     --exclude 'build_metadata.json'
-    --exclude 'package.json'
-    --exclude 'package-lock.json'
-    --exclude 'playwright.config.js'
-    --exclude 'tests/***'
   )
 fi
 
 rsync "${RSYNC_ARGS[@]}" "${TMP_DIR}/" "${OUTPUT_DIR}/"
+
+# Legacy Playwright/runtime artifacts do not belong to the generated web bundle.
+rm -rf \
+  "${OUTPUT_DIR}/node_modules" \
+  "${OUTPUT_DIR}/test-results" \
+  "${OUTPUT_DIR}/playwright-report" \
+  "${OUTPUT_DIR}/tests"
+rm -f \
+  "${OUTPUT_DIR}/package.json" \
+  "${OUTPUT_DIR}/package-lock.json" \
+  "${OUTPUT_DIR}/playwright.config.js"
 
 chmod -R a+rX "${OUTPUT_DIR}"
 

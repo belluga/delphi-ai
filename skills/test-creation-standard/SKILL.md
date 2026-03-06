@@ -78,7 +78,9 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that ca
 - Include regression tests for legacy payload/data migration cases when applicable.
 
 ## Web Guidelines
-- Browser tests only in `web-app`.
+- Browser test source-of-truth belongs in `tools/flutter/web_app_tests`.
+- Execute web navigation tests through `tools/flutter/run_web_navigation_smoke.sh`, which runs Playwright from `tools/flutter/web_app_smoke_runner/`.
+- `web-app` is the compiled bundle output and must not become the authored source location for browser tests.
 - Run web navigation tests only after Flutter tests pass and bundle is built.
 - Validate: home load, primary navigation, and one critical CTA flow.
 

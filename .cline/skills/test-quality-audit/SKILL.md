@@ -41,7 +41,9 @@ Detect and eliminate bypasses and weak assertions that let regressions pass unno
    - Flutter integration tests use domain/scheme overrides (not hardcoded production domains).
 8. **Web bundle integrity**
    - Confirm bundle metadata matches pinned Flutter commit.
-   - Browser tests belong in `web-app`, never in `flutter-app`.
+   - Browser test source-of-truth belongs in `tools/flutter/web_app_tests`.
+   - Browser execution must go through `tools/flutter/run_web_navigation_smoke.sh` / `tools/flutter/web_app_smoke_runner`, not via authored tests inside `web-app`.
+   - `web-app` must remain a compiled bundle output, not the source location for browser-test authoring.
 9. **Platform matrix audit**
    - If compatibility claim includes mobile and web, verify evidence exists for both.
    - Mark missing required platform execution as `blocked`, not `passed`.

@@ -22,7 +22,7 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 4. Flutter integration tests on web (real backend when compatibility matters).
 5. Flutter integration tests on mobile (real backend when compatibility matters).
 6. Build web bundle.
-7. Web navigation tests in `web-app`.
+7. Web navigation tests from `tools/flutter/web_app_tests` via the dedicated runner (`tools/flutter/run_web_navigation_smoke.sh`), not from inside `web-app`.
 8. Compatibility gate: bundle metadata matches pinned Flutter commit.
 9. Final report with decision-adherence status.
 
@@ -72,7 +72,9 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 - If one platform cannot run, mark `blocked` and stop compatibility closure.
 
 ## Web Stage
-- Tests live only in `web-app`.
+- Browser test source-of-truth lives in `tools/flutter/web_app_tests`.
+- Execute browser tests only through the dedicated runner `tools/flutter/run_web_navigation_smoke.sh`, which uses `tools/flutter/web_app_smoke_runner/` as the Playwright runtime.
+- `web-app` is the built bundle output only; do not treat it as the source location for navigation tests.
 - Validate home load, primary route, and one critical CTA flow.
 - Enforce metadata pin check before declaring success.
 
