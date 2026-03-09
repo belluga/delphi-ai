@@ -15,6 +15,8 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 ## Inputs
 - `foundation_documentation/submodule_laravel-app_summary.md` (routing, middleware, abilities).
 - `foundation_documentation/persona_roadmaps.md` (Flutter + Laravel sections) to capture contract changes.
+- `foundation_documentation/todos/active/mvp_slices/TODO-v1-api-security-hardening.md` (canonical security baseline and level semantics).
+- `foundation_documentation/endpoints_mvp_contracts.md` conventions section (authoritative API shape + security metadata conventions).
 - Existing routes (`routes/api/*.php`) and controller files.
 - Sanctum ability definitions / policies.
 
@@ -22,13 +24,27 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 1. **Persona alignment** – select Laravel Engineer persona, review roadmap items, and note Flutter requirements.
 2. **Define contract**
    - Document request/response schema in `foundation_documentation/domain_entities.md` and the Flutter roadmap before coding.
+   - For Cloudflare-fronted environments, define edge-vs-app responsibility explicitly:
+     - Cloudflare: DDoS/WAF/bot/challenge/coarse IP controls.
+     - Laravel: principal/account controls, tenant access, idempotency/replay, and deterministic API rejection contract.
+   - Classify endpoint protection level using the platform baseline:
+     - `L1 Core` for low-risk/public/read-heavy routes.
+     - `L2 Balanced` for most authenticated APIs and non-financial writes (default).
+     - `L3 High Protection` for critical mutations (`purchase|reservation|check-in|auth recovery|admin-sensitive writes`).
+   - Record the level and security behavior in endpoint contracts (`foundation_documentation/endpoints_mvp_contracts.md`) and in the active tactical TODO decision/task gates.
    - If the endpoint is a feed, confirm page-based pagination and decide whether an SSE `/stream` companion is required for deltas.
+   - Define deterministic machine-readable rejection/error mapping for security controls (`rate_limited|soft_blocked|hard_blocked|idempotency_missing|idempotency_replayed|idempotency_expired|idempotency_malformed`) plus transport metadata (`retry_after`, `correlation_id`, `cf_ray_id` when present).
+   - Enforce idempotency/replay policy by level:
+     - `L3`: mandatory `Idempotency-Key` + replay-window validation on mutating requests.
+     - `L2`: idempotency required for writes that can duplicate side effects.
+     - `L1`: optional unless explicit route risk requires stricter protection.
    - For partial updates (`PATCH`), default to direct resource-shaped payloads (object/list) and field-presence semantics; do not introduce envelope wrappers (for example `paths`) unless an explicit contract decision is documented.
+   - For Settings Kernel endpoints (`/settings/values/{namespace}`), nested fields must be sent as canonical dot-paths (example: `default_origin.lat`) unless a documented contract decision defines another format.
    - Omitted fields remain unchanged.
    - `null` is explicit clear only for nullable fields; `null` for non-nullable fields must return `422`.
    - Mixed set+clear payloads must be atomic.
    - When standardizing PATCH semantics, add a side-job in the active TODO to align pre-existing non-conforming endpoints (or document explicit exceptions).
-3. **Route planning**
+3. **Route planning + domain matrix gate**
    - **Separate domain scope from auth scope (do not mix):**
      - Domain decides which route sets are reachable (main domain → landlord; tenant domain → tenant + account).
      - Auth/abilities decide who may access a reachable endpoint (landlord user vs account user).
@@ -39,6 +55,10 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Tenant‑admin routes live under `/admin/api/v1/...` on tenant domains; tenant‑non‑admin remain `/api/v1/...`.
    - Account routes stay under `/api/v1/accounts/{account_slug}/...` on tenant domains (already admin).
    - Apply middleware stacks (`landlord`, `tenant`, `account`) and ability requirements.
+   - Ensure route-level anti-abuse/security middleware resolves to the approved `L1|L2|L3` level and cannot downgrade below global minimum policy.
+   - Ensure production origin path is Cloudflare-only (direct origin blocked by firewall/allowlist) and app-level trust-proxy configuration accepts forwarding headers only from trusted proxies.
+   - If landlord and tenant share URI prefixes (example `/admin/api/v1`), enforce domain split explicitly and validate route registration with `php artisan route:list`.
+   - If route groups use `Route::domain('{...}')`, controller signatures must include domain params before path params.
    - **Public vs admin resource split (when applicable):**
      - Public reads should live in tenant‑public routes; admin CRUD stays in tenant‑admin or account routes.
      - If tenant‑admin can create “on behalf of” an account/profile, ensure the owner is explicitly captured and that
@@ -49,16 +69,33 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Ensure validation rules enforce the documented bounds (P‑14).
 5. **Sanctum + policies**
    - Update abilities/policies if new permissions are required. Document them in the Laravel summary.
+   - **Ability catalog sync gate:** every newly introduced ability string must be registered in `config/abilities.php` when wildcard (`*`) permissions are expanded into explicit token abilities.
 6. **Tests**
    - Add/extend feature tests covering happy paths, validation errors, and ability checks.
    - If public reads exist, add tests that private entities never leak into public routes.
    - If “create on behalf” is supported, add tests proving items appear only in the target account’s admin scope.
+   - Add at least one real authentication-path test (login -> bearer token -> endpoint) for tenant-admin routes; do not rely only on `Sanctum::actingAs`.
+   - For settings namespace endpoints, add/maintain contract tests for dot-path success (`200`) and envelope rejection (`422`).
+   - For `L2|L3` mutations, add replay/idempotency tests and deterministic rejection contract tests.
+   - For throttling/challenge behavior, add tests covering legitimate retry safety (avoid false-positive lockouts).
+   - Add infrastructure/security tests (or deployment checks) validating direct-origin denial and spoofed client-IP header rejection when not from trusted proxies.
 7. **Documentation + roadmap sync**
    - Update the Flutter roadmap with the new contract and note any client updates needed.
    - Record changes in the Laravel submodule summary (routes, controllers, permissions).
    - If SSE was added, document event types + minimal payloads in `foundation_documentation/endpoints_mvp_contracts.md`.
 8. **Verification**
    - Run `composer test` or targeted suites; optionally hit endpoints via Postman/cURL or contract tests.
+   - Run architecture guardrails (`composer run architecture:guardrails`) as mandatory static compliance gate.
+   - API-security lint gate (mandatory when hardening policy changes):
+     - `php scripts/architecture_guardrails.php` must pass.
+     - Guardrails must fail if `config/api_security.php` misses baseline invariants (`L1/L2/L3`, `route_overrides`, `observe_mode`) or if `ApiSecurityHardening`/trusted-proxy wiring is missing in `bootstrap/app.php`.
+   - Run PHP lint/static checks configured by the project (`composer run lint`, `./vendor/bin/pint --test`, `composer run static-analysis`, or `./vendor/bin/phpstan analyse`).
+   - Run targeted style checks for touched endpoint/security files (`./vendor/bin/pint --test <changed-files...>`).
+   - Validate trusted-proxy configuration and Cloudflare header handling in runtime environment.
+   - Validate origin lock (only Cloudflare can reach origin) and trace propagation (`CF-Ray` + `correlation_id`) in logs/telemetry.
+   - Validate route matrix with `php artisan route:list`.
+   - Validate ability availability in token-expansion paths for changed abilities.
+   - If endpoint levels or rejection taxonomy changed, confirm contract docs and guardrail rules were updated in the same change set.
 
 ## Outputs
 - Updated routes, controllers, services, validation rules, and tests.

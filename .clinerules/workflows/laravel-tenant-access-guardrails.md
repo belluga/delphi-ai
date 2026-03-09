@@ -37,11 +37,21 @@ Common files:
 
 **Verify:** Routes should only be registered under **tenant domain group** (never on main domain).
 
+Validate route matrix explicitly:
+- tenant-admin (`/admin/api/v1/...`) reachable only on tenant domains;
+- landlord-admin (`/admin/api/v1/...`) reachable only on main domain;
+- tenant-public (`/api/v1/...`) keeps documented domain scope.
+
 ### Step 2: List Authenticated Tenant Routes
 
 Find all `auth:sanctum` routes:
 ```bash
 rg -n "auth:sanctum" laravel-app/routes/api/tenant*.php
+```
+
+Also check route registration output:
+```bash
+php artisan route:list | rg "admin/api/v1|api/v1"
 ```
 
 ### Step 3: Ensure CheckTenantAccess Middleware
@@ -89,6 +99,8 @@ Route::middleware(['auth:sanctum', 'account'])
 | Tenant | `auth:sanctum` + `check_tenant_access` | Tenant domain |
 | Account | `auth:sanctum` + `account` | Account within tenant |
 | Landlord | `auth:sanctum` + `landlord` | Main domain |
+
+If route groups use `Route::domain('{...}')`, verify controller method signatures account for domain params before path params.
 
 ### Step 5: Add/Update Tests
 
@@ -151,6 +163,13 @@ class TenantAccessGuardrailsTest extends TestCase
             ->getJson('/api/v1/bookings');
 
         $response->assertNotFound(); // Route not registered on main domain
+    }
+
+    /** @test */
+    public function tenant_admin_route_allows_login_issued_token_on_tenant_host(): void
+    {
+        // Login on tenant host and call a tenant-admin endpoint with returned token
+        // to prove the full auth path works (not only Sanctum::actingAs).
     }
 }
 ```

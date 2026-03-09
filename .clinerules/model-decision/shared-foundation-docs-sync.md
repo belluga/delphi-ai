@@ -10,6 +10,10 @@ If a task touches routes, screens, repositories, or domain models:
 - Align domain vocabulary with `foundation_documentation/domain_entities_sections/*` and refresh summaries when fields change
 - Update `foundation_documentation/system_roadmap.md`, backlog, and submodule summaries with new API/contract work
 - When API payload shape conventions change (especially `PATCH` semantics), record the canonical rule in `foundation_documentation/endpoints_mvp_contracts.md` conventions and in the affected module contract sections
+- When API security behavior changes (endpoint level assignment, idempotency/replay policy, rejection taxonomy), synchronize:
+  - `foundation_documentation/endpoints_mvp_contracts.md` conventions + endpoint entries,
+  - the active security tactical TODO (`TODO-v1-api-security-hardening.md`),
+  - Laravel architecture guardrail/lint rules and CI validation steps so checks are enforceable
 
 ### Team Notification
 - Notify downstream teams by recording roadmap deltas before code merges

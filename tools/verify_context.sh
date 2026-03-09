@@ -120,6 +120,32 @@ check_agent_rules() {
   fi
 }
 
+ensure_link_in_directory() {
+  local parent_dir="$1"
+  local link_name="$2"
+  local target="$3"
+  local label="$4"
+  local link_path="$parent_dir/$link_name"
+
+  mkdir -p "$parent_dir"
+  if [ -L "$link_path" ]; then
+    local actual
+    actual="$(readlink "$link_path")"
+    if [ "$actual" != "$target" ]; then
+      rm -f "$link_path"
+      ln -s "$target" "$link_path"
+      warnings+=("$label updated to $target")
+    fi
+  elif [ -e "$link_path" ]; then
+    rm -f "$link_path"
+    ln -s "$target" "$link_path"
+    warnings+=("$label replaced with symlink to $target")
+  else
+    ln -s "$target" "$link_path"
+    warnings+=("$label created -> $target")
+  fi
+}
+
 ensure_codex_skills_link() {
   local module_path="$1"
   local label="$2"
@@ -260,6 +286,10 @@ check_agent_rules "$REPO_ROOT/laravel-app" "laravel-app .agent"
 ensure_codex_skills_link "$REPO_ROOT" "root"
 ensure_codex_skills_link "$REPO_ROOT/flutter-app" "flutter-app"
 ensure_codex_skills_link "$REPO_ROOT/laravel-app" "laravel-app"
+
+# Canonical scripts links
+ensure_link_in_directory "$REPO_ROOT/laravel-app/scripts" "delphi" "../../delphi-ai/scripts/laravel" "laravel-app/scripts/delphi"
+ensure_link_in_directory "$REPO_ROOT/flutter-app" "scripts" "../delphi-ai/scripts/flutter" "flutter-app/scripts"
 
 # Cline artifacts (symlinks to delphi-ai/.cline/*)
 ensure_cline_artifacts "$REPO_ROOT" "root"
