@@ -19,6 +19,12 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 - Use `foundation_documentation/todos/active/` unless maintenance flow qualifies for ephemeral TODO.
 - Restate scope, out-of-scope, definition of done, and validation steps.
 - Ensure canonical module anchors are declared (primary module, optional secondary modules, promotion targets).
+- Treat canonical module docs as the coherence authority, not the TODO text alone.
+- Start with one broad scan of the TODO against those module anchors for gaps, conflicts, ambiguities, uncovered behavior, and missing validation/DoD alignment.
+- Triage findings into `Material Decision`, `Implementation Detail`, or `Redundant/Already Covered`.
+- Convert only `Material Decision` findings into a `Decision Pending` entry (or equivalent pending-decision section).
+- Resolve implementation details autonomously and avoid reopening redundant/already-covered items.
+- Group related material decisions by theme when possible and stop escalating new decisions once the remaining findings are implementation-local and module-coherent.
 - Resolve all COMMENT/COMENTARIO blocks.
 
 2. **Planning controls**
@@ -29,7 +35,9 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 - Assign decision IDs (`D-01`, `D-02`, ...).
 - Freeze approved decisions in `Decision Baseline (Frozen)` before implementation.
 - Compare frozen decisions against canonical module anchors and classify each as `Aligned`, `Conflict`, or `Supersede`.
+- The coherence reference is always the canonical module docs, never the TODO text alone.
 - Do not proceed while any decision remains `Conflict`.
+- Do not proceed while material pending decisions remain unresolved.
 
 4. **Approval gate**
 - Request explicit **APROVADO**.
@@ -58,5 +66,6 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 
 - No project changes before APROVADO.
 - No project changes while decision/module coherence is unresolved.
+- No project changes while redundant/already-covered or implementation-local details are still being treated as pending user decisions.
 - No delivery with unresolved decision exceptions.
 - No TODO closure without module consolidation evidence.

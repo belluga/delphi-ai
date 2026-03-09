@@ -140,8 +140,9 @@ You must adhere to the following documentation policies:
     * Use `foundation_documentation/artifacts/` for persistent reference artifacts that should remain available (e.g., approved exception catalogs, durable runbooks, fixed diagnostic records).
     * Use `foundation_documentation/artifacts/tmp/` for transient artifacts needed only during execution (e.g., temporary run logs, scratch exports, intermediate files). Files under `artifacts/tmp/` are expected to be gitignored (except keepers like `.gitkeep`).
     * Do not create transient process logs in `.agent/` when `foundation_documentation/artifacts/tmp/` is appropriate.
+    * `.agent/**` is reserved for synced agent rules/workflows and related bootstrapping metadata. Do not store tests, runner scripts, logs, checklists, payload captures, or ad hoc diagnostics there.
   * **Tactical TODO Gate (Required):** For any implementation work, you must create/use a tactical TODO under `foundation_documentation/todos/active/` and refine it before coding, except for:
-    * Edits limited to `.agent/**` or `foundation_documentation/artifacts/tmp/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
+    * Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
     * Approved **Maintenance/Regression Fix** flow (see below).
   * **Maintenance/Regression Fix Flow:** For restoring previously documented or verifiably working behavior (including test failures), use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still request **APROVADO** before changes. Eligibility rules:
     * Must restore previously documented behavior or a known working baseline (reference the evidence in the TODO: doc, test, issue, or prior commit).

@@ -10,6 +10,10 @@ Before any implementation work that changes project code, submodule code, or pro
 - Ensure TODO exists.
 - Summarize scope/out-of-scope/DoD/validation.
 - Ensure canonical module anchors are declared (primary module, optional secondary modules, promotion targets).
+- Treat canonical module docs as the coherence authority, not the TODO text alone.
+- Scan the TODO against those module anchors for gaps, conflicts, ambiguities, uncovered behavior, and missing validation/DoD alignment.
+- Convert every material finding into a `Decision Pending` entry (or equivalent pending-decision section).
+- Resolve pending decisions one by one with the user before coding.
 - Resolve all COMMENT/COMENTARIO blocks before coding.
 
 2. **Complexity + planning gate**
@@ -22,7 +26,9 @@ Before any implementation work that changes project code, submodule code, or pro
 4. **Decision baseline + adherence gate**
 - Assign decision IDs and freeze a `Decision Baseline (Frozen)` before implementation.
 - Compare frozen decisions against canonical module anchors and mark each as `Aligned`, `Conflict`, or `Supersede`.
+- The coherence reference is always the canonical module docs, never the TODO text alone.
 - Block implementation while any frozen decision remains in `Conflict`.
+- Block implementation while material pending decisions remain unresolved.
 - Before delivery, produce `Decision Adherence Validation` with evidence per decision.
 - If any baseline decision is `Exception`, delivery is invalid until decisions are updated and renewed **APROVADO** is obtained.
 

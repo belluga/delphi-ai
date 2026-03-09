@@ -19,6 +19,9 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 
 - [ ] Laravel submodule summary reviewed (`foundation_documentation/submodule_laravel-app_summary.md`)
 - [ ] Persona roadmaps reviewed for Flutter + Laravel sections
+- [ ] API security hardening baseline reviewed (`foundation_documentation/todos/active/mvp_slices/TODO-v1-api-security-hardening.md`)
+- [ ] Endpoint conventions reviewed (`foundation_documentation/endpoints_mvp_contracts.md`)
+- [ ] Cloudflare edge assumptions reviewed (origin behind Cloudflare and trusted-proxy policy defined)
 - [ ] Existing routes and controllers understood
 - [ ] Sanctum ability definitions/policies reviewed
 
@@ -39,6 +42,15 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 3. Add to `foundation_documentation/domain_entities.md`
 4. Update Flutter roadmap
 
+**Security hardening baseline (mandatory):**
+- Classify each endpoint as `L1 Core`, `L2 Balanced`, or `L3 High Protection`.
+- `L2 Balanced` is default; upgrades to `L3` for critical mutation routes (`purchase|reservation|check-in|auth recovery|admin-sensitive writes`).
+- Record level assignment + error metadata conventions in `foundation_documentation/endpoints_mvp_contracts.md`.
+- Keep level assignment monotonic: route overrides may strengthen controls, never weaken below global minimum.
+- Define edge-vs-app responsibility:
+  - Cloudflare: edge DDoS/WAF/bot/challenge/coarse IP controls.
+  - Laravel: principal/account controls + mutation safety + deterministic rejection mapping.
+
 **For feed endpoints:**
 - Confirm page-based pagination
 - Decide if SSE `/stream` companion is required for deltas
@@ -51,6 +63,11 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 - `null` is explicit clear only for nullable fields; `null` for non-nullable fields must return `422`
 - Mixed set+clear payloads must be atomic
 - When standardizing PATCH semantics, add a side-job in the active TODO to align pre-existing non-conforming endpoints (or document explicit exceptions)
+
+**Idempotency/replay + rejection contract:**
+- `L3` mutations require `Idempotency-Key` + replay-window validation.
+- `L2` mutations require idempotency when duplicate side effects are possible.
+- Define deterministic machine-readable rejection reasons (`rate_limited|soft_blocked|hard_blocked|idempotency_missing|idempotency_replayed|idempotency_expired|idempotency_malformed`) and include `retry_after` + `correlation_id` metadata (`cf_ray_id` when present).
 
 ### Step 3: Route Planning
 
@@ -79,6 +96,8 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 - `landlord` for landlord routes
 - `tenant` for tenant routes
 - `account` for account routes
+- security/anti-abuse middleware aligned to `L1|L2|L3` profile for each route
+- production origin locked to Cloudflare path only + trusted-proxy header parsing enforced
 
 **Public vs admin split:**
 - Public reads → tenant-public routes
@@ -165,6 +184,9 @@ Add/extend feature tests covering:
 - [ ] "Create on behalf" items appear only in target account scope
 - [ ] At least one real login-token path for tenant-admin endpoints (not only `Sanctum::actingAs`)
 - [ ] Settings namespace PATCH contract checks (dot-path success `200`, envelope rejection `422`)
+- [ ] `L2|L3` replay/idempotency rejection cases are deterministic
+- [ ] Rate-limit/challenge logic preserves legitimate retries (false-positive safety)
+- [ ] Direct-origin access is blocked and spoofed client-IP headers are not trusted outside approved proxy chain
 
 ### Step 7: Documentation + Roadmap Sync
 
@@ -179,6 +201,20 @@ Add/extend feature tests covering:
 # Run tests
 composer test
 
+# Run architecture guardrails (mandatory)
+composer run architecture:guardrails
+
+# API-security lint gate (mandatory when hardening policy changes)
+php scripts/architecture_guardrails.php
+# Must fail when api_security baseline invariants or middleware/proxy wiring are missing
+
+# Run PHP lint/static checks (use project-defined entrypoints)
+composer run lint || ./vendor/bin/pint --test
+composer run static-analysis || ./vendor/bin/phpstan analyse
+
+# Targeted style check for touched endpoint/security files
+./vendor/bin/pint --test <changed-files...>
+
 # Or targeted suites
 php artisan test --filter=BookingTest
 
@@ -189,6 +225,9 @@ php artisan route:list --path=bookings
 Additional checks:
 - `php artisan route:list | rg "admin/api/v1|api/v1"` for host/prefix matrix validation.
 - Validate changed abilities are present in `config/abilities.php` when wildcard token expansion applies.
+- If endpoint level assignments or rejection taxonomy changed, verify docs + architecture guardrails were updated in the same change set.
+- Validate trusted-proxy configuration for Cloudflare forwarding headers and origin lock at deployment/runtime.
+- Validate trace correlation (`CF-Ray` + `correlation_id`) is observable in logs/telemetry for rejected requests.
 
 ## Route Structure Quick Reference
 

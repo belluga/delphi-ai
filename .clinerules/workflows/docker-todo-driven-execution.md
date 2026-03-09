@@ -19,6 +19,10 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 - Use `foundation_documentation/todos/active/` unless maintenance flow qualifies for ephemeral TODO.
 - Restate scope, out-of-scope, definition of done, and validation steps.
 - Ensure canonical module anchors are declared (primary module, optional secondary modules, promotion targets).
+- Treat canonical module docs as the coherence authority, not the TODO text alone.
+- Scan the TODO against those module anchors for gaps, conflicts, ambiguities, uncovered behavior, and missing validation/DoD alignment.
+- Convert every material finding into a `Decision Pending` entry (or equivalent pending-decision section).
+- Resolve pending decisions one by one with the user before implementation.
 - Resolve all COMMENT/COMENTARIO blocks.
 
 2. **Planning controls**
@@ -29,7 +33,9 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 - Assign decision IDs (`D-01`, `D-02`, ...).
 - Freeze approved decisions in `Decision Baseline (Frozen)` before implementation.
 - Compare frozen decisions against canonical module anchors and classify each as `Aligned`, `Conflict`, or `Supersede`.
+- The coherence reference is always the canonical module docs, never the TODO text alone.
 - Do not proceed while any decision remains `Conflict`.
+- Do not proceed while material pending decisions remain unresolved.
 
 4. **Approval gate**
 - Request explicit **APROVADO**.

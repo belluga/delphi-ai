@@ -8,7 +8,7 @@ description: "Before any implementation work (code/docs) that changes the projec
 Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions and Maintenance/Regression Fix flow below.
 
 ### Exemptions (no TODO required)
-- Edits limited to `.agent/**` (local run logs/checklists).
+- Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
 
 ### Maintenance/Regression Fix Flow (Ephemeral TODO)
@@ -27,7 +27,16 @@ If the change restores previously documented or verifiably working behavior (inc
 - Read the TODO.
 - Summarize `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
 - Ensure canonical module anchors are declared (`primary` module + optional `secondary` modules + promotion targets).
-- Raise any missing questions/decisions that would materially change implementation, and update the TODO before proceeding.
+- Treat canonical module docs as the coherence authority, not the TODO text alone.
+- Start with one broad scan of the TODO against those module anchors for gaps, conflicts, ambiguities, uncovered behavior, and missing validation/DoD alignment.
+- Triage findings into:
+  - `Material Decision`: contract/scope/module/UX/package-surface/validation-semantics/rollout-risk issues that need user confirmation.
+  - `Implementation Detail`: local execution choices Delphi can resolve autonomously without changing the approved contract.
+  - `Redundant/Already Covered`: issues already settled by the module contract or previously approved decisions and therefore not eligible to be reopened as pending questions.
+- Convert only `Material Decision` findings into `Decision Pending` entries (or equivalent pending-decision section).
+- Resolve implementation details autonomously and record them in the TODO only when traceability is useful.
+- Group related material decisions by theme when possible and avoid serial one-by-one questioning for minor details.
+- Stop escalating new decisions once the remaining findings are implementation-local and module-coherent.
 
 ### Gate C — COMMENT blocks (mandatory)
 - Any block labeled **COMENTÁRIO:** (Portuguese) or **COMMENT:** (English) is treated as a contextual question/consideration about the content immediately following it.
@@ -58,6 +67,7 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate G — Module coherence gate (mandatory before implementation)
 - Compare each frozen decision against the canonical module anchors declared in the TODO (`primary` + `secondary`).
 - Record per decision whether it is `Aligned`, `Conflict`, or `Supersede` with evidence (`file:line|section`).
+- The coherence reference is always the canonical module docs, never the TODO text alone.
 - If any decision is `Conflict`, block implementation until TODO/module decisions are reconciled and re-approved.
 
 ### Gate H — Explicit approval token (mandatory)
@@ -99,6 +109,8 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If the user requests implementation without a TODO and the work is not exempt or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
 - If COMMENT blocks exist, block implementation until they are resolved and removed.
 - If canonical module anchors are missing in the TODO, block implementation until anchors are added.
+- If material pending decisions from the module-first TODO scan remain unresolved, block implementation.
+- If redundant/already-covered or implementation-local details are still being treated as pending user decisions, block implementation until the TODO is triaged correctly.
 - If any frozen decision conflicts with canonical module docs, block implementation until coherence is resolved.
 - If `medium|big` work does not contain Plan Review Gate output, block implementation and request completion.
 - If any baseline decision lacks adherence evidence, block delivery.

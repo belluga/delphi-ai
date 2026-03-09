@@ -6,7 +6,7 @@ description: "Workflow: MUST use whenever the scope matches this purpose: Execut
 # Method: TODO-Driven Execution
 
 ## Purpose
-Guarantee every implementation starts from a concrete, reviewable contract (scope + DoD), with explicit risk framing, issue-level tradeoff analysis, module-coherence proof, and decision-adherence proof before delivery.
+Guarantee every implementation starts from a concrete, reviewable contract (scope + DoD), with explicit risk framing, issue-level tradeoff analysis, module-first coherence proof, and decision-adherence proof before delivery.
 
 ## Triggers
 - The user asks for feature work, bugfixes, refactors, or documentation updates that change project artifacts.
@@ -16,7 +16,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 
 ## Procedure
 1. **Determine which lane applies**
-   - If changes are limited to `.agent/**` or `foundation_documentation/todos/**`, proceed without a TODO and still describe intent + results in your response.
+   - If changes are limited to `foundation_documentation/artifacts/tmp/**` or `foundation_documentation/todos/**`, proceed without a TODO and still describe intent + results in your response.
    - If the work qualifies for the Maintenance/Regression Fix flow, use the corresponding lane below.
    - Otherwise, use the full tactical TODO lane.
 2. **Maintenance/Regression Fix lane (Ephemeral TODO)**
@@ -45,11 +45,25 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
      - `medium`: full Plan Review Gate + one checkpoint before approval.
      - `big`: full Plan Review Gate + section-by-section checkpoints.
    - If the scope grows, reclassify and update the TODO before proceeding.
-7. **Raise missing decisions (refinement)**
-   - Identify questions that would change implementation (UX, routes, contracts, data, privacy, fallbacks).
-   - Add them under `questions_to_close` and propose options under `decisions` (A/B/C with clear impact).
-   - Assign stable decision IDs (`D-01`, `D-02`, ...).
-   - Iterate with the user until resolved; then update `decisions` with the chosen outcome.
+7. **Run module-first TODO scan and raise pending decisions (refinement)**
+   - Treat canonical module docs declared in the TODO anchors as the architectural source of truth; the TODO is the execution contract and cannot be refined in isolation.
+   - Start with one broad scan of the TODO against the canonical module anchors (`primary` + `secondary`) for:
+     - gaps,
+     - conflicts,
+     - ambiguities,
+     - uncovered behavior,
+     - or validation/DoD statements that are not yet coherent with the module contract.
+   - Triage every finding into one of three buckets:
+     - `Material Decision`: affects contract, scope, module coherence, UX semantics, public package/API surface, validation semantics, rollout risk, or could reasonably cause meaningful rework if assumed incorrectly.
+     - `Implementation Detail`: local execution choice that can be resolved autonomously without changing the approved contract/module semantics.
+     - `Redundant/Already Covered`: already implied by frozen/approved decisions or by the canonical module contract and must not be reopened as a new user-facing decision.
+   - Convert only `Material Decision` findings into `Decision Pending` entries (or the TODO's equivalent pending-decision section). Do not promote `Implementation Detail` or `Redundant/Already Covered` items into user-facing decision churn.
+   - Resolve `Implementation Detail` findings autonomously and record them in the TODO only when traceability helps execution or later review.
+   - Group related material findings by theme when possible and bring only the smallest set of decisions needed to unblock implementation readiness. Avoid serial one-by-one questioning for minor details.
+   - For each material pending decision, propose concrete options (A/B/C with clear impact), assign stable decision IDs (`D-01`, `D-02`, ...), and resolve them with the user.
+   - After each approval, consolidate the result back into the TODO and, when the module contract is being superseded or clarified, update the module doc or explicitly record the required module promotion target before implementation.
+   - Stop escalating new decisions once the remaining findings are implementation-local and module-coherent.
+   - Do not proceed while material pending decisions remain unresolved.
 8. **Freeze Decision Baseline (mandatory)**
    - Before implementation, freeze the approved decision IDs and expected outcomes under `Decision Baseline (Frozen)` in the TODO.
 9. **Run Module Coherence Gate (mandatory before approval)**
@@ -58,6 +72,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
      - `Module Coherence`: `Aligned|Conflict|Supersede`
      - `Change Intent`: `Preserve|Supersede`
      - Evidence (`file:line|section`) for the compared module rule/decision.
+   - The coherence reference is always the canonical module docs, never the TODO text alone.
    - Block implementation while any decision is `Conflict`.
    - If `Supersede`, capture why replacement is needed and require explicit approval before implementation.
 10. **Resolve COMMENT blocks (mandatory gate)**
@@ -106,6 +121,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 ## Outputs
 - Updated TODO with resolved decisions and removed COMMENT blocks.
 - TODO with canonical module anchors recorded.
+- TODO scan results triaged into material decisions vs implementation-local findings, with module-based coherence evidence.
 - Complexity classification and checkpoint policy recorded in the TODO.
 - Decision baseline and decision-adherence validation table with evidence.
 - Module coherence matrix per decision (`Aligned|Conflict|Supersede` + `Preserve|Supersede`) with evidence.
@@ -115,6 +131,8 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 ## Validation
 - No implementation begins before COMMENT blocks are resolved.
 - No implementation begins without canonical module anchors in the TODO.
+- No implementation begins while material pending decisions from the module-first TODO scan remain unresolved.
+- No implementation begins while redundant/already-covered or implementation-local details are still being treated as pending user decisions.
 - No implementation begins while any frozen decision remains in `Conflict` with canonical module docs.
 - No implementation begins before the user replies **APROVADO**.
 - No delivery is considered complete while any baseline decision lacks adherence evidence.
