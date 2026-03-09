@@ -50,7 +50,7 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 ### Cline
 - **Bootloader**: `CLINE.md` at repository root
 - **Rules**: `.clinerules/` directory (auto-loaded by Cline)
-- **Artifacts**: `.cline/skills/`, `.cline/workflows/`, `.cline/hooks/` (symlinked to `delphi-ai/.cline/`)
+- **Artifacts**: `.cline/skills/`, `.clinerules/workflows/`, `.clinerules/hooks/` (symlinked to `delphi-ai/.cline/` and `delphi-ai/.clinerules/`)
 - **Plan Tracking**: Uses Cline's built-in `task_progress` feature instead of external TODO files
 
 ### Codex / Antigravity

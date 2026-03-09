@@ -184,19 +184,24 @@ ensure_cline_artifacts() {
   local delphi_path="$module_path/delphi-ai"
   local cline_dir="$module_path/.cline"
 
-  # Check if delphi-ai symlink exists and points to correct target
-  if [ ! -L "$delphi_path" ]; then
-    warnings+=("$label delphi-ai symlink missing, Cline artifacts require delphi-ai link")
-    return
-  fi
-
-  # Determine relative path based on whether this is root or a submodule
+  # Determine relative path based on whether this is root or a submodule.
+  # Root repo can use a real delphi-ai directory; submodules should expose a symlink.
   local rel_prefix
   if [ "$module_path" = "$REPO_ROOT" ]; then
-    # Root level - no ../ prefix needed
     rel_prefix="delphi-ai"
   else
-    # Submodule - need ../ prefix
+    if [ -L "$delphi_path" ]; then
+      local delphi_actual
+      delphi_actual="$(readlink "$delphi_path")"
+      if [ "$delphi_actual" != "../delphi-ai" ]; then
+        warnings+=("$label delphi-ai symlink points to $delphi_actual but expected ../delphi-ai")
+      fi
+    elif [ -d "$delphi_path" ]; then
+      warnings+=("$label has local delphi-ai directory; expected symlink to ../delphi-ai for shared updates")
+    else
+      warnings+=("$label delphi-ai link missing; Cline artifacts require delphi-ai path")
+      return
+    fi
     rel_prefix="../delphi-ai"
   fi
 
@@ -205,7 +210,12 @@ ensure_cline_artifacts() {
 
   # Symlink .cline/skills/ (skills are directories with SKILL.md)
   local skills_path="$cline_dir/skills"
-  local skills_target="$rel_prefix/.cline/skills"
+  local skills_target
+  if [ "$module_path" = "$REPO_ROOT" ]; then
+    skills_target="../$rel_prefix/.cline/skills"
+  else
+    skills_target="$rel_prefix/.cline/skills"
+  fi
   if [ -L "$skills_path" ]; then
     local actual
     actual="$(readlink "$skills_path")"
@@ -253,6 +263,79 @@ ensure_cline_artifacts() {
   fi
 }
 
+validate_cline_skills_catalog() {
+  local module_path="$1"
+  local label="$2"
+  local skills_dir="$module_path/.cline/skills"
+  local found=0
+
+  if [ ! -d "$skills_dir" ]; then
+    errors+=("$label .cline/skills directory missing at $skills_dir")
+    return
+  fi
+
+  while IFS= read -r -d '' skill_dir; do
+    found=1
+    local skill_name skill_file first_line close_line fm_name fm_description
+    skill_name="$(basename "$skill_dir")"
+    skill_file="$skill_dir/SKILL.md"
+
+    if [ ! -f "$skill_file" ]; then
+      errors+=("$label skill '$skill_name' missing SKILL.md at $skill_file")
+      continue
+    fi
+
+    first_line="$(head -n 1 "$skill_file" || true)"
+    if [ "$first_line" != "---" ]; then
+      errors+=("$label skill '$skill_name' missing frontmatter opening delimiter in $skill_file")
+      continue
+    fi
+
+    close_line="$(awk 'NR>1 && /^---$/ { print NR; exit }' "$skill_file")"
+    if [ -z "$close_line" ]; then
+      errors+=("$label skill '$skill_name' missing frontmatter closing delimiter in $skill_file")
+      continue
+    fi
+
+    fm_name="$(awk '
+      NR > 1 && /^---$/ { exit }
+      NR > 1 && /^name:[[:space:]]*/ {
+        sub(/^name:[[:space:]]*/, "")
+        gsub(/^["'"'"']|["'"'"']$/, "")
+        print
+        exit
+      }
+    ' "$skill_file")"
+    fm_description="$(awk '
+      NR > 1 && /^---$/ { exit }
+      NR > 1 && /^description:[[:space:]]*/ {
+        sub(/^description:[[:space:]]*/, "")
+        gsub(/^["'"'"']|["'"'"']$/, "")
+        print
+        exit
+      }
+    ' "$skill_file")"
+
+    if [ -z "$fm_name" ]; then
+      errors+=("$label skill '$skill_name' missing frontmatter field 'name' in $skill_file")
+    elif [ "$fm_name" != "$skill_name" ]; then
+      errors+=("$label skill '$skill_name' has frontmatter name '$fm_name' (must match directory name)")
+    elif [[ ! "$fm_name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+      errors+=("$label skill '$skill_name' name '$fm_name' is not kebab-case")
+    fi
+
+    if [ -z "$fm_description" ]; then
+      errors+=("$label skill '$skill_name' missing frontmatter field 'description' in $skill_file")
+    elif [ "${#fm_description}" -gt 1024 ]; then
+      errors+=("$label skill '$skill_name' description exceeds 1024 characters in $skill_file")
+    fi
+  done < <(find -L "$skills_dir" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+
+  if [ "$found" -eq 0 ]; then
+    warnings+=("$label .cline/skills has no skill directories at $skills_dir")
+  fi
+}
+
 get_env_value() {
   local key="$1"
   local file="$2"
@@ -268,7 +351,9 @@ echo "Running Delphi context verification..."
 
 # Sync agent rules and workflows (ensures real files for IDE visibility)
 if [ -f "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh" ]; then
-  bash "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh"
+  if ! bash "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh"; then
+    errors+=("Failed to sync .agent rules/workflows via delphi-ai/tools/sync_agent_rules.sh. Check write permissions for $REPO_ROOT/{.agent,flutter-app/.agent,laravel-app/.agent}.")
+  fi
 fi
 
 check_path_exists "$REPO_ROOT/foundation_documentation" "Root foundation documentation directory"
@@ -295,6 +380,9 @@ ensure_link_in_directory "$REPO_ROOT/flutter-app" "scripts" "../delphi-ai/script
 ensure_cline_artifacts "$REPO_ROOT" "root"
 ensure_cline_artifacts "$REPO_ROOT/flutter-app" "flutter-app"
 ensure_cline_artifacts "$REPO_ROOT/laravel-app" "laravel-app"
+validate_cline_skills_catalog "$REPO_ROOT" "root"
+validate_cline_skills_catalog "$REPO_ROOT/flutter-app" "flutter-app"
+validate_cline_skills_catalog "$REPO_ROOT/laravel-app" "laravel-app"
 
 if [ -f "$REPO_ROOT/delphi-ai/tools/verify_adherence_sync.sh" ]; then
   if ! bash "$REPO_ROOT/delphi-ai/tools/verify_adherence_sync.sh"; then

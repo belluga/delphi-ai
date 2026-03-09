@@ -221,6 +221,11 @@ compare_agent_ruleset() {
   local source_dir="$2"
   local label_prefix="$3"
   local include_shared="$4"
+  local shared_source_dir="$REPO_ROOT/delphi-ai/rules/docker/shared"
+
+  if [ -d "$source_dir/shared" ]; then
+    shared_source_dir="$source_dir/shared"
+  fi
 
   if [ ! -d "$generated_dir" ]; then
     errors+=("Missing directory: $generated_dir")
@@ -234,7 +239,7 @@ compare_agent_ruleset() {
 
     local src
     if [[ "$rel" == shared/* ]]; then
-      src="$REPO_ROOT/delphi-ai/rules/docker/shared/${rel#shared/}"
+      src="$shared_source_dir/${rel#shared/}"
     else
       src="$source_dir/$rel"
     fi
@@ -262,7 +267,7 @@ compare_agent_ruleset() {
       if require_file "$src_file" && require_file "$gen"; then
         compare_rule_body "$src_file" "$gen" "$label_prefix shared source coverage $rel"
       fi
-    done < <(find "$REPO_ROOT/delphi-ai/rules/docker/shared" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
+    done < <(find "$shared_source_dir" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
   fi
 }
 
@@ -388,6 +393,17 @@ compare_agent_workflowset \
   "$REPO_ROOT/flutter-app/.agent/workflows" \
   "$REPO_ROOT/delphi-ai/workflows/flutter" \
   "flutter-app"
+
+compare_agent_ruleset \
+  "$REPO_ROOT/laravel-app/.agent/rules" \
+  "$REPO_ROOT/delphi-ai/rules/laravel" \
+  "laravel-app" \
+  "true"
+
+compare_agent_workflowset \
+  "$REPO_ROOT/laravel-app/.agent/workflows" \
+  "$REPO_ROOT/delphi-ai/workflows/laravel" \
+  "laravel-app"
 
 compare_agent_ruleset \
   "$REPO_ROOT/.agent/rules" \

@@ -1,0 +1,4 @@
+# Local workspace-only mirrors (not part of canonical Delphi instruction repo)
+.codex/
+flutter-app/
+laravel-app/

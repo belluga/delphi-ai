@@ -1,0 +1,95 @@
+name: Instruction Integrity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint Shell Syntax
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' script; do
+            bash -n "$script"
+          done < <(find tools -maxdepth 1 -type f -name '*.sh' -print0 | sort -z)
+
+      - name: Validate Cline Skill Frontmatter
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root = Path(".cline/skills")
+          errors = []
+          for skill_file in sorted(root.glob("*/SKILL.md")):
+              name = skill_file.parent.name
+              lines = skill_file.read_text(encoding="utf-8", errors="replace").splitlines()
+              if not lines or lines[0].strip() != "---":
+                  errors.append(f"{skill_file}: missing opening frontmatter delimiter")
+                  continue
+              close = None
+              for i, line in enumerate(lines[1:], start=2):
+                  if line.strip() == "---":
+                      close = i
+                      break
+              if close is None:
+                  errors.append(f"{skill_file}: missing closing frontmatter delimiter")
+                  continue
+              fm = "\n".join(lines[1:close - 1])
+              name_m = re.search(r"(?m)^name:\s*(.+?)\s*$", fm)
+              desc_m = re.search(r"(?m)^description:\s*(.+?)\s*$", fm)
+              if not name_m:
+                  errors.append(f"{skill_file}: missing name")
+                  continue
+              fm_name = name_m.group(1).strip().strip('"').strip("'")
+              if fm_name != name:
+                  errors.append(f"{skill_file}: frontmatter name '{fm_name}' must match directory '{name}'")
+              if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", fm_name):
+                  errors.append(f"{skill_file}: name '{fm_name}' is not kebab-case")
+              if not desc_m:
+                  errors.append(f"{skill_file}: missing description")
+              else:
+                  desc = desc_m.group(1).strip().strip('"').strip("'")
+                  if len(desc) == 0:
+                      errors.append(f"{skill_file}: empty description")
+                  if len(desc) > 1024:
+                      errors.append(f"{skill_file}: description exceeds 1024 chars")
+          if errors:
+              raise SystemExit("Cline skill frontmatter validation failed:\n - " + "\n - ".join(errors))
+          print("Cline skill frontmatter validation passed.")
+          PY
+
+      - name: Run Baseline Audit
+        run: |
+          set -euo pipefail
+          bash tools/audit_instruction_baselines.sh
+
+      - name: Verify Agent Sync Parity In Ephemeral Env
+        run: |
+          set -euo pipefail
+          ENV_ROOT="$RUNNER_TEMP/delphi-env"
+          rm -rf "$ENV_ROOT"
+          mkdir -p "$ENV_ROOT"
+          ln -s "$GITHUB_WORKSPACE" "$ENV_ROOT/delphi-ai"
+          mkdir -p "$ENV_ROOT/flutter-app" "$ENV_ROOT/laravel-app" "$ENV_ROOT/foundation_documentation"
+          ln -s ../foundation_documentation "$ENV_ROOT/flutter-app/foundation_documentation"
+          ln -s ../foundation_documentation "$ENV_ROOT/laravel-app/foundation_documentation"
+          ln -s ../delphi-ai "$ENV_ROOT/flutter-app/delphi-ai"
+          ln -s ../delphi-ai "$ENV_ROOT/laravel-app/delphi-ai"
+
+          cat > "$ENV_ROOT/.env" <<'EOF'
+          PROJECT_NAME=delphi_ci
+          PROJECT_PREFIX=delphi_ci
+          CERTBOT_EMAIL=ci@example.com
+          EOF
+
+          (cd "$ENV_ROOT" && bash delphi-ai/tools/sync_agent_rules.sh)
+          (cd "$ENV_ROOT" && bash delphi-ai/tools/verify_adherence_sync.sh)

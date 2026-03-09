@@ -20,8 +20,11 @@ if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
   REPO_ROOT="$ENV_ROOT"
 fi
 
-DEL_ROOT="$REPO_ROOT/delphi-ai"
-if [ ! -d "$DEL_ROOT" ]; then
+if [ -d "$REPO_ROOT/delphi-ai" ]; then
+  DEL_ROOT="$REPO_ROOT/delphi-ai"
+elif [ -f "$REPO_ROOT/main_instructions.md" ] && [ -d "$REPO_ROOT/skills" ] && [ -d "$REPO_ROOT/rules" ] && [ -d "$REPO_ROOT/workflows" ]; then
+  DEL_ROOT="$REPO_ROOT"
+else
   echo "delphi-ai directory not found from $REPO_ROOT" >&2
   exit 1
 fi
@@ -67,10 +70,21 @@ status_for_file() {
     notes+=("placeholder token")
   fi
 
-  if [[ "$rel" == delphi-ai/workflows/* ]]; then
+  if [[ "$rel" == delphi-ai/workflows/* || "$rel" == workflows/* ]]; then
     if ! contains "$file" "^description:"; then
       status="FAIL"
       notes+=("missing description frontmatter")
+    fi
+  fi
+
+  if [ "$type" = "Skill" ]; then
+    local word_count
+    word_count="$(wc -w < "$file" | tr -d '[:space:]')"
+    if [ "${word_count:-0}" -gt 5000 ]; then
+      status="FAIL"
+      notes+=("skill exceeds 5000 words (${word_count})")
+    elif [ "${word_count:-0}" -gt 1800 ]; then
+      notes+=("large skill body (${word_count} words); consider splitting details into docs/")
     fi
   fi
 
