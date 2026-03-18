@@ -45,6 +45,8 @@ bash scripts/verify_environment.sh
 ```
 
 **If either script fails:**
+- Treat `verify_context.sh` as read-only verification. If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification.
+- If `verify_context.sh` fails on a path conflict with project-owned files/directories, stop and report the conflict for manual remediation.
 - Fix reported issues before proceeding
 - Do not continue with DevOps work until scripts pass
 
@@ -179,7 +181,7 @@ sudo chown -R $USER:$USER .
 
 ## Validation Checklist
 
-- [ ] `verify_context.sh` passes
+- [ ] Read-only `verify_context.sh` passes
 - [ ] `verify_environment.sh` passes
 - [ ] All submodules initialized and aligned
 - [ ] File ownership correct

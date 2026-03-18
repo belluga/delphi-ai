@@ -34,7 +34,11 @@ wait_for_sync_agent_rules() {
   # Wait until any in-flight sync completes. If no sync is running,
   # shared lock acquisition/release is effectively immediate.
   exec 8>"$lock_file"
-  flock -s 8
+  if ! flock -s -w 5 8; then
+    echo "Warning: timed out waiting for $lock_file; continuing with current .agent state." >&2
+    exec 8>&-
+    return 0
+  fi
   flock -u 8
   exec 8>&-
 }

@@ -9,7 +9,8 @@ description: "Workflow: MUST use whenever the scope matches this purpose: Turn t
 Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes) into the canonical Delphi documentation set using templates, close gaps, and produce progressive milestones plus team task lists.
 
 ## Preconditions
-- Run `bash delphi-ai/verify_context.sh` and fix any failures.
+- Run `bash delphi-ai/verify_context.sh`.
+- If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification.
 - Load main instructions and always_on rules.
 - Load `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen ownership.
 - Identify source docs (e.g., `foundation_documentation/temporary_files/*`, uploaded specs) and target templates (module, roadmap, persona, etc.).

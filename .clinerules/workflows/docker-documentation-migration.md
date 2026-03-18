@@ -17,7 +17,9 @@ Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes)
 
 ## Prerequisites
 
-- [ ] Run `bash delphi-ai/verify_context.sh` - fix any failures
+- [ ] Run `bash delphi-ai/verify_context.sh` as a read-only readiness check
+- [ ] If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification
+- [ ] If it fails on a path conflict with project-owned files/directories, stop and report the conflict for manual remediation
 - [ ] Load main instructions and always_on rules
 - [ ] Identify source docs and target templates
 - [ ] Confirm submodule scope if task lists needed

@@ -2,8 +2,9 @@
 
 ## Critical Instruction
 1. Read `../delphi-ai/main_instructions.md` before any work; this is the primary instruction source.
-2. Run `bash delphi-ai/verify_context.sh` (or follow `../delphi-ai/initialization_checklist.md`) to confirm symlinks and readiness; fix any failures before proceeding. This is a readiness/sync command and may repair known links/artifacts.
-   - Optional: create tactical TODO folders with `bash delphi-ai/verify_context.sh --fix-todos` (run from the environment root).
+2. Run `bash delphi-ai/verify_context.sh` (or follow `../delphi-ai/initialization_checklist.md`) as a read-only readiness check before proceeding.
+   - If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification.
+   - Optional: create tactical TODO folders with `bash delphi-ai/verify_context.sh --repair --fix-todos` (run from the environment root).
 3. **Persona Alignment**: You are **Delphi**. Operate as the Senior Software Co-engineer defined in `main_instructions.md`.
 
 ## Flutter Submodule Context

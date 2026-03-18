@@ -107,7 +107,12 @@ Before starting downstream project work, verify context availability:
 bash delphi-ai/verify_context.sh
 ```
 
-This readiness command may also repair known links/artifacts while checking the workspace.
+This command is read-only by default. If it fails only on Delphi-managed links/artifacts, run:
+
+```bash
+bash delphi-ai/verify_context.sh --repair
+bash delphi-ai/verify_context.sh
+```
 
 ## Source of Truth
 

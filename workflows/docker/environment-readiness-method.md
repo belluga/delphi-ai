@@ -26,6 +26,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 2. **Run canonical readiness scripts (preferred)**
    - Run Delphi context checks (symlinks, required folders):
      - `bash delphi-ai/verify_context.sh`
+     - Treat this as read-only verification. If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification. If it fails on a path conflict with project-owned files/directories, stop and report it for manual remediation.
    - Run the project readiness verifier (compose config + critical drift checks):
      - `bash scripts/verify_environment.sh`
    - If either script fails, fix the reported issue before proceeding.

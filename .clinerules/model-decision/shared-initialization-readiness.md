@@ -10,7 +10,7 @@ When the context indicates downstream environment setup, repository verification
 - Document any remediation (symlinks, ownership fixes) before moving to feature work
 
 ### TODO Directory Setup
-If tactical TODO discipline is in use, ensure `foundation_documentation/todos/{active,completed}` exists (create via `bash delphi-ai/verify_context.sh --fix-todos` if desired).
+If tactical TODO discipline is in use, ensure `foundation_documentation/todos/{active,completed}` exists (create via `bash delphi-ai/verify_context.sh --repair --fix-todos` if desired).
 Do not use this rule to block Delphi self-maintenance inside the `delphi-ai/` repo itself; that path is governed by the self-improvement workflow and manual agnosticism review.
 
 ## Rationale
@@ -24,7 +24,7 @@ Proper initialization prevents stale instructions, broken symlinks, and containe
 
 ## Notes
 
-`bash delphi-ai/verify_context.sh` is a readiness/sync command. If it reports issues, accept its repairs or finish the remaining remediation, then rerun it before continuing.
+`bash delphi-ai/verify_context.sh` is read-only by default. If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification before continuing.
 
 ## Workflow Reference
 

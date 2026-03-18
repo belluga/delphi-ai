@@ -15,11 +15,17 @@ Run the automated check (recommended from the repository root; safe from subdire
 ```bash
 bash delphi-ai/verify_context.sh
 ```
-The script validates the presence of the root documentation and confirms each submodule links to it. Extend the script as additional shared artifacts become necessary.
+The script is read-only by default. It validates the presence of the root documentation and confirms each submodule links to it.
+
+If the verification fails only because Delphi-managed links/artifacts are missing or misaligned, run:
+```bash
+bash delphi-ai/verify_context.sh --repair
+```
+Then rerun plain `bash delphi-ai/verify_context.sh`.
 
 Optional: if you want Delphi’s tactical TODO folders created, run:
 ```bash
-bash delphi-ai/verify_context.sh --fix-todos
+bash delphi-ai/verify_context.sh --repair --fix-todos
 ```
 
 ## 3. Manual Remediation Steps
@@ -63,10 +69,16 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 - **Skills**: `skills/` directory
 
 ### Setup
+Optional preflight:
+```bash
+bash delphi-ai/init.sh --check
+```
+
 Run the setup script to create all necessary symlinks:
 ```bash
 bash delphi-ai/init.sh
 ```
+This helper also attempts to synchronize `.agent` rules/workflows for the root repo and supported app submodules.
 
 Or run the verification script to ensure all links are in place:
 ```bash
