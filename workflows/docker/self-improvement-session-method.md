@@ -14,7 +14,7 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 ## Inputs
 - Current `delphi-ai` core files (main instructions, system principles, ecosystem config, templates).
 - Manual agnosticism review of the edited Delphi surfaces.
-- Applicable local checks for the changed file types (for example `bash tools/audit_instruction_baselines.sh` for governance docs or `bash -n` for edited shell scripts).
+- Applicable local checks for the changed file types (for example `bash self_check.sh` for governance surfaces or `bash -n` for edited shell scripts).
 
 ## Procedure
 1. **Persona Selection** – run the Persona Selection Method; typically CTO/Tech Lead persona.

@@ -1,209 +1,47 @@
 ---
-name: docker-documentation-migration
-description: "Turn temporary or legacy documentation into canonical Delphi documentation set using templates, close gaps, and produce progressive milestones plus team task lists."
+name: "docker-documentation-migration"
+description: "Migrate ad-hoc/temporary docs into Delphi templates with gap analysis, milestones, and team handoff."
 ---
+
+<!-- Generated from `workflows/docker/documentation-migration-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Workflow: Documentation Migration & Expansion
 
 ## Purpose
-
 Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes) into the canonical Delphi documentation set using templates, close gaps, and produce progressive milestones plus team task lists.
 
-## Triggers
+## Preconditions
+- Run `bash delphi-ai/verify_context.sh`.
+- If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification.
+- Load main instructions and always_on rules.
+- Load `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen ownership.
+- Identify source docs (e.g., `foundation_documentation/temporary_files/*`, uploaded specs) and target templates (module, roadmap, persona, etc.).
+- Confirm submodule scope (Flutter/Laravel/web) if task lists are needed.
 
-- Temporary documentation needs to be made canonical
-- Legacy docs need migration to current templates
-- Gap analysis required for documentation coverage
-
-## Prerequisites
-
-- [ ] Run `bash delphi-ai/verify_context.sh` as a read-only readiness check
-- [ ] If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification
-- [ ] If it fails on a path conflict with project-owned files/directories, stop and report the conflict for manual remediation
-- [ ] Load main instructions and always_on rules
-- [ ] Identify source docs and target templates
-- [ ] Confirm submodule scope if task lists needed
-
-## Procedure
-
-### Step 1: Load Core Context
-
-Load:
-- System principles
-- Project mandate
-- Relevant module templates
-
-**Do NOT edit temporary files directly.**
-
-### Step 2: Inventory Source Materials
-
-Identify:
-- Temporary files (`foundation_documentation/temporary_files/*`)
-- PRDs and specs
-- Prototype screens
-- Uploaded specifications
-
-Classify each:
-- **Authoritative** - Use as source of truth
-- **Outdated** - Note but don't migrate
-- **Partial** - Needs completion
-
-### Step 3: Map Scope
-
-Determine requirements:
-- [ ] Required modules
-- [ ] Domain entities
-- [ ] API endpoints
-- [ ] Screens/views
-- [ ] Real-time needs
-- [ ] Landlord vs tenant boundaries
-
-### Step 4: Gap Analysis
-
-Check for missing documentation:
-
-| Area | Check For |
-|------|-----------|
-| Validation | Bounds, formats, constraints |
-| Enums | All values defined with descriptions |
-| Auth/Abilities | Sanctum abilities, policies |
-| Real-time | SSE/WebSocket definitions |
-| Rankings/Badges | Event → job → broadcast flow |
-| Profile | User profile schema |
-| Catalog | Product/service rules |
-| Roadmaps | Implementation status |
-
-### Step 5: Create/Update Canonical Docs
-
-Use templates for:
-
-**Project Mandate:**
-```markdown
-# Project Mandate
-
-## Vision
-[Project vision]
-
-## Core Business Principles
-- [Principle 1]
-- [Principle 2]
-
-## Success Criteria
-- [ ] Criterion 1
-- [ ] Criterion 2
-```
-
-**Domain Entities:**
-```markdown
-# Domain Entity: [Name]
-
-## Fields
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| id | string | yes | Unique identifier |
-
-## Invariants
-- [Business rule 1]
-
-## Enums
-- Status: pending, active, completed
-```
-
-**Endpoints:**
-```markdown
-## Endpoint: [Name]
-
-**Status:** Defined | Mocked | Implemented | Tested & Ready
-
-**Method:** GET | POST | PUT | DELETE
-**Path:** /api/v1/resource
-**Auth:** sanctum + ability
-
-### Request
-[Schema]
-
-### Response
-[Schema]
-
-### Rate Limit
-X requests per minute
-```
-
-### Step 6: Add Milestones
-
-Create progressive implementation milestones:
-
-```markdown
-## Milestone 1: Core API
-- [ ] Domain model defined
-- [ ] Migration created
-- [ ] Controller implemented
-- [ ] Tests passing
-**Target:** Week 1
-
-## Milestone 2: Real-time Updates
-- [ ] SSE endpoint created
-- [ ] Client integration
-- [ ] Fallback polling
-**Target:** Week 2
-```
-
-### Step 7: Produce Team Task Lists
-
-**Flutter Tasks:**
-```markdown
-- [ ] Create booking screen
-  - Controller: BookingController
-  - Screen: BookingScreen
-  - Tests: Widget tests
-```
-
-**Laravel Tasks:**
-```markdown
-- [ ] Create booking endpoint
-  - Route: POST /api/v1/bookings
-  - Validation: BookingStoreRequest
-  - Tests: Feature tests
-```
-
-### Step 8: Document Real-time Flows
-
-If badges/rankings/real-time introduced:
-
-```markdown
-## Event Flow
-
-1. User action triggers event
-2. Event stored in database
-3. Job processes event
-4. Job broadcasts via SSE
-5. Client receives update
-
-## Fallback
-If SSE unavailable, poll `/api/v1/events` every 30s
-```
-
-### Step 9: Surface Landing Content
-
-Document unauthenticated content for client teams:
-- Landing page content
-- Public endpoints
-- Marketing copy
-
-**Do not embed in temp code - document only.**
+## Steps
+1. Load core context (system principles, mandate) and relevant module templates; avoid editing temporary files directly.
+2. Inventory source materials (temporary files, PRDs, prototype screens) and note authoritative vs. outdated content.
+3. Map scope: determine required modules, entities, endpoints, screens, and real-time needs; note landlord vs tenant boundaries and explicit main scope/subscope ownership.
+4. Perform gap analysis: validation bounds, enums, auth/abilities, real-time transport, rankings/badges, profile, catalog rules, and roadmaps.
+5. Create/update canonical docs using templates:
+   - `project_mandate`, `domain_entities`, module docs, persona roadmaps, system_roadmap, and landing/UX notes.
+   - Define endpoints, schemas, enums, indexes, rate limits, payload samples, and SSE/WebSocket payload shapes if applicable.
+   - Include route/scope (and subscope when applicable) matrices for multi-scope modules/screens.
+6. Add progressive implementation milestones with testable outcomes; keep endpoints labeled (Defined/Mocked/Implemented/Tested & Ready).
+7. Produce team task lists (Flutter, Laravel, etc.) with clear scopes and validation expectations.
+8. If badges/rankings/real-time are introduced, document event → jobs → broadcast flow and polling fallbacks.
+9. Surface landing/unauth content in docs (not in temp code) for client teams to implement.
+10. Treat `web-app` as derived/compiled for governance purposes:
+   - author route/navigation test sources in source-owned locations,
+   - synchronize to `web-app` via build tooling,
+   - do not use direct `web-app` test authoring as canonical source.
 
 ## Outputs
+- Updated canonical docs reflecting migrated content and resolved gaps.
+- Progressive milestones and team task lists.
+- Real-time payload definitions (if applicable) and roadmap status updates.
 
-- [ ] Updated canonical docs in `foundation_documentation/`
-- [ ] Progressive milestones defined
-- [ ] Team task lists created
-- [ ] Real-time payload definitions (if applicable)
-- [ ] Roadmap status updated
-
-## Validation Checklist
-
-- [ ] All docs in `foundation_documentation/` (not temp files)
-- [ ] Template structure followed
-- [ ] Endpoints listed with statuses
-- [ ] Indexes/rate limits/enums documented
-- [ ] No edits to temporary files
+## Validation
+- Ensure all modified docs exist in `foundation_documentation/` (or template directory) and follow template structure.
+- Verify endpoints are listed with statuses; indexes/rate limits/enums documented.
+- Confirm no edits were made to temporary files; deliver landing content in docs only.

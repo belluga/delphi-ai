@@ -30,6 +30,13 @@ jobs:
           bash tools/sync_cline_skill_mirrors.sh
           git diff --exit-code -- .cline/skills
 
+      - name: Sync Curated .clinerules Mirrors
+        run: |
+          set -euo pipefail
+          bash tools/sync_clinerules_mirrors.sh
+          mapfile -t generated_files < <(bash tools/sync_clinerules_mirrors.sh --list-targets)
+          git diff --exit-code -- "${generated_files[@]}"
+
       - name: Validate Cline Skill Frontmatter
         run: |
           set -euo pipefail

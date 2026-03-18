@@ -22,6 +22,7 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 5. If the skill introduces or changes operational behavior, update compatible rule/workflow files too:
    - Canonical (Codex/Antigravity): `delphi-ai/rules/**`, `delphi-ai/workflows/**`, and affected `delphi-ai/skills/rule-*` or `delphi-ai/skills/wf-*`.
    - Cline-compatible: `delphi-ai/.clinerules/model-decision/**`, `delphi-ai/.clinerules/glob/**`, `delphi-ai/.clinerules/manual/**`, `delphi-ai/.clinerules/workflows/**`.
+   - After changing any curated canonical rule/workflow that has a generated `.clinerules` counterpart, run `bash delphi-ai/tools/sync_clinerules_mirrors.sh`.
 6. If changed behavior defines/changes an API contract pattern (for example PATCH semantics), consolidate all contract surfaces:
    - Update `foundation_documentation/endpoints_mvp_contracts.md` conventions.
    - Update active tactical TODO decisions/tasks/validation gates with explicit convergence work for legacy areas.
@@ -30,7 +31,7 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 8. If the changed skill is a workflow skill (`wf-*`), ensure a canonical workflow file exists under `delphi-ai/workflows/**` and a Cline workflow counterpart exists under `delphi-ai/.clinerules/workflows/**`.
 9. Validate sync and compatibility:
    - Downstream environment path: `bash delphi-ai/verify_context.sh` (read-only; use `--repair` only for Delphi-managed links/artifacts, then rerun plain verification) and `bash delphi-ai/verify_adherence_sync.sh`
-   - Delphi self-maintenance path: applicable local checks such as `bash tools/audit_instruction_baselines.sh` plus explicit mirror/counterpart diff checks
+   - Delphi self-maintenance path: `bash self_check.sh` plus any explicit mirror/counterpart diff checks that matter for the touched surfaces
    - Optional explicit diff: `diff -u delphi-ai/skills/<skill-name>/SKILL.md delphi-ai/.cline/skills/<skill-name>/SKILL.md`
 10. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
 

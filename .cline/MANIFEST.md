@@ -51,4 +51,5 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 
 - Cline planning is advisory. Delivery authority remains Delphi TODO + APROVADO + Decision Adherence Gate.
 - Curated `.cline/skills` mirrors should be synchronized from canonical skills with `bash tools/sync_cline_skill_mirrors.sh [skill-name ...]`.
+- Curated `.clinerules` mirrors should be synchronized from canonical rules/workflows with `bash tools/sync_clinerules_mirrors.sh [mirror-id ...]`.
 - Validation scripts must fail if required Cline governance artifacts are missing.

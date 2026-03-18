@@ -11,7 +11,7 @@ When the user initiates a "self improvement session" (or equivalent command), sw
 ### Run Self Improvement Workflow
 - Plan instruction updates
 - Apply them
-- Perform manual agnosticism review plus applicable local checks
+- Perform manual agnosticism review plus applicable local checks (prefer `bash self_check.sh` for governance surfaces)
 - Summarize changes
 
 ### Post-Session

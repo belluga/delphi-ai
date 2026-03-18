@@ -47,7 +47,7 @@ if [[ "$(pwd)" == "$SCRIPT_ROOT" || "$(pwd)" == "$SCRIPT_ROOT/"* ]] \
   cat <<'EOF' >&2
 verify_context.sh is for downstream project environments, not the canonical delphi-ai repository.
 For Delphi self-maintenance, use:
-  bash tools/audit_instruction_baselines.sh
+  bash self_check.sh
 EOF
   exit 1
 fi
