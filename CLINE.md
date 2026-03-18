@@ -104,7 +104,7 @@ Use the smell detection skills:
 Before starting work, verify context availability:
 
 ```bash
-bash delphi-ai/tools/verify_context.sh
+bash delphi-ai/verify_context.sh
 ```
 
 ## Source of Truth

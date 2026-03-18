@@ -16,7 +16,7 @@ Centralized instructions to attach Delphi-AI (bootloaders, methods, templates) t
 ### Option 1: Full Setup (Recommended)
 Run the setup helper from the project root:
 ```bash
-./scripts/setup_delphi.sh
+bash delphi-ai/init.sh
 ```
 - Prompts for Laravel/Flutter/Web submodule URLs (defaults to current entries).
 - Creates all required symlinks for Cline, Codex, and Gemini.

@@ -38,7 +38,7 @@ If downstream, note expected remotes (e.g., `belluga/festou_api`, `belluga/festo
 
 ```bash
 # Delphi context checks (symlinks, required folders)
-bash delphi-ai/tools/verify_context.sh
+bash delphi-ai/verify_context.sh
 
 # Project readiness verifier (compose config + drift checks)
 bash scripts/verify_environment.sh

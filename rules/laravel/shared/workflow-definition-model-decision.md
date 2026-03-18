@@ -29,7 +29,7 @@ Workflows are only effective when triggered by rules. This rule keeps procedures
 - Block additions/edits that lack a matching rule or deviate from the template.
 - Block workflow additions that lack required skill/workflow counterparts across canonical and Cline surfaces.
 - Block implementation-capable workflows that omit baseline governance gates (directly or by explicit reference).
-- Require `bash delphi-ai/tools/verify_context.sh` and `bash delphi-ai/tools/verify_adherence_sync.sh` before completion.
+- Require `bash delphi-ai/verify_context.sh` and `bash delphi-ai/verify_adherence_sync.sh` before completion.
 - Require PR reviewers to verify the rule ↔ workflow linkage.
 
 ## Notes

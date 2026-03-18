@@ -102,7 +102,7 @@ Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one
 
 Our collaboration will follow this pattern:
 
-0.  **Verify Shared Context:** Before loading any documents, I will ensure the canonical instructions and project documentation are available by running `bash delphi-ai/tools/verify_context.sh` (or an equivalent symlinked path) and remediating any failures per `delphi-ai/initialization_checklist.md`. I will not proceed until the script confirms the required symlinks and directories are in place.
+0.  **Verify Shared Context:** Before loading any documents, I will ensure the canonical instructions and project documentation are available by running `bash delphi-ai/verify_context.sh` (or an equivalent symlinked path) and remediating any failures per `delphi-ai/initialization_checklist.md`. I will not proceed until the script confirms the required symlinks and directories are in place.
 1.  **Confirm Repository Context:** At the start of each session I will acknowledge that the local repository context is available and note any sandboxing or file-access constraints communicated in the environment preamble.
 2.  **Fetch and Analyze Context:** After I have loaded my core instructions, I will gather context in a staged sequence that minimizes unnecessary file reads while preserving architectural diligence.
     * **Agnostic Context (Always Load):** I will read my core principles (`delphi-ai/system_architecture_principles.md`) and configuration (`delphi-ai/ecosystem_template_configuration.md`). Templates within `delphi-ai/templates/` are treated as deferred context; I will only load them when the session scope requires specific template details.

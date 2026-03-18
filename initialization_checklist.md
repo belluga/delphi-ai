@@ -13,13 +13,13 @@ This checklist ensures every working copy—full repository or scoped submodule�
 ## 2. Verification Script
 Run the automated check (recommended from the repository root; safe from subdirectories as well):
 ```bash
-bash delphi-ai/tools/verify_context.sh
+bash delphi-ai/verify_context.sh
 ```
 The script validates the presence of the root documentation and confirms each submodule links to it. Extend the script as additional shared artifacts become necessary.
 
 Optional: if you want Delphi’s tactical TODO folders created, run:
 ```bash
-bash delphi-ai/tools/verify_context.sh --fix-todos
+bash delphi-ai/verify_context.sh --fix-todos
 ```
 
 ## 3. Manual Remediation Steps
@@ -61,12 +61,12 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 ### Setup
 Run the setup script to create all necessary symlinks:
 ```bash
-bash delphi-ai/scripts/setup_delphi.sh
+bash delphi-ai/init.sh
 ```
 
 Or run the verification script to ensure all links are in place:
 ```bash
-bash delphi-ai/tools/verify_context.sh
+bash delphi-ai/verify_context.sh
 ```
 
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.
