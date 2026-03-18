@@ -38,18 +38,21 @@ fi
 
 declare -a errors=()
 declare -a warnings=()
+declare -A validated_skill_dirs=()
 
 REPAIR_MODE=false
 FIX_TODOS=false
+RUN_ADHERENCE_SYNC=false
 
 usage() {
   cat <<'EOF'
-Usage: bash delphi-ai/verify_context.sh [--repair] [--fix-todos]
+Usage: bash delphi-ai/verify_context.sh [--repair] [--fix-todos] [--with-adherence-sync]
 
 Options:
-  --repair     Repair known Delphi-managed links/artifacts, then rerun verification in the same pass.
-  --fix-todos  Create foundation_documentation/todos/{active,completed}; implies --repair.
-  -h, --help   Show this help text.
+  --repair               Repair known Delphi-managed links/artifacts, then rerun verification in the same pass.
+  --fix-todos            Create foundation_documentation/todos/{active,completed}; implies --repair.
+  --with-adherence-sync  Also run delphi-ai/verify_adherence_sync.sh after readiness verification.
+  -h, --help             Show this help text.
 EOF
 }
 
@@ -61,6 +64,9 @@ for arg in "$@"; do
     --fix-todos)
       FIX_TODOS=true
       REPAIR_MODE=true
+      ;;
+    --with-adherence-sync)
+      RUN_ADHERENCE_SYNC=true
       ;;
     -h|--help)
       usage
@@ -254,11 +260,18 @@ validate_cline_skills_catalog() {
   local label="$2"
   local skills_dir="$module_path/.cline/skills"
   local found=0
+  local canonical_skills_dir="$skills_dir"
 
   if [ ! -d "$skills_dir" ]; then
     errors+=("$label .cline/skills directory missing at $skills_dir")
     return
   fi
+
+  canonical_skills_dir="$(readlink -f "$skills_dir" 2>/dev/null || printf '%s' "$skills_dir")"
+  if [ -n "${validated_skill_dirs[$canonical_skills_dir]:-}" ]; then
+    return
+  fi
+  validated_skill_dirs["$canonical_skills_dir"]=1
 
   while IFS= read -r -d '' skill_dir; do
     found=1
@@ -391,7 +404,7 @@ validate_cline_skills_catalog "$REPO_ROOT" "root"
 validate_cline_skills_catalog "$REPO_ROOT/flutter-app" "flutter-app"
 validate_cline_skills_catalog "$REPO_ROOT/laravel-app" "laravel-app"
 
-if [ -f "$REPO_ROOT/delphi-ai/verify_adherence_sync.sh" ]; then
+if [ "$RUN_ADHERENCE_SYNC" = true ] && [ -f "$REPO_ROOT/delphi-ai/verify_adherence_sync.sh" ]; then
   if ! bash "$REPO_ROOT/delphi-ai/verify_adherence_sync.sh"; then
     errors+=("Adherence sync verification failed (delphi-ai/verify_adherence_sync.sh)")
   fi
@@ -450,3 +463,6 @@ if [ ${#warnings[@]} -gt 0 ]; then
 fi
 
 echo "All required context links and directories are in place."
+if [ "$RUN_ADHERENCE_SYNC" = false ] && [ -f "$REPO_ROOT/delphi-ai/verify_adherence_sync.sh" ]; then
+  echo "For governance mirror validation, run: bash delphi-ai/verify_adherence_sync.sh"
+fi

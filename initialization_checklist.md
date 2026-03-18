@@ -16,6 +16,10 @@ Run the automated check (recommended from the repository root; safe from subdire
 bash delphi-ai/verify_context.sh
 ```
 The script is read-only by default. It validates the presence of the root documentation and confirms each submodule links to it.
+It is a readiness check only; governance mirror validation remains a separate command:
+```bash
+bash delphi-ai/verify_adherence_sync.sh
+```
 
 If the verification fails only because Delphi-managed links/artifacts are missing or misaligned, run:
 ```bash
@@ -83,6 +87,10 @@ This helper also attempts to synchronize `.agent` rules/workflows for the root r
 Or run the verification script to ensure all links are in place:
 ```bash
 bash delphi-ai/verify_context.sh
+```
+Then run the adherence sync validation if you need governance mirror proof:
+```bash
+bash delphi-ai/verify_adherence_sync.sh
 ```
 
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.

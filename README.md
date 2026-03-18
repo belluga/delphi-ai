@@ -29,6 +29,7 @@ bash delphi-ai/init.sh
 - If a required Delphi path is already occupied by a different file/symlink/directory, setup fails clearly and prints the blocking paths. Fix them manually, then rerun.
 - Run `bash delphi-ai/verify_context.sh` afterward as a read-only validation pass.
 - If the validation fails only because Delphi-managed links/artifacts are missing or misaligned, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain `bash delphi-ai/verify_context.sh`.
+- For full governance mirror validation after readiness passes, run `bash delphi-ai/verify_adherence_sync.sh`.
 
 ### Option 2: Manual Setup
 
@@ -98,6 +99,7 @@ If an AI agent is asked to install Delphi in a host repo, it should follow this 
    bash delphi-ai/init.sh --check
    bash delphi-ai/init.sh
    bash delphi-ai/verify_context.sh
+   bash delphi-ai/verify_adherence_sync.sh
    ```
 5. If `verify_context` fails only on repairable Delphi-managed links/artifacts, run:
    ```bash

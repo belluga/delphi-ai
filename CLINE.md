@@ -114,6 +114,12 @@ bash delphi-ai/verify_context.sh --repair
 bash delphi-ai/verify_context.sh
 ```
 
+For governance mirror validation after readiness passes, run:
+
+```bash
+bash delphi-ai/verify_adherence_sync.sh
+```
+
 ## Source of Truth
 
 - **Agnostic Core Context**: `delphi-ai/` directory
