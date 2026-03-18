@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+
 # Derive repo root based on git (preferred) or the symlink path used to invoke this script.
 REPO_ROOT="$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || true)"
 if [ -z "$REPO_ROOT" ]; then
@@ -34,6 +36,20 @@ if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
   if [ -n "$ENV_ROOT" ]; then
     REPO_ROOT="$ENV_ROOT"
   fi
+fi
+
+if [[ "$(pwd)" == "$SCRIPT_ROOT" || "$(pwd)" == "$SCRIPT_ROOT/"* ]] \
+  && [ ! -d "$SCRIPT_ROOT/foundation_documentation" ] \
+  && [ -f "$SCRIPT_ROOT/main_instructions.md" ] \
+  && [ -d "$SCRIPT_ROOT/skills" ] \
+  && [ -d "$SCRIPT_ROOT/rules" ] \
+  && [ -d "$SCRIPT_ROOT/workflows" ]; then
+  cat <<'EOF' >&2
+verify_context.sh is for downstream project environments, not the canonical delphi-ai repository.
+For Delphi self-maintenance, use:
+  bash tools/audit_instruction_baselines.sh
+EOF
+  exit 1
 fi
 
 declare -a errors=()
