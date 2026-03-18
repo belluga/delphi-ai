@@ -49,6 +49,9 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `rule-laravel-shared-todo-driven-execution-model-decision` | Enforces TODO/APROVADO/adherence with module coherence + consolidation gates |
 | `rule-laravel-shared-ability-catalog-sync-model-decision` | Enforces ability string sync across routes/settings/policies and token catalogs |
 | `rule-laravel-shared-settings-kernel-patch-contract-model-decision` | Enforces Settings Kernel PATCH payload contract (dot-path + field-presence semantics) |
+| `rule-flutter-flutter-repository-workflow-glob` | Enforces repository workflow + DAO/DTO raw payload boundary on Flutter repository edits |
+| `rule-flutter-flutter-contract-alignment-always-on` | Enforces Flutter contract alignment, including repository/DAO transport boundary discipline |
+| `wf-flutter-create-repository-method` | Repository method workflow with explicit DAO/decoder boundary and typed transport contracts |
 | `wf-laravel-create-package-method` | Laravel package decoupling workflow with mandatory assertions |
 | `wf-laravel-create-domain-method` | Laravel domain workflow with tenant/landlord migration and index lifecycle guardrails |
 | `test-quality-audit` | Test integrity audit with bypass detection and decision-adherence checks |
@@ -63,6 +66,7 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `create-domain` | Introduce a new Flutter domain aggregate |
 | `create-screen` | Scaffold a new Flutter feature screen |
 | `create-repository` | Establish domain-aligned data access |
+| `create-repository-method` | Method-suffixed repository workflow counterpart with explicit DAO/decoder transport boundary gates |
 | `docker-todo-driven-execution` | Enforce TODO, APROVADO, and Decision Adherence gates |
 | `docker-todo-driven-execution-method` | Method-suffixed counterpart for TODO, APROVADO, and module-consolidation gates |
 | `docker-update-skill-method` | Update skills with cross-surface sync controls |

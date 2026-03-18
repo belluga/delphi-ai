@@ -5,7 +5,7 @@ Assert Laravel package decoupling invariants.
 Checks:
 1) No `App\\...` references inside package src/*.php
 2) No app wrappers extending package namespace (optional)
-3) Host-required contracts (ensureHostBinding) are referenced in AppServiceProvider (optional)
+3) Host-required contracts (ensureHostBinding) are referenced in app provider files (optional)
 """
 
 from __future__ import annotations
@@ -77,11 +77,21 @@ def parse_host_required_contract_tokens(provider_text: str) -> List[str]:
     return sorted(set(re.findall(r"ensureHostBinding\(\s*([A-Za-z0-9_\\]+)::class\s*\)", provider_text)))
 
 
-def missing_host_bindings(contract_tokens: List[str], app_provider_text: str) -> List[str]:
+def provider_texts_for_host_binding_scan(app_provider_path: Path) -> List[str]:
+    if app_provider_path.is_dir():
+        provider_files = sorted(p for p in app_provider_path.rglob("*.php") if p.is_file())
+    else:
+        provider_root = app_provider_path.parent
+        provider_files = sorted(p for p in provider_root.rglob("*.php") if p.is_file())
+
+    return [read_text(path) for path in provider_files]
+
+
+def missing_host_bindings(contract_tokens: List[str], app_provider_texts: List[str]) -> List[str]:
     missing = []
     for token in contract_tokens:
         short_name = token.split("\\")[-1]
-        if f"{short_name}::class" not in app_provider_text:
+        if not any(f"{short_name}::class" in text for text in app_provider_texts):
             missing.append(token)
     return missing
 
@@ -154,15 +164,15 @@ def main() -> int:
             if not required_tokens:
                 print("[OK] No ensureHostBinding declarations detected (host binding assertion not required)")
             else:
-                app_provider_text = read_text(app_provider)
-                missing = missing_host_bindings(required_tokens, app_provider_text)
+                app_provider_texts = provider_texts_for_host_binding_scan(app_provider)
+                missing = missing_host_bindings(required_tokens, app_provider_texts)
                 if missing:
                     failed = True
-                    print("\n[FAIL] Missing host bindings in app provider for required package contracts")
+                    print("\n[FAIL] Missing host bindings in app provider files for required package contracts")
                     for token in missing:
                         print(f"  - {token}")
                 else:
-                    print("[OK] All host-required contracts are referenced in app provider")
+                    print("[OK] All host-required contracts are referenced in app provider files")
 
     if failed:
         print("\nResult: FAILED")

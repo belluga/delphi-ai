@@ -36,6 +36,7 @@
 - Domain entities/value objects depending on DTOs or infrastructure types.
 - Repositories exposing DTOs (must return domain/projection models only).
 - DAOs used outside infrastructure/repository layer.
+- Repositories parsing/building raw transport maps (`Map<String, Object?>`, envelope extraction, payload map assembly). This belongs to DAO/decoder boundaries.
 - Mapping logic inside UI/controllers (must live in repositories/infrastructure).
 
 ### Navigation & Routes
@@ -109,3 +110,11 @@ Allowed only if truly ephemeral:
 - Route contract audit: classify required non-URL route args in `flutter-app/lib/application/router/app_router.gr.dart`.
 - Reference `foundation_documentation/system_architecture_principles.md` Appendix A for full context.
 - Update module/route docs when adding screens or routes.
+
+## Repository Raw Payload Remediation
+
+When a repository violates raw payload boundary rules:
+
+1. Move raw request/response map handling to DAO/decoder layer.
+2. Introduce typed request DTO/command builders for write payloads (including multipart/form-data).
+3. Keep repository methods typed (`DTO/domain in`, `domain/projection out`) and remove `Map<String, Object?>` transport parsing/building.

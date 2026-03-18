@@ -36,6 +36,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
      - primary module doc under `foundation_documentation/modules/`;
      - secondary module docs (if any);
      - planned promotion targets (where stable outcomes will be consolidated).
+     - module decision consolidation targets (sections where approved decisions will be persisted).
    - If anchors are missing, block implementation and update the TODO first.
 6. **Classify complexity and checkpoint policy**
    - Classify as `small|medium|big` and record the level in the TODO.
@@ -60,6 +61,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
    - Resolve `Implementation Detail` findings autonomously and record them in the TODO only when traceability helps execution or later review.
    - Group related material findings by theme when possible and bring only the smallest set of decisions needed to unblock implementation readiness. Avoid serial one-by-one questioning for minor details.
    - For each material pending decision, propose concrete options (A/B/C with clear impact), assign stable decision IDs (`D-01`, `D-02`, ...), and resolve them with the user.
+   - Build a `Module Decision Baseline Snapshot` from relevant prior decisions in canonical module anchors and reference those entries from TODO pending/frozen decisions (or explicitly mark `No Prior Decision` when applicable).
    - After each approval, consolidate the result back into the TODO and, when the module contract is being superseded or clarified, update the module doc or explicitly record the required module promotion target before implementation.
    - Stop escalating new decisions once the remaining findings are implementation-local and module-coherent.
    - Do not proceed while material pending decisions remain unresolved.
@@ -73,8 +75,10 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
      - `Change Intent`: `Preserve|Supersede`
      - Evidence (`file:line|section`) for the compared module rule/decision.
    - The coherence reference is always the canonical module docs, never the TODO text alone.
+   - Produce a `Module Decision Consistency Matrix` (1-1) for relevant module decisions with planned handling: `Preserve|Supersede (Intentional)|Out of Scope`, plus evidence.
    - Block implementation while any decision is `Conflict`.
-   - If `Supersede`, capture why replacement is needed and require explicit approval before implementation.
+   - If `Supersede`, capture why replacement is needed, the target module section update, and require explicit approval before implementation.
+   - Any unintended divergence from relevant module decisions blocks implementation.
 10. **Resolve COMMENT blocks (mandatory gate)**
    - Treat each **COMENTÁRIO:** / **COMMENT:** block as a question/consideration for the content immediately following it.
    - Resolve by updating the TODO (e.g., `decisions`, `scope`, `definition_of_done`) and then remove the comment block.
@@ -97,10 +101,12 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 14. **Decision Adherence Gate (mandatory before delivery)**
    - Build a `Decision Adherence Validation` table for every baseline decision ID.
    - For each decision, record: `status` (`Adherent` or `Exception`), evidence (`file:line`, test, or doc contract), and notes.
+   - Build a `Module Decision Consistency Validation` table (1-1) for relevant module decisions with delivery status: `Preserved|Superseded (Approved)|Regression`.
    - If any decision is `Exception`, block delivery and do one of:
      - Challenge the decision with explicit rationale, or
      - Propose a better alternative.
    - In either case, update the TODO decisions, refresh the frozen baseline, and request renewed **APROVADO** before proceeding.
+   - If any module decision is `Regression`, block delivery until an explicit supersede decision is approved and module consolidation targets are updated.
 15. **Delivery Confidence Gate (mandatory for `✅ Production-Ready`)**
    - Classify runtime impact (`none|low|medium|high`).
    - If runtime-impacting, run operational confidence checks and capture evidence:
@@ -130,6 +136,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 - Plan Review Gate output (issue cards + failure modes + uncertainty register) for `medium|big` work.
 - Decision baseline and decision-adherence validation table with evidence.
 - Module coherence matrix per decision (`Aligned|Conflict|Supersede` + `Preserve|Supersede`) with evidence.
+- Module decision baseline snapshot + 1-1 consistency matrices (planned and delivered) with evidence.
 - Canonical module docs updated with promoted stable outcomes and decision traceability.
 - Implementation changes aligned with the TODO's scope and DoD.
 
@@ -139,9 +146,11 @@ Guarantee every implementation starts from a concrete, reviewable contract (scop
 - No implementation begins while material pending decisions from the module-first TODO scan remain unresolved.
 - No implementation begins while redundant/already-covered or implementation-local details are still being treated as pending user decisions.
 - No implementation begins while any frozen decision remains in `Conflict` with canonical module docs.
+- No implementation begins before a module decision consistency matrix (1-1) is recorded for relevant module decisions.
 - No `medium|big` implementation begins before Plan Review Gate is completed.
 - No implementation begins before the user replies **APROVADO**.
 - No delivery is considered complete while any baseline decision lacks adherence evidence.
+- No delivery is considered complete while any relevant module decision is in `Regression`.
 - No TODO can be marked `✅ Production-Ready` without a completed Delivery Confidence Gate (or explicit waiver rationale).
 - No TODO can be closed as completed before module consolidation evidence is recorded.
 - Implementation stays within `scope`; deviations require updating the TODO and re-confirmation.

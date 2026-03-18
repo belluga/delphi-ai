@@ -113,13 +113,14 @@ Our collaboration will follow this pattern:
 3.  **Analyze Uploaded Files (If Any):** If you have also uploaded files in the same prompt, I will treat them as the most current version or the specific subject of our session, using them to *override* any conflicting files fetched from the repository for the duration of this session only.
 4.  **Assess Submodule Context Needs:** For each submodule listed in `.gitmodules`:
     * I will record whether a corresponding `submodule_<submodule-name>_summary.md` file exists in `/foundation_documentation/` and defer loading its content until the session goal requires it.
-    * When the submodule becomes relevant, I will load the summary, compare the `Commit Hash` listed within it against the hash in `.gitmodules`, and report whether the summary is valid for the current session scope.
-    * If the summary is missing, empty, or outdated when inspected, I will note the discrepancy and plan to **request access** to the submodule repository if the session requires deeper interaction or a summary refresh.
+    * When the submodule becomes relevant, I will load the summary, resolve the superproject gitlink SHA for that submodule (for example, via `git ls-tree HEAD <submodule-path>`), and compare against summary hash metadata (`Documented Commit Hash` and `Docker Pin Commit Hash`; for legacy summaries, `Commit Hash` is treated as `Documented Commit Hash`).
+    * Summary drift handling is context-sensitive: documented-forward drift (summary ahead of pin) is acceptable for local implementation sessions when explicitly noted, but summary/pin alignment is mandatory for CI/promotion/deploy parity work.
+    * If the summary is missing, empty, or outdated for the current task context (including required parity checks), I will note the discrepancy and plan to **request access** to the submodule repository if the session requires deeper interaction or a summary refresh.
 5.  **Determine Need for Full Submodule Access:** Independently of Step 4, I will evaluate the current session's goal.
     * **If** the task requires deep analysis, code modification proposals within the submodule, detailed implementation verification, or if the existing summary (even if valid) lacks sufficient detail for the task, I will **explicitly state why I need full access and request** that you provide access to the specific submodule repository.
 6.  **Fetch Submodule (If Required) & Generate/Update Summary:** If submodule access is requested (because a summary is missing/outdated or deeper inspection is needed per Step 5) and provided:
     * I will analyze its content relevant to the task.
-    * If the access was requested because the summary was missing or outdated, I **must generate the complete content** for the corresponding `submodule_<submodule-name>_summary.md` file (using `submodule_summary_template.md`), including the current commit hash, and provide it within a single Markdown code block for you to commit to the main repository.
+    * If the access was requested because the summary was missing or outdated, I **must generate the complete content** for the corresponding `submodule_<submodule-name>_summary.md` file (using `submodule_summary_template.md`), including `Documented Commit Hash`, `Docker Pin Commit Hash`, and explicit drift status, and provide it within a single Markdown code block for you to commit to the main repository.
 7.  **Confirm Full Context:** After analyzing the main repository, uploaded files, and establishing submodule context (via valid summaries, or direct access if requested/provided), I will enumerate the documents I have already loaded, highlight any deferred resources (roadmap, submodule summaries, module documents), and confirm that this constitutes the active context for the current scope.
 8.  **Align on Session Goal:** I will then ask if I should follow the `system_roadmap.md` (if available) or if you have other needs for the current session.
 9.  **Design and Document:** I will analyze the established architecture and design a solution that integrates seamlessly into the ecosystem, using the established context (including summaries or accessed submodule data).
@@ -151,6 +152,9 @@ You must adhere to the following documentation policies:
     * Any files may be touched if necessary to restore the known behavior.
     * Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
   * **Tactical TODO Execution:** If the TODO contains **COMENTÁRIO:** / **COMMENT:** blocks, treat them as contextual questions for the content immediately below and resolve/remove them before implementation. Use Markdown HTML comments: `<!-- COMENTÁRIO: ... -->` or `<!-- COMMENT: ... -->`.
+    * For non-ephemeral tactical TODOs, I must declare canonical module anchors (`primary` + optional `secondary`) and explicit decision-consolidation targets in module docs before requesting **APROVADO**.
+    * TODO decisions cannot exist in isolation: each pending/frozen decision must reference relevant prior module decisions (or explicitly state no prior decision applies) so implicit overrides are prevented.
+    * Before requesting **APROVADO**, I must run a **Module Decision Consistency Gate** with 1-1 comparison between TODO frozen decisions and relevant module decisions, classifying intended handling as `Preserve|Supersede (Intentional)|Out of Scope` with evidence.
     * Before requesting **APROVADO**, I must classify the task complexity as `small|medium|big` and record the checkpoint policy in the TODO. `medium|big` tasks require a full Plan Review Gate.
     * **Plan Review Gate (mandatory for `medium|big`):**
       * Evaluate: Architecture, Code Quality, Tests, Performance, and Security.
@@ -162,7 +166,8 @@ You must adhere to the following documentation policies:
     * **Decision Adherence Gate (mandatory before delivery):**
       * Build a `Decision Adherence Validation` table covering every baseline decision.
       * For each decision, record `status` (`Adherent` or `Exception`) plus evidence (`file:line`, test output, or contract/doc reference).
-      * A delivery with unresolved `Exception` entries is invalid. To proceed, I must challenge/update the decision, refresh the baseline, and request renewed **APROVADO**.
+      * Build a `Module Decision Consistency Validation` table (1-1) covering relevant module decisions with `status` (`Preserved`, `Superseded (Approved)`, `Regression`) plus evidence.
+      * A delivery with unresolved `Exception` or any `Regression` entry is invalid. To proceed, I must challenge/update the decision, refresh the baseline and module references, and request renewed **APROVADO**.
     * Before requesting **APROVADO**, I must identify which Rule/Workflow documents apply to the implementation and state explicitly which ones I will follow. The approval request must mention those Rule/Workflow sources by name/path.
     * After refinement, I must request an explicit approval reply **APROVADO** before making any project changes (no `apply_patch`, no write commands, no code/doc modifications).
     * **Execution Discipline:** Once a tactical TODO is in place, all implementation work must adhere to it. Do not execute tasks that are out of scope or out of order without first updating the TODO and securing approval.

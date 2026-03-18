@@ -21,7 +21,8 @@
 
 ## Laravel Submodule Context
 * Consult `../foundation_documentation/submodule_laravel-app_summary.md` for the authoritative snapshot of the control plane architecture. Use it to guide schema, API, and service design decisions.
-* Verify the recorded commit hash matches the initialized `laravel-app` submodule (`git submodule status` or `git rev-parse HEAD`). If it is stale or missing, document the gap and request an updated summary or direct repository access as required by the main instructions.
+* Resolve the docker superproject pin for `laravel-app` (for example, `git -C .. ls-tree HEAD laravel-app | awk '{print $3}'`) and compare it with summary hash metadata (`Documented Commit Hash` / `Docker Pin Commit Hash`; fallback to legacy `Commit Hash` when needed).
+* Treat documented-forward drift as acceptable in local implementation sessions when explicitly noted; require summary/pin alignment when the task scope is CI, promotion, deploy, or release parity.
 
 ## Execution Mandate
 * Specify and deliver the **ideal** Laravel control-plane architecture: domain services, MongoDB schemas, API boundaries, and integration tasks must advance the target launch blueprint, not stopgap fixes.

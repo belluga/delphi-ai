@@ -13,12 +13,20 @@ Ensure Laravel package work preserves host/package boundaries, contract ownershi
 1. Classify package mode:
 - `self-contained`
 - `host-integrated`
-2. Define migration scope (`tenant|landlord|mixed`) and wire migration paths correctly.
-3. Keep package internals in `packages/<vendor>/<package>/src/**`; keep host adapters/listeners in host app folders.
-4. Add package contracts and bind host adapters explicitly.
-5. Remove transitional wrappers once parity is validated.
-6. Add/update tests for bindings, event side effects, and behavior parity.
-7. Run decoupling assertion script:
+- `shared-kernel`
+2. Classify route ownership and update `scripts/package_architecture_registry.php`:
+- `host-owned-routes`
+- `package-owned-routes`
+3. For Belluga-style `host-integrated` and `shared-kernel` packages, prefer and enforce `host-owned-routes`.
+4. For `host-owned-routes`, keep route registration in the host app and do not call `loadRoutesFrom(...)`.
+5. For `package-owned-routes`, allow only middleware aliases/config strings or package-local middleware in package route files; never import `App\\Http\\Middleware\\...`.
+6. Define migration scope (`tenant|landlord|mixed`) and wire migration paths correctly.
+7. Keep package internals in `packages/<vendor>/<package>/src/**`; keep host adapters/listeners in host app folders.
+8. Add package contracts and bind host adapters explicitly in dedicated host integration providers under `app/Providers/**`.
+9. Keep `AppServiceProvider.php` package-agnostic.
+10. Remove transitional wrappers once parity is validated.
+11. Add/update tests for bindings, event side effects, and behavior parity.
+12. Run decoupling assertion script:
 
 ```bash
 python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package_decoupling.py \
@@ -28,12 +36,18 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
   --check-host-bindings
 ```
 
-8. Run targeted tests and full Laravel suite for milestone completion.
+13. Run `composer run architecture:guardrails`.
+14. Run targeted tests and full Laravel suite for milestone completion.
 
 ## Validation
 
 - No direct `App\\...` references inside package `src/**`.
+- Package is declared in `scripts/package_architecture_registry.php`.
+- `package-owned-routes` do not import `App\\Http\\Middleware\\...`.
+- `host-owned-routes` do not call `loadRoutesFrom(...)`.
 - Host contracts/adapters are explicitly wired.
+- `AppServiceProvider.php` remains package-agnostic.
 - Migration scope is explicit and correctly configured.
 - Decoupling assertions pass.
+- Architecture guardrails pass.
 - Test gates pass.

@@ -24,18 +24,23 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 3. **Design DTO mapper**
    - Implement/update `lib/infrastructure/mappers/<feature>_dto_mapper.dart` to translate DTOs → ValueObjects.
    - Keep slugging/formatting helpers inside the mapper to avoid leaks.
-4. **Implement repository**
-   - Add `lib/infrastructure/repositories/<name>_repository.dart` that mixes in the mapper and talks to `BackendContract` or the appropriate datasource.
-   - Ensure no presentation imports appear.
-5. **Dependency injection**
+4. **Design DAO/decoder transport boundary**
+   - Keep raw response parsing (`data/meta` envelopes, list extraction, map casts) inside DAO/decoder artifacts under infrastructure.
+   - For write operations, define typed request DTO/command builders at DAO boundary (including multipart/form-data assembly).
+   - Repository methods must not declare/build/parse raw transport maps (`Map<String, Object?>`, `as Map` payload casts, inline payload map assembly).
+5. **Implement repository**
+   - Add `lib/infrastructure/repositories/<name>_repository.dart` that mixes in the mapper and talks to typed DAO/backends (`DTO in`, `Domain/Projection out`).
+   - Ensure no presentation imports appear and no raw transport handling is owned by repository methods.
+6. **Dependency injection**
    - Register the repository in `module_settings.dart` or the relevant module scope via `registerLazySingleton` / `registerFactory`.
-6. **Controller adoption**
+7. **Controller adoption**
    - Update controllers/services to depend on the contract (GetIt injection). Remove any direct DTO parsing.
-7. **Documentation touch**
+8. **Documentation touch**
    - Note repository availability in module summaries/system roadmap if it unlocks new behavior.
    - Update the Flutter section of `foundation_documentation/persona_roadmaps.md` with the new capability or technical debt payoff.
-8. **Verification**
+9. **Verification**
    - Run `fvm flutter analyze`; add/re-run unit tests covering the repository/user of it.
+   - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash tool/belluga_custom_lint/bin/check_branch_delta_raw_payload_map.sh`).
 
 ## Outputs
 - Repository contract + implementation files.
@@ -47,3 +52,4 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 - Analyzer/tests pass.
 - Controllers/widgets import only the contract, not DTOs.
 - DTO handling remains infrastructure-only.
+- Repository methods do not own raw payload maps (`Map<String, Object?>`) for transport parsing/building.

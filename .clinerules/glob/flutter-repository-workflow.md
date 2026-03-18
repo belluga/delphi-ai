@@ -8,6 +8,8 @@ Edits in repository directories must run the Repository Workflow:
 
 ### Requirements
 - Maintain DTO → Domain mapping discipline; no DTO leakage
+- Keep raw transport payload ownership at DAO/DTO boundary (no repository `Map<String, Object?>` transport parsing/building)
+- Use typed request DTO/command builders for writes (including multipart assembly) instead of inline repository payload maps
 - Document pagination/filtering contracts and sync Laravel roadmap entries when APIs are implied
 - Update mock data/DTO docs before merging
 
@@ -27,7 +29,9 @@ See: `.clinerules/workflows/create-repository.md`
 ## Quick Checklist
 
 - [ ] DTO → Domain mapping documented
+- [ ] Raw envelope/payload map parsing/building is not owned by repository methods
 - [ ] No DTO types in controller/screen
 - [ ] Pagination contracts documented
 - [ ] Laravel roadmap updated if API needed
 - [ ] Mock data matches DTOs
+- [ ] Branch-delta guard executed when debt-lane requires disabled rules (e.g., `check_branch_delta_raw_payload_map.sh`)

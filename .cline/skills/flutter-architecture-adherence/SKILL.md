@@ -25,8 +25,9 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - Mandatory command for architecture checks: `fvm dart run custom_lint`.
 - `SEM EXCEÇÃO`: do not bypass architecture findings with per-file ignores/allowlists.
 - If a finding is wrong, calibrate the lint rule; do not suppress it.
+- When an active debt TODO requires branch-delta enforcement for disabled rules, run the branch guard command(s) declared in the TODO before delivery.
 - Rule IDs currently enforced for architecture governance:
-  - P0: `ui_getit_non_controller_forbidden`, `ui_direct_repository_service_resolution_forbidden`, `ui_cross_feature_controller_resolution_forbidden`, `module_scoped_controller_dispose_forbidden`, `ui_streamvalue_ownership_forbidden`, `ui_dto_import_forbidden`, `domain_dto_dependency_forbidden`, `module_direct_getit_registration_forbidden`.
+  - P0: `ui_getit_non_controller_forbidden`, `ui_direct_repository_service_resolution_forbidden`, `ui_cross_feature_controller_resolution_forbidden`, `module_scoped_controller_dispose_forbidden`, `ui_streamvalue_ownership_forbidden`, `ui_dto_import_forbidden`, `domain_dto_dependency_forbidden`, `module_direct_getit_registration_forbidden`, `repository_json_parsing_forbidden`, `repository_raw_transport_typing_forbidden`, `repository_raw_payload_map_forbidden` (branch-delta when globally disabled), `service_json_parsing_forbidden`, `repository_inline_dto_to_domain_mapper_forbidden`.
   - P1: `ui_navigation_after_await_forbidden`, `controller_direct_navigation_forbidden`, `ui_navigator_usage_forbidden`, `ui_build_side_effects_forbidden`, `ui_future_stream_builder_forbidden`, `ui_controller_ownership_forbidden`.
   - P2: `screen_controller_resolution_pattern_required`, `multi_widget_file_warning`, `controller_buildcontext_dependency_forbidden`, `global_ui_controller_naming_forbidden`.
 
@@ -37,6 +38,9 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - In presentation `screens/widgets`, `GetIt` resolution is allowed only for same-feature controllers.
 - In presentation `screens/widgets`, resolving cross-feature controllers is forbidden.
 - Repositories and domain layers must stay aligned with documented contracts.
+- Repository transport boundary is strict:
+  - DAO/decoder layers own raw payload envelopes and map parsing/building,
+  - repositories consume typed DAO outputs (DTO/domain mappers) and return domain/projections only.
 - Widget state is only allowed for true ephemeral UI (see local-state heuristics). Anything ModuleScope-adjacent must be controller-driven.
 - UI must not own `StreamValue` instances directly; StreamValue belongs in controllers only.
 - `StreamValue` in controllers is valid in two cases only:

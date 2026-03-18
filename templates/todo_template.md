@@ -34,9 +34,16 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
   - `foundation_documentation/modules/<secondary_module>.md`
 - **Planned decision promotion targets (module sections):**
   - `<module section where stable decisions/plans will be consolidated>`
+- **Module decision consolidation targets (required):**
+  - `<module section where finalized decisions from this TODO will be persisted>`
 
 ## Decisions
-- [ ] `D-01` <Decision: chosen option + short rationale>
+- [ ] `D-01` <Decision: chosen option + short rationale + module decision ref (or `No Prior Decision`)>
+
+## Module Decision Baseline Snapshot (Required Before APROVADO)
+- | Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+- | --- | --- | --- | --- |
+- | `<module#decision-id>` | <summary> | <handling> | <file:line/section> |
 
 ## Decision Baseline (Frozen Before Implementation)
 - [ ] `D-01` <Expected outcome that implementation must adhere to>
@@ -88,11 +95,19 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
 - | --- | --- | --- | --- |
 - | `D-01` | <status> | <file:line/test/doc> | <notes> |
 
+## Module Decision Consistency Validation (1-1 Mandatory Before Delivery)
+- | Module Decision Ref | Planned Handling | Delivery Status (`Preserved|Superseded (Approved)|Regression`) | Evidence | Notes |
+- | --- | --- | --- | --- | --- |
+- | `<module#decision-id>` | <handling> | <status> | <file:line/test/doc> | <notes> |
+
 ### Exception Handling
 - If any decision is `Exception`, delivery is blocked until:
   - the decision is explicitly challenged with rationale, or
   - a better alternative is proposed,
   and the updated decision/baseline receives renewed **APROVADO**.
+- If any module decision is `Regression`, delivery is blocked until:
+  - an intentional supersede decision is approved, and
+  - canonical module consolidation targets are updated accordingly.
 
 ## Delivery Confidence Gate (Required for `✅ Production-Ready`)
 - [ ] **Runtime impact classified:** <none | low | medium | high>
@@ -108,6 +123,7 @@ Use this file as a starting point for `foundation_documentation/todos/active/<sh
 ## Module Consolidation Gate (Required Before `Completed`)
 - [ ] Canonical module docs were updated with stable conceptual outcomes and final decisions from this TODO.
 - [ ] Decision promotion ledger (or equivalent trace table) in module docs links back to this TODO.
+- [ ] Every relevant prior module decision is either preserved or intentionally superseded with explicit traceability.
 - [ ] Superseded/conflicting tactical notes were removed or replaced by canonical module references.
 - [ ] TODO/module cross-links were updated (including active/completed path changes).
 

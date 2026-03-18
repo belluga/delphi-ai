@@ -4,8 +4,19 @@
 ## 1. Analyzed Version
 
 * **Submodule Name:** `{{SUBMODULE_NAME}}`
-* **Commit Hash:** `{{COMMIT_HASH}}`
+* **Documented Commit Hash:** `{{DOCUMENTED_COMMIT_HASH}}`
+* **Docker Pin Commit Hash:** `{{DOCKER_PIN_COMMIT_HASH}}`
+* **Summary Drift Status:** `{{DRIFT_STATUS}}`
 * **Analysis Date:** `{{DATE}}`
+
+### Field Definitions
+
+* `Summary Drift Status` valid values:
+  * `Aligned`: documented commit hash equals docker pin commit hash.
+  * `Ahead of Pin`: summary intentionally describes changes ahead of the current docker pin.
+  * `Behind Pin`: summary is older than the docker pin and must be refreshed before parity-critical tasks.
+
+*Legacy compatibility note: if an older summary still has a single `Commit Hash` field, treat it as `Documented Commit Hash` until migrated.*
 
 *Purpose: This document summarizes the key architectural aspects of the specified submodule version relevant to the main ecosystem.*
 

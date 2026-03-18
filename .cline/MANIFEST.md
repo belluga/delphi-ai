@@ -21,6 +21,7 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/workflows/docker-self-improvement-session.md`
 - `.clinerules/workflows/docker-update-skill-method.md`
 - `.clinerules/workflows/laravel-create-package-method.md`
+- `.clinerules/workflows/create-repository-method.md`
 
 ### Manual rules
 - `.clinerules/manual/shared-self-improvement.md`
@@ -39,6 +40,9 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.cline/skills/test-quality-audit/SKILL.md`
 - `.cline/skills/test-creation-standard/SKILL.md`
 - `.cline/skills/test-orchestration-suite/SKILL.md`
+- `.cline/skills/rule-flutter-flutter-repository-workflow-glob/SKILL.md`
+- `.cline/skills/rule-flutter-flutter-contract-alignment-always-on/SKILL.md`
+- `.cline/skills/wf-flutter-create-repository-method/SKILL.md`
 
 ### Hooks
 - `.clinerules/hooks/session_start`

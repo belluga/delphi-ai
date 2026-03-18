@@ -32,9 +32,10 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
    - If either script fails, fix the reported issue before proceeding.
 
 3. **Validate submodules (only if needed)**
-   - Run `git submodule status --recursive` and ensure each submodule is checked out; no entry should start with `-` (uninitialized) or `+` (detached from the recorded commit in `.gitmodules`).
+   - Run `git submodule status --recursive` and ensure each submodule is checked out; no entry should start with `-` (uninitialized) or `U` (merge conflict on gitlink state).
+   - Treat entries starting with `+` as local workspace drift (tracking mode) rather than immediate failure.
+   - If the task requires CI/deploy parity, normalize to pinned mode before proceeding: prefer `tools/submodules/pin_to_superproject.sh` when available, otherwise run `git submodule sync --recursive && git submodule update --init --recursive`, then confirm no `+` remains.
    - Ensure `foundation_documentation` is present as a submodule; if missing, add it using the canonical docs repo before proceeding.
-   - If any discrepancies appear, execute `git submodule sync --recursive && git submodule update --init --recursive` to realign the working trees with the recorded commit hashes before continuing.
    - For each entry in `.gitmodules`, confirm the URL points to the project’s own repo, not `belluga/boilerplate_*`. If any still reference boilerplate sources, guide the user to `git submodule set-url` the correct fork before proceeding.
 
 4. **Filesystem ownership**

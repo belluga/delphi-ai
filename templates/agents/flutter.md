@@ -8,7 +8,8 @@
 
 ## Flutter Submodule Context
 * Read `../foundation_documentation/submodule_flutter-app_summary.md` to align with the currently analyzed commit and module architecture. Reference it while designing or validating client flows.
-* Confirm the commit hash in that summary matches the initialized `flutter-app` submodule (`git submodule status` or `git rev-parse HEAD`). If it diverges, note the discrepancy and request a refreshed summary or repository access per the main instructions.
+* Resolve the docker superproject pin for `flutter-app` (for example, `git -C .. ls-tree HEAD flutter-app | awk '{print $3}'`) and compare it with summary hash metadata (`Documented Commit Hash` / `Docker Pin Commit Hash`; fallback to legacy `Commit Hash` when needed).
+* Treat documented-forward drift as acceptable in local implementation sessions when explicitly noted; require summary/pin alignment when the task scope is CI, promotion, deploy, or release parity.
 
 ## Execution Mandate
 * Establish solutions that express the **ideal** launch architecture for the Flutter client—design modular capabilities, justify every decision against system principles, and document integration points with the Laravel API.

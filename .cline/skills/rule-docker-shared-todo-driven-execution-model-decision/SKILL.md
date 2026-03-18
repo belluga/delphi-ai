@@ -26,6 +26,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - Read the TODO.
 - Summarize `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
 - Ensure canonical module anchors are declared (`primary` module + optional `secondary` modules + promotion targets).
+- Ensure module decision consolidation targets are declared (where approved decisions will be persisted in canonical module docs).
 - Treat canonical module docs as the coherence authority, not the TODO text alone.
 - Start with one broad scan of the TODO against those module anchors for gaps, conflicts, ambiguities, uncovered behavior, and missing validation/DoD alignment.
 - Triage findings into:
@@ -33,6 +34,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - `Implementation Detail`: local execution choices Delphi can resolve autonomously without changing the approved contract.
   - `Redundant/Already Covered`: issues already settled by the module contract or previously approved decisions and therefore not eligible to be reopened as pending questions.
 - Convert only `Material Decision` findings into `Decision Pending` entries (or equivalent pending-decision section).
+- Build a `Module Decision Baseline Snapshot` from relevant existing module decisions and reference those entries from TODO pending/frozen decisions (or explicitly mark `No Prior Decision`).
 - Resolve implementation details autonomously and record them in the TODO only when traceability is useful.
 - Group related material decisions by theme when possible and avoid serial one-by-one questioning for minor details.
 - Stop escalating new decisions once the remaining findings are implementation-local and module-coherent.
@@ -60,8 +62,10 @@ If the change restores previously documented or verifiably working behavior (inc
   - `Change Intent`: `Preserve|Supersede`
   - evidence to module source (`file:line` or section).
 - The coherence reference is always the canonical module docs, never the TODO text alone.
+- Produce a `Module Decision Consistency Matrix` (1-1) for relevant module decisions with planned handling: `Preserve|Supersede (Intentional)|Out of Scope`, with evidence.
 - Block implementation while any decision remains `Conflict`.
 - If any decision is `Supersede`, explicit approval is required and the TODO must include planned module update targets before coding.
+- If any module decision has unintended divergence, block implementation until it is either preserved or explicitly approved for supersede.
 
 ### Gate G — Explicit approval token (mandatory)
 - After Gates A-F, Delphi must ask for explicit user approval of the TODO before any implementation begins.
@@ -70,7 +74,9 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate H — Decision Adherence Gate (mandatory before delivery)
 - Before delivery, build a `Decision Adherence Validation` table for every baseline decision ID.
 - For each decision, record `status` (`Adherent` or `Exception`) and supporting evidence (`file:line`, test result, or doc contract).
+- Before delivery, build a `Module Decision Consistency Validation` table (1-1) for relevant module decisions with delivery status: `Preserved|Superseded (Approved)|Regression`.
 - If any decision is `Exception`, delivery is invalid until the decision/baseline is updated and renewed **APROVADO** is obtained.
+- If any module decision is `Regression`, delivery is invalid until an intentional supersede is approved and reflected in module consolidation targets.
 
 ### Gate I — Delivery Confidence Gate (mandatory for `✅ Production-Ready`)
 - Before marking any TODO as `✅ Production-Ready`, classify runtime impact (`none|low|medium|high`).
@@ -98,7 +104,9 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - Block implementation when material pending decisions from the module-first TODO scan remain unresolved.
 - Block implementation when redundant/already-covered or implementation-local details are still being treated as pending user decisions.
 - Block implementation when any frozen decision is `Conflict` against canonical module docs.
+- Block implementation when the module decision consistency matrix (1-1) is missing.
 - Block delivery if any baseline decision lacks adherence evidence.
+- Block delivery if any relevant module decision ends in `Regression`.
 - Block `✅ Production-Ready` status without Delivery Confidence Gate evidence (or explicit waiver rationale).
 - Block TODO closure when module consolidation evidence is missing.
 

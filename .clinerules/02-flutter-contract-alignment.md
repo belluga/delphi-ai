@@ -8,6 +8,7 @@ Maintain bidirectional contract alignment between Flutter and backend:
 - Map every Flutter DTO/model to the governing entity in `foundation_documentation/domain_entities.md`
 - Update summaries when attributes change
 - Never let DTOs diverge from documented entities
+- Keep repository/DAO transport contracts aligned: raw payload maps/envelopes are DAO/decoder ownership, repositories stay typed.
 
 ### API Changes
 - When Flutter repositories alter pagination/filtering, log in `foundation_documentation/system_roadmap.md`
@@ -40,9 +41,10 @@ Flutter is the lead consumer of the platform's Core Business Entities. Keeping c
 - Adjust mocks/DTOs without updating documentation
 - Add new endpoints without roadmap entry
 - Change pagination/filtering without backend coordination
+- Introduce repository-owned raw map transport parsing/building without DAO/DTO boundary refactor or tracked debt decision
 
 ### Regular Checks
-- Compare `submodule_flutter-app_summary.md` against `.gitmodules`
+- Compare `submodule_flutter-app_summary.md` hash metadata against docker superproject gitlink (`git ls-tree HEAD flutter-app`)
 - Verify documentation reflects submodule state
 
 ## Quick Reference
