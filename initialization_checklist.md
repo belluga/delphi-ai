@@ -51,12 +51,16 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 - **Bootloader**: `CLINE.md` at repository root
 - **Rules**: `.clinerules/` directory (auto-loaded by Cline)
 - **Artifacts**: `.cline/skills/`, `.clinerules/workflows/`, `.clinerules/hooks/` (symlinked to `delphi-ai/.cline/` and `delphi-ai/.clinerules/`)
-- **Plan Tracking**: Uses Cline's built-in `task_progress` feature instead of external TODO files
+- **Plan Tracking**: Cline's built-in `task_progress` may help with local planning, but it does **not** replace Delphi's tactical TODO + `APROVADO` + Decision Adherence gates when those are required by the instructions
 
 ### Codex / Antigravity
-- **Bootloader**: `GEMINI.md` at repository root
+- **Bootloader**: `AGENTS.md` at repository root
 - **Skills**: `.codex/skills/` symlinked to `delphi-ai/skills/`
 - **Rules/Workflows**: Managed via `.agent/` directories
+
+### Gemini
+- **Bootloader**: `GEMINI.md` at repository root
+- **Skills**: `skills/` directory
 
 ### Setup
 Run the setup script to create all necessary symlinks:

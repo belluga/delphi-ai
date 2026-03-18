@@ -347,7 +347,7 @@ get_env_value() {
   fi
 }
 
-echo "Running Delphi context verification..."
+echo "Running Delphi context readiness/sync..."
 
 # Sync agent rules and workflows (ensures real files for IDE visibility)
 if [ -f "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh" ]; then
@@ -384,9 +384,9 @@ validate_cline_skills_catalog "$REPO_ROOT" "root"
 validate_cline_skills_catalog "$REPO_ROOT/flutter-app" "flutter-app"
 validate_cline_skills_catalog "$REPO_ROOT/laravel-app" "laravel-app"
 
-if [ -f "$REPO_ROOT/delphi-ai/tools/verify_adherence_sync.sh" ]; then
-  if ! bash "$REPO_ROOT/delphi-ai/tools/verify_adherence_sync.sh"; then
-    errors+=("Adherence sync verification failed (delphi-ai/tools/verify_adherence_sync.sh)")
+if [ -f "$REPO_ROOT/delphi-ai/verify_adherence_sync.sh" ]; then
+  if ! bash "$REPO_ROOT/delphi-ai/verify_adherence_sync.sh"; then
+    errors+=("Adherence sync verification failed (delphi-ai/verify_adherence_sync.sh)")
   fi
 fi
 
@@ -413,10 +413,10 @@ elif [ "$TODOS_MISSING" = true ]; then
       ensure_todos_structure
       printf 'Created foundation_documentation/todos/{active,completed} with .gitkeep files.\n'
     else
-      warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/tools/verify_context.sh --fix-todos")
+      warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/verify_context.sh --fix-todos")
     fi
   else
-    warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/tools/verify_context.sh --fix-todos")
+    warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/verify_context.sh --fix-todos")
   fi
 fi
 

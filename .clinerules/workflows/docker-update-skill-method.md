@@ -17,12 +17,13 @@ Keep skill behavior aligned across Codex, Cline, and Antigravity while preventin
 - canonical workflow exists in `delphi-ai/workflows/**`
 - Cline workflow counterpart exists in `delphi-ai/.clinerules/workflows/**`
 5. Run validations:
-- `bash delphi-ai/verify_context.sh`
-- `bash delphi-ai/verify_adherence_sync.sh`
+- downstream environment path: `bash delphi-ai/verify_context.sh` and `bash delphi-ai/verify_adherence_sync.sh`
+- Delphi self-maintenance path: manual agnosticism review plus applicable local checks such as `bash tools/audit_instruction_baselines.sh`
 6. Report changed files and explicitly confirm no Codex/Cline/Antigravity drift remains.
 
 ## Validation
 
 - No mismatch between canonical and `.cline/skills` versions of edited skills.
 - Workflow-skill counterparts exist in canonical and Cline workflow surfaces.
-- Adherence sync check passes.
+- For downstream environment runs, adherence sync check passes.
+- For Delphi self-maintenance runs, manual agnosticism review and applicable local checks are recorded.

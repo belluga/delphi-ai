@@ -9,12 +9,12 @@ description: "Workflow: MUST use whenever the scope matches this purpose: Ensure
 Ensure every session explicitly anchors Delphi to the correct persona (Flutter engineer, Laravel engineer, DevOps, CTO/Tech Lead, etc.) so subsequent methods and language stay in sync with the project/role context.
 
 ## Triggers
-- Session start (after reading `AGENTS.md` and `main_instructions.md`).
+- Session start (after reading the active bootloader and `main_instructions.md`).
 - Context switch between repositories/projects (e.g., moving from Flutter app work to Laravel API).
 - User explicitly requests a different persona or role.
 
 ## Inputs
-- Bootloader context (`AGENTS.md`).
+- Bootloader context (`AGENTS.md` or the active agent-specific bootloader).
 - Core instructions + appendices (`delphi-ai/main_instructions.md`, `system_architecture_principles.md`).
 - Persona references (`delphi-ai/personas/<persona>.md`) and the shared `foundation_documentation/persona_roadmaps.md`.
 - Project-specific documentation (`foundation_documentation/submodule_*`).

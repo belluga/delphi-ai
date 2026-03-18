@@ -13,7 +13,8 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 
 ## Inputs
 - Current `delphi-ai` core files (main instructions, system principles, ecosystem config, templates).
-- Tooling: `tools/verify_context.sh` (or manual checks) to confirm agnosticism.
+- Manual agnosticism review of the edited Delphi surfaces.
+- Applicable local checks for the changed file types (for example `bash tools/audit_instruction_baselines.sh` for governance docs or `bash -n` for edited shell scripts).
 
 ## Procedure
 1. **Persona Selection** – run the Persona Selection Method; typically CTO/Tech Lead persona.
@@ -21,9 +22,10 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 3. **Plan updates** – list the instruction files to edit and the rationale.
 4. **Apply changes** – edit `delphi-ai/*.md` (and templates) as required.
 5. **Agnosticism & consistency verification**
-   - Run `tools/verify_context.sh` (or manually review diffs) to ensure no project-specific paths/data creep into `delphi-ai/`.
+   - Review the edited Delphi files and diffs to ensure no project-specific paths/data creep into `delphi-ai/`, `.clinerules/`, or `.cline/`.
    - Cross-check updated files against `system_architecture_principles.md` and template expectations so instructions remain internally consistent.
    - Confirm references to project-specific files live under `foundation_documentation/` instead.
+   - Run any applicable local checks for the touched surfaces. When the session is happening from a fully wired downstream environment and that validation is relevant, `bash delphi-ai/verify_context.sh` may be used as an additional readiness check, but it is not a prerequisite for Delphi self-maintenance.
 6. **Documentation sync** – if instruction changes affect project docs (e.g., new templates), note the required updates.
 7. **Session closure**
    - Summarise instruction changes.
@@ -37,5 +39,6 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 - Session closure statement.
 
 ## Validation
-- `tools/verify_context.sh` success or documented manual check.
+- Documented manual agnosticism review of the edited Delphi surfaces.
+- Applicable local checks recorded for the changed file types (or explicit N/A rationale).
 - User acknowledgement (or log) that the session ended before any architectural tasks resume.

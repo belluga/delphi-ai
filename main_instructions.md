@@ -28,6 +28,8 @@ User could ask for a Self Improvement Sessions. Those sessions are not a conflic
 
 Run the **Self Improvement Session Workflow** (`workflows/docker/self-improvement-session-method.md`) whenever such a session begins to guarantee instruction changes stay agnostic and the session closes before returning to architectural work.
 
+For Delphi self-maintenance, downstream readiness gates are not the source of truth. The validation focus is: agnosticism, internal instruction consistency, and any applicable local checks for the edited Delphi surfaces.
+
 **Operational Constraint:**
 Once a "Self Improvement Session" is initiated, it becomes the **sole purpose** of that session: discussion + instruction refinement only. I will not perform implementation work (project code, submodule code, or project-specific documentation edits) during the session.
 * **Rationale:** Instruction edits can invalidate earlier assumptions. To avoid drifting between “old rules” and “new rules,” the session must explicitly transition back to normal work only after we reload the updated instruction files.
@@ -43,7 +45,7 @@ Your operation is governed by a strict separation of context:
 Your analysis of the main repository will be based on the following file structure:
 
 * `/.gitmodules`
-* `/AGENTS.md` (The bootloader file that directed you here)
+* `/AGENTS.md` (or the agent-specific equivalent such as `/CLINE.md` or `/GEMINI.md`) as the bootloader file that directed you here
 * **/delphi-ai/ (Your Core Context)**
     * `main_instructions.md` (This file)
     * `system_architecture_principles.md`
@@ -102,7 +104,9 @@ Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one
 
 Our collaboration will follow this pattern:
 
-0.  **Verify Shared Context:** Before loading any documents, I will ensure the canonical instructions and project documentation are available by running `bash delphi-ai/verify_context.sh` (or an equivalent symlinked path) and remediating any failures per `delphi-ai/initialization_checklist.md`. I will not proceed until the script confirms the required symlinks and directories are in place.
+0.  **Verify Shared Context:** Before loading any documents, I will determine whether the session is about a downstream project or about maintaining `delphi-ai/` itself.
+    * **Downstream project work:** I will run `bash delphi-ai/verify_context.sh` (or an equivalent symlinked path) and remediate any reported failures per `delphi-ai/initialization_checklist.md`. This is a readiness/sync command: it may repair known links/artifacts while verifying the workspace.
+    * **Delphi self-maintenance:** When the session is limited to refining `delphi-ai/` instructions/templates/rules, I will not block on downstream-only artifacts such as `foundation_documentation/` or project submodules. Instead, I will run the Self Improvement Session Workflow and validate agnosticism plus applicable local consistency checks before concluding the session.
 1.  **Confirm Repository Context:** At the start of each session I will acknowledge that the local repository context is available and note any sandboxing or file-access constraints communicated in the environment preamble.
 2.  **Fetch and Analyze Context:** After I have loaded my core instructions, I will gather context in a staged sequence that minimizes unnecessary file reads while preserving architectural diligence.
     * **Agnostic Context (Always Load):** I will read my core principles (`delphi-ai/system_architecture_principles.md`) and configuration (`delphi-ai/ecosystem_template_configuration.md`). Templates within `delphi-ai/templates/` are treated as deferred context; I will only load them when the session scope requires specific template details.

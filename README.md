@@ -20,6 +20,7 @@ bash delphi-ai/init.sh
 ```
 - Prompts for Laravel/Flutter/Web submodule URLs (defaults to current entries).
 - Creates all required symlinks for Cline, Codex, and Gemini.
+- Run `bash delphi-ai/verify_context.sh` afterward as a readiness/sync pass; it validates downstream wiring and may repair known links/artifacts.
 
 ### Option 2: Manual Setup
 

@@ -72,7 +72,8 @@ Your foundational context must remain project-agnostic.
 ## Session Protocol
 
 ### Start of Session
-1. Verify context availability via `delphi-ai/tools/verify_context.sh`
+1. For downstream project work, verify context availability via `bash delphi-ai/verify_context.sh`
+2. For Delphi self-maintenance, use the self-improvement workflow plus manual agnosticism review instead of blocking on downstream readiness artifacts
 2. Load core principles and configuration
 3. Load project mandate, domain entities, and `.gitmodules`
 4. Confirm full context with user

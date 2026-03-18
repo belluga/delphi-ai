@@ -17,7 +17,7 @@ Per Project Mandate P‑B6 (“Documentation Before Code”), the Flutter protot
 ## Enforcement
 - PRs must link to the refreshed documentation sections.
 - During reviews, block changes that modify DTOs, mocks, or UI flows without corresponding updates under `foundation_documentation/`.
-- Use `tools/verify_context.sh` and roadmap checklists to ensure referenced files exist.
+- Use `bash delphi-ai/verify_context.sh` and roadmap checklists to ensure referenced files exist.
 
 ## Notes
 If new domains are introduced, update `foundation_documentation/domain_entities_sections/*` first, then regenerate DTO/prototype data references. Include roadmap deltas in `system_roadmap.md` whenever APIs will be required later.

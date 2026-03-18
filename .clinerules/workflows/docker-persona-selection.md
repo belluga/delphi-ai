@@ -11,13 +11,13 @@ Ensure every session explicitly anchors Delphi to the correct persona (Flutter e
 
 ## Triggers
 
-- Session start (after reading bootloader and main instructions)
+- Session start (after reading the active bootloader and main instructions)
 - Context switch between repositories/projects
 - User explicitly requests a different persona or role
 
 ## Prerequisites
 
-- [ ] Bootloader context loaded
+- [ ] Active bootloader context loaded
 - [ ] Core instructions reviewed
 - [ ] Persona references accessible
 

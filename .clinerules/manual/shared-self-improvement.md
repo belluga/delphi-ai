@@ -11,7 +11,7 @@ When the user initiates a "self improvement session" (or equivalent command), sw
 ### Run Self Improvement Workflow
 - Plan instruction updates
 - Apply them
-- Verify agnosticism (`tools/verify_context.sh`)
+- Perform manual agnosticism review plus applicable local checks
 - Summarize changes
 
 ### Post-Session

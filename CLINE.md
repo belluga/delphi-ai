@@ -101,11 +101,13 @@ Use the smell detection skills:
 
 ## Verification
 
-Before starting work, verify context availability:
+Before starting downstream project work, verify context availability:
 
 ```bash
 bash delphi-ai/verify_context.sh
 ```
+
+This readiness command may also repair known links/artifacts while checking the workspace.
 
 ## Source of Truth
 
@@ -115,5 +117,6 @@ bash delphi-ai/verify_context.sh
 ## Compatibility
 
 This repo also supports:
-- **Codex/Antigravity**: See `GEMINI.md` and `skills/` directory
+- **Codex/Antigravity**: See `AGENTS.md`, `.codex/skills/`, and `.agent/`
+- **Gemini**: See `GEMINI.md` and `skills/`
 - **Cline**: See `.clinerules/` and `.cline/` directories

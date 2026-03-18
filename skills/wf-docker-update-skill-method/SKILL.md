@@ -9,7 +9,8 @@ description: "Workflow: MUST use whenever creating or updating Delphi skills. En
 Update or create skills with one canonical process that keeps Cline, Codex, and Antigravity aligned.
 
 ## Preconditions
-- Run `bash delphi-ai/verify_context.sh` before edits.
+- If working in a downstream project environment, run `bash delphi-ai/verify_context.sh` before edits.
+- If working directly on `delphi-ai/` instruction surfaces, use manual agnosticism review plus applicable local checks instead of blocking on downstream-only readiness artifacts.
 - Identify the target skill name in kebab-case.
 - Confirm if the change is skill-only or also affects rule/workflow behavior.
 - Canonical project skills must live inside this repository under `delphi-ai/skills/` (never as the primary source in `~/.codex/skills/**`).
@@ -30,8 +31,8 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 8. If the changed skill is a workflow skill (`wf-*`), ensure a canonical workflow file exists under `delphi-ai/workflows/**` and a Cline workflow counterpart exists under `delphi-ai/.clinerules/workflows/**`.
 9. If workflow availability changed, update `.cline/MANIFEST.md` and `CLINE.md` so required artifacts stay explicit.
 10. Validate sync and compatibility:
-   - `bash delphi-ai/verify_context.sh`
-   - `bash delphi-ai/verify_adherence_sync.sh`
+   - Downstream environment path: `bash delphi-ai/verify_context.sh` and `bash delphi-ai/verify_adherence_sync.sh`
+   - Delphi self-maintenance path: applicable local checks such as `bash tools/audit_instruction_baselines.sh` plus explicit mirror/counterpart diff checks
    - Optional explicit diff: `diff -u delphi-ai/skills/<skill-name>/SKILL.md delphi-ai/.cline/skills/<skill-name>/SKILL.md`
 11. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
 
@@ -44,5 +45,5 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 ## Validation
 - No mismatch between `delphi-ai/skills/<skill-name>/SKILL.md` and `delphi-ai/.cline/skills/<skill-name>/SKILL.md`.
 - Workflow-skill counterparts exist in both canonical and Cline workflow surfaces.
-- `verify_context.sh` exits successfully.
-- `verify_adherence_sync.sh` exits successfully.
+- For downstream environment runs, `verify_context.sh` and `verify_adherence_sync.sh` exit successfully.
+- For Delphi self-maintenance runs, manual agnosticism review and applicable local checks are recorded with explicit N/A rationale where needed.
