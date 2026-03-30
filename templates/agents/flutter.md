@@ -21,3 +21,10 @@
 * Ensure Flutter mocks remain synchronized with the contracts documented in `foundation_documentation/`.
 * Document any new data requirements or endpoint expectations in the shared foundation docs before requesting backend work.
 * When backend behavior changes, update the Flutter architecture notes and notify the Laravel submodule via the shared documentation channel.
+
+## Architecture Analyzer Gate (Official)
+* Official architecture lint/analyzer command for local and CI: `fvm dart analyze --format machine`.
+* If local CLI analyzer state becomes inconsistent (false-clean, stale plugin AOT, or unexplained hangs), run `bash ./scripts/reset_analyzer_state.sh` from `flutter-app` root, then rerun `fvm dart analyze --format machine`.
+* Do not use directory-target mode (`fvm dart analyze lib`) as architecture source of truth in this workspace.
+* Keep `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh` as fixture coverage validation for rule activation.
+* Do not use `fvm dart run custom_lint` as architecture source of truth in this workspace.

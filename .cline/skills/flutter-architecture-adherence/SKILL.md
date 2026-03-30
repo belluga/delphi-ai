@@ -17,12 +17,16 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 
 ## Canonical Sources (Single Source Policy)
 - Canonical architecture contract: `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1 Presentation DI Matrix (Canonical)`).
-- Executable lint contract and treatments: `flutter-app/tool/belluga_custom_lint/docs/rules.md`.
+- Executable lint contract and treatments: `flutter-app/tool/belluga_analysis_plugin/docs/rules.md`.
 - Tactical delivery/debt status: `foundation_documentation/todos/active/mvp_slices/TODO-v1-flutter-architecture-rules-consolidation-and-custom-lint.md`.
 - If wording differs across files, prefer these sources in this exact precedence order.
 
-## Custom Lint Enforcement Contract
-- Mandatory command for architecture checks: `fvm dart run custom_lint`.
+## Analyzer Plugin Enforcement Contract
+- Mandatory command for architecture checks (run at `flutter-app` root): `fvm dart analyze --format machine`.
+- If local CLI analyzer state goes false-clean, stale, or hangs unexpectedly, run `bash ./scripts/reset_analyzer_state.sh` from `flutter-app` root, then rerun `fvm dart analyze --format machine`.
+- Do not use directory-target mode as architecture gate (for example: `fvm dart analyze lib`), because it can report false-clean in this workspace.
+- Rule matrix validation command (plugin regression only): `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh`.
+- Deprecated workaround: `tool/belluga_analysis_plugin/bin/run_project_analyze.sh` is not the official architecture gate anymore.
 - `SEM EXCEÇÃO`: do not bypass architecture findings with per-file ignores/allowlists.
 - If a finding is wrong, calibrate the lint rule; do not suppress it.
 - When an active debt TODO requires branch-delta enforcement for disabled rules, run the branch guard command(s) declared in the TODO before delivery.
