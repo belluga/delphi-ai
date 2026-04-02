@@ -13,8 +13,8 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 - Controller logic must be extracted into services for reuse.
 
 ## Inputs
-- `foundation_documentation/submodule_laravel-app_summary.md` (routing, middleware, abilities).
-- `foundation_documentation/persona_roadmaps.md` (Flutter + Laravel sections) to capture contract changes.
+- Relevant `foundation_documentation/modules/*.md` entries covering Laravel routing, middleware, abilities, and the touched contract surface.
+- Relevant `foundation_documentation/system_roadmap.md` entries to capture Flutter/Laravel follow-up for the contract change.
 - `foundation_documentation/todos/active/mvp_slices/TODO-v1-api-security-hardening.md` (canonical security baseline and level semantics).
 - `foundation_documentation/endpoints_mvp_contracts.md` conventions section (authoritative API shape + security metadata conventions).
 - Existing routes (`routes/api/*.php`) and controller files.
@@ -23,7 +23,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 ## Procedure
 1. **Persona alignment** – select Laravel Engineer persona, review roadmap items, and note Flutter requirements.
 2. **Define contract**
-   - Document request/response schema in `foundation_documentation/domain_entities.md` and the Flutter roadmap before coding.
+   - Document request/response schema in `foundation_documentation/domain_entities.md`, the relevant module docs, and the shared roadmap before coding.
    - For Cloudflare-fronted environments, define edge-vs-app responsibility explicitly:
      - Cloudflare: DDoS/WAF/bot/challenge/coarse IP controls.
      - Laravel: principal/account controls, tenant access, idempotency/replay, and deterministic API rejection contract.
@@ -68,7 +68,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Keep controllers lightweight (validation, request handling). Extract business rules into dedicated services/actions when logic grows.
    - Ensure validation rules enforce the documented bounds (P‑14).
 5. **Sanctum + policies**
-   - Update abilities/policies if new permissions are required. Document them in the Laravel summary.
+   - Update abilities/policies if new permissions are required. Document them in the affected module docs.
    - **Ability catalog sync gate:** every newly introduced ability string must be registered in `config/abilities.php` when wildcard (`*`) permissions are expanded into explicit token abilities.
 6. **Tests**
    - Add/extend feature tests covering happy paths, validation errors, and ability checks.
@@ -80,8 +80,9 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - For throttling/challenge behavior, add tests covering legitimate retry safety (avoid false-positive lockouts).
    - Add infrastructure/security tests (or deployment checks) validating direct-origin denial and spoofed client-IP header rejection when not from trusted proxies.
 7. **Documentation + roadmap sync**
-   - Update the Flutter roadmap with the new contract and note any client updates needed.
-   - Record changes in the Laravel submodule summary (routes, controllers, permissions).
+   - Update `foundation_documentation/system_roadmap.md` with the new contract and note any client/backend follow-up needed.
+   - Record the durable contract, routing, controller, and permission changes in the affected module docs.
+   - If the touched module area is still marked `Partial`, migrate that touched legacy scope into the module as part of the same TODO.
    - If SSE was added, document event types + minimal payloads in `foundation_documentation/endpoints_mvp_contracts.md`.
 8. **Verification**
    - Run `composer test` or targeted suites; optionally hit endpoints via Postman/cURL or contract tests.
@@ -99,9 +100,10 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 
 ## Outputs
 - Updated routes, controllers, services, validation rules, and tests.
-- Roadmap entries communicating API availability to Flutter.
-- Laravel submodule summary reflecting the new endpoint.
+- Shared roadmap entries communicating API availability and follow-up work.
+- Affected module docs reflecting the new endpoint and any touched legacy-scope canonicalization.
 
 ## Validation
 - Tests pass and manual endpoint checks succeed.
-- Flutter roadmap acknowledges the new contract so clients can adopt it.
+- The shared roadmap acknowledges the new contract so downstream clients/teams can adopt it.
+- The affected module docs are the durable source of truth for the changed endpoint behavior.

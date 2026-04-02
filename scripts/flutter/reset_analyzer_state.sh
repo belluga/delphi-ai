@@ -16,6 +16,8 @@ Notes:
   - Run this from `flutter-app/` root or the environment root that contains `flutter-app/`.
   - This clears hidden analyzer/plugin caches under `~/.dartServer/`.
   - The first analyzer run after reset can be slower while plugin AOT artifacts rebuild.
+  - After creating or altering analyzer rules, do not start multiple `dart analyze`
+    processes in parallel until one cold rebuild completes successfully.
 EOF
 }
 
@@ -97,11 +99,22 @@ log_info "clearing flutter-app local analyzer state..."
 rm -rf .dart_tool
 rm -rf tool/belluga_analysis_plugin/.dart_tool
 rm -rf tool/belluga_analysis_plugin/test_fixtures/lint_matrix/.dart_tool
+rm -rf packages/belluga_form_validation/.dart_tool
+
+if [[ -d "tool/belluga_custom_lint" ]]; then
+  log_info "clearing legacy belluga_custom_lint orphan artifacts..."
+  rm -rf tool/belluga_custom_lint/.dart_tool
+  rm -rf tool/belluga_custom_lint/build
+  rm -rf tool/belluga_custom_lint/test_fixtures/lint_matrix/.dart_tool
+  rm -f tool/belluga_custom_lint/test_fixtures/lint_matrix/custom_lint.log
+fi
 
 log_info "clearing hidden global analyzer/plugin caches..."
 remove_dir_children "${HOME}/.dartServer/.plugin_manager"
 remove_dir_children "${HOME}/.dartServer/.analysis-driver"
 remove_dir_children "${HOME}/.dartServer/.pub-package-details-cache"
+remove_dir_children "${HOME}/.dartServer/.instrumentation"
+remove_dir_children "${HOME}/.dartServer/.prompts"
 
 if [[ "${SKIP_PUB_GET}" -eq 0 ]]; then
   log_info "running fvm flutter pub get..."

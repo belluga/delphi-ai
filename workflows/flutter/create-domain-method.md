@@ -15,15 +15,15 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 ## Inputs
 - Core instructions (`delphi-ai/main_instructions.md`, `system_architecture_principles.md`).
 - Flutter architecture doc (`foundation_documentation/flutter_architecture.md`).
-- Project-specific docs (`foundation_documentation/domain_entities.md`, module summaries/roadmap).
+- Project-specific docs (`foundation_documentation/domain_entities.md`, relevant module docs, `foundation_documentation/system_roadmap.md`).
 - Backend/API contracts for the new entity, if available.
 
 ## Procedure
 1. **Run Persona Selection** – confirm we’re acting as Flutter Engineer.
 2. **Document first**
    - Add/extend the domain entry in `foundation_documentation/domain_entities.md` (purpose, invariants, value objects).
-   - Update the relevant module summary/system roadmap entry.
-   - Append the persona impact to `foundation_documentation/persona_roadmaps.md` under the Flutter section.
+   - Update the relevant module docs and `foundation_documentation/system_roadmap.md` entry.
+   - Record any cross-stack impact in the shared roadmap entry instead of a separate persona roadmap.
 3. **Scaffold the domain directory**
    - Create `lib/domain/<domain_name>/` with `value_objects/`, `projections/`, and entity file(s).
    - Implement the aggregate using ValueObjects (per Section 4 & 5 of the architecture doc). Add TODOs for attributes pending backend support.
@@ -42,7 +42,7 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 9. **Verification**
    - Run `fvm flutter analyze` and, if relevant, unit tests for the new controller/use case.
 10. **Document completion**
-    - Reference this method in the work summary/commit so future agents know the domain was introduced via the standard workflow, and confirm persona roadmaps remain accurate.
+    - Reference this method in the work summary/commit so future agents know the domain was introduced via the standard workflow, and confirm the shared roadmap and module docs remain accurate.
 
 ## Outputs
 - Updated domain + module documentation.

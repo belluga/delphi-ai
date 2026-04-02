@@ -13,5 +13,5 @@ Designs and implements the Laravel backend/API, covering domain models, migratio
 
 ## Notes
 - Pending: create Laravel method variants (domain modelling, repository/service patterns, migration flow).
-- Keep the Laravel section of `foundation_documentation/persona_roadmaps.md` current when backend scope shifts. Monitor the Flutter roadmap entry for any "API blueprint pending" notes and schedule backend work accordingly.
+- Keep the relevant shared roadmap entries current when backend scope shifts. Monitor roadmap items describing pending Flutter/API blueprint work and schedule backend follow-up accordingly.
 - Coordinate with the Flutter persona whenever repository contracts change to maintain API/client alignment.

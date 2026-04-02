@@ -14,9 +14,18 @@ Provide a single, consistent workflow to execute and validate tests across Larav
   - `small`: one stack or targeted rerun.
   - `medium`: multi-stack with one checkpoint before continue.
   - `big`: end-to-end run with checkpointed stage approvals.
+- Local transient failures are evidence-quality problems first, not product failures by default.
+
+## Generic Flow Guardrails (Reusable)
+- `GF-01` Preflight is mandatory before any suite that can influence promotion decisions.
+- `GF-02` Preflight/harness/environment failures are classified as `blocked`, never as product failures by default.
+- `GF-03` Shared-lane validation must use canonical product APIs/surfaces; test-only endpoints are forbidden.
+- `GF-04` Required promotion gates cannot pass with flaky outcomes (including retry-only success).
+- `GF-05` Artifact fallback directories that mask permission/ownership faults are forbidden.
+- `GF-06` Contract/payload parse failures in reference assertions are hard-fail conditions.
 
 ## Orchestration Flow (Baseline)
-1. Preflight environment gate (backend reachability, domain overrides, device/emulator availability).
+1. Preflight environment gate (backend reachability, domain overrides, device/emulator availability, writable artifact/runtime directories, required secrets/vars).
 2. Laravel contract/feature tests (local Mongo).
 3. Flutter unit + widget tests.
 4. Flutter integration tests on web (real backend when compatibility matters).
@@ -44,11 +53,24 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 4. **Execution status policy**
    - Mark each required stage as `passed`, `failed`, or `blocked`.
    - `blocked` (for example no mobile device/emulator) is not `passed` and blocks compatibility closure unless baseline explicitly excludes it.
+   - Any required stage with `flaky` status (including pass-after-retry) is `failed` for promotion purposes unless an explicit approved waiver exists.
+   - If preflight or harness readiness is invalid, classify the stage as `blocked`/invalid evidence before reading it as a product failure.
+   - Do not open product investigation or patch product code when the failing cause is local/transient infrastructure, harness readiness, permission ownership, missing secrets, or target reachability outside the product boundary.
 4. **Failure Modes and uncertainty**
    - Capture edge cases (flaky env, backend mismatch, metadata mismatch), assumptions, unknowns, and confidence.
 5. **Decision Adherence Validation**
    - Validate each `D-RUN-*` decision as `Adherent` or `Exception` with evidence.
    - Unresolved `Exception` blocks run closure.
+
+## Failure Classification Rule
+- Before investigating product code, classify each failure into one of:
+  - `product regression`
+  - `test or assertion defect`
+  - `CI or harness defect`
+  - `environment or transient infra defect`
+- Only the first two categories authorize product/test-code investigation on their own.
+- `CI or harness defect` and `environment or transient infra defect` invalidate that execution as product evidence until the readiness issue is cleared or a valid equivalent gate reproduces the failure.
+- A valid remote failure can still be authoritative when a local reproduction attempt is itself `blocked` by unrelated harness/environment issues.
 
 ## Laravel Stage
 - Run against local MongoDB with replica set.
@@ -75,6 +97,7 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 - Browser test source-of-truth lives in `tools/flutter/web_app_tests`.
 - Execute browser tests only through the dedicated runner `tools/flutter/run_web_navigation_smoke.sh`, which uses `tools/flutter/web_app_smoke_runner/` as the Playwright runtime.
 - `web-app` is the built bundle output only; do not treat it as the source location for navigation tests.
+- Browser runners must establish preflight readiness before execution (artifact directory writable, host reachable, required env present). If that readiness is not met, stop with `blocked`; do not treat the result as a product failure.
 - Validate home load, primary route, and one critical CTA flow.
 - Enforce metadata pin check before declaring success.
 

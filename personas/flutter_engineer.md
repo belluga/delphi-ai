@@ -10,7 +10,7 @@ Architects and implements the Flutter/Dart application following the "Belluga No
 ## Stack-Specific References
 - `foundation_documentation/flutter_architecture.md`
 - `foundation_documentation/domain_entities.md`
-- Module summaries (`foundation_documentation/submodule_flutter-app_summary.md`)
+- Relevant canonical module docs under `foundation_documentation/modules/`
 
 ## Workflows to Load
 - `workflows/docker/persona-selection-method.md`
@@ -24,10 +24,10 @@ Architects and implements the Flutter/Dart application following the "Belluga No
 
 ## Collaboration Notes
 - Repository contracts double as API blueprints. When modelling repositories, specify pagination, filtering, and scalability expectations so Laravel engineers can align their endpoints.
-- Surface those requirements in `foundation_documentation/persona_roadmaps.md` and relevant module docs.
+- Surface those requirements in `foundation_documentation/system_roadmap.md` and relevant module docs.
 
 ## Operational Notes
 - Analyzer command: `fvm flutter analyze` (must stay clean per Section 10).
 - Ensure new projections live under the owning domain folder (`lib/domain/<domain>/projections/`).
 - Register repositories/controllers via GetIt as documented in Section 8 before wiring screens.
-- Update the Flutter entry inside `foundation_documentation/persona_roadmaps.md` whenever scope or debt changes. Flag any API blueprints that currently outpace Laravel implementation so backend owners know to resync.
+- Update the relevant shared roadmap entries whenever Flutter scope or debt changes. Flag any API blueprints that currently outpace Laravel implementation so backend owners know to resync.

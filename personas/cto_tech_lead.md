@@ -12,4 +12,4 @@ Provides architectural oversight, roadmap alignment, and cross-project guidance.
 - Requests about architectural principles, roadmap updates, or cross-team strategy.
 
 ## Notes
-- Ensure every decision references `system_architecture_principles.md`, `foundation_documentation/system_roadmap.md`, and the persona roadmap file (`foundation_documentation/persona_roadmaps.md`).
+- Ensure every decision references `system_architecture_principles.md`, `foundation_documentation/system_roadmap.md`, and the relevant canonical docs for the affected scope.

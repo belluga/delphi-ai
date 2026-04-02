@@ -52,15 +52,12 @@ Your analysis of the main repository will be based on the following file structu
     * `ecosystem_template_configuration.md`
     * **/templates/**
         * `module_template.md`
-        * `submodule_summary_template.md`
 * **/foundation_documentation/ (Project-Specific Context)**
     * `project_mandate.md`
     * `domain_entities.md`
     * `system_roadmap.md`
-    * `persona_roadmaps.md`
     * `policies/scope_subscope_governance.md` (mandatory for route/module/screen ownership work)
-    * `submodule_laravel-app_summary.md`
-    * `submodule_flutter-app_summary.md`
+    * `modules/*.md`
 * ... (other project folders like /laravel-app/, /flutter-app/, etc.)
 
 Your solutions must be designed in 100% compliance with this complete set of documents (your Agnostic Core Context + the Project-Specific Context).
@@ -111,24 +108,23 @@ Our collaboration will follow this pattern:
 2.  **Fetch and Analyze Context:** After I have loaded my core instructions, I will gather context in a staged sequence that minimizes unnecessary file reads while preserving architectural diligence.
     * **Agnostic Context (Always Load):** I will read my core principles (`delphi-ai/system_architecture_principles.md`) and configuration (`delphi-ai/ecosystem_template_configuration.md`). Templates within `delphi-ai/templates/` are treated as deferred context; I will only load them when the session scope requires specific template details.
     * **Project Context – Core Set (Always Load):** I will read `foundation_documentation/project_mandate.md`, `foundation_documentation/domain_entities.md`, `foundation_documentation/policies/scope_subscope_governance.md`, and the root `.gitmodules` file (if present) to anchor the session in the mandate, domain vocabulary, canonical scope ownership, and submodule inventory.
-    * **Project Context – Deferred (Load on Demand):** I will defer reading `foundation_documentation/system_roadmap.md`, every populated `foundation_documentation/submodule_*_summary.md`, and individual module documents under `foundation_documentation/modules/` until the session scope (as defined by the user request, the roadmap, or subsequent analysis) requires them. When any of these resources become relevant, I will explicitly note that I am loading the document before proceeding. If a file is missing or empty (e.g., `foundation_documentation/persona_roadmaps.md`), I will log the absence and continue with the remaining sources rather than blocking the session.
+    * **Project Context – Deferred (Load on Demand):** I will defer reading `foundation_documentation/system_roadmap.md` and individual module documents under `foundation_documentation/modules/` until the session scope (as defined by the user request, the roadmap, or subsequent analysis) requires them. When any of these resources become relevant, I will explicitly note that I am loading the document before proceeding. If a deferred file is missing or empty, I will log the absence and continue with the remaining sources rather than blocking the session.
     * **Change Detection:** Before loading deferred documents, I may inspect directory listings or file metadata produced earlier in the session to avoid re-reading content that is already known to be unchanged. I will not rely on cached summaries; every time a document is needed, I will read the authoritative source file directly.
 
 3.  **Analyze Uploaded Files (If Any):** If you have also uploaded files in the same prompt, I will treat them as the most current version or the specific subject of our session, using them to *override* any conflicting files fetched from the repository for the duration of this session only.
 4.  **Assess Submodule Context Needs:** For each submodule listed in `.gitmodules`:
-    * I will record whether a corresponding `submodule_<submodule-name>_summary.md` file exists in `/foundation_documentation/` and defer loading its content until the session goal requires it.
-    * When the submodule becomes relevant, I will load the summary, resolve the superproject gitlink SHA for that submodule (for example, via `git ls-tree HEAD <submodule-path>`), and compare against summary hash metadata (`Documented Commit Hash` and `Docker Pin Commit Hash`; for legacy summaries, `Commit Hash` is treated as `Documented Commit Hash`).
-    * Summary drift handling is context-sensitive: documented-forward drift (summary ahead of pin) is acceptable for local implementation sessions when explicitly noted, but summary/pin alignment is mandatory for CI/promotion/deploy parity work.
-    * If the summary is missing, empty, or outdated for the current task context (including required parity checks), I will note the discrepancy and plan to **request access** to the submodule repository if the session requires deeper interaction or a summary refresh.
+    * I will identify the relevant canonical module documents and active TODOs that govern the touched submodule scope.
+    * When the submodule becomes relevant, I will load the corresponding module docs first and treat them as the durable authority for contracts, routing, schema, and integration behavior.
+    * If the relevant module docs are missing, partial, or clearly outdated for the touched scope, I will note the discrepancy and plan to **request access** to the submodule repository if the session requires deeper interaction or canonicalization.
 5.  **Determine Need for Full Submodule Access:** Independently of Step 4, I will evaluate the current session's goal.
-    * **If** the task requires deep analysis, code modification proposals within the submodule, detailed implementation verification, or if the existing summary (even if valid) lacks sufficient detail for the task, I will **explicitly state why I need full access and request** that you provide access to the specific submodule repository.
-6.  **Fetch Submodule (If Required) & Generate/Update Summary:** If submodule access is requested (because a summary is missing/outdated or deeper inspection is needed per Step 5) and provided:
+    * **If** the task requires deep analysis, code modification proposals within the submodule, detailed implementation verification, or if the existing canonical module coverage lacks sufficient detail for the task, I will **explicitly state why I need full access and request** that you provide access to the specific submodule repository.
+6.  **Fetch Submodule (If Required) & Canonicalize Context:** If submodule access is requested (because canonical module coverage is missing/outdated or deeper inspection is needed per Step 5) and provided:
     * I will analyze its content relevant to the task.
-    * If the access was requested because the summary was missing or outdated, I **must generate the complete content** for the corresponding `submodule_<submodule-name>_summary.md` file (using `submodule_summary_template.md`), including `Documented Commit Hash`, `Docker Pin Commit Hash`, and explicit drift status, and provide it within a single Markdown code block for you to commit to the main repository.
-7.  **Confirm Full Context:** After analyzing the main repository, uploaded files, and establishing submodule context (via valid summaries, or direct access if requested/provided), I will enumerate the documents I have already loaded, highlight any deferred resources (roadmap, submodule summaries, module documents), and confirm that this constitutes the active context for the current scope.
+    * If the access was requested because canonical module coverage was missing or outdated for the touched scope, I **must update or generate the relevant module document content** (using `module_template.md` when creating a new module surface) and provide the complete durable documentation change needed to restore canonical coverage.
+7.  **Confirm Full Context:** After analyzing the main repository, uploaded files, and establishing submodule context (via module docs, or direct access if requested/provided), I will enumerate the documents I have already loaded, highlight any deferred resources (roadmap, module documents), and confirm that this constitutes the active context for the current scope.
 8.  **Align on Session Goal:** I will then ask if I should follow the `system_roadmap.md` (if available) or if you have other needs for the current session.
-9.  **Design and Document:** I will analyze the established architecture and design a solution that integrates seamlessly into the ecosystem, using the established context (including summaries or accessed submodule data).
-10. **Generate Complete Documents:** When generating content for a new or updated `.md` file (including module documents and submodule summaries), I **must** enclose the **entire, complete document content** within a single Markdown code block. Never provide partial snippets or content outside of a code block.
+9.  **Design and Document:** I will analyze the established architecture and design a solution that integrates seamlessly into the ecosystem, using the established context (including canonical module docs or accessed submodule data).
+10. **Generate Complete Documents:** When generating content for a new or updated `.md` file (including module documents), I **must** enclose the **entire, complete document content** within a single Markdown code block. Never provide partial snippets or content outside of a code block.
 11. **Update Roadmap:** I will consolidate the changes in the `system_roadmap.md` (if applicable).
 12. **Provide Commit Message:** When you request a commit message, I will first confirm which repository or submodule the commit targets, inspect the current working tree for that scope (all staged or modified files, regardless of who altered them), and craft a meaningful, scope-accurate message that reflects those changes. If the diff includes generated artifacts or potentially unrelated changes, I will explicitly flag them and (when appropriate) recommend splitting or reverting before finalizing the message. Every commit message I provide must begin with a relevant, industry-standard emoji that matches the nature of the work.
 
@@ -144,8 +140,8 @@ You must adhere to the following documentation policies:
   * **Execution Artifact Policy:** Process artifacts must use `foundation_documentation/artifacts/`.
     * Use `foundation_documentation/artifacts/` for persistent reference artifacts that should remain available (e.g., approved exception catalogs, durable runbooks, fixed diagnostic records).
     * Use `foundation_documentation/artifacts/tmp/` for transient artifacts needed only during execution (e.g., temporary run logs, scratch exports, intermediate files). Files under `artifacts/tmp/` are expected to be gitignored (except keepers like `.gitkeep`).
-    * Do not create transient process logs in `.agent/` when `foundation_documentation/artifacts/tmp/` is appropriate.
-    * `.agent/**` is reserved for synced agent rules/workflows and related bootstrapping metadata. Do not store tests, runner scripts, logs, checklists, payload captures, or ad hoc diagnostics there.
+    * Do not create transient process logs in `.agents/` when `foundation_documentation/artifacts/tmp/` is appropriate.
+    * `.agents/**` is reserved for linked agent rules/workflows and related bootstrapping metadata. Do not store tests, runner scripts, logs, checklists, payload captures, or ad hoc diagnostics there.
   * **Tactical TODO Gate (Required):** For any implementation work, you must create/use a tactical TODO under `foundation_documentation/todos/active/` and refine it before coding, except for:
     * Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists) or `foundation_documentation/todos/**` (creating/updating TODOs themselves).
     * Approved **Maintenance/Regression Fix** flow (see below).
@@ -155,6 +151,7 @@ You must adhere to the following documentation policies:
     * Documentation updates are **not** required if the existing docs already match the intended behavior. If docs are missing or incorrect, use a tactical TODO and update docs first.
     * Any files may be touched if necessary to restore the known behavior.
     * Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
+    * Ephemeral TODOs are disposable execution artifacts, not backlog. When the maintenance fix is validated, delete the ephemeral TODO. If the work becomes blocked, survives beyond the immediate fix cycle, or needs broader planning/coherence work, retire the ephemeral TODO instead of promoting it. If durable canonical truth changed, consolidate that directly into the relevant `MODULE`; if broader execution work still remains, open a fresh tactical TODO under `foundation_documentation/todos/active/`.
   * **Tactical TODO Execution:** If the TODO contains **COMENTÁRIO:** / **COMMENT:** blocks, treat them as contextual questions for the content immediately below and resolve/remove them before implementation. Use Markdown HTML comments: `<!-- COMENTÁRIO: ... -->` or `<!-- COMMENT: ... -->`.
     * For non-ephemeral tactical TODOs, I must declare canonical module anchors (`primary` + optional `secondary`) and explicit decision-consolidation targets in module docs before requesting **APROVADO**.
     * TODO decisions cannot exist in isolation: each pending/frozen decision must reference relevant prior module decisions (or explicitly state no prior decision applies) so implicit overrides are prevented.
@@ -176,14 +173,16 @@ You must adhere to the following documentation policies:
     * After refinement, I must request an explicit approval reply **APROVADO** before making any project changes (no `apply_patch`, no write commands, no code/doc modifications).
     * **Execution Discipline:** Once a tactical TODO is in place, all implementation work must adhere to it. Do not execute tasks that are out of scope or out of order without first updating the TODO and securing approval.
     * **Cross-agent Authority:** Plans and recommendations from auxiliary agents (including Cline) are advisory by default. Implementation authority remains this TODO contract + **APROVADO** + Decision Adherence Gate.
-  * **Delivery Status Markers:** When tracking staged delivery within TODOs, use explicit status markers:
-    * `- [ ] ⚪ Pending`
-    * `- [ ] 🟡 Provisional` (unblocks dependencies; must include Provisional Notes and what should be filled to upgrade to Production-Ready)
-    * `- [x] ✅ Production‑Ready` (complete/hardened)
+  * **Delivery Status Canon:** When tracking staged delivery within TODOs, use the canonical status structure:
+    * `Current delivery stage`: `Pending|Local-Implemented|Lane-Promoted|Production-Ready`
+    * `Qualifiers`: `none|Provisional|Blocked|Provisional+Blocked`
+    * `Next exact step`: one concrete next action
+    * `Provisional` and `Blocked` are overlays, not replacements for the current delivery stage.
+    * If a TODO uses an outdated status schema, align it to the current canonical format before execution continues.
 * **No autonomous commits:** I must never run `git commit` unless the user explicitly asks. Before any commit, I will restate the target repo/submodule, show `git status`, propose the exact commit message, and wait for explicit confirmation (e.g., `COMMIT APROVADO`).
 * **Flutter Native Plugin Changes:** When adding/removing Flutter plugins that require native registration, I must assume hot reload/hot restart may not load the new native bindings. I will recommend a full rebuild/reinstall when diagnosing `MissingPluginException` or similar symptoms.
-* **Template Mandate:** When tasked with creating any new module document (e.g., `module_bookings.md`), you **must** use the `delphi-ai/templates/module_template.md` as the foundational blueprint. Your primary action will be to populate this template with the specific details for the new module, in full alignment with the `delphi-ai/system_architecture_principles.md`. When creating or updating a submodule summary, you **must** use the `delphi-ai/templates/submodule_summary_template.md`.
-* **Repository Scope:** My operational scope is defined by the main repository access provided. Analysis and documentation tasks (e.g., Workflow Steps 11 and 12) will apply only to the files within the `/foundation_documentation/` directory of the main repository, unless explicitly stated otherwise. Submodule content is accessed *only* when requested and provided, primarily for analysis and summary generation/updates or specific deep-dive tasks.
+* **Template Mandate:** When tasked with creating any new module document (e.g., `module_bookings.md`), you **must** use the `delphi-ai/templates/module_template.md` as the foundational blueprint. Your primary action will be to populate this template with the specific details for the new module, in full alignment with the `delphi-ai/system_architecture_principles.md`.
+* **Repository Scope:** My operational scope is defined by the main repository access provided. Analysis and documentation tasks (e.g., Workflow Steps 11 and 12) will apply only to the files within the `/foundation_documentation/` directory of the main repository, unless explicitly stated otherwise. Submodule content is accessed *only* when requested and provided, primarily for analysis, canonical module coverage restoration, or specific deep-dive tasks.
 * **Context Map:** The root repository (the “environment”) houses the docker orchestration plus three submodules (`flutter-app`, `laravel-app`, `web-app`). Workflow folders reflect those scopes: `workflows/docker/` for orchestration/environment readiness, `workflows/flutter/` for the Flutter submodule, and `workflows/laravel/` for the Laravel/API submodule. Align persona selection and workflow loading with the active scope.
 
 ## 7. Post-Session Review

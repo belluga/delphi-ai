@@ -12,10 +12,12 @@ Use this skill only when the user explicitly requests promotion through `dev` an
 - Manual-only. Do not use unless explicitly requested by the user.
 - Promote only up to `stage`. Never continue to `main`.
 - Accept only green checks. No warnings-as-success shortcuts.
+- Required promotion gates with `flaky` status are not green. Pass-after-retry does not qualify as success.
 - Review Copilot comments even when CI is green. If a comment is pertinent, treat it as blocking until resolved or explicitly rejected with technical rationale.
 - Always pursue root cause. Never patch only to satisfy CI.
-- If a remote test fails, reproduce locally in a materially similar setup before pushing a new attempt.
+- If a remote test fails, attempt local reproduction in a materially similar setup before pushing a new attempt, but classify local reproduction failures before treating them as product evidence.
 - Keep commits scoped by repository. Do not mix unrelated repositories or concerns.
+- Shared-lane validation must rely on canonical product APIs/surfaces; test-only backend endpoints are forbidden.
 
 ## Classification
 Classify the promotion request before acting:
@@ -104,10 +106,11 @@ If any run fails:
 1. Identify the exact failing job and log.
 2. Determine whether the failure is product, test, CI, or environment.
 3. Evaluate Copilot comments in the same cycle.
-4. Reproduce locally in a materially similar setup.
-5. Fix the root cause.
-6. Re-run targeted local validation.
-7. Push only after local confidence is high.
+4. Attempt local reproduction in a materially similar setup.
+5. If the local path is blocked by temporary harness/environment issues, classify it as invalid local evidence rather than a product failure.
+6. Fix the root cause.
+7. Re-run targeted local validation when the local path is valid, or rely on the authoritative remote failure plus the closest valid local equivalent when it is not.
+8. Push only after confidence is high in the classified root cause.
 
 ## Local Reproduction Rule
 Before retrying a remote run after failure:
@@ -115,6 +118,10 @@ Before retrying a remote run after failure:
 - For Playwright/web failures, use the same test source and same runner topology used by the pipeline.
 - For Laravel failures, run the closest safe local CI-equivalent command.
 - For Flutter failures, run the targeted suite locally and add/adjust tests if the regression escaped coverage.
+- Before reading reproduction as product evidence, pass a preflight gate (required vars/secrets present, target reachable, artifact directory writable, ownership/permissions valid).
+- If local reproduction is prevented by temporary environment/harness issues (for example missing target reachability, wrong file ownership, unavailable tunnel, or missing secrets), mark the local attempt as `blocked`/invalid evidence.
+- A `blocked` local attempt does not authorize product-code changes by itself and does not overrule a valid remote diagnosis.
+- If the remote failure is valid and specific while the local path is `blocked` for unrelated reasons, continue root-cause analysis from the remote evidence and the closest valid local equivalent instead of forcing a misleading local patch.
 
 ## Copilot Review Gate
 Treat review comments in this order:

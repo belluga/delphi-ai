@@ -26,7 +26,7 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - If local CLI analyzer state goes false-clean, stale, or hangs unexpectedly, run `bash ./scripts/reset_analyzer_state.sh` from `flutter-app` root, then rerun `fvm dart analyze --format machine`.
 - Do not use directory-target mode as architecture gate (for example: `fvm dart analyze lib`), because it can report false-clean in this workspace.
 - Rule matrix validation command (plugin regression only): `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh`.
-- Deprecated workaround: `tool/belluga_analysis_plugin/bin/run_project_analyze.sh` is not the official architecture gate anymore.
+- `tool/belluga_analysis_plugin/bin/run_project_analyze.sh` was removed from the workflow; do not reintroduce file-list wrappers as architecture gate.
 - `SEM EXCEÇÃO`: do not bypass architecture findings with per-file ignores/allowlists.
 - If a finding is wrong, calibrate the lint rule; do not suppress it.
 - When an active debt TODO requires branch-delta enforcement for disabled rules, run the branch guard command(s) declared in the TODO before delivery.

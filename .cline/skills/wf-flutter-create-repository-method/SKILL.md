@@ -37,11 +37,11 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 7. **Controller adoption**
    - Update controllers/services to depend on the contract (GetIt injection). Remove any direct DTO parsing.
 8. **Documentation touch**
-   - Note repository availability in module summaries/system roadmap if it unlocks new behavior.
-   - Update the Flutter section of `foundation_documentation/persona_roadmaps.md` with the new capability or technical debt payoff.
+   - Note repository availability in the affected module docs and `foundation_documentation/system_roadmap.md` if it unlocks new behavior.
+   - Update `foundation_documentation/system_roadmap.md` with the new capability or technical debt payoff when it affects planned work.
 9. **Verification**
    - Run `fvm flutter analyze`; add/re-run unit tests covering the repository/user of it.
-   - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash tool/belluga_custom_lint/bin/check_branch_delta_raw_payload_map.sh`).
+   - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash tool/belluga_analysis_plugin/bin/check_branch_delta_raw_payload_map.sh`).
 
 ## Outputs
 - Repository contract + implementation files.

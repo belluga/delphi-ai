@@ -15,7 +15,7 @@ Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes)
 - If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification.
 - Load main instructions and always_on rules.
 - Load `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen ownership.
-- Identify source docs (e.g., `foundation_documentation/temporary_files/*`, uploaded specs) and target templates (module, roadmap, persona, etc.).
+- Identify source docs (e.g., `foundation_documentation/temporary_files/*`, uploaded specs) and target templates (module, roadmap, screen, etc.).
 - Confirm submodule scope (Flutter/Laravel/web) if task lists are needed.
 
 ## Steps
@@ -24,7 +24,7 @@ Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes)
 3. Map scope: determine required modules, entities, endpoints, screens, and real-time needs; note landlord vs tenant boundaries and explicit main scope/subscope ownership.
 4. Perform gap analysis: validation bounds, enums, auth/abilities, real-time transport, rankings/badges, profile, catalog rules, and roadmaps.
 5. Create/update canonical docs using templates:
-   - `project_mandate`, `domain_entities`, module docs, persona roadmaps, system_roadmap, and landing/UX notes.
+   - `project_mandate`, `domain_entities`, module docs, `system_roadmap`, and landing/UX notes.
    - Define endpoints, schemas, enums, indexes, rate limits, payload samples, and SSE/WebSocket payload shapes if applicable.
    - Include route/scope (and subscope when applicable) matrices for multi-scope modules/screens.
 6. Add progressive implementation milestones with testable outcomes; keep endpoints labeled (Defined/Mocked/Implemented/Tested & Ready).

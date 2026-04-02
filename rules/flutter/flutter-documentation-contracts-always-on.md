@@ -8,7 +8,7 @@ description: Document every Flutter change in foundation docs before code merges
 Before touching Flutter code or mocks, update the authoritative documentation:
 - Capture screen/flow changes in `foundation_documentation/screens/*.md` and reference DTO contracts in `modules/` where applicable.
 - Record every mock payload/schema change in `foundation_documentation/screens/prototype_data.md` and refresh DTO notes in `foundation_documentation/domain_entities.md` when vocabulary evolves.
-- Update module/roadmap entries (`mock_roadmap.md`, `system_roadmap.md`, `submodule_flutter-app_summary.md`) so Laravel and other consumers see the new scope before implementation starts.
+- Update the affected module docs and `foundation_documentation/system_roadmap.md` so Laravel and other consumers see the new scope before implementation starts.
 - Reject any Flutter change whose documentation counterpart is missing or outdated.
 
 ## Rationale

@@ -164,9 +164,26 @@ setup_codex_artifacts() {
   ensure_symlink "../delphi-ai/skills" "${base_path}/.codex/skills"
 }
 
+setup_gemini_artifacts_for_scope() {
+  local module="$1"
+  local base_path="$REPO_ROOT"
+
+  if [[ -n "$module" ]]; then
+    base_path="${REPO_ROOT}/${module}"
+    if [[ ! -d "$base_path" ]]; then
+      warn "Submodule ${module} not found; skipping Gemini skills symlink."
+      return
+    fi
+  fi
+
+  ensure_symlink "../delphi-ai/skills" "${base_path}/.agents/skills"
+}
+
 setup_gemini_artifacts() {
   ensure_symlink "delphi-ai/GEMINI.md" "${REPO_ROOT}/GEMINI.md"
-  ensure_symlink "delphi-ai/skills" "${REPO_ROOT}/skills"
+  setup_gemini_artifacts_for_scope ""
+  setup_gemini_artifacts_for_scope "laravel-app"
+  setup_gemini_artifacts_for_scope "flutter-app"
 }
 
 setup_script_links() {
@@ -277,10 +294,10 @@ fi
 
 if [[ ${#setup_errors[@]} -eq 0 && -f "${DELPHI_DIR}/tools/sync_agent_rules.sh" ]]; then
   if (cd "$REPO_ROOT" && bash "${DELPHI_DIR}/tools/sync_agent_rules.sh"); then
-    info "Synchronized .agent rules/workflows for root and app submodules."
+    info "Linked .agents rules/workflows for root and app submodules."
   else
-    setup_errors+=(".agent sync failed via bash delphi-ai/tools/sync_agent_rules.sh")
-    error "Could not synchronize .agent rules/workflows automatically. Fix the repo layout or permissions, then rerun."
+    setup_errors+=(".agents link sync failed via bash delphi-ai/tools/sync_agent_rules.sh")
+    error "Could not link .agents rules/workflows automatically. Fix the repo layout or permissions, then rerun."
   fi
 fi
 
@@ -294,5 +311,5 @@ if [[ ${#setup_errors[@]} -gt 0 ]]; then
 fi
 
 info "Delphi setup complete. Review 'git status' and commit the updated submodule references if needed."
-info "Configured agent surfaces: AGENTS.md, CLINE.md/.clinerules/.cline, .codex/skills, GEMINI.md, skills, and .agent where possible."
+info "Configured agent surfaces: AGENTS.md, CLINE.md/.clinerules/.cline, .codex/skills, GEMINI.md + .agents/skills, and .agents/{rules,workflows} where possible."
 info "Next step: run 'bash delphi-ai/verify_context.sh' to validate downstream wiring."

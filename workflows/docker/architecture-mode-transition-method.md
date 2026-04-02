@@ -14,8 +14,8 @@ Provide a controlled workflow for switching between Foundational, Operational, a
 
 ## Inputs
 - Current `system_architecture_principles.md` (mode definitions and affected principles).
-- CTO/Tech Lead persona doc and roadmap section in `foundation_documentation/persona_roadmaps.md`.
-- Project mandate, domain entities, and submodule summaries describing live behavior.
+- CTO/Tech Lead persona doc and the relevant architecture/governance entries in `foundation_documentation/system_roadmap.md`.
+- Project mandate, domain entities, and the relevant canonical module docs describing live behavior.
 - Any regulatory or business timelines driving the transition.
 
 ## Procedure
@@ -24,9 +24,9 @@ Provide a controlled workflow for switching between Foundational, Operational, a
 3. **Document the target mode**
    - Update `system_architecture_principles.md` (and relevant appendices) with policies specific to the new mode (migration expectations, compatibility windows, feature-flag rules).
 4. **Update roadmaps**
-   - Record the transition in the CTO section of `foundation_documentation/persona_roadmaps.md` and call out required actions for each persona (Flutter/Laravel/DevOps).
-5. **Notify submodules**
-   - Add notes to `foundation_documentation/submodule_*` summaries describing the new operating constraints.
+   - Record the transition in `foundation_documentation/system_roadmap.md` and call out required actions for each affected stack/persona (Flutter/Laravel/DevOps).
+5. **Notify affected modules**
+   - Update the relevant canonical module docs and shared roadmap entries with the new operating constraints so future work inherits the correct mode assumptions.
 6. **Method references**
    - Ensure affected methods (domain creation, repositories, deployment) mention any new operational requirements (e.g., API versioning, data migration steps).
 7. **Session communication**
@@ -34,10 +34,10 @@ Provide a controlled workflow for switching between Foundational, Operational, a
 
 ## Outputs
 - Updated `system_architecture_principles.md` describing the new mode behavior.
-- Persona roadmaps reflecting responsibilities per mode.
-- Submodule summaries listing operational constraints.
+- Shared roadmap entries reflecting responsibilities and follow-up work per mode.
+- Updated canonical module docs listing operational constraints where relevant.
 - Method updates or TODOs referencing new policies.
 
 ## Validation
-- All personas acknowledge the new mode in their next sessions (via roadmap updates or summary notes).
+- The shared roadmap and affected canonical module docs clearly capture the required follow-up for each affected stack/persona, and future sessions can discover it there.
 - CI/checklist updates exist if the mode introduces new gates (e.g., migration verification).

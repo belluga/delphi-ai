@@ -13,9 +13,9 @@ Ensure Docker images, Compose stacks, and ingress configs stay aligned with the 
 - Requests to improve build time, container size, or hosting cost.
 
 ## Inputs
-- `foundation_documentation/submodule_laravel-app_summary.md` (routing layout).
+- Relevant `foundation_documentation/modules/*.md` entries covering Laravel routing layout and ingress-facing contract shape.
 - Current Docker/Compose files (`docker/`, `docker-compose.yml`, CI pipeline scripts).
-- DevOps section of `foundation_documentation/persona_roadmaps.md`.
+- Relevant DevOps/infra entries in `foundation_documentation/system_roadmap.md`.
 - Any cost/build metrics motivating the change.
 
 ## Procedure
@@ -25,21 +25,20 @@ Ensure Docker images, Compose stacks, and ingress configs stay aligned with the 
    - Update Dockerfiles with minimal base images and shared layers.
    - Adjust `docker-compose.yml` services, env vars, or resource limits.
 4. **Ingress parity**
-   - Mirror Laravel routing groups (tenant, landlord, account) into Nginx/ingress configs. Ensure prefixes/hosts match the summary doc.
+   - Mirror Laravel routing groups (tenant, landlord, account) into Nginx/ingress configs. Ensure prefixes/hosts match the canonical module docs.
 5. **Verification**
    - Build images (`docker compose build`) and run smoke checks or relevant pipeline stages.
    - Confirm new routes resolve correctly (curl, Postman, or automated tests).
 6. **Documentation + roadmap**
-   - Record the change in the DevOps section of `foundation_documentation/persona_roadmaps.md` (noting cost/time impact).
-   - If routes changed, notify Flutter/Laravel personas via the roadmap entry.
+   - Record the change in the relevant `foundation_documentation/system_roadmap.md` entry (including cost/time impact when applicable).
+   - If routes changed, capture Flutter/Laravel/DevOps follow-up actions in the shared roadmap entry.
 7. **Session summary** – mention the updates, verification results, and any follow-up actions.
 
 ## Outputs
 - Updated Docker/Compose/ingress files.
-- DevOps roadmap entry detailing the change and its impact.
-- Notes to other personas if route contracts shifted.
+- Shared roadmap entry detailing the change, impact, and any cross-stack follow-up.
 
 ## Validation
 - Docker build/test commands succeed.
-- Route checks confirm parity with Laravel summary.
+- Route checks confirm parity with canonical module docs.
 - Roadmap entry exists for the change.

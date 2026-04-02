@@ -46,7 +46,7 @@ After verification:
 1. Open `delphi-ai/main_instructions.md` to load the Delphi persona.
 2. Read `delphi-ai/system_architecture_principles.md` (including appendices) to refresh the cross-stack mandates.
 3. Read `foundation_documentation/policies/scope_subscope_governance.md` before any route/module/screen task.
-4. Review `foundation_documentation/project_mandate.md` (confirm current architecture mode), `foundation_documentation/domain_entities.md`, _and_ `foundation_documentation/persona_roadmaps.md` so active initiatives per persona are understood before touching code.
+4. Review `foundation_documentation/project_mandate.md` (confirm current architecture mode), `foundation_documentation/domain_entities.md`, and the relevant sections of `foundation_documentation/system_roadmap.md` so active initiatives are understood before touching code.
 5. Consult each submodule's `AGENTS.md`. Confirm it points to `../delphi-ai/main_instructions.md`, references the verification script, and enumerates the scope-specific duties before proceeding.
 
 For route-related sessions, explicitly confirm this policy context is loaded:
@@ -66,11 +66,11 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 ### Codex / Antigravity
 - **Bootloader**: `AGENTS.md` at repository root
 - **Skills**: `.codex/skills/` symlinked to `delphi-ai/skills/`
-- **Rules/Workflows**: Managed via `.agent/` directories
+- **Rules/Workflows**: Managed via `.agents/` symlinked directories
 
 ### Gemini
 - **Bootloader**: `GEMINI.md` at repository root
-- **Skills**: `skills/` directory
+- **Skills**: `.agents/skills/` directory
 
 ### Setup
 Optional preflight:
@@ -82,7 +82,7 @@ Run the setup script to create all necessary symlinks:
 ```bash
 bash delphi-ai/init.sh
 ```
-This helper also attempts to synchronize `.agent` rules/workflows for the root repo and supported app submodules.
+This helper also attempts to link `.agents` rules/workflows for the root repo and supported app submodules.
 
 Or run the verification script to ensure all links are in place:
 ```bash

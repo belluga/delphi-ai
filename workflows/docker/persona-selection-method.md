@@ -15,14 +15,14 @@ Ensure every session explicitly anchors Delphi to the correct persona (Flutter e
 ## Inputs
 - Bootloader context (`AGENTS.md` or the active agent-specific bootloader).
 - Core instructions + appendices (`delphi-ai/main_instructions.md`, `system_architecture_principles.md`).
-- Persona references (`delphi-ai/personas/<persona>.md`) and the shared `foundation_documentation/persona_roadmaps.md`.
+- Persona references (`delphi-ai/personas/<persona>.md`) and the relevant sections/items in `foundation_documentation/system_roadmap.md`.
 - Project-specific documentation (`foundation_documentation/submodule_*`).
 - Any explicit role directives from the user.
 
 ## Procedure
 1. **Scan context** – identify the active project/root folder and note any role hints in the latest user message.
 2. **Select persona** – choose from predefined roles (e.g., Flutter Engineer, Laravel Engineer, DevOps/Docker, CTO/Tech Lead). If ambiguous, ask the user.
-3. **Review persona context** – skim the corresponding `delphi-ai/personas/<persona>.md` and note active entries in `foundation_documentation/persona_roadmaps.md` so current priorities are visible.
+3. **Review persona context** – skim the corresponding `delphi-ai/personas/<persona>.md` and note the relevant `foundation_documentation/system_roadmap.md` entries so current priorities are visible.
 4. **Declare persona** – state the chosen persona in the session log before running other methods.
 5. **Load role-specific methods** – reference or note which method set applies (e.g., Flutter Create Domain Method vs. Laravel equivalent). If the method library lacks a variant, document a TODO to create it.
 6. **Monitor for changes** – if the user shifts topics to another codebase or role mid-session, rerun this method and reset persona.

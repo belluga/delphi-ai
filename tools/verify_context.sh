@@ -163,7 +163,10 @@ ensure_symlink_path() {
 
   if [ ! -d "$parent_dir" ]; then
     if [ "$REPAIR_MODE" = true ]; then
-      mkdir -p "$parent_dir"
+      if ! mkdir -p "$parent_dir"; then
+        errors+=("$label failed to create parent directory at $parent_dir")
+        return
+      fi
     else
       errors+=("$label parent directory missing at $parent_dir")
       return
@@ -175,9 +178,11 @@ ensure_symlink_path() {
     actual="$(readlink "$link_path")"
     if [ "$actual" != "$target" ]; then
       if [ "$REPAIR_MODE" = true ]; then
-        rm -f "$link_path"
-        ln -s "$target" "$link_path"
-        warnings+=("$label updated to $target")
+        if rm -f "$link_path" && ln -s "$target" "$link_path"; then
+          warnings+=("$label updated to $target")
+        else
+          errors+=("$label failed to update symlink at $link_path (expected -> $target)")
+        fi
       else
         errors+=("$label points to $actual but expected $target")
       fi
@@ -186,8 +191,11 @@ ensure_symlink_path() {
     errors+=("$label exists as a non-symlink at $link_path (expected -> $target)")
   else
     if [ "$REPAIR_MODE" = true ]; then
-      ln -s "$target" "$link_path"
-      warnings+=("$label created -> $target")
+      if ln -s "$target" "$link_path"; then
+        warnings+=("$label created -> $target")
+      else
+        errors+=("$label failed to create symlink at $link_path (expected -> $target)")
+      fi
     else
       errors+=("$label missing at $link_path (expected symlink -> $target)")
     fi
@@ -200,26 +208,6 @@ ensure_link_without_clobber() {
   local target="$3"
   local label="$4"
   ensure_symlink_path "$parent_dir/$link_name" "$target" "$label"
-}
-
-check_agent_workflows() {
-  local module_path="$1"
-  local label="$2"
-  local agent_dir="$module_path/.agent"
-  check_path_exists "$agent_dir" "$label directory"
-  if [ ! -d "$agent_dir/workflows" ]; then
-    errors+=("$label workflows directory missing at $agent_dir/workflows")
-  fi
-}
-
-check_agent_rules() {
-  local module_path="$1"
-  local label="$2"
-  local agent_dir="$module_path/.agent"
-  check_path_exists "$agent_dir" "$label directory"
-  if [ ! -d "$agent_dir/rules" ]; then
-    errors+=("$label rules directory missing at $agent_dir/rules")
-  fi
 }
 
 ensure_link_in_directory() {
@@ -368,10 +356,10 @@ else
   echo "Running Delphi context verification (read-only)..."
 fi
 
-# Sync agent rules and workflows (ensures real files for IDE visibility)
+# Ensure agent rule/workflow links are present
 if [ "$REPAIR_MODE" = true ] && [ -f "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh" ]; then
   if ! bash "$REPO_ROOT/delphi-ai/tools/sync_agent_rules.sh"; then
-    errors+=("Failed to sync .agent rules/workflows via delphi-ai/tools/sync_agent_rules.sh. Check write permissions for $REPO_ROOT/{.agent,flutter-app/.agent,laravel-app/.agent}.")
+    errors+=("Failed to align .agents/{skills,rules,workflows} via delphi-ai/tools/sync_agent_rules.sh. Check write permissions for $REPO_ROOT/{.agents,flutter-app/.agents,laravel-app/.agents}.")
   fi
 fi
 
@@ -382,21 +370,25 @@ check_submodule_initialized "$REPO_ROOT/foundation_documentation" "foundation_do
 ensure_link_without_clobber "$REPO_ROOT" "AGENTS.md" "delphi-ai/templates/agents/root.md" "root AGENTS.md"
 ensure_link_without_clobber "$REPO_ROOT" "CLINE.md" "delphi-ai/CLINE.md" "root CLINE.md"
 ensure_link_without_clobber "$REPO_ROOT" "GEMINI.md" "delphi-ai/GEMINI.md" "root GEMINI.md"
-ensure_link_without_clobber "$REPO_ROOT" "skills" "delphi-ai/skills" "root Gemini skills link"
+ensure_link_without_clobber "$REPO_ROOT/.agents" "skills" "../delphi-ai/skills" "root Gemini skills link (.agents/skills)"
 ensure_link_without_clobber "$REPO_ROOT/flutter-app" "foundation_documentation" "../foundation_documentation" "flutter-app foundation_documentation link"
 ensure_link_without_clobber "$REPO_ROOT/laravel-app" "foundation_documentation" "../foundation_documentation" "laravel-app foundation_documentation link"
 ensure_link_without_clobber "$REPO_ROOT/flutter-app" "delphi-ai" "../delphi-ai" "flutter-app delphi-ai link"
 ensure_link_without_clobber "$REPO_ROOT/laravel-app" "delphi-ai" "../delphi-ai" "laravel-app delphi-ai link"
 ensure_link_without_clobber "$REPO_ROOT/flutter-app" "AGENTS.md" "../delphi-ai/templates/agents/flutter.md" "flutter-app AGENTS.md"
 ensure_link_without_clobber "$REPO_ROOT/laravel-app" "AGENTS.md" "../delphi-ai/templates/agents/laravel.md" "laravel-app AGENTS.md"
+ensure_link_without_clobber "$REPO_ROOT/flutter-app" "GEMINI.md" "../delphi-ai/GEMINI.md" "flutter-app GEMINI.md"
+ensure_link_without_clobber "$REPO_ROOT/laravel-app" "GEMINI.md" "../delphi-ai/GEMINI.md" "laravel-app GEMINI.md"
 check_foundation_link "$REPO_ROOT/flutter-app" "flutter-app"
 check_foundation_link "$REPO_ROOT/laravel-app" "laravel-app"
-check_agent_workflows "$REPO_ROOT" "root .agent"
-check_agent_workflows "$REPO_ROOT/flutter-app" "flutter-app .agent"
-check_agent_workflows "$REPO_ROOT/laravel-app" "laravel-app .agent"
-check_agent_rules "$REPO_ROOT" "root .agent"
-check_agent_rules "$REPO_ROOT/flutter-app" "flutter-app .agent"
-check_agent_rules "$REPO_ROOT/laravel-app" "laravel-app .agent"
+ensure_link_without_clobber "$REPO_ROOT/.agents" "rules" "../delphi-ai/rules/docker" "root .agents/rules"
+ensure_link_without_clobber "$REPO_ROOT/.agents" "workflows" "../delphi-ai/workflows/docker" "root .agents/workflows"
+ensure_link_without_clobber "$REPO_ROOT/flutter-app/.agents" "skills" "../delphi-ai/skills" "flutter-app .agents/skills"
+ensure_link_without_clobber "$REPO_ROOT/flutter-app/.agents" "rules" "../delphi-ai/rules/flutter" "flutter-app .agents/rules"
+ensure_link_without_clobber "$REPO_ROOT/flutter-app/.agents" "workflows" "../delphi-ai/workflows/flutter" "flutter-app .agents/workflows"
+ensure_link_without_clobber "$REPO_ROOT/laravel-app/.agents" "skills" "../delphi-ai/skills" "laravel-app .agents/skills"
+ensure_link_without_clobber "$REPO_ROOT/laravel-app/.agents" "rules" "../delphi-ai/rules/laravel" "laravel-app .agents/rules"
+ensure_link_without_clobber "$REPO_ROOT/laravel-app/.agents" "workflows" "../delphi-ai/workflows/laravel" "laravel-app .agents/workflows"
 ensure_codex_skills_link "$REPO_ROOT" "root"
 ensure_codex_skills_link "$REPO_ROOT/flutter-app" "flutter-app"
 ensure_codex_skills_link "$REPO_ROOT/laravel-app" "laravel-app"

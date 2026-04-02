@@ -128,6 +128,6 @@ bash delphi-ai/verify_adherence_sync.sh
 ## Compatibility
 
 This repo also supports:
-- **Codex/Antigravity**: See `AGENTS.md`, `.codex/skills/`, and `.agent/`
-- **Gemini**: See `GEMINI.md` and `skills/`
+- **Codex/Antigravity**: See `AGENTS.md`, `.codex/skills/`, and `.agents/`
+- **Gemini**: See `GEMINI.md` and `.agents/skills/`
 - **Cline**: See `.clinerules/` and `.cline/` directories

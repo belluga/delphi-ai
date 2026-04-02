@@ -3,13 +3,115 @@
 ## Purpose
 Centralized instructions to attach Delphi-AI (bootloaders, methods, templates) to any project repo.
 
+## What Delphi-AI Is
+Delphi-AI is not a prompt bundle. It is a working method for AI-assisted delivery that combines:
+
+- bootloaders per agent
+- environment/readiness checks
+- rules, workflows, and skills
+- tactical TODO-driven execution
+- adherence and validation gates
+- promotion of stable outcomes into canonical documentation
+
+The goal is not to let an agent "just code". The goal is to make execution reviewable, resumable, and less likely to drift away from architecture, contract, and verification.
+
+## Method Positioning
+Delphi-AI follows a **governed, distributed spec-driven execution model**.
+
+Instead of concentrating all intent in a single spec file, Delphi distributes authority across three explicit surfaces:
+
+- `foundation_documentation/system_roadmap.md`
+  - strategic direction, sequencing, milestones, and cross-stack follow-up
+- `foundation_documentation/modules/*.md`
+  - durable canonical truth: contracts, flows, schemas, invariants, and stable decisions
+- `foundation_documentation/todos/active/*.md`
+  - tactical execution contract for one change: scope, out-of-scope, done criteria, validation steps, frozen decisions, assumptions, plan, and adherence proof
+
+This means Delphi is neither code-first nor a loose "vibe coding" loop. The normal path is:
+
+1. load the right instructions and verify readiness
+2. refine the tactical TODO (`WHAT` and what counts as done)
+3. build assumptions and an execution plan (`HOW`)
+4. review the plan for architecture, tests, performance, and security
+5. request explicit approval (`APROVADO`)
+6. ingest the rules/workflows that govern the touched surfaces
+7. implement, with test-first/TDD when behavior is verifiable
+8. validate decision adherence, module coherence, security risk, and verification debt
+9. promote stable outcomes back into canonical docs
+
+In practice, this makes Delphi close to Spec-Driven Development, but with **distributed authority by responsibility** rather than one feature-spec artifact:
+
+- roadmap = strategic spec
+- module docs = durable canonical spec
+- tactical TODO = executable change spec
+
+## SDD + TDD
+Delphi should be read as a combination of:
+
+- **SDD** for defining the contract of the work
+- **TDD / test-first** for proving that the implementation actually satisfies that contract
+
+In Delphi terms:
+
+- roadmap, module docs, and the tactical TODO define what must be true
+- assumptions and the execution plan define how the current implementation intends to get there
+- tests provide executable feedback that the promised behavior is real
+
+This split matters because the two layers solve different failure modes:
+
+- spec-driven execution reduces direction error
+- test-first execution reduces implementation error and false confidence
+
+## How Delphi Works
+The core idea is simple:
+
+- the TODO defines **what** must be delivered and what counts as done
+- assumptions and the execution plan define **how** Delphi currently intends to deliver it
+- implementation is not authorized until the contract, assumptions, plan, and approval line up
+- delivery is not complete until the result is validated and stable knowledge is promoted out of tactical notes
+
+This is why the framework puts so much weight on:
+
+- evidence-backed assumptions instead of free guesses
+- explicit approval before implementation
+- module-first coherence checks
+- test strategy recorded inside the plan
+- test-first/TDD when behavior can be verified early
+- explicit closing checks for security risk and verification debt
+
+## What Delphi Borrowed From GSD
+Delphi absorbed a few ideas from Get Shit Done because they improve execution ergonomics:
+
+- make assumptions explicit instead of leaving them implicit in the plan
+- expose the difference between contract and execution strategy
+- prefer operational clarity over hidden agent reasoning
+
+But Delphi intentionally does **not** adopt the full GSD shape. It does not center work around:
+
+- `STATE.md`
+- a phase-centric artifact stack
+- extra planning surfaces that compete with roadmap, modules, and tactical TODOs
+
+The tactical TODO remains the execution authority, and durable truth remains in canonical docs.
+
+## Where TDD Fits
+Delphi now treats test strategy as part of the execution plan, not as an afterthought.
+
+For behavior that is verifiable, the preferred path is test-first:
+
+- the TODO and module docs define what must be true
+- tests provide executable proof of that contract
+- implementation is driven by those checks instead of by plausibility alone
+
+This is especially important for bugfixes, regressions, compatibility-sensitive work, and behavior-defining UI/API changes, where false confidence is expensive.
+
 ## Supported AI Tools
 
 | Tool | Bootloader | Artifacts |
 |------|------------|-----------|
 | **Cline** | Auto-loads `.clinerules/` | `.clinerules/`, `.cline/skills/` |
-| **Codex/Antigravity** | `AGENTS.md` | `.codex/skills/`, `.agent/` |
-| **Gemini** | `GEMINI.md` | `skills/` directory |
+| **Codex/Antigravity** | `AGENTS.md` | `.codex/skills/`, `.agents/` |
+| **Gemini** | `GEMINI.md` | `.agents/skills/` directory |
 
 ## Quick Setup
 
@@ -25,7 +127,7 @@ bash delphi-ai/init.sh
 ```
 - In non-interactive environments, the helper reuses the current `.gitmodules` URLs unless `DELPHI_*_URL` overrides are provided.
 - Prompts for Laravel/Flutter/Web submodule URLs (defaults to current entries).
-- Creates the documented bootloaders/symlinks for Cline, Codex, and Gemini, and syncs `.agent` rules/workflows when the downstream layout is available.
+- Creates the documented bootloaders/symlinks for Cline, Codex, and Gemini, and links `.agents` rules/workflows when the downstream layout is available.
 - If a required Delphi path is already occupied by a different file/symlink/directory, setup fails clearly and prints the blocking paths. Fix them manually, then rerun.
 - Run `bash delphi-ai/verify_context.sh` afterward as a read-only validation pass.
 - If the validation fails only because Delphi-managed links/artifacts are missing or misaligned, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain `bash delphi-ai/verify_context.sh`.
@@ -56,7 +158,8 @@ bash delphi-ai/init.sh
 4. **For Gemini**:
    ```bash
    ln -s delphi-ai/GEMINI.md GEMINI.md
-   ln -s delphi-ai/skills skills
+   mkdir -p .agents
+   ln -s ../delphi-ai/skills .agents/skills
    ```
 
 5. Check `git status` to ensure submodule URLs point to your project forks, not boilerplate.
@@ -69,7 +172,9 @@ Common blocking paths are:
 - `AGENTS.md`
 - `CLINE.md`
 - `GEMINI.md`
-- `skills/`
+- `.agents/skills/`
+- `.agents/rules/`
+- `.agents/workflows/`
 - `.clinerules/`
 - `.cline/skills/`
 - `.codex/skills/`

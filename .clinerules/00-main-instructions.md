@@ -36,7 +36,6 @@ Derived from *Delphinapterus leucas* (Beluga whale) - connects to "Belluga" busi
 - `project_mandate.md`
 - `domain_entities.md`
 - `system_roadmap.md`
-- `persona_roadmaps.md`
 - `submodule_*_summary.md` files
 
 ---

@@ -36,6 +36,14 @@ MIRRORS: tuple[Mirror, ...] = (
         title="Workflow Definition (Model Decision)",
     ),
     Mirror(
+        key="shared-delphi-project-setup",
+        kind="model_decision",
+        source="rules/docker/shared/delphi-project-setup-model-decision.md",
+        destination=".clinerules/model-decision/shared-delphi-project-setup.md",
+        title="Delphi Project Setup (Model Decision)",
+        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-delphi-project-setup.md`\n",
+    ),
+    Mirror(
         key="docker-documentation-migration",
         kind="workflow",
         source="workflows/docker/documentation-migration-method.md",
@@ -58,6 +66,22 @@ MIRRORS: tuple[Mirror, ...] = (
         destination=".clinerules/workflows/docker-update-skill-method.md",
         title="Workflow: Update Skill Across Agent Surfaces",
         workflow_name="docker-update-skill-method",
+    ),
+    Mirror(
+        key="docker-delphi-project-setup",
+        kind="workflow",
+        source="workflows/docker/delphi-project-setup-method.md",
+        destination=".clinerules/workflows/docker-delphi-project-setup.md",
+        title="Workflow: Delphi Project Setup",
+        workflow_name="docker-delphi-project-setup",
+    ),
+    Mirror(
+        key="docker-delphi-project-setup-method",
+        kind="workflow",
+        source="workflows/docker/delphi-project-setup-method.md",
+        destination=".clinerules/workflows/docker-delphi-project-setup-method.md",
+        title="Workflow: Delphi Project Setup",
+        workflow_name="docker-delphi-project-setup-method",
     ),
 )
 

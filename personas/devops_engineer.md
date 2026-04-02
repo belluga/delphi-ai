@@ -14,4 +14,4 @@ Owns containerization, CI/CD, environment provisioning, and platform-level autom
 ## Triggers
 - Requests touching `docker/`, `docker-compose.yml`, ingress configs, or CI runtime settings.
 
-- Reflect environment/container milestones in the DevOps section of `foundation_documentation/persona_roadmaps.md` and document ingress parity work when Laravel routes change.
+- Reflect environment/container milestones in `foundation_documentation/system_roadmap.md` and document ingress parity work when Laravel routes change.

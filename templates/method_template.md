@@ -17,7 +17,7 @@ Explain the architectural reason for this method. Tie it back to the foundationa
 ## Procedure
 1. Ordered checklist of steps. Each step should reference the files/commands to touch.
 2. Include documentation updates and TODO placements.
-3. When relevant, specify which persona roadmap section must be updated (`foundation_documentation/persona_roadmaps.md`).
+3. When relevant, specify which `foundation_documentation/system_roadmap.md` entries/sections must be updated and whether any canonical module docs must absorb the stable outcome.
 
 ## Outputs
 - Enumerate the deliverables (docs updated, code artefacts, TODO comments, branch notes).

@@ -7,7 +7,7 @@ description: "Rule: MUST use whenever the scope matches this purpose: Apply thes
 Apply these Flutter architectural tenets on every task:
 - Keep widgets pure UI; controllers own all state (`StreamValue`), UI controllers, side effects, and orchestration; widgets never touch repositories/infrastructure.
 - Controllers are the only allowed data ingress gate for screens/widgets; no repository/service/state-holder bypasses are allowed in presentation non-controller files.
-- Apply DI/ownership boundaries from the canonical contract in `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1`) and enforce rule IDs/treatments from `flutter-app/tool/belluga_custom_lint/docs/rules.md`.
+- Apply DI/ownership boundaries from the canonical contract in `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1`) and enforce rule IDs/treatments from `flutter-app/tool/belluga_analysis_plugin/docs/rules.md`.
 - `StreamValue` in controllers is allowed for local screen/stage state and for pure delegation of repository-owned canonical streams.
 - Canonical shared state (cross-controller/module lifespan, cache-backed, persistence-aligned) must be owned by repository contracts/implementations.
 - Services/DAL are technical adapters only; they must not own canonical shared state via `StreamValue`, `StreamController`, `ValueNotifier`, `ChangeNotifier`, or custom `*State/*Store/*Manager` holders.

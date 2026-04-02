@@ -21,7 +21,7 @@ Specify realtime SSE streams that deliver delta updates for paginated feeds (eve
 5. Document resync behavior (client refreshes page 1 on reconnect or invalidation).
 6. Update `foundation_documentation/endpoints_mvp_contracts.md` with the SSE contract.
 7. Update `foundation_documentation/system_roadmap.md` with the realtime workstream item.
-8. Record any required client changes in the relevant persona roadmap or submodule summary.
+8. Record any required client changes in the relevant `system_roadmap.md` entries and update the affected canonical module docs when the implementation snapshot materially changed.
 
 ## Outputs
 - SSE endpoint definitions aligned with page-based list contracts.
