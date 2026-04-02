@@ -1,6 +1,6 @@
 ---
 name: wf-docker-environment-readiness-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before executing DevOps or CI/CD tasks. Prefer deterministic script checks over manual spot-checks to prevent drift (e.g., `web-app` not being a submodule, broken `/storage` routing)."
+description: "Workflow: MUST use whenever the scope matches this purpose: Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before DevOps/CI work proceeds."
 ---
 
 # Method: DevOps Environment Readiness
@@ -27,6 +27,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 2. **Run canonical readiness scripts (preferred)**
    - Run Delphi context checks (symlinks, required folders):
      - `bash delphi-ai/verify_context.sh`
+     - Treat this as read-only verification. If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification. If it fails on a path conflict with project-owned files/directories, stop and report it for manual remediation.
    - Run the project readiness verifier (compose config + critical drift checks):
      - `bash scripts/verify_environment.sh`
    - If either script fails, fix the reported issue before proceeding.

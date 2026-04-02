@@ -1,6 +1,6 @@
 ---
 name: rule-docker-shared-foundation-docs-sync-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: If a task touches routes, screens, repositories, or domain models:."
+description: "Rule: MUST use whenever the scope matches this purpose: When working on routes, screens, repositories, or domain changes that impact contracts."
 ---
 
 ## Rule
@@ -14,11 +14,8 @@ If a task touches routes, screens, repositories, or domain models:
 - Update `foundation_documentation/system_roadmap.md` and the affected `foundation_documentation/modules/*.md` entries with new API/contract work.
 - If the touched module area is still marked `Partial`, migrate the touched legacy scope into the module as part of the same TODO instead of writing parallel side notes outside the canonical module surface.
 - When API payload shape conventions change (especially `PATCH` semantics), record the canonical rule in `foundation_documentation/endpoints_mvp_contracts.md` conventions and in the affected module contract sections.
-- Treat module docs as the canonical source of truth for stable decisions: tactical TODO decisions must be checked against module decisions and labeled `Aligned|Conflict|Supersede` with explicit `Preserve|Supersede` intent before implementation.
-- If TODO decisions conflict with module decisions, block implementation until the TODO either preserves module truth (by changing TODO decisions) or explicitly supersedes with approved module update path.
 - Notify downstream teams by recording roadmap deltas before code merges.
  - Treat `web-app` as derived/compiled: route test sources are source-owned and synced by build tooling; direct `web-app` test authoring is not authoritative.
- - **Exception (Maintenance/Regression Fix lane):** If restoring previously documented behavior and the existing docs already match the intended behavior, documentation updates are not required. Record the evidence in the ephemeral TODO; if docs are missing or incorrect, use the tactical TODO lane and update docs first.
 
 ## Rationale
 Foundation docs are the contract source for all stacks. Keeping them synchronized with route/screen/repo/domain changes prevents drift and preserves traceability.

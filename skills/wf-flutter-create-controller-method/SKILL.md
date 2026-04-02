@@ -1,6 +1,6 @@
 ---
 name: wf-flutter-create-controller-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Introduce a controller that owns UI state, side effects, and StreamValue exposure per Sections 5 and 9 of the Flutter architecture doc. Ensures widgets remain pure UI and controllers encapsulate logic."
+description: "Workflow: MUST use whenever the scope matches this purpose: Introduce a new Flutter domain aggregate with full architectural rigor—docs, value objects, projections, repository contracts, and DI wiring—aligned with our principles (backend-driven UI, DTO→Domain→Projection flow, feature-first structure)."
 ---
 
 # Method: Create Controller (Flutter)

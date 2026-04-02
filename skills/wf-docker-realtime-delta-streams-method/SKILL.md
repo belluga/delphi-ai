@@ -1,6 +1,6 @@
 ---
 name: wf-docker-realtime-delta-streams-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Specify realtime SSE streams that deliver delta updates for paginated feeds (events, invites, map POIs) while keeping page-based listing as the source of truth."
+description: "Workflow: MUST use whenever the scope matches this purpose: Define SSE delta streams that complement page-based list endpoints without replacing pagination."
 ---
 
 # Workflow: Realtime Delta Streams (SSE)

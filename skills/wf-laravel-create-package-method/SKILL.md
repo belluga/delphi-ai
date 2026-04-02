@@ -1,21 +1,12 @@
 ---
 name: wf-laravel-create-package-method
-description: "Workflow: MUST use whenever creating or refactoring Laravel packages. Establish package boundaries with contracts/adapters, keep a faithful package README, remove app wrappers, and run mandatory decoupling assertions plus full-suite validation before completion."
+description: "Workflow: MUST use whenever the scope matches this purpose: Create or refactor Laravel packages with explicit contract boundaries, faithful package README coverage, host adapters, and mandatory decoupling assertions before completion."
 ---
 
 # Workflow: Create or Refactor Laravel Package
 
 ## Purpose
 Create or refactor a Laravel package so package internals remain decoupled from host app implementation details while preserving behavior.
-
-## Guardrail Rule IDs
-- `LAR-PACKAGE-BOUNDARY`
-- `LAR-PACKAGE-CROSS-COUPLING`
-- `LAR-PACKAGE-ARCHITECTURE-REGISTRY`
-- `LAR-PACKAGE-ROUTE-OWNERSHIP`
-- `LAR-PACKAGE-ROUTE-HOST-MIDDLEWARE`
-- `LAR-PACKAGE-HOST-BINDINGS`
-- `LAR-PACKAGE-HOST-COMPOSITION`
 
 ## Triggers
 - New package under `packages/**`.

@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-route-workflow-glob
-description: "Rule: MUST use whenever the scope matches this purpose: Edits under `flutter-app/lib/**/routes/**` must follow the Route Workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: Apply the route workflow whenever Flutter routing files are edited."
 ---
 
 ## Rule

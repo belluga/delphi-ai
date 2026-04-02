@@ -96,6 +96,21 @@ for arg in "$@"; do
   esac
 done
 
+check_core_symlinks_enabled() {
+  local repo_path="$1"
+  local label="$2"
+  local current
+
+  if ! git -C "$repo_path" rev-parse --show-toplevel >/dev/null 2>&1; then
+    return 0
+  fi
+
+  current="$(git -C "$repo_path" config --get core.symlinks || true)"
+  if [ "$current" = "false" ]; then
+    errors+=("$label has git core.symlinks=false; tracked symlinks may materialize as plain files containing their target path (for example GEMINI.md). Set core.symlinks=true for this repo and re-checkout affected symlink paths.")
+  fi
+}
+
 check_path_exists() {
   local path="$1"
   local label="$2"
@@ -354,6 +369,14 @@ if [ "$REPAIR_MODE" = true ]; then
   echo "Running Delphi context verification with repair mode..."
 else
   echo "Running Delphi context verification (read-only)..."
+fi
+
+check_core_symlinks_enabled "$REPO_ROOT" "Root repository"
+if [ -d "$REPO_ROOT/flutter-app" ]; then
+  check_core_symlinks_enabled "$REPO_ROOT/flutter-app" "flutter-app"
+fi
+if [ -d "$REPO_ROOT/laravel-app" ]; then
+  check_core_symlinks_enabled "$REPO_ROOT/laravel-app" "laravel-app"
 fi
 
 # Ensure agent rule/workflow links are present

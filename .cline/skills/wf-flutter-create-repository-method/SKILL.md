@@ -19,7 +19,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 - DI configuration files.
 
 ## Procedure
-1. **Run Persona Selection** – confirm Flutter Engineer persona.
+1. **Run Profile Selection** – confirm `Operational / Coder` with `flutter` scope.
 2. **Define domain contract**
    - Update/create `lib/domain/repositories/<name>_repository_contract.dart` using domain verbs (no “screen” references). Annotate temporary projection returns with TODOs if the full entity is pending.
 3. **Design DTO mapper**

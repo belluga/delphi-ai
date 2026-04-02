@@ -62,7 +62,8 @@ O Delphi esta cada vez mais claramente apoiado em duas camadas complementares:
 - **TDD/test-first** para provar esse contrato durante a execucao
 
 Na pratica:
-- `system_roadmap`, `module` e `TODO` definem o que precisa ser verdade
+- `project_constitution`, `system_roadmap`, `module` e `TODO` definem o que precisa ser verdade
+- `profiles` definem quem pode tocar o quê e quando deve haver handoff
 - `assumptions` e `execution plan` definem como a mudanca pretende chegar la
 - os testes funcionam como prova executavel de que o comportamento prometido realmente existe
 

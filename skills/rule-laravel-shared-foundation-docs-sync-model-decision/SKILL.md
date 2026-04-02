@@ -1,6 +1,6 @@
 ---
 name: rule-laravel-shared-foundation-docs-sync-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: If a task touches routes, screens, repositories, or domain models:."
+description: "Rule: MUST use whenever the scope matches this purpose: When working on routes, screens, repositories, or domain changes that impact contracts."
 ---
 
 ## Rule
@@ -13,7 +13,7 @@ If a task touches routes, screens, repositories, or domain models:
 - Align domain vocabulary with `foundation_documentation/domain_entities_sections/*` and refresh summaries in `domain_entities.md` when fields change.
 - Update `foundation_documentation/system_roadmap.md` and the affected `foundation_documentation/modules/*.md` entries with new API/contract work.
 - If the touched module area is still marked `Partial`, migrate the touched legacy scope into the module as part of the same TODO instead of writing parallel side notes outside the canonical module surface.
-- When API payload shape conventions change (especially `PATCH` semantics), record the canonical rule in `foundation_documentation/endpoints_mvp_contracts.md` conventions and in the affected module contract sections.
+- When API payload shape conventions change (especially `PATCH` semantics), record the canonical rule in `foundation_documentation/endpoints_mvp_contracts.md` conventions and in affected module contract sections.
 - When API security behavior changes (endpoint level assignment, idempotency/replay policy, rejection taxonomy), synchronize:
   - `foundation_documentation/endpoints_mvp_contracts.md` conventions + endpoint entries,
   - the active security tactical TODO (`TODO-v1-api-security-hardening.md`),

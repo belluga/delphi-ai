@@ -44,6 +44,22 @@ for arg in "$@"; do
   esac
 done
 
+record_core_symlinks_issue() {
+  local repo_path="$1"
+  local label="$2"
+  local current
+
+  if ! git -C "$repo_path" rev-parse --show-toplevel >/dev/null 2>&1; then
+    return 0
+  fi
+
+  current="$(git -C "$repo_path" config --get core.symlinks || true)"
+  if [[ "$current" == "false" ]]; then
+    setup_errors+=("${label} has git core.symlinks=false; tracked symlinks may materialize as plain files containing their target path (for example GEMINI.md). Set core.symlinks=true for this repo and re-checkout affected symlink paths before rerunning setup.")
+    error "${label} has git core.symlinks=false. Tracked symlinks may materialize as plain files containing their target path (for example GEMINI.md). Set core.symlinks=true for this repo and re-checkout affected symlink paths before rerunning setup."
+  fi
+}
+
 # --- Configure submodule URLs (interactive with defaults) ---
 configure_submodule() {
   local name="$1" path="$2" override_var="$3"
@@ -85,6 +101,14 @@ if [[ "$CHECK_ONLY" != "true" ]]; then
   configure_submodule "Laravel" "laravel-app" "DELPHI_LARAVEL_URL"
   configure_submodule "Flutter" "flutter-app" "DELPHI_FLUTTER_URL"
   configure_submodule "Web bundle" "web-app" "DELPHI_WEB_URL"
+fi
+
+record_core_symlinks_issue "$REPO_ROOT" "Root repository"
+if [[ -d "${REPO_ROOT}/flutter-app" ]]; then
+  record_core_symlinks_issue "${REPO_ROOT}/flutter-app" "flutter-app"
+fi
+if [[ -d "${REPO_ROOT}/laravel-app" ]]; then
+  record_core_symlinks_issue "${REPO_ROOT}/laravel-app" "laravel-app"
 fi
 
 # --- Ensure Delphi-AI repo is present locally (untracked) ---

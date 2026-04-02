@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-documentation-contracts-always-on
-description: "Rule: MUST use whenever the scope matches this purpose: Before touching Flutter code or mocks, update the authoritative documentation:."
+description: "Rule: MUST use whenever the scope matches this purpose: Document every Flutter change in foundation docs before code merges."
 ---
 
 ## Rule
@@ -9,7 +9,6 @@ Before touching Flutter code or mocks, update the authoritative documentation:
 - Record every mock payload/schema change in `foundation_documentation/screens/prototype_data.md` and refresh DTO notes in `foundation_documentation/domain_entities.md` when vocabulary evolves.
 - Update the affected module docs and `foundation_documentation/system_roadmap.md` so Laravel and other consumers see the new scope before implementation starts.
 - Reject any Flutter change whose documentation counterpart is missing or outdated.
- - **Exception (Maintenance/Regression Fix lane):** If restoring previously documented behavior and the existing docs already match the intended behavior, documentation updates are not required. Record the evidence in the ephemeral TODO; if docs are missing or incorrect, use the tactical TODO lane and update docs first.
 
 ## Rationale
 Per Project Mandate P‑B6 (“Documentation Before Code”), the Flutter prototype defines launch contracts for Laravel and future clients. Keeping docs ahead of code prevents schema drift and maintains domain traceability.

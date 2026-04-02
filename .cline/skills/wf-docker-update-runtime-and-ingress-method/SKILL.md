@@ -3,7 +3,7 @@ name: wf-docker-update-runtime-and-ingress-method
 description: "Workflow: MUST use whenever the scope matches this purpose: Ensure Docker images, Compose stacks, and ingress configs stay aligned with the documented API routes while keeping runtime cost and build performance under control."
 ---
 
-# Method: Update Runtime & Ingress (DevOps)
+# Method: Update Runtime & Ingress (Operational / DevOps)
 
 ## Purpose
 Ensure Docker images, Compose stacks, and ingress configs stay aligned with the documented API routes while keeping runtime cost and build performance under control.
@@ -20,7 +20,7 @@ Ensure Docker images, Compose stacks, and ingress configs stay aligned with the 
 - Any cost/build metrics motivating the change.
 
 ## Procedure
-1. **Persona alignment** – run Persona Selection (DevOps) and review roadmap items tied to ingress/runtime work.
+1. **Profile alignment** – run Profile Selection as `Operational / DevOps` with `docker` scope and review roadmap items only when the runtime change has strategic follow-up.
 2. **Collect diffs** – list the route or runtime changes requested (e.g., new `/admin/api/v1/...` path, base image bump).
 3. **Apply Docker/Compose changes**
    - Update Dockerfiles with minimal base images and shared layers.

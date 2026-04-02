@@ -19,11 +19,11 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 - Backend/API contracts for the new entity, if available.
 
 ## Procedure
-1. **Run Persona Selection** – confirm we’re acting as Flutter Engineer.
+1. **Run Profile Selection** – confirm we’re acting as `Operational / Coder` with `flutter` scope.
 2. **Document first**
    - Add/extend the domain entry in `foundation_documentation/domain_entities.md` (purpose, invariants, value objects).
    - Update the relevant module docs and `foundation_documentation/system_roadmap.md` entry.
-   - Record any cross-stack impact in the shared roadmap entry instead of a separate persona roadmap.
+   - Record any cross-stack impact in the shared roadmap entry instead of a stack-specific shadow roadmap.
 3. **Scaffold the domain directory**
    - Create `lib/domain/<domain_name>/` with `value_objects/`, `projections/`, and entity file(s).
    - Implement the aggregate using ValueObjects (per Section 4 & 5 of the architecture doc). Add TODOs for attributes pending backend support.

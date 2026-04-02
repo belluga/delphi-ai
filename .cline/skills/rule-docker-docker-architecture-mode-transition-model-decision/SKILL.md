@@ -1,6 +1,6 @@
 ---
 name: rule-docker-docker-architecture-mode-transition-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: If adjusting architecture modes or related governance (Foundational/Operational/Expansion):."
+description: "Rule: MUST use whenever the scope matches this purpose: When changing architecture mode or governance policies."
 ---
 
 ## Rule
@@ -16,4 +16,4 @@ Mode changes alter compatibility and governance rules; the workflow ensures coor
 - Block changes without the roadmap/documentation updates prescribed in the workflow.
 
 ## Notes
-Coordinate with CTO/Tech Lead persona to ratify mode changes and communicate downstream impacts.
+Coordinate with the `Strategic / CTO-Tech-Lead` profile to ratify mode changes and communicate downstream impacts.

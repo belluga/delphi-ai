@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-screen-workflow-glob
-description: "Rule: MUST use whenever the scope matches this purpose: Whenever a file under `flutter-app/lib/presentation/**/screens/**` is active or modified, run the Screen Workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: ---"
 ---
 
 ## Rule

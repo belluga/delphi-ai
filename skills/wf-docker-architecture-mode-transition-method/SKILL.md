@@ -15,17 +15,17 @@ Provide a controlled workflow for switching between Foundational, Operational, a
 
 ## Inputs
 - Current `system_architecture_principles.md` (mode definitions and affected principles).
-- CTO/Tech Lead persona doc and the relevant architecture/governance entries in `foundation_documentation/system_roadmap.md`.
+- `Strategic / CTO-Tech-Lead` profile doc and the relevant architecture/governance entries in `foundation_documentation/system_roadmap.md`.
 - Project mandate, domain entities, and the relevant canonical module docs describing live behavior.
 - Any regulatory or business timelines driving the transition.
 
 ## Procedure
-1. **Persona alignment** – run Persona Selection Method as CTO/Tech Lead.
+1. **Profile alignment** – run Profile Selection Method as `Strategic / CTO-Tech-Lead` with `cross-stack` scope.
 2. **Assess readiness** – verify triggers have been met (e.g., production tenant exists, expansion initiative approved).
 3. **Document the target mode**
    - Update `system_architecture_principles.md` (and relevant appendices) with policies specific to the new mode (migration expectations, compatibility windows, feature-flag rules).
 4. **Update roadmaps**
-   - Record the transition in `foundation_documentation/system_roadmap.md` and call out required actions for each affected stack/persona (Flutter/Laravel/DevOps).
+   - Record the transition in `foundation_documentation/system_roadmap.md` and call out required actions for each affected profile/scope combination.
 5. **Notify affected modules**
    - Update the relevant canonical module docs and shared roadmap entries with the new operating constraints so future work inherits the correct mode assumptions.
 6. **Method references**
@@ -40,5 +40,5 @@ Provide a controlled workflow for switching between Foundational, Operational, a
 - Method updates or TODOs referencing new policies.
 
 ## Validation
-- All personas acknowledge the new mode in their next sessions via roadmap updates and affected canonical module docs.
+- The shared roadmap and affected canonical module docs clearly capture the required follow-up for each affected profile/scope combination, and future sessions can discover it there.
 - CI/checklist updates exist if the mode introduces new gates (e.g., migration verification).

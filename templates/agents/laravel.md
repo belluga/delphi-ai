@@ -18,16 +18,19 @@
    - `../delphi-ai/ecosystem_template_configuration.md`
    - `../foundation_documentation/project_mandate.md`
    - `../foundation_documentation/domain_entities.md`
+   - `../foundation_documentation/project_constitution.md`
 4. (Already covered via step 1) Ensure the verification checklist passes before continuing; resolve failures via `../delphi-ai/initialization_checklist.md`.
 
 ## Laravel Submodule Context
+* Consult `../foundation_documentation/project_constitution.md` for the current project-level system rules and cross-module invariants before deriving endpoint or schema behavior from roadmap notes.
+* Default to the `Operational / Coder` profile with `laravel` scope unless the user explicitly asks for strategic or assurance work.
 * Consult the relevant canonical module docs under `../foundation_documentation/modules/` for the authoritative snapshot of the control plane architecture. Use them to guide schema, API, and service design decisions.
 * When the touched module area is marked `Partial`, absorb canonicalization of the touched legacy scope into the active TODO before closing the work.
 * For CI, promotion, deploy, and release parity tasks, rely on the actual repository and promotion pipeline state rather than documentation-side pin metadata.
 
 ## Execution Mandate
 * Specify and deliver the **ideal** Laravel control-plane architecture: domain services, MongoDB schemas, API boundaries, and integration tasks must advance the target launch blueprint, not stopgap fixes.
-* Ground every engineering decision in the documented principles (P-1 through P-18). When roadmap features are absent or incomplete, capture the architectural intent and outline the necessary next steps rather than improvising undocumented behavior.
+* Ground every engineering decision in the documented principles and project constitution. When roadmap features are absent or incomplete, capture the architectural intent and outline the necessary strategic next steps rather than improvising undocumented behavior.
 * Ensure cross-ecosystem contracts remain synchronized—any API or schema adjustments must be reflected in the Flutter client specifications and the foundational documentation.
 
 ## Scope Duties

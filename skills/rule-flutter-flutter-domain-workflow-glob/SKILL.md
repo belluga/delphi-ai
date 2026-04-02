@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-domain-workflow-glob
-description: "Rule: MUST use whenever the scope matches this purpose: When editing `flutter-app/lib/domain/**`, run the Domain Workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: Apply the domain modeling workflow whenever Flutter domain files change."
 ---
 
 ## Rule

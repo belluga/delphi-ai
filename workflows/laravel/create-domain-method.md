@@ -19,7 +19,7 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 - Existing DocumentModels, migrations, factories/seeders related to the domain.
 
 ## Procedure
-1. **Persona alignment** – run Persona Selection (Laravel Engineer) and review roadmap entries tied to this domain.
+1. **Profile alignment** – run Profile Selection as `Operational / Coder` with `laravel` scope and review roadmap entries only when strategic follow-up is part of the change.
 2. **Document first**
    - Add/expand the domain entry in `foundation_documentation/domain_entities.md` (fields, invariants, collections).
    - Update `foundation_documentation/system_roadmap.md` and any affected module docs with the planned work and cross-stack follow-up.

@@ -1,14 +1,24 @@
 ---
 name: rule-laravel-shared-todo-driven-execution-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: Before implementation, require a tactical TODO, separate `WHAT` from execution `HOW`, and complete planning/adherence gates before delivery."
+description: "Rule: MUST use whenever the scope matches this purpose: Before any implementation work (code/docs) that changes the project, require an explicit tactical TODO, separate `WHAT` from execution `HOW`, and complete planning/adherence gates before delivery."
 ---
 
 ## Rule
-Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions and Maintenance/Regression Fix flow below.
+Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
 
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
+
+### Operational Micro-Fix Flow (No TODO)
+If the work is a minimal operational fix that does not touch production/test artifacts or product behavior, Delphi may proceed without a TODO and without **APROVADO**. Eligibility:
+- No production or test files may be modified.
+- No project-specific documentation under `foundation_documentation/**` may be modified, except `artifacts/tmp/**` or `todos/**`.
+- Scope must stay limited to local operational surfaces such as symlinks, bootloaders, permissions, `.git/config`, local environment wiring, Delphi readiness/setup scripts, or equivalent non-product scaffolding.
+- No API/contract/schema/route/UI/business-behavior changes and no production runtime/deploy logic changes are allowed.
+- Validation must be immediate and objective (`verify_context.sh`, `self_check.sh`, `bash -n`, `git status`, symlink/permission inspection, or equivalent).
+- Delphi must still state the intent, why the work qualifies, and the validation/results in the response.
+- If the scope expands beyond these limits, stop and switch to the Maintenance/Regression Fix flow or the full tactical TODO lane before continuing.
 
 ### Maintenance/Regression Fix Flow (Ephemeral TODO)
 If the change restores previously documented or verifiably working behavior (including test failures), Delphi may use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still require **APROVADO** before changes. Eligibility:
@@ -120,6 +130,10 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate K — Explicit approval token (mandatory)
 - After Gates A-J, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
+- Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
+  - call `apply_patch`,
+  - run write commands that change project files,
+  - or make any project/submodule/code/docs modifications.
 
 ### Gate L — Rules Acknowledgement / Ingestion (mandatory after `APROVADO` and before execution)
 - Use the approved execution plan to identify the exact touched surfaces.
@@ -130,6 +144,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - `must avoid`
   - `execution impact`
 - Mere mention is insufficient; the governing rules/workflows must be explicitly ingested before implementation begins.
+- `Operational / Coder` may rely on `project_constitution.md` as read authority, but any required constitution edit must be routed through a TODO handoff to `Strategic / CTO-Tech-Lead`.
 - If rule ingestion reveals a material conflict with the approved plan, stop execution, update the plan/TODO, and request renewed **APROVADO** before continuing.
 
 ### Gate M — Decision Adherence Gate (mandatory before delivery)
@@ -191,41 +206,47 @@ If the change restores previously documented or verifiably working behavior (inc
   - the `Last confirmed truth` needed to resume without rediscovering the same context
 - `Blocked` is an overlay, not a replacement for the current delivery stage.
 
-### Gate R — Module consolidation gate (mandatory before TODO closure)
-- Before closing/moving a TODO, promote stable outcomes and approved decision changes into canonical module docs.
-- Record TODO ↔ module traceability evidence and remove conflicting tactical notes.
+### Gate R — Module Consolidation Gate (mandatory before closing TODO)
+- Before moving a TODO to `completed`, promote stable conceptual outcomes and approved decisions into canonical module docs under `foundation_documentation/modules/`.
+- Record promotion evidence in module decision/promotion sections and ensure TODO ↔ module cross-links are updated.
 - If the TODO touched a `Partial` module area that previously depended on legacy summary-era context, update `Canonical Coverage Status`, `Last Canonicalization Review`, and `Remaining Migration Scope`.
+- If module docs still conflict with delivered implementation, TODO closure is blocked until conflicts are resolved or explicitly waived.
 
 ## Rationale
 This prevents scope creep and "hub refactors" by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
 
 ## Enforcement
-- Block implementation without TODO (unless exempt/ephemeral-eligible).
-- Block closure/pausing when an ephemeral TODO would otherwise remain open beyond the immediate maintenance cycle; it must be deleted/retired or replaced by a fresh tactical TODO for the remaining broader work.
-- Block implementation when the TODO still uses an outdated delivery-status schema.
-- Block implementation with unresolved COMMENT blocks.
-- Block implementation when module anchors are missing in the TODO.
-- Block implementation when a touched module area still depends on legacy summary-era context and the TODO has not absorbed canonicalization of that touched area.
-- Block implementation when material pending decisions from the module-first TODO scan remain unresolved.
-- Block implementation when redundant/already-covered or implementation-local details are still being treated as pending user decisions.
-- Block planning/approval when assumptions that materially affect the TODO contract remain only implicit.
-- Block planning/approval when an assumption lacks evidence but is still being treated as safe for execution.
-- Block implementation when no execution plan exists for the approved TODO.
-- Block implementation when frozen decisions conflict with canonical module docs.
-- Block implementation when the module decision consistency matrix (1-1) is missing.
-- Block implementation when execution-plan test strategy is missing.
-- Block bugfix/regression or behavior-defining implementation when fail-first targets are missing and no explicit rationale for non-applicability was recorded.
-- Block implementation when relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`.
-- Block implementation/delivery when `Qualifiers` includes `Provisional` but `Provisional Notes` are missing.
-- Block implementation/delivery when `Qualifiers` includes `Blocked` but `Blocker Notes` or `Next exact step` are missing.
-- Block delivery if any baseline decision lacks adherence evidence.
-- Block delivery if any relevant module decision ends in `Regression`.
-- Block delivery if no explicit security risk assessment and attack simulation decision exist.
-- Block delivery if attack simulation is marked `required` and no corresponding review evidence (or approved exception path) exists.
-- Block TODO closure if a `medium|big` TODO or debt-signaling TODO lacks verification-debt evidence (or explicit rationale for not running the full audit).
-- Block TODO closure if a touched `Partial` module area was not migrated into the module.
-- Block TODO closure if `Qualifiers` still includes `Blocked`.
-- Block TODO closure without module consolidation evidence.
+- If the user requests implementation without a TODO and the work is not exempt, Operational-Micro-Fix-eligible, or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
+- If an ephemeral TODO would remain open beyond the immediate maintenance cycle, block closure/pausing until it is either deleted/retired or replaced by a fresh tactical TODO for the remaining broader work.
+- If Operational Micro-Fix is used but any production/test file, project-specific doc (outside `artifacts/tmp/**` or `todos/**`), or product/runtime behavior is touched, block and switch to the proper TODO lane.
+- If Operational Micro-Fix is used without immediate objective validation evidence, block closure until that evidence exists.
+- If the TODO still uses an outdated delivery-status schema, block implementation until it is aligned to the canonical format.
+- If COMMENT blocks exist, block implementation until they are resolved and removed.
+- If canonical module anchors are missing in the TODO, block implementation until anchors are added.
+- If a touched module area still depends on legacy summary-era context and the TODO has not absorbed canonicalization of that touched area, block implementation.
+- If material pending decisions from the module-first TODO scan remain unresolved, block implementation.
+- If redundant/already-covered or implementation-local details are still being treated as pending user decisions, block implementation until the TODO is triaged correctly.
+- If assumptions that materially affect the TODO contract remain only implicit, block planning/approval until they are explicit.
+- If an assumption lacks evidence but is still being treated as safe for execution, block planning/approval.
+- If no execution plan exists for the approved TODO, block implementation.
+- If any frozen decision conflicts with canonical module docs, block implementation until coherence is resolved.
+- If the module decision consistency matrix (1-1) is missing, block implementation.
+- If `medium|big` work does not contain Plan Review Gate output, block implementation and request completion.
+- If the execution plan does not contain a recorded test strategy, block implementation.
+- If bugfix/regression or behavior-defining work does not contain fail-first targets (or explicit rationale for non-applicability), block implementation.
+- If relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`, block implementation.
+- If `Qualifiers` includes `Provisional` and `Provisional Notes` are missing, block implementation/delivery until TODO status is coherent.
+- If `Qualifiers` includes `Blocked` and `Blocker Notes` or `Next exact step` are missing, block implementation/delivery until TODO status is coherent.
+- If any baseline decision lacks adherence evidence, block delivery.
+- If any relevant module decision ends in `Regression`, block delivery.
+- If no explicit security risk assessment and attack simulation decision exist, block delivery.
+- If attack simulation is marked `required` and no corresponding review evidence (or approved exception path) exists, block delivery.
+- If a `medium|big` TODO or debt-signaling TODO lacks verification-debt evidence (or explicit rationale for not running the full audit), block TODO closure.
+- If the TODO still includes `Blocked` in `Qualifiers`, block TODO closure.
+- If a TODO touched a `Partial` module area but did not migrate the touched legacy scope into the module, block TODO closure.
+- If module consolidation evidence is missing, block TODO closure.
 
 ## Notes
-- Cline plans and recommendations are advisory by default; implementation authority remains Delphi TODO + **APROVADO** + Decision Adherence Gate.
+- This rule is stack-agnostic and applies to Flutter/Laravel/Web as long as the implementation changes project artifacts.
+- Cline plans and recommendations are advisory by default; implementation authority remains the Delphi TODO + **APROVADO** + Decision Adherence Gate.
+- After completion, the TODO should be moved to `foundation_documentation/todos/completed/` (or marked canceled).

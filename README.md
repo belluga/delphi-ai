@@ -15,13 +15,34 @@ Delphi-AI is not a prompt bundle. It is a working method for AI-assisted deliver
 
 The goal is not to let an agent "just code". The goal is to make execution reviewable, resumable, and less likely to drift away from architecture, contract, and verification.
 
+## Profiles
+Delphi separates its operating roles into **profiles**, not stylistic personas.
+
+- **Strategic**
+  - `CTO-Tech-Lead`
+- **Operational**
+  - `Coder`
+  - `DevOps`
+- **Assurance**
+  - `Tester-Quality`
+  - `Security-Adversarial`
+
+Profiles are paired with a technical scope such as `flutter`, `laravel`, `docker`, or `cross-stack`.
+
+This separation is intentional:
+- the delivery profile should not be able to quietly rewrite the gates that validate its own work;
+- the strategic profile should not silently turn into an implementation profile;
+- assurance profiles should try to invalidate the delivery, not quietly absorb the delivery itself.
+
 ## Method Positioning
 Delphi-AI follows a **governed, distributed spec-driven execution model**.
 
-Instead of concentrating all intent in a single spec file, Delphi distributes authority across three explicit surfaces:
+Instead of concentrating all intent in a single spec file, Delphi distributes authority across four explicit surfaces:
 
+- `foundation_documentation/project_constitution.md`
+  - project-specific system constitution: inter-module rules, cross-stack invariants, system topology, and approved deviations from the inherited Delphi baseline
 - `foundation_documentation/system_roadmap.md`
-  - strategic direction, sequencing, milestones, and cross-stack follow-up
+  - strategic direction, stages, sequencing, and cross-stack follow-up
 - `foundation_documentation/modules/*.md`
   - durable canonical truth: contracts, flows, schemas, invariants, and stable decisions
 - `foundation_documentation/todos/active/*.md`
@@ -39,8 +60,11 @@ This means Delphi is neither code-first nor a loose "vibe coding" loop. The norm
 8. validate decision adherence, module coherence, security risk, and verification debt
 9. promote stable outcomes back into canonical docs
 
+When the work crosses profile boundaries, Delphi records that handoff in the tactical TODO instead of relying on implicit session memory.
+
 In practice, this makes Delphi close to Spec-Driven Development, but with **distributed authority by responsibility** rather than one feature-spec artifact:
 
+- project constitution = system-specific constitutional spec
 - roadmap = strategic spec
 - module docs = durable canonical spec
 - tactical TODO = executable change spec
@@ -53,7 +77,7 @@ Delphi should be read as a combination of:
 
 In Delphi terms:
 
-- roadmap, module docs, and the tactical TODO define what must be true
+- project constitution, roadmap, module docs, and the tactical TODO define what must be true
 - assumptions and the execution plan define how the current implementation intends to get there
 - tests provide executable feedback that the promised behavior is real
 
@@ -93,6 +117,22 @@ But Delphi intentionally does **not** adopt the full GSD shape. It does not cent
 - extra planning surfaces that compete with roadmap, modules, and tactical TODOs
 
 The tactical TODO remains the execution authority, and durable truth remains in canonical docs.
+
+## Profiles and Scope Checks
+Delphi profiles are backed by explicit scope boundaries.
+
+- `Operational / Coder` owns product behavior and tests.
+- `Operational / DevOps` owns CI/CD, runtime, ingress, and promotion-lane mechanics.
+- `Strategic / CTO-Tech-Lead` owns constitution, roadmap, and cross-module direction.
+- `Assurance` profiles own challenge and validation, not silent takeover of delivery.
+
+Deterministic scope checks can be run with:
+
+```bash
+python3 delphi-ai/tools/profile_scope_check.py --profile <profile-id>
+```
+
+The check validates touched surfaces only. It does not try to infer whether mixed-scope changes came from a valid handoff, so those cases must be reconciled against the TODO handoff log.
 
 ## Where TDD Fits
 Delphi now treats test strategy as part of the execution plan, not as an afterthought.

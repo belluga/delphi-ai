@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-contract-alignment-always-on
-description: "Rule: MUST use whenever the scope matches this purpose: Maintain bidirectional contract alignment:."
+description: "Rule: MUST use whenever the scope matches this purpose: Keep Flutter contracts aligned with domain entities and downstream teams."
 ---
 
 ## Rule
@@ -18,8 +18,8 @@ Flutter is the lead consumer of the platform’s Core Business Entities. Keeping
 
 ## Enforcement
 - Reviews must verify DTO → entity mapping and roadmap updates accompany any repository or API-facing change.
-- Reviews must verify repository raw-map handling is not owned by repositories; violations require DAO/DTO boundary refactor or explicit debt tracking.
 - Reject commits that adjust mocks/DTOs without updating the corresponding roadmap/module documentation.
+- Reject commits that introduce repository-owned raw transport map parsing/building without corresponding DAO/DTO boundary refactor and TODO tracking.
 
 ## Notes
 Use canonical module docs plus `system_roadmap.md` when a Flutter change creates backend work. Surface Laravel/DevOps dependencies in the shared roadmap as soon as they’re known.

@@ -67,6 +67,19 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Validation Steps
 - [ ] <Command, test flow, or manual validation step>
 
+## Profile Scope & Handoffs (Required Before `APROVADO`)
+- **Primary execution profile:** `<strategic-cto|operational-coder|operational-devops|assurance-tester-quality|assurance-security-adversarial>`
+- **Active technical scope:** `<flutter|laravel|web|docker|cross-stack|delphi-self-maintenance>`
+- **Expected supporting profiles:** `<none|profile ids>`
+- **Scope-check command:** `python3 delphi-ai/tools/profile_scope_check.py --profile <profile-id>`
+
+### Handoff Log (Update when execution crosses profile boundaries)
+| From Profile | To Profile | Why the Handoff Exists | Touched Surfaces | Status / Evidence |
+| --- | --- | --- | --- | --- |
+| `<from>` | `<to>` | <reason> | <paths/surfaces> | <planned|active|completed> |
+
+- If `Operational / Coder` discovers that project-level constitutional rules or invariants must change, record a handoff to `Strategic / CTO-Tech-Lead` instead of editing `project_constitution.md` directly.
+
 ## Complexity
 - **Level (`small|medium|big`):** <classification>
 - **Checkpoint policy:** <consolidated | one checkpoint | section-by-section>
@@ -166,6 +179,7 @@ Review the `Assumptions Preview` and `Execution Plan` against architecture, test
 Complete this after the execution plan is approved and the touched surfaces are known.
 
 - Load the rules/workflows that actually govern the touched surfaces.
+- Run the profile scope check for the active execution profile and review any `review required` paths against the TODO handoff log.
 - If ingestion reveals a material conflict with the approved plan, stop execution, update the plan/TODO, and request renewed approval before continuing.
 
 | Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |

@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-repository-workflow-glob
-description: "Rule: MUST use whenever the scope matches this purpose: Edits in `flutter-app/lib/infrastructure/repositories/**` must run the Repository Workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: Apply the repository workflow whenever Flutter repositories change."
 ---
 
 ## Rule

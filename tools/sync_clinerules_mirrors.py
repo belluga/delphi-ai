@@ -83,6 +83,22 @@ MIRRORS: tuple[Mirror, ...] = (
         title="Workflow: Delphi Project Setup",
         workflow_name="docker-delphi-project-setup-method",
     ),
+    Mirror(
+        key="docker-profile-selection",
+        kind="workflow",
+        source="workflows/docker/profile-selection-method.md",
+        destination=".clinerules/workflows/docker-profile-selection.md",
+        title="Workflow: Profile Selection",
+        workflow_name="docker-profile-selection",
+    ),
+    Mirror(
+        key="docker-profile-selection-method",
+        kind="workflow",
+        source="workflows/docker/profile-selection-method.md",
+        destination=".clinerules/workflows/docker-profile-selection-method.md",
+        title="Workflow: Profile Selection",
+        workflow_name="docker-profile-selection-method",
+    ),
 )
 
 

@@ -1,6 +1,6 @@
 ---
 name: rule-laravel-shared-tenant-access-guardrails-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When changing tenant API routes that require authentication, ensure `CheckTenantAccess` is present for every tenant-authenticated route. Do not apply tenant access checks to account-only routes."
+description: "Rule: MUST use whenever the scope matches this purpose: When adding or modifying tenant-authenticated API routes, enforce CheckTenantAccess on all auth:sanctum tenant routes."
 ---
 
 ## Rule

@@ -57,12 +57,13 @@ Rules:
 - The branch must contain only submodule gitlink changes.
 - It must be based on the latest `origin/dev`.
 - If it diverges from `origin/dev` with regular file changes or stale commits, treat it as invalid.
-- The repository-dispatch flow may prepare/update `bot/next-version`, but PR creation is manual by policy. Do not expect or restore automatic PR creation for this branch.
+- The repository-dispatch flow may prepare/update the remote `bot/next-version`, but PR creation is manual by policy. Do not expect or restore automatic PR creation for this branch.
+- A local `bot/next-version` checkout is not part of the normal workflow baseline. Treat local copies as stale/anomalous unless the user is explicitly doing remote branch recovery.
 
 Recovery path when invalid:
-1. Delete or recreate `bot/next-version` from the latest `origin/dev`.
-2. Re-dispatch the promotion callbacks from `flutter-app stage` and/or `laravel-app stage` so the branch is regenerated cleanly.
-3. Re-check that the diff from `origin/dev` contains only submodule gitlinks.
+1. Re-dispatch the promotion callbacks from `flutter-app stage` and/or `laravel-app stage` so the remote branch is regenerated cleanly from the latest `origin/dev`.
+2. If the remote branch remains invalid, recreate/reset the remote `bot/next-version` from the latest `origin/dev` through the promotion-lane maintenance path.
+3. Re-check that the remote diff from `origin/dev` contains only submodule gitlinks.
 
 Promotion steps:
 1. Open PR `bot/next-version -> dev`.

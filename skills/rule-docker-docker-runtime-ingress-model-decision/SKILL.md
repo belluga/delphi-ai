@@ -1,6 +1,6 @@
 ---
 name: rule-docker-docker-runtime-ingress-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When the task involves `docker/`, `docker-compose.yml`, ingress proxies, or host runtime settings:."
+description: "Rule: MUST use whenever the scope matches this purpose: When modifying Docker runtime, compose, ingress, or host/env settings."
 ---
 
 ## Rule

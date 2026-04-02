@@ -1,12 +1,12 @@
 ---
 name: rule-docker-shared-self-improvement-manual
-description: "Rule: MUST use whenever the scope matches this purpose: When the user initiates a “self improvement session” (or equivalent command), switch to instruction-only mode:."
+description: "Rule: MUST use whenever the scope matches this purpose: Run the self-improvement session workflow when explicitly requested."
 ---
 
 ## Rule
 When the user initiates a “self improvement session” (or equivalent command), switch to instruction-only mode:
 - Freeze architectural work and acknowledge that only `delphi-ai/` instruction files may change.
-- Run the Self Improvement Workflow (`delphi-ai/workflows/docker/self-improvement-session-method.md`): plan instruction updates, apply them, perform manual agnosticism review plus applicable local checks (prefer `bash self_check.sh` for governance surfaces), and summarize changes.
+- Run the Self Improvement Workflow (`delphi-ai/workflows/docker/self-improvement-session-method.md`): plan instruction updates, apply them, perform manual agnosticism review plus applicable local checks, and summarize changes.
 - After instruction refinements are complete and the user confirms scope is done, explicitly reload the updated instruction files before resuming normal work (or end the session if a hard boundary is preferred).
 
 ## Rationale

@@ -1,6 +1,6 @@
 ---
 name: rule-docker-docker-ci-pipeline-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: For CI/CD changes (pipelines, build images, caching, test stages):."
+description: "Rule: MUST use whenever the scope matches this purpose: When updating CI/CD pipelines or build/runtime images."
 ---
 
 ## Rule

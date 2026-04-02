@@ -17,7 +17,7 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 - Applicable local checks for the changed file types (for example `bash self_check.sh` for governance surfaces or `bash -n` for edited shell scripts).
 
 ## Procedure
-1. **Persona Selection** – run the Persona Selection Method; typically CTO/Tech Lead persona.
+1. **Profile Selection** – run the Profile Selection Method; typically `Strategic / CTO-Tech-Lead` for instruction work.
 2. **Freeze architectural work** – acknowledge that implementation work (project code, submodule code, and project-specific docs) is paused; this session is for discussion + instruction refinement only. Editing within `delphi-ai/` is permitted.
 3. **Plan updates** – list the instruction files to edit and the rationale.
 4. **Apply changes** – edit `delphi-ai/*.md` (and templates) as required.

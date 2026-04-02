@@ -1,6 +1,6 @@
 ---
 name: rule-laravel-shared-initialization-readiness-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When the context indicates downstream environment setup, repository verification, CI/CD readiness, or session start in a downstream project:."
+description: "Rule: MUST use whenever the scope matches this purpose: When downstream project environment/setup tasks are requested or a downstream session starts."
 ---
 
 ## Rule

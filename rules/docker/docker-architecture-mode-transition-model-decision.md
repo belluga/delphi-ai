@@ -17,4 +17,4 @@ Mode changes alter compatibility and governance rules; the workflow ensures coor
 - Block changes without the roadmap/documentation updates prescribed in the workflow.
 
 ## Notes
-Coordinate with CTO/Tech Lead persona to ratify mode changes and communicate downstream impacts.
+Coordinate with the `Strategic / CTO-Tech-Lead` profile to ratify mode changes and communicate downstream impacts.

@@ -42,8 +42,10 @@ Prepare or recalibrate a downstream project so it can operate under the current 
    - Load the project-specific authority surfaces that complement Delphi:
      - `foundation_documentation/project_mandate.md`
      - `foundation_documentation/domain_entities.md`
+     - `foundation_documentation/project_constitution.md`
      - `foundation_documentation/policies/scope_subscope_governance.md`
-     - `foundation_documentation/system_roadmap.md` (if present and relevant)
+     - `foundation_documentation/system_roadmap.md` (if present and strategic for the current setup question)
+     - `delphi-ai/profiles/` when the setup question is really about strategic vs operational vs assurance responsibility
      - relevant module docs under `foundation_documentation/modules/`
    - Distinguish what is inherited from Delphi versus what must remain project-owned.
 

@@ -1,6 +1,6 @@
 ---
 name: rule-docker-shared-workflow-definition-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When defining or editing a workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: When creating or updating a workflow/procedure."
 ---
 
 ## Rule

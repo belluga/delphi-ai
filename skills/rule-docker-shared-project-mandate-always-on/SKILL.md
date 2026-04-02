@@ -1,6 +1,6 @@
 ---
 name: rule-docker-shared-project-mandate-always-on
-description: "Rule: MUST use whenever the scope matches this purpose: On every task:."
+description: "Rule: MUST use whenever the scope matches this purpose: Always operate in alignment with the project mandate and foundational docs."
 ---
 
 ## Rule

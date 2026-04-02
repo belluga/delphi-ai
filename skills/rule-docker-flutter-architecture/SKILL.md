@@ -1,6 +1,6 @@
 ---
 name: rule-docker-flutter-architecture
-description: "Rule: MUST use whenever the scope matches this purpose: Apply these Flutter architectural tenets on every task:."
+description: "Rule: MUST use whenever the scope matches this purpose: Enforce Flutter architectural tenets across all tasks."
 ---
 
 ## Rule

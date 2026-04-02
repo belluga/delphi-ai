@@ -5,11 +5,21 @@ description: "Before any implementation work (code/docs) that changes the projec
 
 
 ## Rule
-Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions and Maintenance/Regression Fix flow below.
+Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
 
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
+
+### Operational Micro-Fix Flow (No TODO)
+If the work is a minimal operational fix that does not touch production/test artifacts or product behavior, Delphi may proceed without a TODO and without **APROVADO**. Eligibility:
+- No production or test files may be modified.
+- No project-specific documentation under `foundation_documentation/**` may be modified, except `artifacts/tmp/**` or `todos/**`.
+- Scope must stay limited to local operational surfaces such as symlinks, bootloaders, permissions, `.git/config`, local environment wiring, Delphi readiness/setup scripts, or equivalent non-product scaffolding.
+- No API/contract/schema/route/UI/business-behavior changes and no production runtime/deploy logic changes are allowed.
+- Validation must be immediate and objective (`verify_context.sh`, `self_check.sh`, `bash -n`, `git status`, symlink/permission inspection, or equivalent).
+- Delphi must still state the intent, why the work qualifies, and the validation/results in the response.
+- If the scope expands beyond these limits, stop and switch to the Maintenance/Regression Fix flow or the full tactical TODO lane before continuing.
 
 ### Maintenance/Regression Fix Flow (Ephemeral TODO)
 If the change restores previously documented or verifiably working behavior (including test failures), Delphi may use a local-only TODO in `foundation_documentation/todos/ephemeral/` and still require **APROVADO** before changes. Eligibility:
@@ -135,6 +145,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - `must avoid`
   - `execution impact`
 - Mere mention is insufficient; the governing rules/workflows must be explicitly ingested before implementation begins.
+- `Operational / Coder` may rely on `project_constitution.md` as read authority, but any required constitution edit must be routed through a TODO handoff to `Strategic / CTO-Tech-Lead`.
 - If rule ingestion reveals a material conflict with the approved plan, stop execution, update the plan/TODO, and request renewed **APROVADO** before continuing.
 
 ### Gate M — Decision Adherence Gate (mandatory before delivery)
@@ -206,8 +217,10 @@ If the change restores previously documented or verifiably working behavior (inc
 This prevents scope creep and "hub refactors" by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
 
 ## Enforcement
-- If the user requests implementation without a TODO and the work is not exempt or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
+- If the user requests implementation without a TODO and the work is not exempt, Operational-Micro-Fix-eligible, or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
 - If an ephemeral TODO would remain open beyond the immediate maintenance cycle, block closure/pausing until it is either deleted/retired or replaced by a fresh tactical TODO for the remaining broader work.
+- If Operational Micro-Fix is used but any production/test file, project-specific doc (outside `artifacts/tmp/**` or `todos/**`), or product/runtime behavior is touched, block and switch to the proper TODO lane.
+- If Operational Micro-Fix is used without immediate objective validation evidence, block closure until that evidence exists.
 - If the TODO still uses an outdated delivery-status schema, block implementation until it is aligned to the canonical format.
 - If COMMENT blocks exist, block implementation until they are resolved and removed.
 - If canonical module anchors are missing in the TODO, block implementation until anchors are added.

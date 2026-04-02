@@ -21,13 +21,13 @@ Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes)
 ## Steps
 1. Load core context (system principles, mandate) and relevant module templates; avoid editing temporary files directly.
 2. Inventory source materials (temporary files, PRDs, prototype screens) and note authoritative vs. outdated content.
-3. Map scope: determine required modules, entities, endpoints, screens, and real-time needs; note landlord vs tenant boundaries and explicit main scope/subscope ownership.
+3. Map scope: determine required project-level rules, modules, entities, endpoints, screens, and real-time needs; note landlord vs tenant boundaries and explicit main scope/subscope ownership.
 4. Perform gap analysis: validation bounds, enums, auth/abilities, real-time transport, rankings/badges, profile, catalog rules, and roadmaps.
 5. Create/update canonical docs using templates:
-   - `project_mandate`, `domain_entities`, module docs, `system_roadmap`, and landing/UX notes.
+   - `project_mandate`, `domain_entities`, `project_constitution`, module docs, `system_roadmap` (when strategic), profile docs (when operating-mode guidance changes), and landing/UX notes.
    - Define endpoints, schemas, enums, indexes, rate limits, payload samples, and SSE/WebSocket payload shapes if applicable.
    - Include route/scope (and subscope when applicable) matrices for multi-scope modules/screens.
-6. Add progressive implementation milestones with testable outcomes; keep endpoints labeled (Defined/Mocked/Implemented/Tested & Ready).
+6. Add strategic stages, cross-team follow-up, or milestone framing only where they matter; do not use the roadmap as an endpoint status ledger.
 7. Produce team task lists (Flutter, Laravel, etc.) with clear scopes and validation expectations.
 8. If badges/rankings/real-time are introduced, document event → jobs → broadcast flow and polling fallbacks.
 9. Surface landing/unauth content in docs (not in temp code) for client teams to implement.
@@ -39,9 +39,9 @@ Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes)
 ## Outputs
 - Updated canonical docs reflecting migrated content and resolved gaps.
 - Progressive milestones and team task lists.
-- Real-time payload definitions (if applicable) and roadmap status updates.
+- Real-time payload definitions (if applicable) and strategic roadmap follow-up when relevant.
 
 ## Validation
 - Ensure all modified docs exist in `foundation_documentation/` (or template directory) and follow template structure.
-- Verify endpoints are listed with statuses; indexes/rate limits/enums documented.
+- Verify project-level rules land in `project_constitution.md` when appropriate, and confirm indexes/rate limits/enums are documented.
 - Confirm no edits were made to temporary files; deliver landing content in docs only.
