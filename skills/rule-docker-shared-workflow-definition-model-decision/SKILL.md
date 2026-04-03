@@ -1,6 +1,6 @@
 ---
 name: rule-docker-shared-workflow-definition-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When defining or editing a workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: When creating or updating a workflow/procedure."
 ---
 
 ## Rule
@@ -28,7 +28,8 @@ Workflows are only effective when triggered by rules. This rule keeps procedures
 - Block additions/edits that lack a matching rule or deviate from the template.
 - Block workflow additions that lack required skill/workflow counterparts across canonical and Cline surfaces.
 - Block implementation-capable workflows that omit baseline governance gates (directly or by explicit reference).
-- Require `bash delphi-ai/tools/verify_context.sh` and `bash delphi-ai/tools/verify_adherence_sync.sh` before completion.
+- For downstream environment work, require `bash delphi-ai/verify_context.sh` and `bash delphi-ai/verify_adherence_sync.sh` before completion.
+- For Delphi self-maintenance, require manual agnosticism review plus applicable local checks (for example `bash self_check.sh`) before completion.
 - Require PR reviewers to verify the rule ↔ workflow linkage.
 
 ## Notes

@@ -13,17 +13,19 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 - Controller logic must be extracted into services for reuse.
 
 ## Inputs
-- `foundation_documentation/submodule_laravel-app_summary.md` (routing, middleware, abilities).
-- `foundation_documentation/persona_roadmaps.md` (Flutter + Laravel sections) to capture contract changes.
+- Relevant `foundation_documentation/modules/*.md` entries covering Laravel routing, middleware, abilities, and the touched contract surface.
+- Relevant `foundation_documentation/project_constitution.md` sections covering project-level inter-module rules, ownership, and systemic invariants affected by the contract change.
+- Relevant `foundation_documentation/system_roadmap.md` entries only when the endpoint creates strategic follow-up, sequencing changes, or cross-stack delivery planning.
 - `foundation_documentation/todos/active/mvp_slices/TODO-v1-api-security-hardening.md` (canonical security baseline and level semantics).
 - `foundation_documentation/endpoints_mvp_contracts.md` conventions section (authoritative API shape + security metadata conventions).
 - Existing routes (`routes/api/*.php`) and controller files.
 - Sanctum ability definitions / policies.
 
 ## Procedure
-1. **Persona alignment** – select Laravel Engineer persona, review roadmap items, and note Flutter requirements.
+1. **Profile alignment** – select `Operational / Coder` with `laravel` scope, review the relevant `project_constitution.md` rules first, and note roadmap items only when strategic follow-up is in scope.
 2. **Define contract**
-   - Document request/response schema in `foundation_documentation/domain_entities.md` and the Flutter roadmap before coding.
+   - Document request/response schema in `foundation_documentation/domain_entities.md` and the relevant module docs before coding.
+  - If the endpoint changes project-level inter-module rules, ownership boundaries, or systemic invariants, record the constitutional impact in the TODO and hand off to `Strategic / CTO-Tech-Lead` for the actual `project_constitution.md` update.
    - For Cloudflare-fronted environments, define edge-vs-app responsibility explicitly:
      - Cloudflare: DDoS/WAF/bot/challenge/coarse IP controls.
      - Laravel: principal/account controls, tenant access, idempotency/replay, and deterministic API rejection contract.
@@ -68,7 +70,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Keep controllers lightweight (validation, request handling). Extract business rules into dedicated services/actions when logic grows.
    - Ensure validation rules enforce the documented bounds (P‑14).
 5. **Sanctum + policies**
-   - Update abilities/policies if new permissions are required. Document them in the Laravel summary.
+   - Update abilities/policies if new permissions are required. Document them in the affected module docs.
    - **Ability catalog sync gate:** every newly introduced ability string must be registered in `config/abilities.php` when wildcard (`*`) permissions are expanded into explicit token abilities.
 6. **Tests**
    - Add/extend feature tests covering happy paths, validation errors, and ability checks.
@@ -80,8 +82,10 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - For throttling/challenge behavior, add tests covering legitimate retry safety (avoid false-positive lockouts).
    - Add infrastructure/security tests (or deployment checks) validating direct-origin denial and spoofed client-IP header rejection when not from trusted proxies.
 7. **Documentation + roadmap sync**
-   - Update the Flutter roadmap with the new contract and note any client updates needed.
-   - Record changes in the Laravel submodule summary (routes, controllers, permissions).
+   - Update `foundation_documentation/system_roadmap.md` only when the endpoint change creates or changes strategic follow-up, sequencing, or cross-stack planning.
+   - Record the durable contract, routing, controller, and permission changes in the affected module docs.
+   - Record project-level inter-module or systemic rule changes as a strategic handoff for `project_constitution.md`; do not apply constitution edits directly from `Operational / Coder`.
+   - If the touched module area is still marked `Partial`, migrate that touched legacy scope into the module as part of the same TODO.
    - If SSE was added, document event types + minimal payloads in `foundation_documentation/endpoints_mvp_contracts.md`.
 8. **Verification**
    - Run `composer test` or targeted suites; optionally hit endpoints via Postman/cURL or contract tests.
@@ -99,9 +103,12 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 
 ## Outputs
 - Updated routes, controllers, services, validation rules, and tests.
-- Roadmap entries communicating API availability to Flutter.
-- Laravel submodule summary reflecting the new endpoint.
+- Strategic roadmap follow-up entries only when the endpoint change alters broader sequencing or cross-stack planning.
+- Strategic handoff recorded when project-level rules or invariants changed.
+- Affected module docs reflecting the new endpoint and any touched legacy-scope canonicalization.
 
 ## Validation
 - Tests pass and manual endpoint checks succeed.
-- Flutter roadmap acknowledges the new contract so clients can adopt it.
+- The roadmap is updated only when strategic follow-up truly changed.
+- Project-level contract implications are captured through strategic handoff to `project_constitution.md` when applicable.
+- The affected module docs are the durable source of truth for the changed endpoint behavior.

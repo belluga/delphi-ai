@@ -10,9 +10,10 @@ If a task touches routes, screens, repositories, or domain models:
 - Update `foundation_documentation/modules/` and `foundation_documentation/screens/` to reflect new flows/routes and UI behaviors.
 - Ensure route/screen/module docs explicitly declare `EnvironmentType`, main scope, and subscope (when applicable).
 - Forbid undefined subscopes or ambiguous scope statements; require explicit decision + policy update before any new subscope.
-- Sync DTO/mock payloads with `foundation_documentation/screens/prototype_data.md` and related roadmap entries (`foundation_documentation/mock_roadmap.md`).
+- Sync DTO/mock payloads with `foundation_documentation/screens/prototype_data.md` and capture any planned follow-up in `foundation_documentation/system_roadmap.md`.
 - Align domain vocabulary with `foundation_documentation/domain_entities_sections/*` and refresh summaries in `domain_entities.md` when fields change.
-- Update `foundation_documentation/system_roadmap.md`, backlog, and submodule summaries with new API/contract work; ensure submodule hashes are noted when relevant.
+- Update `foundation_documentation/system_roadmap.md` and the affected `foundation_documentation/modules/*.md` entries with new API/contract work.
+- If the touched module area is still marked `Partial`, migrate the touched legacy scope into the module as part of the same TODO instead of writing parallel side notes outside the canonical module surface.
 - When API payload shape conventions change (especially `PATCH` semantics), record the canonical rule in `foundation_documentation/endpoints_mvp_contracts.md` conventions and in affected module contract sections.
 - When API security behavior changes (endpoint level assignment, idempotency/replay policy, rejection taxonomy), synchronize:
   - `foundation_documentation/endpoints_mvp_contracts.md` conventions + endpoint entries,
@@ -26,7 +27,7 @@ Foundation docs are the contract source for all stacks. Keeping them synchronize
 
 ## Enforcement
 - Trigger this rule whenever route/screen/repo/domain work is requested.
-- Block merges lacking corresponding foundation doc updates or roadmap/submodule summary notes.
+- Block merges lacking corresponding foundation doc updates or roadmap/module updates for the touched contract surface.
 
 ## Notes
 Apply stack-specific rules (Flutter/Laravel glob rules) alongside this sync rule to ensure code and documentation stay in lockstep.

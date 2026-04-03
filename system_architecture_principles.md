@@ -15,7 +15,7 @@ We operate in clearly defined modes that govern how the principles apply:
 2. **Operational Mode** – Activated once production tenants exist. Principles remain in force, but all changes must honor migration policies (versioned APIs, data migrations, compatibility windows) documented by the CTO persona.
 3. **Expansion Mode** – Large-scale re-architecture initiatives run in parallel to Operational systems. Foundational rules apply within the new scope, while compatibility plans bridge to the live platform.
 
-Unless otherwise noted, this document assumes Foundational Mode. When transitioning to Operational or Expansion Mode, the CTO/Tech Lead must update persona roadmaps and appendices with the required policies.
+Unless otherwise noted, this document assumes Foundational Mode. When transitioning to Operational or Expansion Mode, the CTO/Tech Lead must update `foundation_documentation/system_roadmap.md`, affected canonical docs, and appendices with the required policies.
 Use the Architecture Mode Transition Workflow (`workflows/docker/architecture-mode-transition-method.md`) to govern those updates.
 
 ## 3. Core Architectural Philosophy
@@ -97,16 +97,16 @@ These guidelines complement the core principles for any Flutter client implement
 
 1. **Feature-First Structure & Module Scopes** – Presentation folders follow `tenant/<feature>/screens/...` with controllers registered via `ModuleScope`. Controllers own `StreamValue` state and UI controllers; widgets remain pure UI.
 2. **DTO → Domain → Projection Flow** – DTOs never reach widgets. Infrastructure mappers convert DTOs into ValueObjects; repositories expose domain entities/projections; controllers translate only when necessary. Projection diligence rules apply (ValueObjects expose UI-ready primitives).
-3. **AutoRoute Governance** – New screens must be registered via AutoRoute, wrapped in their module scope, and guarded appropriately (tenant shell, auth). Route additions require documentation in the relevant module summary.
-4. **Repository Contracts as API Blueprints** – When defining repositories, specify pagination, filtering, and scalability expectations. These contracts inform the Laravel persona about required API support and must be echoed in `foundation_documentation/persona_roadmaps.md` when backend work is pending.
+3. **AutoRoute Governance** – New screens must be registered via AutoRoute, wrapped in their module scope, and guarded appropriately (tenant shell, auth). Route additions require documentation in the relevant canonical module docs.
+4. **Repository Contracts as API Blueprints** – When defining repositories, specify pagination, filtering, and scalability expectations. These contracts inform required backend support and must be recorded in `foundation_documentation/system_roadmap.md` when cross-stack work is pending.
 5. **Analyzer Discipline** – `fvm flutter analyze` must stay clean. Any architectural method touching Flutter code ends with an analyzer run and, when feasible, targeted unit/widget tests.
 
 ## Appendix B: Laravel / API Tenets
 
-These guidelines refine the core principles for the Laravel control plane and APIs. Reference `foundation_documentation/submodule_laravel-app_summary.md` for the live implementation snapshot.
+These guidelines refine the core principles for the Laravel control plane and APIs. Reference the relevant canonical module docs under `foundation_documentation/modules/` for the live implementation snapshot.
 
 1. **Multi-Tenant Routing Contracts** – Maintain the documented route groups: `/api/v1/initialize` (guest), `/admin/api/v1` (landlord middleware), `/api/v1` (tenant middleware), `/api/v1/accounts/{account_slug}` (tenant + account). Any change requires synchronized ingress updates (P‑18) and roadmap notes for Flutter clients.
 2. **Tenant Resolution Chain** – Preserve the `DomainTenantFinder` → `SwitchMongoTenantDatabaseTask` sequence; new entry points must invoke the same resolver before touching tenant data.
 3. **Sanctum + Ability Enforcement** – All endpoints are stateless and guarded by Sanctum abilities. Expanding abilities or scopes requires documentation updates plus corresponding Flutter contract changes.
 4. **Controller-to-Service Migration** – Business logic should live in dedicated services, keeping controllers thin. When new APIs are introduced, budget time to move shared logic out of controllers per P‑10.
-5. **Flutter Alignment** – Treat Flutter repository contracts and persona roadmap entries as the primary client requirements. Before altering payloads or adding endpoints, verify the Flutter blueprint and record any desync/resync effort in the Laravel roadmap section.
+5. **Flutter Alignment** – Treat Flutter repository contracts, canonical module docs, and relevant `foundation_documentation/system_roadmap.md` entries as the primary client requirements. Before altering payloads or adding endpoints, verify the Flutter blueprint and record any desync/resync effort in the shared roadmap.

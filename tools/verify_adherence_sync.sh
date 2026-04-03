@@ -21,7 +21,7 @@ if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
 fi
 
 wait_for_sync_agent_rules() {
-  local lock_file="$REPO_ROOT/.agent/.sync_agent_rules.lock"
+  local lock_file="$REPO_ROOT/.agents/.sync_agent_links.lock"
 
   if [ ! -f "$lock_file" ]; then
     return 0
@@ -34,7 +34,11 @@ wait_for_sync_agent_rules() {
   # Wait until any in-flight sync completes. If no sync is running,
   # shared lock acquisition/release is effectively immediate.
   exec 8>"$lock_file"
-  flock -s 8
+  if ! flock -s -w 5 8; then
+    echo "Warning: timed out waiting for $lock_file; continuing with current .agents state." >&2
+    exec 8>&-
+    return 0
+  fi
   flock -u 8
   exec 8>&-
 }
@@ -50,6 +54,23 @@ require_file() {
     return 1
   fi
   return 0
+}
+
+require_symlink_target() {
+  local path="$1"
+  local expected="$2"
+  local label="$3"
+
+  if [ ! -L "$path" ]; then
+    errors+=("$label is not a symlink: $path")
+    return
+  fi
+
+  local actual
+  actual="$(readlink "$path")"
+  if [ "$actual" != "$expected" ]; then
+    errors+=("$label points to $actual but expected $expected")
+  fi
 }
 
 require_contains() {
@@ -247,7 +268,7 @@ compare_agent_ruleset() {
     if require_file "$src" && require_file "$gen_file"; then
       compare_rule_body "$src" "$gen_file" "$label_prefix rule $rel"
     fi
-  done < <(find "$generated_dir" -type f -name '*.md' -print0 | sort -z)
+  done < <(find -L "$generated_dir" -type f -name '*.md' -print0 | sort -z)
 
   # Source -> Generated coverage
   while IFS= read -r -d '' src_file; do
@@ -299,7 +320,7 @@ compare_agent_workflowset() {
     if require_file "$src" && require_file "$gen_file"; then
       compare_exact "$src" "$gen_file" "$label_prefix generated workflow $rel"
     fi
-  done < <(find "$generated_dir" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
+  done < <(find -L "$generated_dir" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
 }
 
 verify_clinerules_controls() {
@@ -383,36 +404,40 @@ verify_workflow_definition_controls() {
 
 compare_cline_skills
 
+require_symlink_target "$REPO_ROOT/.agents/skills" "../delphi-ai/skills" "root .agents/skills"
+require_symlink_target "$REPO_ROOT/flutter-app/.agents/skills" "../delphi-ai/skills" "flutter-app .agents/skills"
+require_symlink_target "$REPO_ROOT/laravel-app/.agents/skills" "../delphi-ai/skills" "laravel-app .agents/skills"
+
 compare_agent_ruleset \
-  "$REPO_ROOT/flutter-app/.agent/rules" \
+  "$REPO_ROOT/flutter-app/.agents/rules" \
   "$REPO_ROOT/delphi-ai/rules/flutter" \
   "flutter-app" \
   "true"
 
 compare_agent_workflowset \
-  "$REPO_ROOT/flutter-app/.agent/workflows" \
+  "$REPO_ROOT/flutter-app/.agents/workflows" \
   "$REPO_ROOT/delphi-ai/workflows/flutter" \
   "flutter-app"
 
 compare_agent_ruleset \
-  "$REPO_ROOT/laravel-app/.agent/rules" \
+  "$REPO_ROOT/laravel-app/.agents/rules" \
   "$REPO_ROOT/delphi-ai/rules/laravel" \
   "laravel-app" \
   "true"
 
 compare_agent_workflowset \
-  "$REPO_ROOT/laravel-app/.agent/workflows" \
+  "$REPO_ROOT/laravel-app/.agents/workflows" \
   "$REPO_ROOT/delphi-ai/workflows/laravel" \
   "laravel-app"
 
 compare_agent_ruleset \
-  "$REPO_ROOT/.agent/rules" \
+  "$REPO_ROOT/.agents/rules" \
   "$REPO_ROOT/delphi-ai/rules/docker" \
   "root" \
   "true"
 
 compare_agent_workflowset \
-  "$REPO_ROOT/.agent/workflows" \
+  "$REPO_ROOT/.agents/workflows" \
   "$REPO_ROOT/delphi-ai/workflows/docker" \
   "root"
 
@@ -423,7 +448,7 @@ verify_no_placeholder_artifacts
 verify_public_skill_mirrors
 
 if [ ${#errors[@]} -gt 0 ] && [ "${VERIFY_ADHERENCE_RETRY_ON_SYNC_RACE:-0}" = "0" ]; then
-  if printf '%s\n' "${errors[@]}" | grep -qE 'Missing file: .*/\.agent/(rules|workflows)/'; then
+  if printf '%s\n' "${errors[@]}" | grep -qE 'Missing file: .*/\.agents/(rules|workflows)/'; then
     sleep 1
     exec env VERIFY_ADHERENCE_RETRY_ON_SYNC_RACE=1 bash "$0" "$@"
   fi

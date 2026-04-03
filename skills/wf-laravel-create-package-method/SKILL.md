@@ -1,21 +1,12 @@
 ---
 name: wf-laravel-create-package-method
-description: "Workflow: MUST use whenever creating or refactoring Laravel packages. Establish package boundaries with contracts/adapters, remove app wrappers, and run mandatory decoupling assertions plus full-suite validation before completion."
+description: "Workflow: MUST use whenever the scope matches this purpose: Create or refactor Laravel packages with explicit contract boundaries, faithful package README coverage, host adapters, and mandatory decoupling assertions before completion."
 ---
 
 # Workflow: Create or Refactor Laravel Package
 
 ## Purpose
 Create or refactor a Laravel package so package internals remain decoupled from host app implementation details while preserving behavior.
-
-## Guardrail Rule IDs
-- `LAR-PACKAGE-BOUNDARY`
-- `LAR-PACKAGE-CROSS-COUPLING`
-- `LAR-PACKAGE-ARCHITECTURE-REGISTRY`
-- `LAR-PACKAGE-ROUTE-OWNERSHIP`
-- `LAR-PACKAGE-ROUTE-HOST-MIDDLEWARE`
-- `LAR-PACKAGE-HOST-BINDINGS`
-- `LAR-PACKAGE-HOST-COMPOSITION`
 
 ## Triggers
 - New package under `packages/**`.
@@ -75,7 +66,24 @@ Create or refactor a Laravel package so package internals remain decoupled from 
 - Side-effect test: lifecycle events dispatch expected jobs.
 - Keep external API behavior tests intact.
 
-9. Run decoupling assertions.
+9. Create or update package README.
+- Required location: `packages/<vendor>/<package>/README.md`.
+- README must be faithful and complete enough for a new AI engineer to understand package behavior without guessing hidden rules.
+- Minimum required sections:
+  - Purpose and bounded scope.
+  - Domain concepts and invariants.
+  - Data model and migration scope (`tenant|landlord|mixed`) plus index/collection notes when relevant.
+  - Public contracts (routes/endpoints, request/response shapes, domain events, commands/queries).
+  - Authentication and authorization boundary:
+    - what the package requires (`request()->user()`, identity fields, etc.),
+    - what the host must provide (middleware, guards, tenant access checks, ability gates),
+    - what the package intentionally does not own.
+  - Host integration guide (providers, bindings, adapters/listeners/jobs).
+  - Validation commands and expected test gates.
+  - Known limitations and explicit non-goals.
+- README must match implemented code contracts; stale or aspirational docs are non-adherent.
+
+10. Run decoupling assertions.
 - Execute:
 
 ```bash
@@ -86,13 +94,13 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
   --check-host-bindings
 ```
 
-10. Run architecture guardrail gate.
+11. Run architecture guardrail gate.
 - Execute `composer run architecture:guardrails`.
 - Confirm the package is registered in `scripts/package_architecture_registry.php`.
 - Confirm `package-owned-routes` files do not import `App\\Http\\Middleware\\...`.
 - Confirm `host-owned-routes` packages do not call `loadRoutesFrom(...)`.
 
-11. Run validation gate.
+12. Run validation gate.
 - Run targeted tests for touched package flows.
 - Run full Laravel suite (`php artisan test`) as final gate for important milestones.
 
@@ -107,12 +115,15 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
 - Package migration scope is explicitly classified as `tenant`, `landlord`, or `mixed`.
 - Tenant migration paths are wired in `config/multitenancy.php` when tenant scope is used.
 - Landlord migrations are isolated from tenant migration paths.
+- Package root contains `README.md` with the required sections and explicit auth boundary ownership.
+- README contract details are aligned with implemented behavior/routes and host integration responsibilities.
 - `composer run architecture:guardrails` passes.
 - Targeted tests pass.
 - Full Laravel suite passes.
 
 ## Output
 - Decoupled package with explicit contracts/adapters boundaries.
+- Faithful package README that captures contracts, auth boundaries, integration steps, and usage.
 - Side effects routed by package events + host listeners/jobs.
 - Transitional wrappers removed.
 - Validation evidence recorded.

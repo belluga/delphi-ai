@@ -20,7 +20,7 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 
 - [ ] `foundation_documentation/domain_entities.md` reviewed
 - [ ] `foundation_documentation/submodule_laravel-app_summary.md` reviewed
-- [ ] Persona roadmaps reviewed (Laravel + Flutter sections)
+- [ ] Relevant `system_roadmap.md` entries reviewed for Laravel + Flutter follow-up
 - [ ] Existing DocumentModels, migrations, factories/seeders understood
 
 ## Procedure
@@ -35,7 +35,7 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 Add/expand domain entry in:
 - `foundation_documentation/domain_entities.md` (fields, invariants, collections)
 - System/module roadmap
-- Persona roadmap with planned work
+- Shared roadmap entry with planned work and cross-stack follow-up
 
 ### Step 3: Plan Schema + Validations
 

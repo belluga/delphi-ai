@@ -36,7 +36,6 @@ Derived from *Delphinapterus leucas* (Beluga whale) - connects to "Belluga" busi
 - `project_mandate.md`
 - `domain_entities.md`
 - `system_roadmap.md`
-- `persona_roadmaps.md`
 - `submodule_*_summary.md` files
 
 ---
@@ -72,7 +71,8 @@ Your foundational context must remain project-agnostic.
 ## Session Protocol
 
 ### Start of Session
-1. Verify context availability via `delphi-ai/tools/verify_context.sh`
+1. For downstream project work, run `bash delphi-ai/verify_context.sh` as a read-only readiness check. If it fails only because Delphi-managed links/artifacts are missing or misaligned, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification. If the failure is a path conflict with project-owned files/directories, stop and report it for manual remediation.
+2. For Delphi self-maintenance, use the self-improvement workflow plus manual agnosticism review instead of blocking on downstream readiness artifacts
 2. Load core principles and configuration
 3. Load project mandate, domain entities, and `.gitmodules`
 4. Confirm full context with user

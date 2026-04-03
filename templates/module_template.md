@@ -1,45 +1,51 @@
 # Documentation: Microservice Modules Template
-**Version:** 1.2
+**Version:** 1.6
 
 ## 1. Template Usage
 
 This document captures the definitive blueprint for every module, schema, API, and operational concern within an ecosystem microservice. Duplicate this template when instantiating a new service and replace each placeholder token with concrete details. Maintain strict alignment with the architectural constitution and ensure all enumerated values include dedicated `Field Definitions` coverage.
 
-## 2. Module Index
+## 2. Canonical Anchors (Required)
 
-| Module ID | Module Name | Primary Responsibility | Status | Owner |
-|-----------|-------------|------------------------|--------|-------|
-| MOD-001 | `{{MODULE_NAME}}` | `{{RESPONSIBILITY}}` | Planned | `{{OWNER}}` |
-
-Add or update rows as modules progress from planned to implemented stages. This index provides a fast entry point for readers and AI collaborators.
-
-## 2.1 Canonical Planning & Decision Anchors (Required)
-
-### 2.1.1 Conceptual Delivery Plan (Living)
-
-Document the planned delivery shape before implementation details:
+### 2.1 Module Intent & Boundaries
 
 - **Core scope:** `{{CORE_SCOPE}}`
-- **Capability/extension scope:** `{{CAPABILITY_SCOPE}}`
 - **Out-of-scope guardrails:** `{{OUT_OF_SCOPE}}`
 - **Dependency boundaries:** `{{DEPENDENCY_BOUNDARIES}}`
-- **Phase plan summary:** `{{PHASE_PLAN}}`
 
-### 2.1.2 Canonical Decision Baseline
+### 2.2 Canonical Decision Register (Optional)
 
-| Decision ID | Status | Decision | Impact | Canonical Evidence |
-|-------------|--------|----------|--------|--------------------|
-| DEC-`{{ID}}` | Proposed/Approved/Superseded | `{{DECISION}}` | `{{IMPACT}}` | `{{FILE:LINE OR SECTION}}` |
+| Decision ID | Status | Decision | Why | Evidence | Replaces | Cleanup Trigger |
+|-------------|--------|----------|-----|----------|----------|-----------------|
+| DEC-`{{ID}}` | Current/Deprecated | `{{DECISION}}` | `{{RATIONALE}}` | `{{FILE:LINE OR SECTION}}` | `{{DECISION_ID_OR_N/A}}` | `{{N/A_OR_WHEN_TO_REMOVE_DEPRECATED_ENTRY}}` |
 
-Use this table as the stable architectural baseline. Tactical TODOs must reference these decisions, not duplicate them as competing sources of truth.
+Use this table as the stable architectural baseline for durable decisions that explain the current module contract.
 
-### 2.1.3 Tactical TODO Linkage & Promotion Ledger
+- Include this section only when the module has durable, non-obvious decisions worth preserving explicitly.
+- Record only decisions that are:
+  - durable,
+  - non-obvious,
+  - and useful to prevent future re-litigation of the module contract.
+- Do **not** record transient TODO discussion, local implementation choices, or obvious details already fully explained by the module body.
+- `Current` is the canonical decision to follow now.
+- `Deprecated` is allowed only as a temporary transition aid when removing it immediately would create confusion or regression risk.
+- Every `Deprecated` entry must include a `Cleanup Trigger` and should be removed after a small number of relevant module work cycles once the replacement decision is fully internalized.
+- Use `Replaces` only when the current decision intentionally supersedes a prior module decision and keeping that link helps avoid future confusion.
 
-| TODO | Purpose | Promotion Status | Promoted Sections | Notes |
-|------|---------|------------------|-------------------|-------|
-| `foundation_documentation/todos/active/<todo>.md` | `{{PURPOSE}}` | Pending/In progress/Promoted | `{{MODULE_SECTION_IDS}}` | `{{NOTES}}` |
+### 2.3 Canonical Coverage Status
 
-When a TODO is completed, promote stable outcomes here and update `Promotion Status` to `Promoted`.
+- **Canonical Coverage Status:** `Current|Partial`
+- **Last Canonicalization Review:** `{{DATE_OR_TODO}}`
+- **Remaining Migration Scope:** `{{SECTIONS_OR_TOPICS_STILL_DEPENDING_ON_LEGACY_CONTEXT}}`
+
+Use this section to track whether the module is already the complete durable authority for the areas it covers.
+
+- `Current`: the touched/maintained areas of this module are fully documented here and no longer depend on legacy summary context.
+- `Partial`: some areas are canonicalized, but one or more sections still rely on older summary-era knowledge that must be migrated opportunistically when touched.
+
+`Partial` does **not** block all development by itself. It means:
+- if a TODO touches an area still listed under `Remaining Migration Scope`, that TODO must migrate the touched portion into the module before closing;
+- untouched legacy areas may remain until a future TODO reaches them.
 
 ## 3. Module Specification Template
 
@@ -89,24 +95,24 @@ For each endpoint:
 
 Include derived or indexed fields, TTL indexes, and relationships to other collections. When embedding documents, describe the nested structure explicitly.
 
-#### 3.4 Event & Messaging Contracts
+#### 3.4 Event & Messaging Contracts (Optional)
 
 * **Outbound Events:** `{{EVENTS_OUT}}` (Event name, payload schema, emission triggers.)
 * **Inbound Events:** `{{EVENTS_IN}}` (Source, payload schema, idempotency handling.)
 * **Queue/Topic Configuration:** `{{QUEUE_CONFIG}}` (Broker, partitioning, retention.)
 
-#### 3.5 Background Jobs & Schedulers
+#### 3.5 Background Jobs & Schedulers (Optional)
 
 Document recurring jobs, cron schedules, idempotency safeguards, and failure recovery procedures.
 
-#### 3.6 Observability & Instrumentation
+#### 3.6 Observability & Instrumentation (Optional)
 
 * **Logs:** `{{LOG_FIELDS}}` (Structured fields captured per transaction.)
 * **Metrics:** `{{METRICS}}` (Counters, gauges, histograms with labels.)
 * **Tracing:** `{{TRACING}}` (Span naming conventions, baggage propagation.)
 * **Alerts:** `{{ALERTS}}` (Thresholds, escalation paths.)
 
-#### 3.7 Testing Strategy
+#### 3.7 Testing Strategy (Optional)
 
 Outline the test suites required for this module:
 
@@ -117,13 +123,15 @@ Outline the test suites required for this module:
 
 List tooling, fixtures, and any data seeding requirements.
 
-## 4. Cross-Module Considerations
+Only include Sections 3.4-3.7 when they materially apply to this module. Do not pad empty sections.
+
+## 4. Cross-Module Considerations (Optional)
 
 * **Shared Libraries:** `{{SHARED_LIBS}}` (Reference reusable packages or traits.)
 * **Data Ownership Boundaries:** Describe which module is the single source of truth for contested fields.
 * **Failure & Degradation Modes:** Document circuit breakers, fallbacks, and compensating actions that span modules.
 
-## 5. Implementation Notes
+## 5. Implementation Notes (Optional)
 
 Capture service-wide implementation guidance that does not belong to a single module:
 
@@ -131,15 +139,7 @@ Capture service-wide implementation guidance that does not belong to a single mo
 * **Configuration Management:** Environment variables, secrets handling, configuration precedence.
 * **Deployment Pipeline:** CI/CD steps, artifact storage, deployment sequences.
 
-## 6. Decision Log
-
-| Decision ID | Date | Module(s) | Summary | Status | Rationale | Linked Evidence |
-|-------------|------|-----------|---------|--------|-----------|-----------------|
-| DEC-001 | `{{DATE}}` | `{{MODULES}}` | `{{SUMMARY}}` | Proposed | `{{RATIONALE}}` | `{{EVIDENCE}}` |
-
-Maintain this log as immutable records. Append new decisions with the next incremental identifier.
-
-## 7. Appendices
+## 6. Appendices (Optional)
 
 * **Reference APIs:** Link to schemas from other services that influence this microservice.
 * **Security Review Checklist:** `{{SECURITY_CHECKLIST}}`

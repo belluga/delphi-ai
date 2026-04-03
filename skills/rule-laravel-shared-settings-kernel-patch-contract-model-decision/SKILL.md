@@ -25,6 +25,3 @@ Divergent payload shapes between clients and kernel validation create late-cycle
   - envelope payload rejection (`422`),
   - nullable clear behavior.
 - Ensure client repository tests assert the serialized PATCH payload shape.
-
-## Notes
-This rule is contract-critical for cross-submodule compatibility (Flutter <-> Laravel).

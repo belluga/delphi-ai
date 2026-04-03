@@ -24,6 +24,3 @@ Ability drift between route protection and token issuance creates false-positive
   - authorized path succeeds (`200/2xx`),
   - missing ability path fails (`403`).
 - Prefer login-based token generation in at least one test path; do not rely only on `Sanctum::actingAs`.
-
-## Notes
-Use with `wf-laravel-create-api-endpoint-method` and `wf-laravel-tenant-access-guardrails`.

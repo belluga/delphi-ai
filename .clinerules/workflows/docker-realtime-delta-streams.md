@@ -147,7 +147,7 @@ Add to `system_roadmap.md`:
 
 ### Step 8: Record Client Changes
 
-Note in persona roadmap or submodule summary:
+Note in `system_roadmap.md` or submodule summary (only when implementation snapshot changed):
 - Flutter: SSE client implementation
 - Controller changes for delta handling
 - UI update strategy

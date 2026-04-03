@@ -19,7 +19,23 @@ jobs:
           set -euo pipefail
           while IFS= read -r -d '' script; do
             bash -n "$script"
-          done < <(find tools -maxdepth 1 -type f -name '*.sh' -print0 | sort -z)
+          done < <(
+            find . -maxdepth 1 -type f -name '*.sh' -print0
+            find tools scripts -maxdepth 1 -type f -name '*.sh' -print0
+          )
+
+      - name: Sync Curated Cline Skill Mirrors
+        run: |
+          set -euo pipefail
+          bash tools/sync_cline_skill_mirrors.sh
+          git diff --exit-code -- .cline/skills
+
+      - name: Sync Curated .clinerules Mirrors
+        run: |
+          set -euo pipefail
+          bash tools/sync_clinerules_mirrors.sh
+          mapfile -t generated_files < <(bash tools/sync_clinerules_mirrors.sh --list-targets)
+          git diff --exit-code -- "${generated_files[@]}"
 
       - name: Validate Cline Skill Frontmatter
         run: |
@@ -72,14 +88,39 @@ jobs:
           set -euo pipefail
           bash tools/audit_instruction_baselines.sh
 
-      - name: Verify Agent Sync Parity In Ephemeral Env
+      - name: Smoke Downstream Init And Verify
         run: |
           set -euo pipefail
           ENV_ROOT="$RUNNER_TEMP/delphi-env"
-          rm -rf "$ENV_ROOT"
-          mkdir -p "$ENV_ROOT"
+          STUB_ROOT="$RUNNER_TEMP/delphi-env-stubs"
+          rm -rf "$ENV_ROOT" "$STUB_ROOT"
+          mkdir -p "$ENV_ROOT" "$STUB_ROOT"
+
+          create_stub_repo() {
+            local repo_path="$1"
+            mkdir -p "$repo_path"
+            git init -q "$repo_path"
+            git -C "$repo_path" config user.email ci@example.com
+            git -C "$repo_path" config user.name "CI"
+            printf '# %s\n' "$(basename "$repo_path")" > "$repo_path/README.md"
+            git -C "$repo_path" add README.md
+            git -C "$repo_path" commit -q -m "init"
+          }
+
+          create_stub_repo "$STUB_ROOT/foundation_documentation"
+          create_stub_repo "$STUB_ROOT/flutter-app"
+          create_stub_repo "$STUB_ROOT/laravel-app"
+          create_stub_repo "$STUB_ROOT/web-app"
+
+          git init -q "$ENV_ROOT"
+          git -C "$ENV_ROOT" config user.email ci@example.com
+          git -C "$ENV_ROOT" config user.name "CI"
+          git -c protocol.file.allow=always -C "$ENV_ROOT" submodule add "$STUB_ROOT/foundation_documentation" foundation_documentation >/dev/null 2>&1
+          git -c protocol.file.allow=always -C "$ENV_ROOT" submodule add "$STUB_ROOT/flutter-app" flutter-app >/dev/null 2>&1
+          git -c protocol.file.allow=always -C "$ENV_ROOT" submodule add "$STUB_ROOT/laravel-app" laravel-app >/dev/null 2>&1
+          git -c protocol.file.allow=always -C "$ENV_ROOT" submodule add "$STUB_ROOT/web-app" web-app >/dev/null 2>&1
+
           ln -s "$GITHUB_WORKSPACE" "$ENV_ROOT/delphi-ai"
-          mkdir -p "$ENV_ROOT/flutter-app" "$ENV_ROOT/laravel-app" "$ENV_ROOT/foundation_documentation"
           ln -s ../foundation_documentation "$ENV_ROOT/flutter-app/foundation_documentation"
           ln -s ../foundation_documentation "$ENV_ROOT/laravel-app/foundation_documentation"
           ln -s ../delphi-ai "$ENV_ROOT/flutter-app/delphi-ai"
@@ -91,5 +132,7 @@ jobs:
           CERTBOT_EMAIL=ci@example.com
           EOF
 
-          (cd "$ENV_ROOT" && bash delphi-ai/tools/sync_agent_rules.sh)
-          (cd "$ENV_ROOT" && bash delphi-ai/tools/verify_adherence_sync.sh)
+          (cd "$ENV_ROOT" && bash delphi-ai/init.sh --check </dev/null)
+          (cd "$ENV_ROOT" && bash delphi-ai/init.sh </dev/null)
+          (cd "$ENV_ROOT" && bash delphi-ai/verify_context.sh)
+          (cd "$ENV_ROOT" && bash delphi-ai/verify_adherence_sync.sh)

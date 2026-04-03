@@ -28,6 +28,30 @@ if command -v readlink >/dev/null 2>&1; then
 fi
 SCRIPT_DIR="$(cd -- "$(dirname -- "${SCRIPT_SOURCE}")" && pwd)"
 
+log_info() {
+  echo "[build_web] $*"
+}
+
+run_with_heartbeat() {
+  local interval="${BUILD_HEARTBEAT_SECONDS:-20}"
+  "$@" &
+  local cmd_pid=$!
+  local start_ts
+  start_ts="$(date +%s)"
+
+  while kill -0 "${cmd_pid}" 2>/dev/null; do
+    sleep "${interval}"
+    if kill -0 "${cmd_pid}" 2>/dev/null; then
+      local now_ts elapsed
+      now_ts="$(date +%s)"
+      elapsed="$((now_ts - start_ts))"
+      log_info "still compiling web bundle (${elapsed}s elapsed)..."
+    fi
+  done
+
+  wait "${cmd_pid}"
+}
+
 cleanup_output_test_artifacts() {
   local output_dir="$1"
 
@@ -181,11 +205,14 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
 pushd "${FLUTTER_APP_DIR}" >/dev/null
+log_info "running flutter pub get..."
 fvm flutter pub get
 build_cmd=(
   fvm flutter build web
   --release
   --no-tree-shake-icons
+  --no-pub
+  --no-wasm-dry-run
   --dart-define-from-file="${LANE_FILE}"
   -o "${TMP_DIR}"
 )
@@ -194,7 +221,8 @@ if [ -f "${LOCAL_OVERRIDE_FILE}" ]; then
   build_cmd+=(--dart-define-from-file="${LOCAL_OVERRIDE_FILE}")
 fi
 
-"${build_cmd[@]}"
+log_info "starting web build (lane=${LANE})..."
+run_with_heartbeat "${build_cmd[@]}"
 popd >/dev/null
 
 rm -f "${TMP_DIR}/favicon.ico" "${TMP_DIR}/manifest.json"
@@ -237,7 +265,7 @@ rm -f \
 
 chmod -R a+rX "${OUTPUT_DIR}"
 
-echo "Flutter web bundle available at: ${OUTPUT_DIR} (lane: ${LANE})"
+log_info "Flutter web bundle available at: ${OUTPUT_DIR} (lane: ${LANE})"
 
 # Avoid relying on jq for local builds; resolve via Python (available in CI and dev machines).
 # Returns empty string when missing/unreadable.

@@ -1,6 +1,6 @@
 ---
 name: rule-flutter-flutter-controller-workflow-glob
-description: "Rule: MUST use whenever the scope matches this purpose: When working inside `flutter-app/lib/presentation/**/controllers/**`, run the Controller Workflow:."
+description: "Rule: MUST use whenever the scope matches this purpose: Apply the controller workflow whenever controller files are edited."
 ---
 
 ## Rule

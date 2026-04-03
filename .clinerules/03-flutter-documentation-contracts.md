@@ -43,7 +43,7 @@ Per Project Mandate P-B6 ("Documentation Before Code"), the Flutter prototype de
 ### Validation Tools
 ```bash
 # Verify context
-bash tools/verify_context.sh
+bash delphi-ai/verify_context.sh
 
 # Check referenced files exist
 ls foundation_documentation/domain_entities.md

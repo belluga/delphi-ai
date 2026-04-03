@@ -1,6 +1,6 @@
 ---
 name: rule-laravel-shared-realtime-delta-streams-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When adding or revising realtime feed behavior (SSE streams, delta updates, or pagination policies):."
+description: "Rule: MUST use whenever the scope matches this purpose: When defining realtime streams or pagination policies for app feeds."
 ---
 
 ## Rule

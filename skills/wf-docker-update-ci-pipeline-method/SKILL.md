@@ -3,7 +3,7 @@ name: wf-docker-update-ci-pipeline-method
 description: "Workflow: MUST use whenever the scope matches this purpose: Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer/test steps for Flutter, Laravel, and Docker stay intact and cost-effective."
 ---
 
-# Method: Update CI / Pipeline (DevOps)
+# Method: Update CI / Pipeline (Operational / DevOps)
 
 ## Purpose
 Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer/test steps for Flutter, Laravel, and Docker stay intact and cost-effective.
@@ -15,11 +15,11 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 
 ## Inputs
 - Existing workflow files (`.github/workflows/*.yaml`, etc.).
-- Analyzer/test requirements from personas (Flutter analyzer, `php artisan test`, Docker build).
+- Analyzer/test requirements from the delivery scopes (`flutter`, `laravel`, Docker build).
 - Secrets management notes and DevOps roadmap.
 
 ## Procedure
-1. **Persona alignment** – select DevOps persona and review roadmap context.
+1. **Profile alignment** – select `Operational / DevOps` with `docker` scope and review roadmap context only when strategic sequencing is affected.
 2. **Plan changes** – list affected workflows/jobs, required secrets, and target environments.
 3. **Edit workflow**
    - Add/update jobs to run required commands (e.g., `fvm flutter analyze`, `composer test`, Docker build/push).
@@ -30,13 +30,13 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
    - Use `act` or branch runs to validate workflow syntax and steps.
 6. **Documentation + roadmap**
    - Note the change and expected impact in DevOps roadmap.
-   - Mention new pipeline requirements in relevant personas if they affect local workflows.
+   - Mention new pipeline requirements in the relevant delivery profiles/scopes if they affect local workflows.
 7. **Session summary** – capture results and any follow-up (e.g., secrets to rotate).
 
 ## Outputs
 - Updated workflow files.
 - Roadmap entry describing the pipeline change and expected benefits.
-- Notes to other personas if required steps changed.
+- Notes to other profiles/scopes if required steps changed.
 
 ## Validation
 - CI run succeeds (on branch or main) with the new configuration.

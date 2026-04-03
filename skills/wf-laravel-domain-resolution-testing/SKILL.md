@@ -1,6 +1,6 @@
 ---
 name: wf-laravel-domain-resolution-testing
-description: "Workflow: MUST use whenever the scope matches this purpose: Ensure tests that depend on tenant resolution clearly distinguish web (host/domains) from mobile (X-App-Domain + app_domains)."
+description: "Workflow: MUST use whenever the scope matches this purpose: Ensure domain-resolution tests explicitly separate web host/domains and mobile app domains."
 ---
 
 # Workflow: Domain Resolution Testing Split

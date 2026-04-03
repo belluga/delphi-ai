@@ -206,7 +206,7 @@ class BookingController {
 ### Step 7: Documentation Update
 
 - Note repository availability in module summaries/system roadmap
-- Update Flutter section of `persona_roadmaps.md` with new capability
+- Update `system_roadmap.md` with the new capability or technical debt payoff when it affects planned work
 
 ### Step 8: Verification
 

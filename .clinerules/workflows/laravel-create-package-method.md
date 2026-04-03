@@ -1,6 +1,6 @@
 ---
 name: laravel-create-package-method
-description: "Create/refactor Laravel packages with strict package-host decoupling and validation gates."
+description: "Create/refactor Laravel packages with strict package-host decoupling, faithful README coverage, and validation gates."
 ---
 
 # Workflow: Create or Refactor Laravel Package
@@ -26,7 +26,15 @@ Ensure Laravel package work preserves host/package boundaries, contract ownershi
 9. Keep `AppServiceProvider.php` package-agnostic.
 10. Remove transitional wrappers once parity is validated.
 11. Add/update tests for bindings, event side effects, and behavior parity.
-12. Run decoupling assertion script:
+12. Create or update package README at `packages/<vendor>/<package>/README.md` with, at minimum:
+- Purpose/scope
+- Domain concepts + invariants
+- Data model + migration scope
+- Public contracts (routes/payloads/events/commands)
+- Authentication/authorization boundary (package requirements vs host responsibilities)
+- Host integration steps (providers/bindings/adapters/listeners)
+- Validation commands and known limitations
+13. Run decoupling assertion script:
 
 ```bash
 python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package_decoupling.py \
@@ -36,8 +44,8 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
   --check-host-bindings
 ```
 
-13. Run `composer run architecture:guardrails`.
-14. Run targeted tests and full Laravel suite for milestone completion.
+14. Run `composer run architecture:guardrails`.
+15. Run targeted tests and full Laravel suite for milestone completion.
 
 ## Validation
 
@@ -48,6 +56,7 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
 - Host contracts/adapters are explicitly wired.
 - `AppServiceProvider.php` remains package-agnostic.
 - Migration scope is explicit and correctly configured.
+- Package root contains faithful `README.md` aligned with implemented contracts and auth boundary ownership.
 - Decoupling assertions pass.
 - Architecture guardrails pass.
 - Test gates pass.

@@ -17,7 +17,8 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 ## Prerequisites
 
 - [ ] Current core files accessible (main instructions, system principles, ecosystem config, templates)
-- [ ] Tooling available: `tools/verify_context.sh` (or manual checks)
+- [ ] Manual agnosticism review available
+- [ ] Applicable local checks identified for the touched file types
 
 ## Procedure
 
@@ -55,18 +56,15 @@ Edit instruction files as required:
 
 ### Step 5: Agnosticism & Consistency Verification
 
-**Run verification:**
-
-```bash
-bash tools/verify_context.sh
-```
-
 **Manual checks:**
 1. No project-specific paths/data in `delphi-ai/` or `.cline/`
 2. Cross-check updated files against `system_architecture_principles.md`
 3. Verify template expectations are met
 4. Confirm instructions remain internally consistent
 5. Project-specific references should be under `foundation_documentation/`
+6. Run any applicable local checks for the changed surfaces
+
+If the session is happening from a fully wired downstream environment and that validation is relevant, `bash delphi-ai/verify_context.sh` may be used as an additional readiness check, but it is not a prerequisite for Delphi self-maintenance.
 
 ### Step 6: Documentation Sync
 
@@ -123,6 +121,7 @@ If instruction changes affect project docs:
 
 ## Validation
 
-- `tools/verify_context.sh` success OR documented manual check
+- Documented manual agnosticism review
+- Applicable local checks recorded (or explicit N/A rationale)
 - User acknowledgement that session ended before any architectural tasks resume
 - No project code changes made during session

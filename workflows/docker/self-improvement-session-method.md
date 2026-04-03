@@ -13,19 +13,27 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 
 ## Inputs
 - Current `delphi-ai` core files (main instructions, system principles, ecosystem config, templates).
-- Tooling: `tools/verify_context.sh` (or manual checks) to confirm agnosticism.
+- Manual agnosticism review of the edited Delphi surfaces.
+- Applicable local checks for the changed file types (for example `bash self_check.sh` for governance surfaces or `bash -n` for edited shell scripts).
 
 ## Procedure
-1. **Persona Selection** – run the Persona Selection Method; typically CTO/Tech Lead persona.
+1. **Profile Selection** – run the Profile Selection Method; typically `Strategic / CTO-Tech-Lead` for instruction work.
 2. **Freeze architectural work** – acknowledge that implementation work (project code, submodule code, and project-specific docs) is paused; this session is for discussion + instruction refinement only. Editing within `delphi-ai/` is permitted.
-3. **Plan updates** – list the instruction files to edit and the rationale.
-4. **Apply changes** – edit `delphi-ai/*.md` (and templates) as required.
-5. **Agnosticism & consistency verification**
-   - Run `tools/verify_context.sh` (or manually review diffs) to ensure no project-specific paths/data creep into `delphi-ai/`.
+3. **Correction scope triage** – when the trigger is a user correction or a newly noticed behavior gap, classify it before editing anything:
+   - `Session`: current-session recalibration only; do not edit `delphi-ai/`.
+   - `Project`: downstream/project-specific correction; do not edit `delphi-ai/` unless the user explicitly expands it into Delphi method.
+   - `Delphi`: reusable method/instruction gap appropriate for canonical Delphi refinement.
+   - Ask the user to validate scope only when the correction appears eligible for canonization beyond the current local fix. In that case, I may suggest the recommended scope (`Session`, `Project`, or `Delphi`) instead of asking neutrally.
+   - If the correction invalidates prior assumptions, explicitly restate confirmed facts, invalidated assumptions, and open questions before deciding to edit Delphi.
+4. **Plan updates** – list the instruction files to edit and the rationale. If the correction was not classified as `Delphi`, stop here and record the appropriate non-Delphi follow-up instead of editing `delphi-ai/`.
+5. **Apply changes** – edit `delphi-ai/*.md` (and templates) as required.
+6. **Agnosticism & consistency verification**
+   - Review the edited Delphi files and diffs to ensure no project-specific paths/data creep into `delphi-ai/`, `.clinerules/`, or `.cline/`.
    - Cross-check updated files against `system_architecture_principles.md` and template expectations so instructions remain internally consistent.
    - Confirm references to project-specific files live under `foundation_documentation/` instead.
-6. **Documentation sync** – if instruction changes affect project docs (e.g., new templates), note the required updates.
-7. **Session closure**
+   - Run any applicable local checks for the touched surfaces. When the session is happening from a fully wired downstream environment and that validation is relevant, `bash delphi-ai/verify_context.sh` may be used as an additional readiness check, but it is not a prerequisite for Delphi self-maintenance.
+7. **Documentation sync** – if instruction changes affect project docs (e.g., new templates), note the required updates.
+8. **Session closure**
    - Summarise instruction changes.
    - Do **not** prematurely end the session during discussion. Close only when the user confirms the self-improvement scope is complete for this session.
    - If we will resume normal work in the same conversation, explicitly reload the updated instruction files (re-read the changed docs) before proceeding.
@@ -33,9 +41,12 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 
 ## Outputs
 - Updated instruction/template files.
+- Recorded correction-scope decision (`Session`, `Project`, or `Delphi`) for the triggering issue.
 - Verification note confirming agnosticism check passed.
 - Session closure statement.
 
 ## Validation
-- `tools/verify_context.sh` success or documented manual check.
+- Documented correction-scope triage for the triggering issue, including explicit user validation when the scope was ambiguous.
+- Documented manual agnosticism review of the edited Delphi surfaces.
+- Applicable local checks recorded for the changed file types (or explicit N/A rationale).
 - User acknowledgement (or log) that the session ended before any architectural tasks resume.

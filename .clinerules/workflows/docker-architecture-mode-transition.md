@@ -70,7 +70,7 @@ Update `system_architecture_principles.md`:
 
 ### Step 4: Update Roadmaps
 
-Record transition in `persona_roadmaps.md`:
+Record transition in `system_roadmap.md`:
 
 ```markdown
 ## Architecture Mode: Operational (Effective 2024-01-15)
@@ -150,7 +150,7 @@ Migration: bookings_v2 migration required
 ## Outputs
 
 - [ ] Updated `system_architecture_principles.md`
-- [ ] Persona roadmaps updated with mode responsibilities
+- [ ] Shared roadmap updated with mode responsibilities and cross-stack follow-up
 - [ ] Submodule summaries with operational constraints
 - [ ] Method updates or TODOs for new policies
 

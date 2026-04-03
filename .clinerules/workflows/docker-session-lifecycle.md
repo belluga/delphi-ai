@@ -22,7 +22,7 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
 At the beginning of each session:
 
 1. **Read bootloader and core instructions**
-   - Read `CLINE.md` (or `AGENTS.md`)
+   - Read the active bootloader (`CLINE.md`, `AGENTS.md`, or another agent-specific equivalent)
    - Read `.clinerules/00-main-instructions.md`
    - Load relevant project documentation
 

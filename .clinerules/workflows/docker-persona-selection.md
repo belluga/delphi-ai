@@ -11,13 +11,13 @@ Ensure every session explicitly anchors Delphi to the correct persona (Flutter e
 
 ## Triggers
 
-- Session start (after reading bootloader and main instructions)
+- Session start (after reading the active bootloader and main instructions)
 - Context switch between repositories/projects
 - User explicitly requests a different persona or role
 
 ## Prerequisites
 
-- [ ] Bootloader context loaded
+- [ ] Active bootloader context loaded
 - [ ] Core instructions reviewed
 - [ ] Persona references accessible
 
@@ -48,7 +48,7 @@ Choose from predefined roles:
 
 Load persona documentation:
 - `delphi-ai/personas/<persona>.md`
-- `foundation_documentation/persona_roadmaps.md`
+- Relevant entries in `foundation_documentation/system_roadmap.md`
 
 Note active priorities and current work items.
 
@@ -61,7 +61,7 @@ State the chosen persona explicitly:
 
 Working in: flutter-app submodule
 Method set: Flutter workflows
-Priority items: [From persona roadmap]
+Priority items: [From shared roadmap]
 ```
 
 ### Step 5: Load Role-Specific Methods
@@ -112,7 +112,7 @@ If user shifts topics to another codebase or role:
 
 - [ ] Persona declaration in session
 - [ ] Reference to applicable method set
-- [ ] Persona roadmap items noted
+- [ ] Shared roadmap items noted
 
 ## Validation Checklist
 

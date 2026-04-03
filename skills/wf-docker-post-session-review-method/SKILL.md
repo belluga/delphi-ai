@@ -1,6 +1,6 @@
 ---
 name: wf-docker-post-session-review-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Close a session with discipline: capture newly surfaced business principles, keep `foundation_documentation/` authoritative, and provide rigorous English feedback."
+description: "Workflow: MUST use whenever the scope matches this purpose: Run Delphi’s mandatory post-session review (principle extraction + mandate sync + English feedback) after the user signals the session is done."
 ---
 
 # Method: Post-Session Review

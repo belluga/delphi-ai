@@ -18,7 +18,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 ## Prerequisites
 
 - [ ] Laravel submodule summary reviewed (`foundation_documentation/submodule_laravel-app_summary.md`)
-- [ ] Persona roadmaps reviewed for Flutter + Laravel sections
+- [ ] Relevant `system_roadmap.md` entries reviewed for Flutter + Laravel follow-up
 - [ ] API security hardening baseline reviewed (`foundation_documentation/todos/active/mvp_slices/TODO-v1-api-security-hardening.md`)
 - [ ] Endpoint conventions reviewed (`foundation_documentation/endpoints_mvp_contracts.md`)
 - [ ] Cloudflare edge assumptions reviewed (origin behind Cloudflare and trusted-proxy policy defined)
@@ -40,7 +40,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 1. Request schema
 2. Response schema
 3. Add to `foundation_documentation/domain_entities.md`
-4. Update Flutter roadmap
+4. Update the shared roadmap entry with client/backend follow-up
 
 **Security hardening baseline (mandatory):**
 - Classify each endpoint as `L1 Core`, `L2 Balanced`, or `L3 High Protection`.

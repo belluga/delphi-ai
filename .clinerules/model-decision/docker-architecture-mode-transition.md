@@ -6,7 +6,7 @@ If adjusting architecture modes or related governance (Foundational/Operational/
 
 ### Requirements
 - Run the Architecture Mode Transition Workflow
-- Update persona roadmaps and policies per the workflow before declaring the new mode
+- Update `system_roadmap.md`, affected canonical docs, and policies per the workflow before declaring the new mode
 
 ## Rationale
 

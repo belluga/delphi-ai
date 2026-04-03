@@ -29,7 +29,7 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 Add/extend the domain entry in:
 - `foundation_documentation/domain_entities.md` (purpose, invariants, value objects)
 - Relevant module summary/system roadmap entry
-- Persona impact in `foundation_documentation/persona_roadmaps.md` under Flutter section
+- Cross-stack impact recorded in the relevant `foundation_documentation/system_roadmap.md` entry
 
 ### Step 2: Scaffold Domain Directory
 

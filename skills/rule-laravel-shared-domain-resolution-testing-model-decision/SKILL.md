@@ -1,6 +1,6 @@
 ---
 name: rule-laravel-shared-domain-resolution-testing-model-decision
-description: "Rule: MUST use whenever the scope matches this purpose: When tests depend on tenant resolution, explicitly separate web vs mobile contexts:."
+description: "Rule: MUST use whenever the scope matches this purpose: When tenant resolution tests are added or modified, separate web host/domains from mobile app-domain resolution."
 ---
 
 ## Rule

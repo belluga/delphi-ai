@@ -1,6 +1,6 @@
 ---
 name: wf-laravel-tenant-access-guardrails
-description: "Workflow: MUST use whenever the scope matches this purpose: Ensure any tenant-authenticated API routes consistently enforce tenant access via `CheckTenantAccess` and keep auth boundaries explicit."
+description: "Workflow: MUST use whenever the scope matches this purpose: Ensure tenant-authenticated routes enforce access guardrails with CheckTenantAccess."
 ---
 
 # Workflow: Tenant Access Guardrails
@@ -17,14 +17,21 @@ Ensure any tenant-authenticated API routes consistently enforce tenant access vi
 
 ## Steps
 1. Identify the target tenant route file(s) (ex: `laravel-app/routes/api/tenant_api_v1.php`) and confirm they are only registered under the **tenant domain group** (never on the main domain).
-2. List all routes that are authenticated with `auth:sanctum` in tenant scope.
-3. Ensure each authenticated tenant route includes `CheckTenantAccess` in its middleware stack.
-4. Confirm account-scoped routes continue to use `account` middleware (and not tenant guards).
-5. Update or add tests that verify:
+2. Validate route matrix for tenant/admin/public scopes:
+   - tenant-admin (`/admin/api/v1/...`) is reachable on tenant domains only;
+   - landlord-admin (`/admin/api/v1/...`) is reachable on main domain only;
+   - tenant-public (`/api/v1/...`) remains domain-scoped as documented.
+   - Confirm with `php artisan route:list`.
+3. List all routes that are authenticated with `auth:sanctum` in tenant scope.
+4. Ensure each authenticated tenant route includes `CheckTenantAccess` in its middleware stack.
+5. Confirm account-scoped routes continue to use `account` middleware (and not tenant guards).
+6. If any tenant route uses `Route::domain('{...}')`, verify controller signatures include domain parameters before path parameters to prevent parameter misbinding.
+7. Update or add tests that verify:
    - Cross-tenant access returns 403 for landlord tokens without tenant access.
    - Account tokens cannot access tenant routes.
    - Tenant routes are unreachable on the main domain (domain scoping is enforced).
-6. Note changes in the active tactical TODO and ensure DoD remains aligned.
+   - At least one real auth path (login -> bearer token -> tenant-admin endpoint).
+8. Note changes in the active tactical TODO and ensure DoD remains aligned.
 
 ## Outputs
 - Tenant route files updated with `CheckTenantAccess` for authenticated endpoints.

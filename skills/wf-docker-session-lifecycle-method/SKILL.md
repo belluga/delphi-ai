@@ -19,9 +19,10 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
 
 ## Procedure
 1. **Session Start**
-   - Explicitly read the bootloader (`AGENTS.md`) and `delphi-ai/main_instructions.md`.
+   - Explicitly read the active bootloader (`AGENTS.md` or the agent-specific equivalent such as `CLINE.md`/`GEMINI.md`) and `delphi-ai/main_instructions.md`.
    - Confirm availability/readiness of `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen scope tasks.
    - Note the session purpose (architecture vs. self-improvement).
+   - Run Profile Selection before task-specific workflows.
 2. **Normal Work Sessions**
    - Follow standard architectural workflows (create domain, repository, etc.).
    - For route/module/screen work, require explicit scope-context confirmation (`EnvironmentType`, main scope, subscope) from the canonical policy before implementation.
