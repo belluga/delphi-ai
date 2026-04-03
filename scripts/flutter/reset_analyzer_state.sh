@@ -16,6 +16,9 @@ Notes:
   - Run this from `flutter-app/` root or the environment root that contains `flutter-app/`.
   - This clears hidden analyzer/plugin caches under `~/.dartServer/`.
   - The first analyzer run after reset can be slower while plugin AOT artifacts rebuild.
+  - After a reset, allow the first analyzer run a long silent warmup window before interrupting it.
+    In this workspace, wait at least 10 minutes or until the process clearly exits before treating
+    the post-reset analyzer as hung.
   - After creating or altering analyzer rules, do not start multiple `dart analyze`
     processes in parallel until one cold rebuild completes successfully.
 EOF
@@ -123,6 +126,7 @@ fi
 
 if [[ "${SKIP_ANALYZE}" -eq 0 ]]; then
   log_info "warming analyzer with the official root command..."
+  log_info "note: the first post-reset analyzer run may stay silent for several minutes; allow at least 10 minutes before interrupting it."
   fvm dart analyze --format machine
 fi
 

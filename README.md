@@ -18,6 +18,8 @@ The goal is not to let an agent "just code". The goal is to make execution revie
 ## Profiles
 Delphi separates its operating roles into **profiles**, not stylistic personas.
 
+- **Genesis**
+  - `Product-Bootstrap`
 - **Strategic**
   - `CTO-Tech-Lead`
 - **Operational**
@@ -30,12 +32,19 @@ Delphi separates its operating roles into **profiles**, not stylistic personas.
 Profiles are paired with a technical scope such as `flutter`, `laravel`, `docker`, or `cross-stack`.
 
 This separation is intentional:
+- the genesis profile may start from zero-state, but it must hand ongoing governance to the canonical Delphi surfaces it creates;
 - the delivery profile should not be able to quietly rewrite the gates that validate its own work;
 - the strategic profile should not silently turn into an implementation profile;
 - assurance profiles should try to invalidate the delivery, not quietly absorb the delivery itself.
 
 ## Method Positioning
 Delphi-AI follows a **governed, distributed spec-driven execution model**.
+
+When a project is still in zero-state, Delphi may begin with `Genesis / Product-Bootstrap`.
+
+- zero-state means the project may not yet have `project_constitution.md`, `system_roadmap.md`, module docs, or TODOs;
+- the genesis profile may work from interviews, references, and prototypes (including Stitch or disposable web prototypes);
+- its job is to instantiate the first canonical Delphi package, not to become the long-term owner of delivery.
 
 Instead of concentrating all intent in a single spec file, Delphi distributes authority across four explicit surfaces:
 
@@ -48,7 +57,7 @@ Instead of concentrating all intent in a single spec file, Delphi distributes au
 - `foundation_documentation/todos/active/*.md`
   - tactical execution contract for one change: scope, out-of-scope, done criteria, validation steps, frozen decisions, assumptions, plan, and adherence proof
 
-This means Delphi is neither code-first nor a loose "vibe coding" loop. The normal path is:
+This means Delphi is neither code-first nor a loose "vibe coding" loop. Once the canonical package exists, the normal path is:
 
 1. load the right instructions and verify readiness
 2. refine the tactical TODO (`WHAT` and what counts as done)
@@ -121,6 +130,7 @@ The tactical TODO remains the execution authority, and durable truth remains in 
 ## Profiles and Scope Checks
 Delphi profiles are backed by explicit scope boundaries.
 
+- `Genesis / Product-Bootstrap` owns project inception, prototype-backed validation, and first-pass canonicalization.
 - `Operational / Coder` owns product behavior and tests.
 - `Operational / DevOps` owns CI/CD, runtime, ingress, and promotion-lane mechanics.
 - `Strategic / CTO-Tech-Lead` owns constitution, roadmap, and cross-module direction.

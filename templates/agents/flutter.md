@@ -27,6 +27,7 @@
 ## Architecture Analyzer Gate (Official)
 * Official architecture lint/analyzer command for local and CI: `fvm dart analyze --format machine`.
 * If local CLI analyzer state becomes inconsistent (false-clean, stale plugin AOT, or unexplained hangs), run `bash ./scripts/reset_analyzer_state.sh` from `flutter-app` root, then rerun `fvm dart analyze --format machine`.
+* After any analyzer-state reset, treat the next analyzer run as a cold warmup: allow a long silent window before intervening. In this workspace, do not classify the post-reset run as hung until it has had at least 10 minutes to rebuild or the process has clearly exited.
 * Do not use directory-target mode (`fvm dart analyze lib`) as architecture source of truth in this workspace.
 * Keep `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh` as fixture coverage validation for rule activation.
 * Do not use `fvm dart run custom_lint` as architecture source of truth in this workspace.

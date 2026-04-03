@@ -13,6 +13,9 @@ Profiles decide:
 
 ## Profile Layers
 
+### Genesis
+- `genesis_product_bootstrap.md`
+
 ### Strategic
 - `strategic_cto_tech_lead.md`
 
@@ -23,6 +26,19 @@ Profiles decide:
 ### Assurance
 - `assurance_tester_quality.md`
 - `assurance_security_adversarial.md`
+
+## Zero-State Exception
+
+`Genesis / Product-Bootstrap` is the only profile allowed to start before canonical project docs exist.
+
+- It may work from user intent, interviews, references, and prototypes.
+- It may validate flows with Stitch or disposable web prototypes.
+- It may use `templates/project_bootstrap_packet_template.md` as a lightweight staging artifact before canonical docs exist.
+- Its expected output is the first canonical Delphi package:
+  - `project_constitution.md`
+  - `system_roadmap.md`
+  - initial `modules/*.md`
+- After that package exists, normal stewardship moves to `Strategic`, `Operational`, and `Assurance` profiles.
 
 ## Scope vs Profile
 
@@ -37,6 +53,7 @@ Typical scope overlays:
 - `delphi-self-maintenance`
 
 Example:
+- `Genesis / Product-Bootstrap` + `Cross-stack`
 - `Operational / Coder` + `Flutter`
 - `Operational / Coder` + `Laravel`
 - `Operational / DevOps` + `Docker`
@@ -51,6 +68,8 @@ Use the TODO `Profile Scope & Handoffs` section to capture:
 - active technical scope;
 - any expected supporting profiles;
 - handoff log entries when work crosses profile boundaries.
+
+If the session is still in zero-state and no TODO exists yet, `Genesis / Product-Bootstrap` should record planned handoffs in the bootstrap packet or session notes until the first TODO is opened.
 
 ## Deterministic Scope Checks
 

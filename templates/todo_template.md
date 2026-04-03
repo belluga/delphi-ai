@@ -68,7 +68,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - [ ] <Command, test flow, or manual validation step>
 
 ## Profile Scope & Handoffs (Required Before `APROVADO`)
-- **Primary execution profile:** `<strategic-cto|operational-coder|operational-devops|assurance-tester-quality|assurance-security-adversarial>`
+- **Primary execution profile:** `<genesis-product-bootstrap|strategic-cto|operational-coder|operational-devops|assurance-tester-quality|assurance-security-adversarial>`
 - **Active technical scope:** `<flutter|laravel|web|docker|cross-stack|delphi-self-maintenance>`
 - **Expected supporting profiles:** `<none|profile ids>`
 - **Scope-check command:** `python3 delphi-ai/tools/profile_scope_check.py --profile <profile-id>`
@@ -79,6 +79,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 | `<from>` | `<to>` | <reason> | <paths/surfaces> | <planned|active|completed> |
 
 - If `Operational / Coder` discovers that project-level constitutional rules or invariants must change, record a handoff to `Strategic / CTO-Tech-Lead` instead of editing `project_constitution.md` directly.
+- `Genesis / Product-Bootstrap` may instantiate the first `project_constitution.md`, `system_roadmap.md`, and `modules/*.md` package before any TODO exists. Once implementation planning begins or the bootstrap package already exists, use the normal TODO gate.
 
 ## Complexity
 - **Level (`small|medium|big`):** <classification>
