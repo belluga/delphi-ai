@@ -2,10 +2,22 @@
 
 This checklist ensures every working copy—full repository or scoped submodule—loads the same canonical instructions and foundation documentation before any engineering work begins.
 
+## Zero-State Bootstrap Exception
+
+When the repository is still in zero-state and the active profile is `Genesis / Product-Bootstrap`, missing project-owned authority surfaces are valid bootstrap outputs, not readiness failures.
+
+Use this path instead of treating the checklist as failed:
+1. Run `bash delphi-ai/init.sh --check`.
+2. If there are no Delphi-managed path conflicts, run `bash delphi-ai/init.sh`.
+3. Instantiate the first canonical package under `foundation_documentation/`.
+4. Return to `bash delphi-ai/verify_context.sh` after the downstream shape exists or when full readiness validation is intentionally needed.
+
 ## 1. Required Shared Artifacts
 1. `foundation_documentation/` exists at the repository root and contains the authoritative project-specific context.
+   - Zero-state exception: during `Genesis / Product-Bootstrap`, this directory may be absent at the start of the session because creating it is part of the bootstrap output.
 2. `delphi-ai/` exists at the repository root and contains the persona, principles, templates, and this checklist.
 3. `foundation_documentation/policies/scope_subscope_governance.md` exists and is available as canonical scope/subscope policy.
+   - Zero-state exception: this policy may be missing before the first canonical package is instantiated.
 4. Each submodule (e.g., `flutter-app/`, `laravel-app/`) exposes the shared documentation through symlinks:
    - `foundation_documentation -> ../foundation_documentation`
    - (optional) `delphi-ai -> ../delphi-ai` if the submodule is opened standalone.
@@ -26,6 +38,8 @@ If the verification fails only because Delphi-managed links/artifacts are missin
 bash delphi-ai/verify_context.sh --repair
 ```
 Then rerun plain `bash delphi-ai/verify_context.sh`.
+
+If the repository is still zero-state and the active session is `Genesis / Product-Bootstrap`, do not treat `verify_context.sh` failure on missing `foundation_documentation/`, submodules, or `.env` as a blocker for selecting Genesis. Use the exception path above instead.
 
 Optional: if you want Delphi’s tactical TODO folders created, run:
 ```bash

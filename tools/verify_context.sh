@@ -4,7 +4,12 @@ set -euo pipefail
 SCRIPT_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 
 # Derive repo root based on git (preferred) or the symlink path used to invoke this script.
+GIT_ROOT_DETECTED=false
 REPO_ROOT="$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$REPO_ROOT" ]; then
+  GIT_ROOT_DETECTED=true
+fi
+
 if [ -z "$REPO_ROOT" ]; then
   SYMLINK_PATH="$(dirname "${BASH_SOURCE[0]}")"
   if ROOT_DIR="$(cd "$SYMLINK_PATH/.." && pwd 2>/dev/null)"; then
@@ -31,10 +36,19 @@ find_environment_root() {
   return 1
 }
 
-# If invoked from inside a submodule (flutter-app/laravel-app) or a nested folder, normalize to the environment root.
-if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
-  if [ -n "$ENV_ROOT" ]; then
-    REPO_ROOT="$ENV_ROOT"
+# If invoked from inside a true git submodule, normalize to the parent environment root.
+# Do not climb above the current standalone git repository, or zero-state nested repos can
+# be mistaken for an unrelated parent environment.
+SUPERPROJECT_ROOT=""
+if [ "$GIT_ROOT_DETECTED" = true ]; then
+  SUPERPROJECT_ROOT="$(git -C "$REPO_ROOT" rev-parse --show-superproject-working-tree 2>/dev/null || true)"
+fi
+
+if [ "$GIT_ROOT_DETECTED" != true ] || [ -n "$SUPERPROJECT_ROOT" ]; then
+  if ENV_ROOT="$(find_environment_root "$REPO_ROOT" 2>/dev/null)"; then
+    if [ -n "$ENV_ROOT" ]; then
+      REPO_ROOT="$ENV_ROOT"
+    fi
   fi
 fi
 

@@ -6,7 +6,11 @@ description: "Workflow: MUST use whenever the scope matches this purpose: Execut
 # Method: TODO-Driven Execution
 
 ## Purpose
-Guarantee every implementation starts from a concrete, reviewable contract (`WHAT` + done criteria), with the execution `HOW` made explicit through evidence-backed assumptions and a reviewable plan, followed by rule ingestion for the touched surfaces before code changes begin.
+Govern TODO use across profiles without collapsing no-code decision ledgers into tactical execution contracts.
+
+For `Operational` implementation, this method guarantees that delivery starts from a concrete, reviewable contract (`WHAT` + done criteria), with the execution `HOW` made explicit through evidence-backed assumptions and a reviewable plan, followed by rule ingestion for the touched surfaces before code changes begin.
+
+For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead` work, this method also defines the capped TODO lane used to preserve active decision ledgers under `foundation_documentation/todos/active/` without authorizing implementation.
 
 ## Triggers
 - The user asks for feature work, bugfixes, refactors, or documentation updates that change project artifacts.
@@ -17,11 +21,30 @@ Guarantee every implementation starts from a concrete, reviewable contract (`WHA
 
 ## Procedure
 1. **Determine which lane applies**
+   - If the active work is still `Genesis / Product-Bootstrap` or no-code `Strategic / CTO-Tech-Lead`, and the requested TODO only preserves confirmed truths, explicit gaps, rejected inferences, or next interview/review fronts, use the **Profile-Scoped Capped TODO lane** and keep the current profile.
    - If changes are limited to `foundation_documentation/artifacts/tmp/**` or `foundation_documentation/todos/**`, proceed without a TODO and still describe intent + results in your response.
    - If the work qualifies for the Operational Micro-Fix flow, use the corresponding lane below.
    - If the work qualifies for the Maintenance/Regression Fix flow, use the corresponding lane below.
    - Otherwise, use the full tactical TODO lane.
-2. **Operational Micro-Fix lane (No TODO)**
+2. **Profile-Scoped Capped TODO lane (No-code)**
+   - Confirm eligibility:
+     - the active profile is `Genesis / Product-Bootstrap` or no-code `Strategic / CTO-Tech-Lead`;
+     - the TODO is acting as a live decision/interview/review ledger rather than an implementation contract;
+     - no production/test/runtime/CI changes are authorized from this lane;
+     - no `APROVADO` gate, execution plan, or implementation sequencing is being implied.
+   - Create or update the capped TODO under `foundation_documentation/todos/active/`.
+   - The capped TODO must explicitly state:
+     - active profile;
+     - purpose;
+     - what it is not;
+     - code-touch boundary (`no code`);
+     - current baseline / confirmed truths;
+     - open gaps / decision register;
+     - next exact step.
+   - Supporting packets, snapshots, and reference artifacts may live under `foundation_documentation/artifacts/**`, but the live working ledger stays in `foundation_documentation/todos/active/`.
+   - No **APROVADO** token is required for this lane.
+   - If the scope expands into implementation planning or code-execution authority, stop and switch to the full tactical TODO lane under the appropriate non-Genesis profile before continuing.
+3. **Operational Micro-Fix lane (No TODO)**
    - Confirm eligibility:
      - no production/test files are modified;
      - no project-specific docs under `foundation_documentation/**` are modified, except `artifacts/tmp/**` or `todos/**`;
@@ -32,7 +55,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (`WHA
    - Execute the minimal operational change.
    - Validate immediately using objective checks (`verify_context.sh`, `self_check.sh`, `bash -n`, `git status`, symlink/permission inspection, or equivalent).
    - If the scope expands beyond the lane boundaries, stop and switch to the Maintenance/Regression lane or the full tactical TODO lane before continuing.
-3. **Maintenance/Regression Fix lane (Ephemeral TODO)**
+4. **Maintenance/Regression Fix lane (Ephemeral TODO)**
    - Confirm eligibility: restore previously documented or verifiably working behavior (including test failures); no net-new features and no API/contract/schema changes.
    - If documentation must change because the existing docs are missing or incorrect, use the tactical TODO lane instead.
    - Ensure `foundation_documentation/todos/ephemeral/` contains `.gitkeep` and a `.gitignore` that ignores all other files.
@@ -43,7 +66,7 @@ Guarantee every implementation starts from a concrete, reviewable contract (`WHA
      - if the fix is completed and validated, delete the ephemeral TODO before ending the task;
      - if the work becomes blocked, survives beyond the immediate maintenance cycle, or needs broader planning/coherence work, retire the ephemeral TODO instead of promoting it; consolidate any durable canonical truth directly into the relevant `MODULE`, and if broader execution work still remains, start a fresh tactical TODO under `foundation_documentation/todos/active/`;
      - do not leave open-ended ephemeral TODOs lingering as a pseudo-backlog.
-4. **Tactical TODO lane (default)**
+5. **Tactical TODO lane (default for implementation)**
    - Find the relevant TODO in `foundation_documentation/todos/active/`.
    - If none exists, ask the user to create one or ask permission to draft one.
 5. **Align TODO to the current canonical status schema**

@@ -179,7 +179,8 @@ bash delphi-ai/init.sh
 - Prompts for Laravel/Flutter/Web submodule URLs (defaults to current entries).
 - Creates the documented bootloaders/symlinks for Cline, Codex, and Gemini, and links `.agents` rules/workflows when the downstream layout is available.
 - If a required Delphi path is already occupied by a different file/symlink/directory, setup fails clearly and prints the blocking paths. Fix them manually, then rerun.
-- Run `bash delphi-ai/verify_context.sh` afterward as a read-only validation pass.
+- For normal downstream environments, run `bash delphi-ai/verify_context.sh` afterward as a read-only validation pass.
+- For zero-state `Genesis / Product-Bootstrap` repos, treat `init.sh --check` / `init.sh` as the install preflight and instantiate `foundation_documentation/` before expecting full `verify_context.sh` readiness to pass.
 - If the validation fails only because Delphi-managed links/artifacts are missing or misaligned, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain `bash delphi-ai/verify_context.sh`.
 - For full governance mirror validation after readiness passes, run `bash delphi-ai/verify_adherence_sync.sh`.
 

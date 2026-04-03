@@ -17,7 +17,11 @@ Turn temporary or legacy documentation (e.g., scratch specs, prototype UI notes)
 
 ## Steps
 1. Load core context (system principles, mandate) and relevant module templates; avoid editing temporary files directly.
-2. Inventory source materials (temporary files, PRDs, prototype screens) and note authoritative vs. outdated content.
+2. Inventory source materials (temporary files, PRDs, prototype screens, other repositories used as references) and note authoritative vs. outdated content.
+   - When another repository is used as reference, explicitly separate:
+     - what is being borrowed as architecture/topology/pattern guidance;
+     - what is project-specific and must not be inherited automatically.
+   - If names, business entities, or feature behavior might carry over, confirm that with the user before canonicalizing it.
 3. Map scope: determine required project-level rules, modules, entities, endpoints, screens, and real-time needs; note landlord vs tenant boundaries and explicit main scope/subscope ownership.
 4. Perform gap analysis: validation bounds, enums, auth/abilities, real-time transport, rankings/badges, profile, catalog rules, and roadmaps.
 5. Create/update canonical docs using templates:

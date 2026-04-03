@@ -28,12 +28,19 @@ Prepare or recalibrate a downstream project so it can operate under the current 
      - `bootstrap`: first structured Delphi setup for this project, or
      - `recalibration`: project already uses Delphi surfaces but may have drifted from the current baseline.
    - Record the lane in the status summary before continuing.
+   - If the repo is zero-state and the user is explicitly asking to set up submodules/runtime first, do not silently force `bootstrap`; ask whether they want `Genesis / Product-Bootstrap` first or `Operational / DevOps` first, then record that answer as the active starting path and planned handoff.
 
 2. **Run readiness prerequisites**
    - Run the Initialization Checklist (`delphi-ai/initialization_checklist.md`).
-   - Load and execute the Environment Readiness Workflow (`delphi-ai/workflows/docker/environment-readiness-method.md`).
-   - Treat readiness as a prerequisite for calibration, not as the full calibration itself.
-   - If readiness fails because of project-owned path conflicts, stop and report the blockers for manual remediation before continuing.
+   - If the lane is `bootstrap` and the repo is still zero-state:
+     - run `bash delphi-ai/init.sh --check`;
+     - if there are no Delphi-managed path conflicts and Delphi surfaces are intended, run `bash delphi-ai/init.sh`;
+     - treat missing `foundation_documentation/`, module docs, submodules, `.env`, and other downstream-owned readiness surfaces as bootstrap outputs rather than failures;
+     - defer the full Environment Readiness Workflow until the downstream shape exists or runtime/deploy work becomes the goal.
+   - If the lane is `recalibration`, or the project already has a canonical package/runtime shape:
+     - load and execute the Environment Readiness Workflow (`delphi-ai/workflows/docker/environment-readiness-method.md`);
+     - treat readiness as a prerequisite for calibration, not as the full calibration itself;
+     - if readiness fails because of project-owned path conflicts, stop and report the blockers for manual remediation before continuing.
 
 3. **Inventory Delphi-governed surfaces**
    - Confirm bootloader/install surfaces are present and aligned (`AGENTS.md`, `.codex/skills/`, `.agents/rules/`, `.agents/workflows/`, `.agents/skills/`, `.clinerules/`, `.cline/skills/`, or the runtime-specific equivalents that apply).
@@ -100,7 +107,9 @@ Prepare or recalibrate a downstream project so it can operate under the current 
 - Clear next-step outcome: `ready for normal work`, `manual remediation required`, or `normalization TODO required`.
 
 ## Validation
-- Readiness prerequisites were executed first via the Initialization Checklist and Environment Readiness Workflow.
+- Readiness prerequisites were executed first via the Initialization Checklist plus the lane-appropriate preflight:
+  - `bootstrap`: Delphi install preflight (`init.sh --check` / `init.sh`) when the downstream shape does not yet exist;
+  - `recalibration`: Environment Readiness Workflow.
 - If the project is declared `calibrated`, no material structural or governance drift remains unresolved.
 - If the project is not ready, the blocking drift is explicitly recorded and feature work does not proceed under implicit assumptions.
 - If remediation touches project artifacts, the handoff to TODO-driven execution is explicit and no implementation starts before `APROVADO`.

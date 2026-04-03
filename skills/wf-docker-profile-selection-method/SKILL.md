@@ -55,12 +55,15 @@ Choose `Genesis / Product-Bootstrap` only when all statements below are true:
 3. The dominant work is discovery, synthesis, prototype-led validation, or first-pass canonicalization, not product implementation.
 4. Any prototype work is being used as evidence to validate flows, IA, language, or decisions, not as production delivery.
 5. Opening a tactical implementation TODO now would be premature or misleading because the contract still needs to be established first.
+6. Any active tracking ledger needed right now is still discovery-facing or constitution-facing only, and may remain a capped no-code TODO without authorizing implementation.
 
 Do not choose `Genesis / Product-Bootstrap` when any statement below is true:
 - a usable canonical package already exists and the task is to maintain or evolve project-level direction; choose `Strategic / CTO-Tech-Lead`
 - the contract is already sufficiently defined and the task is to ship product behavior or tests; choose `Operational / Coder`
 - the task is primarily runtime, CI/CD, ingress, environment, or promotion-lane work; choose `Operational / DevOps`
 - the task is primarily to challenge or audit an existing delivery; choose an `Assurance` profile
+
+Do not let the mere existence of a TODO or tracking ledger force `Strategic` or `Operational`. A profile-scoped capped TODO that only preserves confirmed truths, gaps, rejected inferences, or next interview fronts may still belong to `Genesis / Product-Bootstrap`.
 
 If the gate is inconclusive, start from the most conservative non-Genesis profile that matches the current authority and record a handoff only if the session proves to be earlier-stage than initially believed.
 
@@ -73,6 +76,9 @@ If the gate is inconclusive, start from the most conservative non-Genesis profil
    - `Genesis / Product-Bootstrap`:
      - load any existing `project_mandate.md`, `domain_entities.md`, `project_constitution.md`, `system_roadmap.md`, and module docs if they already exist
      - load discovery notes, reference material, and prototype surfaces that clarify the project intent
+     - load `workflows/docker/genesis-bootstrap-method.md`
+     - load any profile-scoped capped TODO under `foundation_documentation/todos/active/` that is being used to preserve confirmed truths, open questions, or next interview fronts
+     - load any companion Genesis artifact under `foundation_documentation/artifacts/**` that serves as packet, snapshot, or supporting reference
      - if canonical docs are missing, explicitly record that the session is zero-state and treat those docs as bootstrap outputs rather than blockers
    - `Strategic / CTO-Tech-Lead`:
      - load `project_constitution.md`
@@ -106,6 +112,8 @@ If the gate is inconclusive, start from the most conservative non-Genesis profil
 - Reference to the method set that will be used under that profile.
 - Expected handoffs when the work is intentionally mixed.
 - Explicit note when the session is valid zero-state bootstrap instead of a missing-document failure.
+- Explicit note when a profile-scoped capped TODO does not change the selected profile.
+- When `Genesis / Product-Bootstrap` is selected, explicit note that `genesis-bootstrap-method.md` will govern the no-code sequence.
 
 ## Validation
 - `Gate 0` was evaluated before `Genesis / Product-Bootstrap` is selected.

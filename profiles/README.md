@@ -33,11 +33,17 @@ Profiles decide:
 
 - It may work from user intent, interviews, references, and prototypes.
 - It may validate flows with Stitch or disposable web prototypes.
-- It may use `templates/project_bootstrap_packet_template.md` as a lightweight staging artifact before canonical docs exist.
+- It may use a profile-scoped capped TODO under `foundation_documentation/todos/active/` as the live Genesis decision ledger, using `templates/capped_todo_template.md` as the default starting point.
+- It may use `templates/project_bootstrap_packet_template.md` as a companion capped Genesis artifact to preserve higher-level snapshots, packets, and supporting references.
+- Its standard no-code sequence is:
+  - `GEN-01 Initial Interview`
+  - `GEN-02 Gap Closure + Project Constitution`
+  - `GEN-03 Module Decomposition`
 - Its expected output is the first canonical Delphi package:
   - `project_constitution.md`
   - `system_roadmap.md`
   - initial `modules/*.md`
+- Maintaining that Genesis capped TODO or companion artifact does not by itself force a switch to `Strategic` or `Operational`.
 - After that package exists, normal stewardship moves to `Strategic`, `Operational`, and `Assurance` profiles.
 
 ## Scope vs Profile

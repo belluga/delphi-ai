@@ -99,6 +99,14 @@ MIRRORS: tuple[Mirror, ...] = (
         title="Workflow: Profile Selection",
         workflow_name="docker-profile-selection-method",
     ),
+    Mirror(
+        key="docker-genesis-bootstrap-method",
+        kind="workflow",
+        source="workflows/docker/genesis-bootstrap-method.md",
+        destination=".clinerules/workflows/docker-genesis-bootstrap-method.md",
+        title="Workflow: Genesis Bootstrap",
+        workflow_name="docker-genesis-bootstrap-method",
+    ),
 )
 
 

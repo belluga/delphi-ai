@@ -12,6 +12,8 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 - Session starts in a repository that might not be the canonical boilerplate.
 - Before running scripts that depend on submodules (Laravel, Flutter, web bundle).
 
+Do not use this method as the profile-selection gate for a zero-state `Genesis / Product-Bootstrap` session. In that scenario, readiness checks are supporting evidence only and must not block Genesis from instantiating the first canonical package.
+
 ## Inputs
 - Root repository (`festou_docker` or downstream clone).
 - `.gitmodules` and current submodule working trees.
@@ -22,6 +24,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 1. **Confirm repository context**
    - Identify whether we are in the canonical boilerplate repo or a downstream project.
    - If downstream, note the expected remotes (e.g., `belluga/festou_api`, `belluga/festou_app`, `belluga/festou_web`).
+   - If the repo is still zero-state (for example no `foundation_documentation/` yet and the request is to initialize/bootstrap the project), stop this method here, record that full downstream readiness is premature, and hand control back to `Genesis / Product-Bootstrap`.
 
 2. **Run canonical readiness scripts (preferred)**
    - Run Delphi context checks (symlinks, required folders):
@@ -30,6 +33,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
    - Run the project readiness verifier (compose config + critical drift checks):
      - `bash scripts/verify_environment.sh`
    - If either script fails, fix the reported issue before proceeding.
+   - For zero-state Genesis bootstrap, replace this step with `bash delphi-ai/init.sh --check` and, when appropriate, `bash delphi-ai/init.sh`; do not require `verify_context.sh` or `scripts/verify_environment.sh` until the downstream shape exists.
 
 3. **Validate submodules (only if needed)**
    - Run `git submodule status --recursive` and ensure each submodule is checked out; no entry should start with `-` (uninitialized) or `U` (merge conflict on gitlink state).

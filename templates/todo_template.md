@@ -79,7 +79,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 | `<from>` | `<to>` | <reason> | <paths/surfaces> | <planned|active|completed> |
 
 - If `Operational / Coder` discovers that project-level constitutional rules or invariants must change, record a handoff to `Strategic / CTO-Tech-Lead` instead of editing `project_constitution.md` directly.
-- `Genesis / Product-Bootstrap` may instantiate the first `project_constitution.md`, `system_roadmap.md`, and `modules/*.md` package before any TODO exists. Once implementation planning begins or the bootstrap package already exists, use the normal TODO gate.
+- `Genesis / Product-Bootstrap` may begin with a profile-scoped capped TODO via `templates/capped_todo_template.md` while discovery and foundation refinement remain explicitly no-code. This tactical template applies only after Genesis hands off to true implementation planning.
 
 ## Complexity
 - **Level (`small|medium|big`):** <classification>
