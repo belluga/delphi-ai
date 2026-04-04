@@ -18,6 +18,15 @@ Detect closure-time debt that makes future maintenance slower or less trustworth
   - TODOs with waivers or provisional notes
   - code changes that introduce or leave inline `TODO|FIXME|HACK|TBD`
 
+## Preferred Deterministic Helper
+- Default audit path for TODO evidence + inline debt scanning:
+  - `bash delphi-ai/tools/verification_debt_audit.sh --todo <todo-path>`
+- Include changed/untracked files from the current branch in the inline debt scan:
+  - `bash delphi-ai/tools/verification_debt_audit.sh --todo <todo-path> --scan-git-modified`
+- Add explicit scan targets when the touched scope is narrower than the whole branch:
+  - `bash delphi-ai/tools/verification_debt_audit.sh --todo <todo-path> --path <touched-path> [--path <touched-path> ...]`
+- Exit code `2` means the audit completed and found `medium|high` debt signals. Treat that as evidence to review, not as automatic permission to rewrite scope.
+
 ## Debt Categories
 - **Evidence debt**: claims in the TODO lack concrete proof.
 - **Validation debt**: promised validation steps were skipped, weakened, or left ambiguous.

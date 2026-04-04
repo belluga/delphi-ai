@@ -36,6 +36,10 @@ Resolve real production-like bugs by proving the failure path end-to-end, exposi
 - Require a deterministic reproduction script/steps so the bug can be replayed before and after the fix.
 - Separate readiness failures from product failures: environment/harness issues are `blocked`, not proof of fix.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/bug_fix_evidence_scaffold.sh --title "<bug>" --symptom "<symptom>" [--repro-step "..."] [--output <path>]` to generate the evidence packet skeleton before diagnosis/fix work starts.
+- Treat the helper as structure only; root-cause analysis, RED test design, and rule-candidate judgment remain in this workflow.
+
 ## Workflow
 1. **Reproduce deterministically**
    - Document exact reproduction steps and expected vs actual outcome.

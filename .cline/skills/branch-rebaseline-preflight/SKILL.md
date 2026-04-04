@@ -18,6 +18,15 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
   - are already merged into `origin/dev`
 - If any non-lane branch still contains work not merged into `origin/dev`, do not continue with destructive rebaseline/reset behavior until the user decides how to treat it.
 
+## Preferred Deterministic Helper
+- Default audit path:
+  - `bash delphi-ai/tools/branch_rebaseline_preflight.sh`
+- Apply safe local cleanup when desired:
+  - `bash delphi-ai/tools/branch_rebaseline_preflight.sh --apply-safe-local-cleanup`
+- Rebaseline to `dev` only when you want the helper to switch/update the branch after the audit:
+  - `bash delphi-ai/tools/branch_rebaseline_preflight.sh --apply-safe-local-cleanup --rebaseline-dev`
+- Exit code `2` means the audit completed but blockers or unsafe conditions remain. Treat that as a decision checkpoint, not as permission to force-reset anything.
+
 ## Promotion Lane Classification
 
 ### Local branches that belong to the normal lane

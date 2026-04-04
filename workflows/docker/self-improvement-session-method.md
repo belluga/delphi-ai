@@ -36,6 +36,8 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 8. **Session closure**
    - Summarise instruction changes.
    - Do **not** prematurely end the session during discussion. Close only when the user confirms the self-improvement scope is complete for this session.
+   - Before acknowledging closure, run the Post-Session Review Method (`workflows/docker/post-session-review-method.md`).
+   - During that review, preserve the instruction-only boundary: identify and validate any downstream `project_mandate.md` candidates, but defer actual `foundation_documentation/` edits until after the self-improvement session is explicitly closed and a fresh non-self-improvement follow-up is opened.
    - If we will resume normal work in the same conversation, explicitly reload the updated instruction files (re-read the changed docs) before proceeding.
    - If the user prefers a hard boundary, explicitly state "session ended" after the summary so normal work resumes under a fresh start.
 
@@ -43,10 +45,12 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 - Updated instruction/template files.
 - Recorded correction-scope decision (`Session`, `Project`, or `Delphi`) for the triggering issue.
 - Verification note confirming agnosticism check passed.
+- Any deferred downstream follow-up created by the post-session review.
 - Session closure statement.
 
 ## Validation
 - Documented correction-scope triage for the triggering issue, including explicit user validation when the scope was ambiguous.
 - Documented manual agnosticism review of the edited Delphi surfaces.
 - Applicable local checks recorded for the changed file types (or explicit N/A rationale).
+- If post-session review surfaced project-mandate candidates, documented deferral of downstream edits until after self-improvement closure.
 - User acknowledgement (or log) that the session ended before any architectural tasks resume.

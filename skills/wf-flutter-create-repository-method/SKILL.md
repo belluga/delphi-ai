@@ -18,6 +18,10 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 - Architecture docs + backend DTO definitions.
 - DI configuration files.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/flutter_workflow_scaffold.sh --kind repository --name <repository_name> [--feature <feature>] [--output <path>]` to scaffold the repeatable repository contract/mapper/validation checklist before implementation.
+- Treat the helper as preparation only; contract language, mapper boundaries, and transport decisions remain in this workflow.
+
 ## Procedure
 1. **Run Profile Selection** – confirm `Operational / Coder` with `flutter` scope.
 2. **Define domain contract**

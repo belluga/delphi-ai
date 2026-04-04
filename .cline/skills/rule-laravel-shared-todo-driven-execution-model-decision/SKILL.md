@@ -81,6 +81,7 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate F — Assumptions Preview (mandatory before plan review)
 - Build assumptions from the TODO contract, canonical module docs, and targeted code/doc/test reads.
+- When external systems (for example GitHub/`gh`, MCP tools, OAuth providers, third-party APIs/services, device lanes, or hosted infrastructure) materially affect the TODO, create/update `foundation_documentation/artifacts/dependency-readiness.md` as a non-blocking support artifact and reflect any `degraded|failing|rate-limited|stale` status in the TODO assumptions, validation, qualifiers, or blockers.
 - Assumptions must be evidence-backed inferences, not free guesses.
 - For each assumption, record:
   - the assumption itself

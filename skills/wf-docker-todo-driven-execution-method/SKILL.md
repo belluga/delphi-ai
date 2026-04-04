@@ -18,6 +18,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 ## Inputs
 - A TODO file under `foundation_documentation/todos/active/`, or an ephemeral TODO under `foundation_documentation/todos/ephemeral/` when eligible.
 - No TODO artifact is required when the work qualifies for the Operational Micro-Fix lane.
+- A dependency readiness register under `foundation_documentation/artifacts/dependency-readiness.md` when external systems materially affect the TODO.
 
 ## Procedure
 1. **Determine which lane applies**
@@ -149,6 +150,9 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - If resolution requires user input, stop and wait for confirmation before removing.
 14. **Build Assumptions Preview (mandatory before plan review)**
    - Use the TODO contract, canonical module anchors, and targeted code/doc/test reads to surface implementation assumptions.
+   - When external systems (for example GitHub/`gh`, MCP tools, OAuth providers, third-party APIs/services, device lanes, or hosted infrastructure) materially affect the TODO, create or update `foundation_documentation/artifacts/dependency-readiness.md` using `templates/dependency_readiness_template.md`.
+   - Treat dependency readiness memory as non-blocking by default: `unknown` may proceed when the current risk is acceptable, but `degraded`, `failing`, `rate-limited`, or `stale` statuses must be reflected in assumptions, validation steps, qualifiers, blocker handling, or execution strategy.
+   - Do not treat dependency readiness memory as a substitute for contract approval, canonical docs, or verification.
    - Assumptions must be evidence-backed inferences, not free guesses.
    - For each assumption, record:
      - the assumption itself;
@@ -283,6 +287,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - TODO aligned to the canonical delivery-status schema before execution continues.
 - Blocked TODOs carry explicit blocker notes and a next exact step.
 - Evidence-backed `Assumptions Preview` with confidence and handling for each assumption.
+- Dependency readiness adjustments recorded when external systems materially affect the TODO.
 - Recorded `Execution Plan` with touched surfaces, ordered steps, test strategy, fail-first target or rationale when required, and runtime/rollout notes.
 - Recorded `Rules Acknowledgement / Ingestion` for the approved plan's touched surfaces.
 - Plan Review Gate output (issue cards + failure modes + residual unknowns/risks) for `medium|big` work.

@@ -19,6 +19,10 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 - Project-specific docs (`foundation_documentation/domain_entities.md`, relevant module docs, `foundation_documentation/system_roadmap.md`).
 - Backend/API contracts for the new entity, if available.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/flutter_workflow_scaffold.sh --kind domain --name <domain_name> [--feature <feature>] [--output <path>]` to scaffold the repeatable doc/file/validation checklist before creating the aggregate.
+- Treat the helper as preparation only; aggregate boundaries, value-object design, and projection choices remain in this workflow.
+
 ## Procedure
 1. **Run Profile Selection** – confirm we’re acting as `Operational / Coder` with `flutter` scope.
 2. **Document first**

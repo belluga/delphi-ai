@@ -18,6 +18,15 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
 - Pair with `test-creation-standard` when the audit concludes tests must be created or rewritten.
 - Pair with `verification-debt-audit` when closure risk extends beyond tests into evidence drift, waivers, or inline code TODO debt.
 
+## Preferred Deterministic Helper
+- Default static scan for common test-quality signals:
+  - `bash delphi-ai/tools/test_quality_audit.sh`
+- Scan only the currently changed/untracked test paths:
+  - `bash delphi-ai/tools/test_quality_audit.sh --scan-git-modified`
+- Restrict the audit to explicit files or folders:
+  - `bash delphi-ai/tools/test_quality_audit.sh --path <test-path> [--path <test-path> ...]`
+- Exit code `2` means the audit completed and found `medium|high` quality-risk signals. Treat that as evidence to review, not as permission to weaken the test scope.
+
 ## Generic Flow Guardrails (Reusable)
 - `GF-01` Preflight/harness/environment failures are `blocked` evidence, not product failures by default.
 - `GF-02` Shared-lane validation must use canonical product APIs/surfaces; test-only endpoints are forbidden.

@@ -15,6 +15,13 @@ Ensure tests that depend on tenant resolution clearly distinguish web (host/doma
   - `delphi-ai/rules/laravel/shared/todo-driven-execution-model-decision.md`
   - `delphi-ai/rules/laravel/shared/domain-resolution-testing-model-decision.md`
 
+## Preferred Deterministic Helper
+- Default classification helper for touched Laravel tests:
+  - `bash delphi-ai/tools/laravel_domain_resolution_test_audit.sh --path <test-path>`
+- Scan changed/untracked tests in the current branch:
+  - `bash delphi-ai/tools/laravel_domain_resolution_test_audit.sh --scan-git-modified`
+- Exit code `2` means one or more candidate files are still `mixed-context` or `unclassified` and need manual split/annotation.
+
 ## Steps
 1. Identify tests that rely on tenant resolution (branding, registration, domain/app-domain tests).
 2. Classify each test as:

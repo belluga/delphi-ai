@@ -16,6 +16,10 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - This skill must prevent false negatives caused by harness/environment readiness defects from being misclassified as product regressions.
 - Prefer test-first sequencing when behavior is verifiable, especially for bugfixes, regressions, user-visible behavior, and contract-level changes.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/test_coverage_matrix_scaffold.sh --intent <compatibility|unit-regression|critical-user-journey> --strategy <test-first|test-after|not-applicable> --platform-matrix <value> --behavior "<critical path>" [--behavior "..."] [--decision "D-T01:..."] [--output <path>]` to scaffold the repeatable coverage matrix before filling in the real decisions.
+- Treat the helper as the planning skeleton only; actual test design, exclusions, and approval-sensitive tradeoffs remain in this workflow.
+
 ## Workflow
 1. **Define target and intent**
    - Target stack: Flutter / Laravel / Web.

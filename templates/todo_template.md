@@ -67,6 +67,15 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Validation Steps
 - [ ] <Command, test flow, or manual validation step>
 
+## External Dependency Readiness (Required When External Systems Matter)
+- This section is non-blocking by default. Use it when the TODO depends on external systems whose health can change outside the repo (for example GitHub/`gh`, MCP servers, OAuth providers, third-party APIs/services, device lanes, or hosted infrastructure).
+- Record or update the persistent register at `foundation_documentation/artifacts/dependency-readiness.md`.
+- If any dependency is `degraded`, `failing`, `rate-limited`, or `stale`, reflect that in `Delivery Status`, `Assumptions Preview`, `Validation Steps`, `Questions To Close`, or blocker handling instead of pretending the dependency is healthy.
+
+| Dependency | Why It Matters | Status (`unknown|healthy|degraded|failing|rate-limited|stale`) | Last Verified | Verification Method | Adjustment / Workaround |
+| --- | --- | --- | --- | --- | --- |
+| `<dependency>` | <why this TODO depends on it> | `<status>` | `<timestamp or n/a>` | `<command, probe, or manual check>` | <how execution/validation adapts> |
+
 ## Profile Scope & Handoffs (Required Before `APROVADO`)
 - **Primary execution profile:** `<genesis-product-bootstrap|strategic-cto|operational-coder|operational-devops|assurance-tester-quality|assurance-security-adversarial>`
 - **Active technical scope:** `<flutter|laravel|web|docker|cross-stack|delphi-self-maintenance>`

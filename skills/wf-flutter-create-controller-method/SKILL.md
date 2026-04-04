@@ -17,6 +17,10 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 - Existing controllers in the feature for reference.
 - GetIt module registrations.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/flutter_workflow_scaffold.sh --kind controller --name <controller_name> [--feature <feature>] [--output <path>]` to scaffold the doc/file/test checklist before implementation.
+- Treat the helper as a checklist generator only; controller ownership, state shape, and DI decisions remain in this workflow.
+
 ## Procedure
 1. **Document intent** – note the controller’s responsibilities in the module doc and Flutter roadmap if it affects API contracts or shared behaviour.
 2. **File location** – create the controller under `lib/presentation/.../screens/<screen>/controllers/` (or feature-level controllers folder if shared).

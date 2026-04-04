@@ -22,6 +22,10 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 - Existing routes (`routes/api/*.php`) and controller files.
 - Sanctum ability definitions / policies.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/laravel_workflow_scaffold.sh --kind api-endpoint --name <endpoint_name> [--module <module>] [--output <path>]` to scaffold the repeatable contract/route/security/test checklist before editing Laravel surfaces.
+- Treat the helper as structure only; endpoint level selection, middleware/ability decisions, and contract design remain in this workflow.
+
 ## Procedure
 1. **Profile alignment** – select `Operational / Coder` with `laravel` scope, review the relevant `project_constitution.md` rules first, and note roadmap items only when strategic follow-up is in scope.
 2. **Define contract**

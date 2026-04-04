@@ -33,6 +33,10 @@ Classify the promotion request before acting:
 - For every promotion PR to `stage`, include `- Expected SHA: <40-char-sha>` in the body if the repo enforces it.
 - Monitor PR checks and post-merge runs; do not assume merge success means the lane is healthy.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/github_stage_promotion_snapshot.sh [--repo <owner/name>] [--pr <number>] [--branch <name>]` to capture the current local status, candidate PR, and check snapshot before making promotion decisions.
+- Treat the helper as evidence collection only; promotion gating, Copilot review triage, and merge decisions remain in this skill.
+
 ## Scenario 1: Docker Changes That Are Not Submodules
 Use when `belluga_now_docker` has changes in normal files and no submodule gitlink updates are intended.
 
