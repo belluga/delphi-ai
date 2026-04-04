@@ -223,6 +223,63 @@ Complete this after the execution plan is approved and the touched surfaces are 
 - **Review evidence:** `<security-adversarial-review artifact, stack-specific security evidence, or rationale for not running a deeper review>`
 - **Residual security risk:** <known accepted risk, or `none`>
 
+## Performance & Concurrency Risk Assessment (Mandatory Before Delivery)
+- **Policy schema version:** `pcv-1`
+- **Global sensitivity level:** `<none|low|medium|high>`
+- **Why this level:** <short rationale tied to query path, runtime sensitivity, async UI, or concurrency pressure>
+- **Current delivery stage at review time:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`
+
+| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `EPS` | `endpoint-performance-scrutiny` | `<required|recommended|not_needed>` | `<low|medium|high>` | `<EPS-EXACT-LOOKUP-SURFACE-CHANGED|EPS-QUERY-SHAPE-CHANGED|EPS-LIST-SEARCH-SEMANTICS-CHANGED|EPS-DATA-PATH-CHANGED>` | `<before_local_implemented>` | `<EPS-E1|EPS-E2>` | `<not_applicable|pending|running|blocked|passed|waived|expired|missed_gate>` | `<none|accepted risk>` | `<none|U-QUERY-PATH-UNKNOWN|U-EVIDENCE-EQUIVALENCE-CLAIM>` |
+| `FRC` | `frontend-race-condition-validation` | `<required|recommended|not_needed>` | `<low|medium|high>` | `<FRC-DUPLICATE-MUTATION|FRC-STALE-RESPONSE|FRC-LIFECYCLE-ASYNC-EFFECT|FRC-RETRIGGERABLE-LIST|FRC-OPTIMISTIC-RECONCILE>` | `<before_local_implemented>` | `<FRC-POLICY|FRC-E1|FRC-E2|FRC-E3>` | `<not_applicable|pending|running|blocked|passed|waived|expired|missed_gate>` | `<none|accepted risk>` | `<none|U-ASYNC-SURFACE-UNKNOWN|U-EVIDENCE-EQUIVALENCE-CLAIM>` |
+| `BCI` | `backend-concurrency-idempotency-validation` | `<required|recommended|not_needed>` | `<low|medium|high>` | `<BCI-NON-IDEMPOTENT-WRITE|BCI-IRREVERSIBLE-SIDE-EFFECT|BCI-LOST-UPDATE-RISK|BCI-DUPLICATE-SUBMIT-OR-REPLAY|BCI-JOB-WEBHOOK-API-OVERLAP|BCI-EXACT-ONCE-SEMANTICS>` | `<before_local_implemented>` | `<BCI-INV|BCI-POLICY|BCI-E1|BCI-E2|BCI-E3>` | `<not_applicable|pending|running|blocked|passed|waived|expired|missed_gate>` | `<none|accepted risk>` | `<none|U-WRITE-OVERLAP-UNKNOWN|U-EVIDENCE-EQUIVALENCE-CLAIM>` |
+| `RLS` | `runtime-load-stress-validation` | `<required|recommended|not_needed>` | `<low|medium|high>` | `<RLS-SLO-CLAIM|RLS-QUEUE-WORKER-REALTIME-CHANGED|RLS-BATCH-OR-BULK-PATH-CHANGED|RLS-CACHE-INDEX-SENSITIVE-PATH-CHANGED>` | `<before_local_implemented|before_production_ready>` | `<RLS-E1|RLS-E2|RLS-E3>` | `<not_applicable|pending|running|blocked|passed|waived|expired|missed_gate>` | `<none|accepted risk>` | `<none|U-RUNTIME-PRESSURE-UNKNOWN|U-EVIDENCE-EQUIVALENCE-CLAIM>` |
+
+### Lane Detail Packet Template
+Repeat the block below once for each lane in matrix order (`EPS`, `FRC`, `BCI`, `RLS`).
+
+#### `<Lane ID>`
+- **Trigger rationale:** <why this lane received its trigger result and reason code>
+- **Recorded at (UTC):** `<YYYY-MM-DDTHH:MM:SSZ>`
+- **Executor ID:** `<executor-id>`
+- **Evidence object:** `<required when state = running|passed>`
+  - `evidence_type`: `<type>`
+  - `environment_id`: `<environment>`
+  - `run_id`: `<run-id>`
+  - `artifact_uri`: `<foundation_documentation/artifacts/tmp/.../artifact.json>`
+  - `artifact_schema_version`: `pcv-1`
+  - `artifact_sha256`: `<sha256>`
+  - `sample_profile_id`: `<profile-id>`
+  - `acceptance_rule_id`: `<rule-id>`
+  - `result_summary`: `<summary>`
+  - `reviewer_id`: `<reviewer-id>`
+- **Blocker object:** `<required when state = blocked>`
+  - `blocker_reason_code`: `<code>`
+  - `blocker_reason`: <why it is blocked>
+  - `unblock_condition`: <what must happen>
+  - `follow_up_task_id`: `<task-id>`
+  - `follow_up_owner`: `<owner>`
+- **Waiver object:** `<required when state = waived|expired>`
+  - `waiver_reason_code`: `<code>`
+  - `waiver_reason`: <why the waiver exists>
+  - `waiver_expiry_utc`: `<YYYY-MM-DDTHH:MM:SSZ>`
+  - `approver_id`: `<approver-id>`
+  - `approval_reference`: `<approval reference>`
+  - `follow_up_task_id`: `<task-id>`
+  - `follow_up_owner`: `<owner>`
+  - `mitigation_summary`: <mitigation>
+  - `reviewer_id`: `<required for required-lane waivers; must differ from executor_id and approver_id>`
+- **Classification change object:** `<required when trigger_result changed after APROVADO>`
+  - `previous_trigger_result`: `<required|recommended>`
+  - `new_trigger_result`: `<required|recommended>`
+  - `classification_changed_by`: `<actor-id>`
+  - `classification_changed_at_utc`: `<YYYY-MM-DDTHH:MM:SSZ>`
+  - `classification_change_reason`: <why the lane changed>
+  - `approval_reference`: `<renewed approval reference when obligation was reduced>`
+
+Use `templates/performance_concurrency_lane_artifact_template.json` for machine-checkable lane artifacts. `recommended` lanes must still resolve by their gate deadline; only `trigger_result = not_needed` may use `state = not_applicable`.
+
 ## Verification Debt Assessment (Required Before `Completed`; mandatory audit for `medium|big` or when debt signals exist)
 - **Audit outcome:** `<none|low|medium|high>`
 - **Why this outcome:** <brief rationale>
@@ -233,12 +290,13 @@ Complete this after the execution plan is approved and the touched surfaces are 
 ## Delivery Confidence Gate (Required for `✅ Production-Ready`)
 - [ ] **Lane promotion evidence complete:** local commits and required PR merges recorded in `Promotion Evidence`.
 - [ ] **Runtime impact classified:** <none | low | medium | high>
+- [ ] **Every `pcv-1` lane with `Gate Deadline = before_production_ready` is gate-satisfying:** `<yes|no>`
+- [ ] **Any waived `pcv-1` lane still carried into production-ready has owner, expiry, mitigation, and follow-up recorded:** `<yes|no>`
 - [ ] **Operational checks run (if runtime-impacting):**
   - [ ] migration/index status checked
   - [ ] queue/scheduler/worker health checked
-  - [ ] targeted load/perf sampling executed (or justified as N/A)
   - [ ] smoke flow executed in the best available environment (or justified as N/A)
-- [ ] **Evidence artifacts recorded:** `foundation_documentation/artifacts/tmp/<run-id>/...`
+- [ ] **Lane artifacts recorded and hashed:** `foundation_documentation/artifacts/tmp/<run-id>/...`
 - [ ] **Confidence stated:** <high|medium|low> + <known residual risks>
 - [ ] **Release readiness outcome:** <ready|ready_with_waiver|not_ready>
 

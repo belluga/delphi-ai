@@ -60,6 +60,22 @@ MIRRORS: tuple[Mirror, ...] = (
         workflow_name="docker-environment-readiness",
     ),
     Mirror(
+        key="docker-todo-driven-execution-method",
+        kind="workflow",
+        source="workflows/docker/todo-driven-execution-method.md",
+        destination=".clinerules/workflows/docker-todo-driven-execution-method.md",
+        title="Workflow: TODO-Driven Execution",
+        workflow_name="docker-todo-driven-execution-method",
+    ),
+    Mirror(
+        key="docker-performance-concurrency-validation-method",
+        kind="workflow",
+        source="workflows/docker/performance-concurrency-validation-method.md",
+        destination=".clinerules/workflows/docker-performance-concurrency-validation-method.md",
+        title="Workflow: Performance & Concurrency Validation Lanes",
+        workflow_name="docker-performance-concurrency-validation-method",
+    ),
+    Mirror(
         key="docker-update-skill-method",
         kind="workflow",
         source="workflows/docker/update-skill-method.md",

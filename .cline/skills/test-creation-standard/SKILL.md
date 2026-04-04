@@ -41,6 +41,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
      - Screen integration test.
      - Navigation test from shell/entry route.
    - If behavior depends on legacy data shape, add fixture/backfill compatibility tests.
+   - If the changed flow includes async UI/buttons/search/filter/pagination/retry behavior, add explicit race-condition scenarios (duplicate trigger, stale response, dispose/navigation mid-flight) or record why they are not applicable.
 6. **Define CI prerequisites**
    - Flutter: backend reachable by domain/scheme overrides.
    - Laravel: local MongoDB with replica set.
@@ -81,6 +82,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - For critical-user-journey claims, run at least:
   - one web integration flow,
   - one mobile integration flow.
+- When async UI actions or rapid user re-entry are in scope, pair the test design with `frontend-race-condition-validation`.
 
 ## Laravel Guidelines
 - CI must run against local MongoDB service container with replica set enabled.

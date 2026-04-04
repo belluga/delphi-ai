@@ -1,0 +1,19 @@
+{
+  "policy_schema_version": "pcv-1",
+  "schema_version": "pcv-1",
+  "lane_id": "EPS",
+  "todo_id": "<todo-id>",
+  "run_id": "<run-id>",
+  "environment_id": "<environment-id>",
+  "executor_id": "<executor-id>",
+  "reviewer_id": "<reviewer-id>",
+  "recorded_at_utc": "<YYYY-MM-DDTHH:MM:SSZ>",
+  "evidence_type": "<evidence-type>",
+  "sample_profile_id": "<sample-profile-id>",
+  "acceptance_rule_id": "<acceptance-rule-id>",
+  "result_summary": "<summary>",
+  "artifact_payload": {
+    "<lane-specific-field>": "<value>"
+  },
+  "artifact_sha256": "<sha256 of canonical JSON excluding this field>"
+}

@@ -25,6 +25,8 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 ## Preferred Deterministic Helper
 - Use `bash delphi-ai/tools/laravel_workflow_scaffold.sh --kind api-endpoint --name <endpoint_name> [--module <module>] [--output <path>]` to scaffold the repeatable contract/route/security/test checklist before editing Laravel surfaces.
 - Treat the helper as structure only; endpoint level selection, middleware/ability decisions, and contract design remain in this workflow.
+- Use `bash delphi-ai/tools/endpoint_performance_review_scaffold.sh --endpoint "<endpoint>" --pattern <exact-lookup|bounded-list|search|aggregation|mutation> [--lookup-key "<key>"] [--index "<index>"] [--output <path>]` to make the query/access-path review explicit.
+- Use `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-laravel-path>` when exact-lookup or repository/controller lookup paths were changed.
 
 ## Procedure
 1. **Profile alignment** – select `Operational / Coder` with `laravel` scope, review the relevant `project_constitution.md` rules first, and note roadmap items only when strategic follow-up is in scope.
@@ -51,6 +53,9 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - `null` is explicit clear only for nullable fields; `null` for non-nullable fields must return `422`.
    - Mixed set+clear payloads must be atomic.
    - When standardizing PATCH semantics, add a side-job in the active TODO to align pre-existing non-conforming endpoints (or document explicit exceptions).
+   - Classify the endpoint access pattern as `exact-lookup|bounded-list|search|aggregation|mutation`.
+   - If the endpoint or client path needs exact lookup by `slug|id|uuid|code|handle|key`, require a direct indexed lookup or dedicated endpoint/contract; do not normalize page-walk or list-scan fallbacks.
+   - Record expected index/constraint support and any max page-size / sort / filter invariants that materially affect query shape.
 3. **Route planning + domain matrix gate**
    - **Separate domain scope from auth scope (do not mix):**
      - Domain decides which route sets are reachable (main domain → landlord; tenant domain → tenant + account).
@@ -84,6 +89,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Add at least one real authentication-path test (login -> bearer token -> endpoint) for tenant-admin routes; do not rely only on `Sanctum::actingAs`.
    - For settings namespace endpoints, add/maintain contract tests for dot-path success (`200`) and envelope rejection (`422`).
    - For `L2|L3` mutations, add replay/idempotency tests and deterministic rejection contract tests.
+   - For concurrency-sensitive writes, run `backend-concurrency-idempotency-validation`; prefer real concurrent probes such as `5`, `10`, and `20` requests instead of relying only on single-request tests.
    - For throttling/challenge behavior, add tests covering legitimate retry safety (avoid false-positive lockouts).
    - Add infrastructure/security tests (or deployment checks) validating direct-origin denial and spoofed client-IP header rejection when not from trusted proxies.
 7. **Documentation + roadmap sync**
@@ -105,6 +111,8 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Validate route matrix with `php artisan route:list`.
    - Validate ability availability in token-expansion paths for changed abilities.
    - If endpoint levels or rejection taxonomy changed, confirm contract docs and guardrail rules were updated in the same change set.
+   - If exact-lookup or performance-sensitive query paths changed, run `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-path>` and classify every finding before delivery.
+   - For material endpoints, capture stronger query evidence (`explain`, query log, benchmark, or equivalent) instead of relying only on heuristic scan output.
 
 ## Outputs
 - Updated routes, controllers, services, validation rules, and tests.

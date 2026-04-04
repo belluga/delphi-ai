@@ -176,6 +176,7 @@ fvm flutter pub run build_runner build --delete-conflicting-outputs
 - Test screen navigation
 - Verify state updates correctly
 - Check error handling
+- For async CTA/search/filter/pagination flows, pair verification with `frontend-race-condition-validation`
 
 ## Architecture Principles
 - **Controller Owns State**: All business logic and state in controller, never in widgets

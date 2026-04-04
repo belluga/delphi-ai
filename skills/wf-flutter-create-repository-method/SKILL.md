@@ -21,6 +21,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 ## Preferred Deterministic Helper
 - Use `bash delphi-ai/tools/flutter_workflow_scaffold.sh --kind repository --name <repository_name> [--feature <feature>] [--output <path>]` to scaffold the repeatable repository contract/mapper/validation checklist before implementation.
 - Treat the helper as preparation only; contract language, mapper boundaries, and transport decisions remain in this workflow.
+- When exact-lookup paths are created or changed, run `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <flutter-repository-path>` to catch list-scan/page-walk heuristics.
 
 ## Procedure
 1. **Run Profile Selection** – confirm `Operational / Coder` with `flutter` scope.
@@ -36,6 +37,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 5. **Implement repository**
    - Add `lib/infrastructure/repositories/<name>_repository.dart` that mixes in the mapper and talks to typed DAO/backends (`DTO in`, `Domain/Projection out`).
    - Ensure no presentation imports appear and no raw transport handling is owned by repository methods.
+   - Exact-key fetches (`slug|id|uuid|code|handle|key`) must not iterate paginated list endpoints or scan in-memory collections when a direct endpoint/contract should exist.
 6. **Dependency injection**
    - Register the repository in `module_settings.dart` or the relevant module scope via `registerLazySingleton` / `registerFactory`.
 7. **Controller adoption**
@@ -46,6 +48,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 9. **Verification**
    - Run `fvm flutter analyze`; add/re-run unit tests covering the repository/user of it.
    - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash tool/belluga_analysis_plugin/bin/check_branch_delta_raw_payload_map.sh`).
+   - When exact-lookup paths were touched, run `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-path>` and classify every finding before delivery.
 
 ## Outputs
 - Repository contract + implementation files.
