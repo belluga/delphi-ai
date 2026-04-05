@@ -19,6 +19,14 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 - Project README instructions.
  - `foundation_documentation` submodule (expected for all projects; add if missing).
 
+## Preferred Deterministic Helper
+- Default read-only readiness report:
+  - `bash delphi-ai/tools/environment_readiness_report.sh`
+- Include adherence-sync verification when the environment is expected to be fully wired:
+  - `bash delphi-ai/tools/environment_readiness_report.sh --include-adherence-sync`
+- For zero-state Genesis bootstrap, treat this helper as supporting evidence only. A `zero-state-ready` outcome means the install preflight passed; it does not replace Genesis canonicalization work.
+- For mature downstream environments, use the report first, then follow the method for any required repair path (`verify_context.sh --repair`, project-owned fixes, or deeper environment normalization).
+
 ## Procedure
 1. **Confirm repository context**
    - Identify whether we are in the canonical boilerplate repo or a downstream project.

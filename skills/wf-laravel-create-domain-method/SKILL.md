@@ -19,6 +19,10 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 - Relevant `foundation_documentation/system_roadmap.md` entries for Laravel/Flutter follow-up.
 - Existing DocumentModels, migrations, factories/seeders related to the domain.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/laravel_workflow_scaffold.sh --kind domain --name <domain_name> [--module <module>] [--output <path>]` to scaffold the repeatable docs/model/migration/test checklist before changing Laravel domain surfaces.
+- Treat the helper as preparation only; schema/invariant design and migration strategy remain in this workflow.
+
 ## Procedure
 1. **Profile alignment** – run Profile Selection as `Operational / Coder` with `laravel` scope and review roadmap entries only when strategic follow-up is part of the change.
 2. **Document first**

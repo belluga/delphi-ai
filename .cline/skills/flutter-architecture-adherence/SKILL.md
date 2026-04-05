@@ -24,6 +24,9 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 ## Analyzer Plugin Enforcement Contract
 - Mandatory command for architecture checks (run at `flutter-app` root): `fvm dart analyze --format machine`.
 - If local CLI analyzer state goes false-clean, stale, or hangs unexpectedly, run `bash ./scripts/reset_analyzer_state.sh` from `flutter-app` root, then rerun `fvm dart analyze --format machine`.
+- Use an explicit hygiene loop for analyzer recovery and heavy local validation lanes: run the official analyzer command, clean with `bash ./scripts/reset_analyzer_state.sh --with-flutter-clean`, rerun the official analyzer command, and if no further Flutter validation is planned immediately, finish with `bash ./scripts/reset_analyzer_state.sh --with-flutter-clean --cleanup-only` so `.dart_tool`, generated `build/`, and analyzer/plugin residue are not left behind.
+- Treat mismatched editor SDK selection as analyzer drift: `dart.sdkPath` must resolve inside the active `dart.flutterSdkPath` / FVM version for the workspace.
+- If VS Code Remote `extensionHost` or the Dart language server stays hot after the cleanup cycle, close duplicate remote windows/tabs and restart the distro (`wsl --shutdown`) before beginning another Flutter validation cycle.
 - Do not use directory-target mode as architecture gate (for example: `fvm dart analyze lib`), because it can report false-clean in this workspace.
 - Rule matrix validation command (plugin regression only): `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh`.
 - `tool/belluga_analysis_plugin/bin/run_project_analyze.sh` was removed from the workflow; do not reintroduce file-list wrappers as architecture gate.

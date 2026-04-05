@@ -17,6 +17,16 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
 - Pair with `bug-fix-evidence-loop` for bugfix/regression root-cause loops.
 - Pair with `test-creation-standard` when the audit concludes tests must be created or rewritten.
 - Pair with `verification-debt-audit` when closure risk extends beyond tests into evidence drift, waivers, or inline code TODO debt.
+- Pair with `frontend-race-condition-validation` when async UI/button/search/filter flows are in scope.
+
+## Preferred Deterministic Helper
+- Default static scan for common test-quality signals:
+  - `bash delphi-ai/tools/test_quality_audit.sh`
+- Scan only the currently changed/untracked test paths:
+  - `bash delphi-ai/tools/test_quality_audit.sh --scan-git-modified`
+- Restrict the audit to explicit files or folders:
+  - `bash delphi-ai/tools/test_quality_audit.sh --path <test-path> [--path <test-path> ...]`
+- Exit code `2` means the audit completed and found `medium|high` quality-risk signals. Treat that as evidence to review, not as permission to weaken the test scope.
 
 ## Generic Flow Guardrails (Reusable)
 - `GF-01` Preflight/harness/environment failures are `blocked` evidence, not product failures by default.
@@ -53,6 +63,7 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
    - Ensure assertions check business outcomes, not only transport outcomes.
    - Ensure positive path tests verify expected data presence when the scenario requires data presence.
    - Ensure negative path tests verify explicit failure/error states.
+   - Ensure async UI coverage includes race-sensitive scenarios when the product flow can be retriggered or reordered in flight.
 9. **Confirm CI environment parity**
    - Laravel tests use local MongoDB with replica set (not Atlas).
    - Local/manual Laravel test execution uses `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh` (or equivalent local-safe env override) and never raw `php artisan test` with inherited environment.

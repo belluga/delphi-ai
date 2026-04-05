@@ -27,6 +27,9 @@
 ## Architecture Analyzer Gate (Official)
 * Official architecture lint/analyzer command for local and CI: `fvm dart analyze --format machine`.
 * If local CLI analyzer state becomes inconsistent (false-clean, stale plugin AOT, or unexplained hangs), run `bash ./scripts/reset_analyzer_state.sh` from `flutter-app` root, then rerun `fvm dart analyze --format machine`.
+* Use an explicit hygiene loop for analyzer recovery and heavy local validation lanes: run the official analyzer command, clean with `bash ./scripts/reset_analyzer_state.sh --with-flutter-clean`, rerun the official analyzer command, and if no further Flutter validation is planned immediately, finish with `bash ./scripts/reset_analyzer_state.sh --with-flutter-clean --cleanup-only` so `.dart_tool`, generated `build/`, and analyzer/plugin residue are not left behind.
+* Treat mismatched editor SDK selection as analyzer drift: `dart.sdkPath` must resolve inside the active `dart.flutterSdkPath` / FVM version for the workspace.
+* If VS Code Remote `extensionHost` or the Dart language server stays hot after the cleanup cycle, close duplicate remote windows/tabs and restart the distro (`wsl --shutdown`) before beginning another Flutter validation cycle.
 * After any analyzer-state reset, treat the next analyzer run as a cold warmup: allow a long silent window before intervening. In this workspace, do not classify the post-reset run as hung until it has had at least 10 minutes to rebuild or the process has clearly exited.
 * Do not use directory-target mode (`fvm dart analyze lib`) as architecture source of truth in this workspace.
 * Keep `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh` as fixture coverage validation for rule activation.

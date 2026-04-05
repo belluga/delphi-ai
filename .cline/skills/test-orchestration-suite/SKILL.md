@@ -16,6 +16,10 @@ Provide a single, consistent workflow to execute and validate tests across Larav
   - `big`: end-to-end run with checkpointed stage approvals.
 - Local transient failures are evidence-quality problems first, not product failures by default.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/test_orchestration_status_report.sh --scope <small|medium|big> --require-stage <name> [--require-stage <name> ...] [--stage <name>=<passed|failed|blocked|flaky|skipped|not-applicable>] [--decision <ID>=<adherent|exception>] [--intent <text>] [--platform-matrix <text>] [--output <path>]` to encode the explicit stage matrix and let the helper classify whether closure is actually green.
+- Treat the helper as deterministic status accounting only; suite selection, failure classification, and fix-loop judgment remain in this workflow.
+
 ## Generic Flow Guardrails (Reusable)
 - `GF-01` Preflight is mandatory before any suite that can influence promotion decisions.
 - `GF-02` Preflight/harness/environment failures are classified as `blocked`, never as product failures by default.

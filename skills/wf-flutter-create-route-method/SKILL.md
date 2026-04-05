@@ -45,7 +45,7 @@ Do not introduce undefined subscope keys/folders without explicit decision and p
 After defining/changing routes, scan generated router contracts and classify required non-URL args:
 
 ```bash
-rg -n "required _i|required .*State|required String .*Name" flutter-app/lib/application/router/app_router.gr.dart
+bash delphi-ai/tools/flutter_route_contract_audit.sh
 ```
 
 For each match, enforce one of:

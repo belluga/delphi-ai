@@ -15,6 +15,13 @@ Ensure any tenant-authenticated API routes consistently enforce tenant access vi
   - `delphi-ai/rules/laravel/shared/todo-driven-execution-model-decision.md`
   - `delphi-ai/rules/laravel/shared/tenant-access-guardrails-model-decision.md`
 
+## Preferred Deterministic Helper
+- Default static route-file audit:
+  - `bash delphi-ai/tools/laravel_tenant_access_guardrails_audit.sh`
+- Restrict the audit to specific tenant route files or folders:
+  - `bash delphi-ai/tools/laravel_tenant_access_guardrails_audit.sh --path <route-path> [--path <route-path> ...]`
+- Exit code `2` means at least one scanned file still contains `auth:sanctum` without `CheckTenantAccess`.
+
 ## Steps
 1. Identify the target tenant route file(s) (ex: `laravel-app/routes/api/tenant_api_v1.php`) and confirm they are only registered under the **tenant domain group** (never on the main domain).
 2. Validate route matrix for tenant/admin/public scopes:

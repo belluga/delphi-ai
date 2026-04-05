@@ -321,10 +321,59 @@ check_public_mirrors() {
   [ "$status" = "PASS" ]
 }
 
+check_skill_tooling_register() {
+  local status="PASS"
+  local notes=()
+  local register="$DEL_ROOT/skills/deterministic-tooling-register.md"
+  local file
+
+  if [ ! -f "$register" ]; then
+    status="FAIL"
+    notes+=("missing ${register#$REPO_ROOT/}")
+  else
+    if ! contains "$register" "Classification Model"; then
+      status="FAIL"
+      notes+=("register missing Classification Model section")
+    fi
+    if ! contains "$register" "skill-only" || \
+       ! contains "$register" "lint/analyzer" || \
+       ! contains "$register" "partial-tool" || \
+       ! contains "$register" "full-tool-candidate" || \
+       ! contains "$register" "already-backed"; then
+      status="FAIL"
+      notes+=("register missing one or more classification labels")
+    fi
+  fi
+
+  for file in \
+    "$DEL_ROOT/main_instructions.md" \
+    "$DEL_ROOT/tools/manifest.md" \
+    "$DEL_ROOT/workflows/docker/update-skill-method.md" \
+    "$DEL_ROOT/skills/wf-docker-update-skill-method/SKILL.md"; do
+    if [ ! -f "$file" ]; then
+      status="FAIL"
+      notes+=("missing ${file#$REPO_ROOT/}")
+      continue
+    fi
+    if ! contains "$file" "deterministic-tooling-register\\.md"; then
+      status="FAIL"
+      notes+=("${file#$REPO_ROOT/} missing register reference")
+    fi
+  done
+
+  local note_text="skill tooling register exists and is wired into canonical maintenance surfaces"
+  if [ ${#notes[@]} -gt 0 ]; then
+    note_text="$(IFS='; '; echo "${notes[*]}")"
+  fi
+  emit "| Skill tooling register | $status | $note_text |"
+  [ "$status" = "PASS" ]
+}
+
 check_workflow_counterparts || coherence_failed=$((coherence_failed + 1))
 check_cline_counterparts || coherence_failed=$((coherence_failed + 1))
 check_skill_mirrors || coherence_failed=$((coherence_failed + 1))
 check_public_mirrors || coherence_failed=$((coherence_failed + 1))
+check_skill_tooling_register || coherence_failed=$((coherence_failed + 1))
 
 emit ""
 emit "## Summary"

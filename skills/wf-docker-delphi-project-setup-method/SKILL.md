@@ -20,6 +20,10 @@ Prepare or recalibrate a downstream project so it can operate under the current 
 - `foundation_documentation/` core files and any populated module docs.
 - Current Delphi AI baseline (`main_instructions.md`, core rules, workflows, templates, and setup/readiness scripts).
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/delphi_project_setup_report.sh --repo <repo-root> [--lane auto|bootstrap|recalibration] [--include-adherence-sync]` to generate the read-only setup inventory before interpreting drift.
+- Treat the helper as evidence collection for lane, readiness, surface inventory, and drift buckets. The final decision about `calibrated` versus `needs-normalization` remains in this workflow.
+
 ## Procedure
 1. **Classify the setup lane**
    - Determine whether the session is:

@@ -19,6 +19,10 @@ Ensure Docker images, Compose stacks, and ingress configs stay aligned with the 
 - Relevant DevOps/infra entries in `foundation_documentation/system_roadmap.md`.
 - Any cost/build metrics motivating the change.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/runtime_ingress_surface_audit.sh [--repo <repo-root>]` to inventory Dockerfiles, compose files, ingress/runtime configs, Laravel route files, and compose readiness before or after runtime edits.
+- Treat the helper as an audit only; ingress parity decisions, runtime topology, and cost/performance tradeoffs remain in this workflow.
+
 ## Procedure
 1. **Profile alignment** – run Profile Selection as `Operational / DevOps` with `docker` scope and review roadmap items only when the runtime change has strategic follow-up.
 2. **Collect diffs** – list the route or runtime changes requested (e.g., new `/admin/api/v1/...` path, base image bump).

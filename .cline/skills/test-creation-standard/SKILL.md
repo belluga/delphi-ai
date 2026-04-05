@@ -16,6 +16,10 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - This skill must prevent false negatives caused by harness/environment readiness defects from being misclassified as product regressions.
 - Prefer test-first sequencing when behavior is verifiable, especially for bugfixes, regressions, user-visible behavior, and contract-level changes.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/test_coverage_matrix_scaffold.sh --intent <compatibility|unit-regression|critical-user-journey> --strategy <test-first|test-after|not-applicable> --platform-matrix <value> --behavior "<critical path>" [--behavior "..."] [--decision "D-T01:..."] [--output <path>]` to scaffold the repeatable coverage matrix before filling in the real decisions.
+- Treat the helper as the planning skeleton only; actual test design, exclusions, and approval-sensitive tradeoffs remain in this workflow.
+
 ## Workflow
 1. **Define target and intent**
    - Target stack: Flutter / Laravel / Web.
@@ -37,6 +41,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
      - Screen integration test.
      - Navigation test from shell/entry route.
    - If behavior depends on legacy data shape, add fixture/backfill compatibility tests.
+   - If the changed flow includes async UI/buttons/search/filter/pagination/retry behavior, add explicit race-condition scenarios (duplicate trigger, stale response, dispose/navigation mid-flight) or record why they are not applicable.
 6. **Define CI prerequisites**
    - Flutter: backend reachable by domain/scheme overrides.
    - Laravel: local MongoDB with replica set.
@@ -77,6 +82,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - For critical-user-journey claims, run at least:
   - one web integration flow,
   - one mobile integration flow.
+- When async UI actions or rapid user re-entry are in scope, pair the test design with `frontend-race-condition-validation`.
 
 ## Laravel Guidelines
 - CI must run against local MongoDB service container with replica set enabled.

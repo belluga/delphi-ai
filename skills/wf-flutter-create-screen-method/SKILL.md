@@ -13,6 +13,10 @@ Scaffold a new feature screen following the Feature-First architecture with prop
 - Repository contract defined (if needed)
 - Canonical scope policy loaded: `foundation_documentation/policies/scope_subscope_governance.md`
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/flutter_workflow_scaffold.sh --kind screen --name <screen_name> [--feature <feature>] [--output <path>]` to scaffold the repeatable screen/controller/route checklist before generating code.
+- Treat the helper as preparation only; scope placement, controller boundaries, and UI design remain in this workflow.
+
 ## Steps
 
 ### 1. Create Feature Directory Structure
@@ -172,6 +176,7 @@ fvm flutter pub run build_runner build --delete-conflicting-outputs
 - Test screen navigation
 - Verify state updates correctly
 - Check error handling
+- For async CTA/search/filter/pagination flows, pair verification with `frontend-race-condition-validation`
 
 ## Architecture Principles
 - **Controller Owns State**: All business logic and state in controller, never in widgets

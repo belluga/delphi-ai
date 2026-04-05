@@ -18,6 +18,10 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 - Analyzer/test requirements from the delivery scopes (`flutter`, `laravel`, Docker build).
 - Secrets management notes and DevOps roadmap.
 
+## Preferred Deterministic Helper
+- Use `bash delphi-ai/tools/ci_pipeline_surface_audit.sh [--repo <repo-root>] [--expect flutter] [--expect laravel] [--expect docker]` to inventory workflow files and verify that expected stack coverage appears to exist before or after pipeline edits.
+- Treat the helper as an audit only; job topology, caching tradeoffs, secret strategy, and final pipeline design remain in this workflow.
+
 ## Procedure
 1. **Profile alignment** – select `Operational / DevOps` with `docker` scope and review roadmap context only when strategic sequencing is affected.
 2. **Plan changes** – list affected workflows/jobs, required secrets, and target environments.

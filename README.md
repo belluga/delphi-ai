@@ -57,6 +57,17 @@ Instead of concentrating all intent in a single spec file, Delphi distributes au
 - `foundation_documentation/todos/active/*.md`
   - tactical execution contract for one change: scope, out-of-scope, done criteria, validation steps, frozen decisions, assumptions, plan, and adherence proof
 
+Delphi may also use auxiliary non-authoritative surfaces when they improve execution discipline without replacing the canonical docs above:
+
+- `tools/manifest.md`
+  - inventory of deterministic helper tools so scripts are reused instead of recreated
+- `skills/deterministic-tooling-register.md`
+  - internal Delphi register that classifies canonical skills as `skill-only`, `lint/analyzer`, `partial-tool`, `full-tool-candidate`, or `already-backed`, and links any existing deterministic support
+- `foundation_documentation/artifacts/dependency-readiness.md`
+  - non-blocking record of external dependency health, verification method, and workarounds
+- `foundation_documentation/artifacts/session-memory.md`
+  - bounded continuity memory for recent session state, confirmed preferences/behaviors, and dependency references; never a substitute for canonical docs or TODO handoffs
+
 This means Delphi is neither code-first nor a loose "vibe coding" loop. Once the canonical package exists, the normal path is:
 
 1. load the right instructions and verify readiness
