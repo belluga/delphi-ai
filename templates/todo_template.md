@@ -148,7 +148,8 @@ Execution planning describes **HOW** Delphi intends to deliver the TODO contract
 - `<migrations, feature flags, infra/runtime concerns, or n/a>`
 
 ## Plan Review Gate (Review of the Execution Plan; required for `medium|big`; abbreviated for low-risk `small`)
-Review the `Assumptions Preview` and `Execution Plan` against architecture, tests, performance, and security before approval.
+Review the `Assumptions Preview` and `Execution Plan` against architecture, code quality, tests, performance, security, elegance, and structural soundness before approval.
+Treat brittle workarounds and structural shortcuts as explicit negative findings: ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt.
 
 ### Review Sections
 - [ ] Architecture
@@ -156,6 +157,8 @@ Review the `Assumptions Preview` and `Execution Plan` against architecture, test
 - [ ] Tests
 - [ ] Performance
 - [ ] Security
+- [ ] Elegance
+- [ ] Structural Soundness
 
 ### Issue Cards
 - **Issue ID:** <e.g., ARCH-01>
@@ -167,16 +170,25 @@ Review the `Assumptions Preview` and `Execution Plan` against architecture, test
     - **Risk:** <low|medium|high>
     - **Blast radius:** <local|module|cross-module>
     - **Maintenance burden:** <low|medium|high>
+    - **Performance impact:** <improves|neutral|regresses|unknown>
+    - **Elegance impact:** <improves|neutral|regresses|unknown>
+    - **Structural soundness impact:** <improves|neutral|regresses|unknown>
   - **Option B (Alternative):** <description>
     - **Effort:** <low|medium|high>
     - **Risk:** <low|medium|high>
     - **Blast radius:** <local|module|cross-module>
     - **Maintenance burden:** <low|medium|high>
+    - **Performance impact:** <improves|neutral|regresses|unknown>
+    - **Elegance impact:** <improves|neutral|regresses|unknown>
+    - **Structural soundness impact:** <improves|neutral|regresses|unknown>
   - **Option C (Do Nothing):** <description or explicit N/A with reason>
     - **Effort:** <low|medium|high>
     - **Risk:** <low|medium|high>
     - **Blast radius:** <local|module|cross-module>
     - **Maintenance burden:** <low|medium|high>
+    - **Performance impact:** <improves|neutral|regresses|unknown>
+    - **Elegance impact:** <improves|neutral|regresses|unknown>
+    - **Structural soundness impact:** <improves|neutral|regresses|unknown>
   - **Recommendation:** <chosen option + rationale>
 
 ### Failure Modes & Edge Cases
@@ -185,6 +197,18 @@ Review the `Assumptions Preview` and `Execution Plan` against architecture, test
 ### Residual Unknowns / Risks
 - [ ] <Unknown, residual risk, or review note that still matters after plan review>
 
+## Additional Architectural Opinions (Required When Path Remains Materially Unclear)
+- **Needed:** `<yes|no>`
+- **Why ambiguity remains:** <competing architectural paths, unresolved tradeoff, or `n/a`>
+- **Opinion count:** `<0|1|2>`
+- **Package mode:** `<bounded-file-set|bounded-summary>`
+- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent(s); if no, record constraint and proceed with bounded self-opinion)`
+- **Required lenses:** `<correctness|performance|elegance|structural-soundness|operational-fit>`
+
+| Reviewer | Recommendation | Performance view | Elegance view | Structural soundness view | Resolution | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<reviewer/subagent>` | <recommended path> | <why> | <why> | <why it preserves or regresses structural soundness> | `<Integrated|Challenged|Deferred with rationale>` | <artifact/path/note> |
+
 ## Independent No-Context Critique Gate (Required for `big`; conditional for `medium/high-impact`)
 - **Critique decision:** `<required|recommended|not_needed>`
 - **Why this decision:** <complexity/impact rationale>
@@ -192,6 +216,8 @@ Review the `Assumptions Preview` and `Execution Plan` against architecture, test
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
 - **Critique isolation mode:** `<fresh no-context auxiliary reviewer>`
+- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
 - **Critique status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
@@ -300,14 +326,33 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Evidence / audit artifact:** `<verification-debt-audit artifact, grep output, or rationale for not running a full audit>`
 - **Accepted residual debt:** <what remains and why it is accepted, or `none`>
 
+## Independent Test Quality Audit Gate (Required When Tests Changed Or Test Confidence Is Material)
+- **Audit decision:** `<required|recommended|not_needed>`
+- **Why this decision:** <complexity/impact rationale>
+- **Trigger signals in scope:** `<changed test logic|bugfix/regression|behavior-defining change|shared contract/api/schema|compatibility|critical-user-journey|non-trivial validation risk|none>`
+- **Package mode:** `<bounded-file-set|bounded-summary>`
+- **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded implementation diff|bounded test diff|validation evidence|expected behaviors/DoD|residual risks>`
+- **Canonical method:** `wf-docker-independent-test-quality-audit-method`
+- **Audit isolation mode:** `<fresh no-context auxiliary reviewer>`
+- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required external no-context audit for required gate|self-review is supporting-only when no subagent is available>`
+- **Audit focus:** `<product/test delta alignment|fail-first alignment|bypass detection|assertion efficacy|assertion efficiency|coverage sufficiency|brittle test-only shortcuts>`
+- **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
+- **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <material findings summary or `none`>
+- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
+- **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
+
 ## Independent No-Context Final Review Gate (Required for `big`; conditional for `medium/high-impact`)
 - **Final review decision:** `<required|recommended|not_needed>`
 - **Why this decision:** <complexity/impact rationale>
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
-- **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|residual risks|existing waivers|verification debt>`
+- **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence from wf-docker-independent-test-quality-audit-method|residual risks|existing waivers|verification debt>`
 - **Review isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Review focus:** `<adherence|regressions|validation evidence|security/performance residuals|verification debt>`
+- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`
 - **Final review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>

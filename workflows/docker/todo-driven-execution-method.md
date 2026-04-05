@@ -65,7 +65,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Treat the ephemeral TODO as disposable:
      - if the fix is completed and validated, delete the ephemeral TODO before ending the task;
      - if the work becomes blocked, survives beyond the immediate maintenance cycle, or needs broader planning/coherence work, retire the ephemeral TODO instead of promoting it; consolidate any durable canonical truth directly into the relevant `MODULE`, and if broader execution work still remains, start a fresh tactical TODO under `foundation_documentation/todos/active/`;
-     - do not leave open-ended ephemeral TODOs lingering as a pseudo-backlog.
+     - do not leave open-ended ephemeral TODOs lingering as an informal backlog surrogate.
 5. **Tactical TODO lane (default for implementation)**
    - Find the relevant TODO in `foundation_documentation/todos/active/`.
    - If none exists, ask the user to create one or ask permission to draft one.
@@ -175,15 +175,21 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - If planning reveals contract changes, update the TODO first and do not continue with stale assumptions or plan notes.
 17. **Run Plan Review Gate (mandatory for `medium|big`; abbreviated for low-risk `small`)**
    - Review the `Assumptions Preview` and `Execution Plan`.
-   - Evaluate Architecture, Code Quality, Tests, Performance, and Security.
+   - Evaluate Architecture, Code Quality, Tests, Performance, Security, Elegance, and Structural Soundness.
+   - Treat brittle workarounds and structural shortcuts as explicit negative findings: ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt.
    - For each material issue, document an issue card with:
      - `Issue ID`, severity, evidence (`file:line`), and why it matters now.
      - Options `A/B/C` (include **do nothing** when reasonable).
-     - For each option: implementation effort, risk, blast radius, and maintenance burden.
+     - For each option: implementation effort, risk, blast radius, maintenance burden, performance impact, elegance impact, and structural soundness impact.
      - Recommended option and rationale.
    - Add a `Failure Modes & Edge Cases` section.
    - Add `Residual Unknowns / Risks` that still matter after review.
    - Challenge weak or low-confidence assumptions; either strengthen them with evidence, promote them to contract decisions, or block implementation.
+   - If no clearly dominant architectural path remains after first-pass planning, proactively obtain second and, when useful, third opinions before locking the recommendation.
+   - Use a bounded package (`bounded-file-set` or `bounded-summary`) for these architectural opinions.
+   - If subagents are available in the execution environment, delegate these opinions to fresh no-context subagents; otherwise document the constraint and proceed with bounded no-context self-opinions.
+   - Require each additional opinion to compare the viable options on correctness, performance, elegance (simplicity/coherence/minimal incidental complexity), structural soundness, and operational fit.
+   - Record each additional opinion in the TODO as `Integrated|Challenged|Deferred with rationale` before requesting approval.
    - Run the **Independent No-Context Critique Gate** after the review package is coherent:
      - `required` for `big`;
      - `required` for `medium` when the TODO has `cross-module` blast radius, changes public contract/schema/API/auth/payment/runtime-sensitive behavior, intentionally supersedes canonical module decisions, or includes any `high` severity issue card;
@@ -194,7 +200,9 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - `bounded-summary` when the relevant contract/plan/risk package is better represented structurally.
    - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
    - Use one fresh auxiliary critique with no inherited thread context; do not hand over the whole thread transcript.
+   - If a subagent is available in the execution environment, the critique must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
    - Ask for findings first, ordered by severity, and keep the task critique-only.
+   - Every critique must state whether the recommended path is acceptable for performance, whether it is elegant relative to the available alternatives, and whether it preserves structural soundness rather than relying on brittle workarounds or structural shortcuts.
    - If the first attempt fails or times out, retry once with a tighter package.
    - If a `required` no-context critique still cannot be obtained, record a blocker or explicit waiver before approval; local self-critique is not equivalent.
    - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate, with explicit waiver reason, approval reference, mitigation, and follow-up ownership.
@@ -288,8 +296,32 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Mark release readiness outcome: `ready|ready_with_waiver|not_ready`.
 25. **Validate**
    - Run the `validation_steps` from the TODO (or explicitly report what cannot be run and why).
-   - When test confidence is material to delivery (`bugfix/regression`, `compatibility`, `critical-user-journey`, or shared contract change), run `test-quality-audit` or explicitly record why a full audit is unnecessary.
-26. **Verification Debt Audit (required before close for `medium|big` or when debt signals exist)**
+26. **Independent Test Quality Audit (required when tests changed or test confidence is material)**
+   - Determine the audit decision:
+     - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`;
+     - `recommended` for other TODOs that touch production behavior with non-trivial validation risk;
+     - `not_needed` only for low-risk non-behavioral work with no meaningful test impact.
+   - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
+   - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the five explicit review questions below.
+   - Build a bounded audit package containing:
+     - frozen baseline / approved expectations;
+     - bounded implementation diff;
+     - bounded test diff (or explicit `no test diff`);
+     - validation evidence already collected;
+     - expected behaviors / Definition of Done still in force;
+     - residual risks or known uncertainty.
+   - Use one fresh no-context auxiliary test audit; do not hand over the whole thread transcript.
+   - If a subagent is available in the execution environment, the audit must be delegated to that subagent (no-context). If no subagent is available, document the constraint and any bounded no-context self-review may only count as supporting evidence, not as satisfaction of a `required` audit gate.
+   - Ask the audit to answer explicitly:
+     - whether changed test logic reflects a real product/contract change;
+     - whether any changed test logic appears to be a pass-the-test workaround or other brittle test-only shortcut;
+     - whether assertions are effective enough to catch the intended regression/behavior break;
+     - whether assertions and coverage are efficient rather than bloated, redundant, or brittle;
+     - whether the changed and nearby tests actually cover the required behaviors and failure modes.
+   - Record findings in the TODO as `Integrated|Challenged|Deferred with rationale`.
+   - If the first attempt fails or times out, retry once with a tighter package.
+   - If a `required` test audit still cannot be obtained, record a blocker or explicit waiver before `Completed` or `Production-Ready`; local self-review is not equivalent and cannot close the gate by itself.
+27. **Verification Debt Audit (required before close for `medium|big` or when debt signals exist)**
    - Inspect the TODO, delivery evidence, and touched code for verification debt signals:
      - missing or weak evidence;
      - excessive waivers or unverifiable claims;
@@ -298,14 +330,15 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - stale tactical notes that should already have been promoted or removed.
    - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
    - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
-27. **Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)**
+28. **Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)**
    - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
-     - implemented diff or bounded touched-surface set;
-     - adherence tables;
-     - validation/test evidence;
-     - security/performance evidence;
-     - verification-debt evidence;
-     - residual risks and waivers.
+      - implemented diff or bounded touched-surface set;
+      - adherence tables;
+      - validation/test evidence;
+      - test-quality-audit evidence produced by `wf-docker-independent-test-quality-audit-method`;
+      - security/performance evidence;
+      - verification-debt evidence;
+      - residual risks and waivers.
    - Final-review decision policy:
      - `required` for `big`;
      - `required` for `medium` when the TODO has `cross-module` blast radius, changes public contract/schema/API/auth/payment/runtime-sensitive behavior, intentionally supersedes canonical module decisions, or includes any `high` severity issue card;
@@ -314,9 +347,10 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Build a bounded final-review package:
      - `bounded-file-set` when the implemented surfaces and evidence are small enough to inspect directly;
      - `bounded-summary` when the delivery packet is broader but can be represented structurally without losing concrete evidence.
-   - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, residual risks, and any existing waivers or unresolved verification debt.
+   - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
    - Use one fresh auxiliary final review with no inherited thread context; do not hand over the whole thread transcript.
-   - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
+   - If a subagent is available in the execution environment, the final review must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
+   - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
    - If the first attempt fails or times out, retry once with a tighter package.
    - If a `required` final review still cannot be obtained, record a blocker or explicit waiver before `Completed` or `Production-Ready`; local self-review is not equivalent.
    - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate, with explicit waiver reason, approval reference, mitigation, and follow-up ownership.

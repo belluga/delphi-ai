@@ -27,7 +27,10 @@ This method critiques the delivered implementation and its evidence. It is not a
 - decision adherence vs frozen baseline
 - regressions and behavioral drift
 - missing/weak validation evidence
+- missing, weak, or bypass-prone test-audit evidence
 - security/performance residual risks already present in the delivery packet
+- elegance regressions (loss of simplicity, coherence, or minimal incidental complexity)
+- structural regressions caused by brittle workarounds or structural shortcuts, such as ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt
 - verification debt and waiver quality
 
 The reviewer should not reopen the whole architecture by default. Only a material defect, approval-breaking divergence, or clearly insufficient evidence may force a broader reset.
@@ -36,7 +39,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 - Tactical TODO under `foundation_documentation/todos/active/`.
 - Implemented change package (diff or bounded touched-surface set).
 - Decision Adherence Validation and Module Decision Consistency Validation.
-- Validation/test output, security/performance evidence, and verification-debt evidence already collected for delivery.
+- Validation/test output, test-quality-audit evidence from `wf-docker-independent-test-quality-audit-method`, security/performance evidence, and verification-debt evidence already collected for delivery.
 - A bounded final-review package:
   - either a curated file/evidence set,
   - or a concise structured delivery summary.
@@ -52,6 +55,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
   - bounded touched-surface or diff summary;
   - decision-adherence and module-consistency status;
   - validation evidence index;
+  - test-quality-audit evidence and status;
   - residual risks;
   - existing waivers and unresolved verification debt.
 - Preserve concrete evidence and explicit residual risks rather than smoothing them into generic prose.
@@ -71,21 +75,25 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 1. Record the final-review decision in the TODO as `required|recommended|not_needed` with rationale.
 2. Build the bounded final-review package.
 3. Run one fresh auxiliary final review with no inherited thread context.
-   - In Codex-style environments, this means a fresh subagent with `fork_context=false`.
+   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
+   - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
    - In other environments, use the closest equivalent that guarantees no prior thread contamination.
 4. Prompt the reviewer to return findings first, ordered by severity, focusing on:
    - bugs/regressions;
    - adherence breaks;
    - missing or weak validation;
+   - missing, weak, bypass-prone, or incomplete test logic and test-audit evidence;
    - waiver/debt misuse;
-   - residual operational/security/performance risks.
+   - residual operational/security/performance risks;
+   - elegance regressions;
+   - structural regressions caused by brittle workarounds or structural shortcuts that should block closure.
 5. Treat the review as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may block closure if it exposes unresolved material defects, but it does not replace the TODO contract or user approval model.
 6. If the first no-context final-review attempt fails or times out, retry once with a tighter package.
 7. If a `required` final review still cannot be obtained after one retry:
    - record the tooling limitation explicitly;
-   - do not silently substitute local self-review as equivalent;
+   - do not silently treat bounded self-review as equivalent to a true fresh no-context final review;
    - require either a blocker state or an explicit waiver before `Completed` or `Production-Ready`;
    - treat `blocked` as non-satisfying until the gate is actually run or explicitly waived by the approval authority.
 8. Resolve every material finding explicitly in the TODO as one of:

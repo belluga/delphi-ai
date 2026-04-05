@@ -11,6 +11,7 @@ description: "Define the canonical no-context auxiliary critique gate for higher
 Provide a repeatable challenge lane for tactical TODOs whose complexity or blast radius is high enough that a fresh reviewer with no inherited thread context materially improves the quality of planning and critique.
 
 This method exists to expose weak assumptions, blind spots, and plan-review gaps before implementation starts. It is a challenge mechanism, not an authority transfer.
+It must also challenge whether the planned path is sound for performance, elegant, and structurally sound rather than reliant on brittle workarounds or structural shortcuts.
 
 ## When It Applies
 - Always `required` for tactical TODOs classified as `big`.
@@ -60,16 +61,21 @@ This method exists to expose weak assumptions, blind spots, and plan-review gaps
 1. Record the critique decision in the TODO as `required|recommended|not_needed` with rationale.
 2. Build the bounded critique package.
 3. Run one fresh auxiliary critique with no inherited thread context.
-   - In Codex-style environments, this means a fresh subagent with `fork_context=false`.
+   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
+   - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
    - In other environments, use the closest equivalent that guarantees no prior thread contamination.
 4. Prompt the reviewer to return findings first, ordered by severity, and to avoid implementation.
+   - Require explicit positions on:
+     - performance acceptability;
+     - elegance (simplicity/coherence/minimal incidental complexity);
+     - structural soundness, meaning resistance to brittle workarounds or structural shortcuts such as ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt.
 5. Treat the critique as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may invalidate assumptions or planning quality, but it does not replace user approval.
 6. If the first no-context critique attempt fails or times out, retry once with a tighter package.
 7. If a `required` critique still cannot be obtained after one retry:
    - record the tooling limitation explicitly;
-   - do not silently substitute local self-critique as equivalent;
+   - do not silently treat bounded self-review as equivalent to a true fresh no-context critique;
    - require either a blocker state or an explicit waiver before `APROVADO`;
    - treat `blocked` as non-satisfying until the gate is actually run or explicitly waived by the approval authority.
 8. Resolve every material finding explicitly in the TODO as one of:
