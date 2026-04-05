@@ -113,6 +113,8 @@ This register is advisory for skill maintenance. It does not authorize tool crea
 | `wf-docker-documentation-migration-method` | `skill-only` | Migration/gap analysis is too judgment-heavy for deterministic extraction. |
 | `wf-docker-environment-readiness-method` | `already-backed` | Existing support via [`environment_readiness_report.sh`](../tools/environment_readiness_report.sh), plus [`verify_context.sh`](../tools/verify_context.sh), [`verify_adherence_sync.sh`](../tools/verify_adherence_sync.sh), and [`verify_environment.sh`](../scripts/docker/verify_environment.sh). |
 | `wf-docker-genesis-bootstrap-method` | `skill-only` | Bootstrap interviews and canonicalization remain human-led. |
+| `wf-docker-independent-critique-method` | `skill-only` | Independent no-context critique is governance and package hygiene; deterministic tooling may assist packaging later, but the challenge itself should stay reviewer-driven. |
+| `wf-docker-independent-final-review-method` | `skill-only` | Independent no-context final review is a governance/adherence challenge lane; tooling may assist packaging later, but the review itself should stay reviewer-driven. |
 | `wf-docker-persona-selection-method` | `skill-only` | Profile/persona choice is governance, not deterministic tooling. |
 | `wf-docker-performance-concurrency-validation-method` | `skill-only` | This workflow is the canonical `pcv-1` policy package. Deterministic tooling belongs in the lane-specific helpers, not in faux-deterministic policy automation. |
 | `wf-docker-post-session-review-method` | `skill-only` | Principle extraction and English review remain human tasks; automation should stay assistive only. |

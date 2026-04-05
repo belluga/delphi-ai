@@ -60,6 +60,22 @@ MIRRORS: tuple[Mirror, ...] = (
         workflow_name="docker-environment-readiness",
     ),
     Mirror(
+        key="docker-independent-critique-method",
+        kind="workflow",
+        source="workflows/docker/independent-critique-method.md",
+        destination=".clinerules/workflows/docker-independent-critique-method.md",
+        title="Workflow: Independent No-Context Critique",
+        workflow_name="docker-independent-critique-method",
+    ),
+    Mirror(
+        key="docker-independent-final-review-method",
+        kind="workflow",
+        source="workflows/docker/independent-final-review-method.md",
+        destination=".clinerules/workflows/docker-independent-final-review-method.md",
+        title="Workflow: Independent No-Context Final Review",
+        workflow_name="docker-independent-final-review-method",
+    ),
+    Mirror(
         key="docker-todo-driven-execution-method",
         kind="workflow",
         source="workflows/docker/todo-driven-execution-method.md",

@@ -185,8 +185,20 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Add a `Failure Modes & Edge Cases` section.
    - Add `Residual Unknowns / Risks` that still matter after review.
    - Challenge weak or low-confidence assumptions; either strengthen them with evidence, promote them to contract decisions, or block implementation.
+   - Run the **Independent No-Context Critique Gate** after the review package is coherent:
+     - `required` for `big`;
+     - `required` for `medium` when the TODO has `cross-module` blast radius, public contract/runtime-sensitive change, intentional module supersede, or any `high` severity issue card;
+     - `recommended` for other `medium`;
+     - `not_needed` only for low-risk `small`.
+   - Build a bounded critique package (`bounded-file-set` or `bounded-summary`) and use one fresh auxiliary reviewer with no inherited thread context.
+   - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
+   - Ask for findings first, ordered by severity, with no implementation.
+   - Retry once with a tighter package if the first attempt fails or times out.
+   - If a required critique still cannot be obtained, record blocker/waiver handling before approval.
+   - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
+   - Resolve every material finding as `Integrated|Challenged|Deferred with rationale`.
 17. **Request explicit approval**
-   - Ask the user to reply with **APROVADO** to confirm the refined TODO contract, assumptions, and execution plan/review outcome.
+   - Ask the user to reply with **APROVADO** to confirm the refined TODO contract, assumptions, execution plan/review outcome, and any independent-critique resolutions.
    - Do not implement anything until approval is received.
 18. **Rules Acknowledgement / Ingestion (mandatory after `APROVADO` and before execution)**
    - Use the approved execution plan to identify the exact touched surfaces.
@@ -266,7 +278,28 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - stale tactical notes that should already have been promoted or removed.
    - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
    - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
-26. **Blocked-state update (mandatory when pausing blocked)**
+26. **Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)**
+   - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
+     - implemented diff or bounded touched-surface set;
+     - adherence tables;
+     - validation/test evidence;
+     - security/performance evidence;
+     - verification-debt evidence;
+     - residual risks and waivers.
+   - Final-review decision policy:
+     - `required` for `big`;
+     - `required` for `medium` when the TODO has `cross-module` blast radius, changes public contract/schema/API/auth/payment/runtime-sensitive behavior, intentionally supersedes canonical module decisions, or includes any `high` severity issue card;
+     - `recommended` for other `medium`;
+     - `not_needed` only for low-risk `small`.
+   - Build a bounded final-review package (`bounded-file-set` or `bounded-summary`) and use one fresh auxiliary reviewer with no inherited thread context.
+   - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, residual risks, and any existing waivers or unresolved verification debt.
+   - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
+   - Retry once with a tighter package if the first attempt fails or times out.
+   - If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
+   - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
+   - Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
+   - If the review reveals an adherence break or approval-material change, refresh the TODO and obtain renewed `APROVADO` before proceeding.
+27. **Blocked-state update (mandatory when pausing blocked)**
    - If work cannot currently proceed and the TODO will remain open, set `Qualifiers` to include `Blocked` before pausing.
    - When the active state is blocked, fill `Blocker Notes` with:
      - concrete blocker;
@@ -277,13 +310,13 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Always update `Next exact step` when the TODO becomes blocked.
    - Do not downgrade or clear the current delivery stage just because the TODO is blocked; `Blocked` is an overlay, not a promotion replacement.
    - Do not leave a paused TODO in an ambiguous state when the real next state is blocked.
-27. **Module Consolidation Gate (mandatory before close)**
+28. **Module Consolidation Gate (mandatory before close)**
    - Promote stable conceptual outcomes and finalized decisions from the TODO into canonical module docs.
    - Update module decision/promotion ledgers with traceability to this TODO.
    - If the TODO touched a module area previously covered only by legacy summary-era context, update `Canonical Coverage Status`, `Last Canonicalization Review`, and `Remaining Migration Scope` accordingly.
    - Remove/replace superseded tactical notes that conflict with canonical module docs.
    - Update TODO/module cross-links if files moved from `active` to `completed`.
-28. **Close TODO**
+29. **Close TODO**
    - Only mark delivery complete when all baseline decisions are `Adherent` or explicitly superseded via approved decision changes.
    - Update the TODO with outcome notes and move it to `foundation_documentation/todos/completed/` (or mark canceled).
 
@@ -303,6 +336,8 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - Recorded `Execution Plan` with touched surfaces, ordered steps, test strategy, fail-first target or rationale when required, and runtime/rollout notes.
 - Recorded `Rules Acknowledgement / Ingestion` for the approved plan's touched surfaces.
 - Plan Review Gate output (issue cards + failure modes + residual unknowns/risks) for `medium|big` work.
+- Independent no-context critique record for any TODO whose critique decision is `required|recommended`.
+- Independent no-context final-review record for any TODO whose final-review decision is `required|recommended`.
 - Decision baseline and decision-adherence validation table with evidence.
 - Module coherence matrix per decision (`Aligned|Conflict|Supersede` + `Preserve|Supersede`) with evidence.
 - Module decision baseline snapshot + 1-1 consistency matrices (planned and delivered) with evidence.
@@ -328,6 +363,8 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - No planning proceeds while an assumption lacks evidence and still claims to be safe for execution.
 - No implementation begins before an `Execution Plan` exists for the approved TODO.
 - No `medium|big` implementation begins before Plan Review Gate is completed.
+- No TODO with `Independent No-Context Critique Gate = required` proceeds to approval without either completed critique findings or explicit blocker/waiver handling.
+- No TODO with `Independent No-Context Final Review Gate = required` proceeds to `Completed` or `Production-Ready` without either completed final-review findings or explicit blocker/waiver handling.
 - No implementation begins without a recorded test strategy in the execution plan.
 - No bugfix/regression or behavior-defining implementation begins without either fail-first test targets or an explicit approved rationale for non-applicability.
 - No implementation begins before the user replies **APROVADO**.

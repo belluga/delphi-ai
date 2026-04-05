@@ -123,6 +123,18 @@ If the change restores previously documented or verifiably working behavior (inc
 - Include `Failure Modes & Edge Cases` and `Residual Unknowns / Risks`.
 - Challenge weak or low-confidence assumptions; either strengthen them with evidence, promote them to contract decisions, or block implementation.
 - `small` tasks can use a shortened version if risk is low and scope is local.
+- Run the **Independent No-Context Critique Gate** after the review package is coherent:
+  - `required` for `big`
+  - `required` for `medium` when the TODO has `cross-module` blast radius, public contract/schema/API/auth/payment/runtime-sensitive change, intentional module supersede, or any `high` severity issue card
+  - `recommended` for other `medium`
+  - `not_needed` only for low-risk `small`
+- Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
+- A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
+- Ask for findings first, ordered by severity, with no implementation.
+- Retry once with a tighter package if the first attempt fails or times out.
+- If a required critique still cannot be obtained, record blocker/waiver handling before approval.
+- `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
+- Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
 
 ### Gate J — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
@@ -136,7 +148,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - If any module decision has unintended divergence, block implementation until it is either preserved or explicitly approved for supersede.
 
 ### Gate L — Explicit approval token (mandatory)
-- After Gates A-J, Delphi must ask for explicit user approval of the TODO before any implementation begins.
+- After Gates A-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
   - call `apply_patch`,
@@ -223,7 +235,29 @@ If the change restores previously documented or verifiably working behavior (inc
 - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
 - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
 
-### Gate S — Blocked-State Update (mandatory when pausing blocked)
+### Gate S — Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)
+- Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
+  - implemented diff or bounded touched-surface set
+  - adherence tables
+  - validation/test evidence
+  - security/performance evidence
+  - verification-debt evidence
+  - residual risks and waivers
+- Final-review decision policy:
+  - `required` for `big`
+  - `required` for `medium` when the TODO has `cross-module` blast radius, public contract/schema/API/auth/payment/runtime-sensitive change, intentional module supersede, or any `high` severity issue card
+  - `recommended` for other `medium`
+  - `not_needed` only for low-risk `small`
+- Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
+- A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, residual risks, and any existing waivers or unresolved verification debt.
+- Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
+- Retry once with a tighter package if the first attempt fails or times out.
+- If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
+- `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
+- Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
+- If the review reveals an adherence break or approval-material change, refresh the TODO and obtain renewed `APROVADO` before proceeding.
+
+### Gate T — Blocked-State Update (mandatory when pausing blocked)
 - If work cannot proceed and the TODO remains open, Delphi must set `Qualifiers` to include `Blocked` before stopping.
 - Any TODO left with `Qualifiers` including `Blocked` must include:
   - explicit `Blocker Notes`
@@ -231,7 +265,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - the `Last confirmed truth` needed to resume without rediscovering the same context
 - `Blocked` is an overlay, not a replacement for the current delivery stage.
 
-### Gate T — Module Consolidation Gate (mandatory before closing TODO)
+### Gate U — Module Consolidation Gate (mandatory before closing TODO)
 - Before moving a TODO to `completed`, promote stable conceptual outcomes and approved decisions into canonical module docs under `foundation_documentation/modules/`.
 - Record promotion evidence in module decision/promotion sections and ensure TODO ↔ module cross-links are updated.
 - If the TODO touched a `Partial` module area that previously depended on legacy summary-era context, update `Canonical Coverage Status`, `Last Canonicalization Review`, and `Remaining Migration Scope`.
@@ -258,6 +292,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If any frozen decision conflicts with canonical module docs, block implementation until coherence is resolved.
 - If the module decision consistency matrix (1-1) is missing, block implementation.
 - If `medium|big` work does not contain Plan Review Gate output, block implementation and request completion.
+- If the TODO requires an independent no-context critique and that critique is absent without blocker/waiver handling, block approval and implementation.
 - If the execution plan does not contain a recorded test strategy, block implementation.
 - If bugfix/regression or behavior-defining work does not contain fail-first targets (or explicit rationale for non-applicability), block implementation.
 - If relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`, block implementation.
@@ -271,6 +306,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If no explicit performance/concurrency risk assessment and validation decision exist, block delivery.
 - If performance/concurrency validation is marked `required` and no corresponding review evidence (or approved exception path) exists, block delivery.
 - If a `medium|big` TODO or debt-signaling TODO lacks verification-debt evidence (or explicit rationale for not running the full audit), block TODO closure.
+- If the TODO requires an independent no-context final review and that review is absent without blocker/waiver handling, block `Completed` and `Production-Ready`.
 - If the TODO still includes `Blocked` in `Qualifiers`, block TODO closure.
 - If a TODO touched a `Partial` module area but did not migrate the touched legacy scope into the module, block TODO closure.
 - If module consolidation evidence is missing, block TODO closure.

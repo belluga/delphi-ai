@@ -185,6 +185,19 @@ Review the `Assumptions Preview` and `Execution Plan` against architecture, test
 ### Residual Unknowns / Risks
 - [ ] <Unknown, residual risk, or review note that still matters after plan review>
 
+## Independent No-Context Critique Gate (Required for `big`; conditional for `medium/high-impact`)
+- **Critique decision:** `<required|recommended|not_needed>`
+- **Why this decision:** <complexity/impact rationale>
+- **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
+- **Package mode:** `<bounded-file-set|bounded-summary>`
+- **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
+- **Critique isolation mode:** `<fresh no-context auxiliary reviewer>`
+- **Critique status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <material findings summary or `none`>
+- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
+- **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
+
 ## Rules Acknowledgement / Ingestion (Required After `APROVADO` and Before Execution)
 Complete this after the execution plan is approved and the touched surfaces are known.
 
@@ -286,6 +299,20 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Inline code TODO debt:** `<none|accepted|cleanup-required>`
 - **Evidence / audit artifact:** `<verification-debt-audit artifact, grep output, or rationale for not running a full audit>`
 - **Accepted residual debt:** <what remains and why it is accepted, or `none`>
+
+## Independent No-Context Final Review Gate (Required for `big`; conditional for `medium/high-impact`)
+- **Final review decision:** `<required|recommended|not_needed>`
+- **Why this decision:** <complexity/impact rationale>
+- **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
+- **Package mode:** `<bounded-file-set|bounded-summary>`
+- **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|residual risks|existing waivers|verification debt>`
+- **Review isolation mode:** `<fresh no-context auxiliary reviewer>`
+- **Review focus:** `<adherence|regressions|validation evidence|security/performance residuals|verification debt>`
+- **Final review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <material findings summary or `none`>
+- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
+- **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
 ## Delivery Confidence Gate (Required for `✅ Production-Ready`)
 - [ ] **Lane promotion evidence complete:** local commits and required PR merges recorded in `Promotion Evidence`.
