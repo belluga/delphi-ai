@@ -4,17 +4,19 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  reset_analyzer_state.sh [--with-flutter-clean] [--skip-pub-get] [--skip-analyze]
+  reset_analyzer_state.sh [--with-flutter-clean] [--skip-pub-get] [--skip-analyze] [--cleanup-only]
 
 Options:
   --with-flutter-clean  Run `fvm flutter clean` before rebuilding local state.
   --skip-pub-get        Skip `fvm flutter pub get` after clearing caches.
   --skip-analyze        Skip the final analyzer warmup command.
+  --cleanup-only        Perform cleanup only; do not run `pub get` or warm the analyzer afterward.
   -h, --help            Show this help message.
 
 Notes:
   - Run this from `flutter-app/` root or the environment root that contains `flutter-app/`.
   - This clears hidden analyzer/plugin caches under `~/.dartServer/`.
+  - This also clears generated `build/` and `.dart_tool/` residue inside the Flutter workspace.
   - The first analyzer run after reset can be slower while plugin AOT artifacts rebuild.
   - After a reset, allow the first analyzer run a long silent warmup window before interrupting it.
     In this workspace, wait at least 10 minutes or until the process clearly exits before treating
@@ -32,6 +34,11 @@ remove_dir_children() {
   local dir="$1"
   mkdir -p "${dir}"
   find "${dir}" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
+}
+
+clear_repo_generated_state() {
+  find . -type d \( -name '.dart_tool' -o -name 'build' \) -prune -exec rm -rf {} + 2>/dev/null || true
+  find . -type f \( -name 'custom_lint.log' -o -name 'dart_tool.log' \) -delete 2>/dev/null || true
 }
 
 resolve_flutter_app_dir() {
@@ -52,6 +59,7 @@ resolve_flutter_app_dir() {
 WITH_FLUTTER_CLEAN=0
 SKIP_PUB_GET=0
 SKIP_ANALYZE=0
+CLEANUP_ONLY=0
 
 for arg in "$@"; do
   case "${arg}" in
@@ -64,6 +72,9 @@ for arg in "$@"; do
     --skip-analyze)
       SKIP_ANALYZE=1
       ;;
+    --cleanup-only)
+      CLEANUP_ONLY=1
+      ;;
     -h|--help)
       usage
       exit 0
@@ -75,6 +86,11 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ "${CLEANUP_ONLY}" -eq 1 ]]; then
+  SKIP_PUB_GET=1
+  SKIP_ANALYZE=1
+fi
 
 if ! command -v fvm >/dev/null 2>&1; then
   echo "fvm command not found. Install FVM before running this script." >&2
@@ -98,19 +114,8 @@ if [[ "${WITH_FLUTTER_CLEAN}" -eq 1 ]]; then
   fvm flutter clean
 fi
 
-log_info "clearing flutter-app local analyzer state..."
-rm -rf .dart_tool
-rm -rf tool/belluga_analysis_plugin/.dart_tool
-rm -rf tool/belluga_analysis_plugin/test_fixtures/lint_matrix/.dart_tool
-rm -rf packages/belluga_form_validation/.dart_tool
-
-if [[ -d "tool/belluga_custom_lint" ]]; then
-  log_info "clearing legacy belluga_custom_lint orphan artifacts..."
-  rm -rf tool/belluga_custom_lint/.dart_tool
-  rm -rf tool/belluga_custom_lint/build
-  rm -rf tool/belluga_custom_lint/test_fixtures/lint_matrix/.dart_tool
-  rm -f tool/belluga_custom_lint/test_fixtures/lint_matrix/custom_lint.log
-fi
+log_info "clearing flutter-app local analyzer state and generated build residue..."
+clear_repo_generated_state
 
 log_info "clearing hidden global analyzer/plugin caches..."
 remove_dir_children "${HOME}/.dartServer/.plugin_manager"
@@ -118,6 +123,13 @@ remove_dir_children "${HOME}/.dartServer/.analysis-driver"
 remove_dir_children "${HOME}/.dartServer/.pub-package-details-cache"
 remove_dir_children "${HOME}/.dartServer/.instrumentation"
 remove_dir_children "${HOME}/.dartServer/.prompts"
+
+if [[ "${CLEANUP_ONLY}" -eq 1 ]]; then
+  log_info "cleanup-only mode requested; skipping pub get and analyzer warmup."
+  popd >/dev/null
+  log_info "done."
+  exit 0
+fi
 
 if [[ "${SKIP_PUB_GET}" -eq 0 ]]; then
   log_info "running fvm flutter pub get..."

@@ -77,7 +77,7 @@ This register is advisory for skill maintenance. It does not authorize tool crea
 ## Flutter Umbrella and Smell Skills
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
-| `flutter-architecture-adherence` | `lint/analyzer` | Prefer analyzer/lint expansion; existing support includes [`reset_analyzer_state.sh`](../scripts/flutter/reset_analyzer_state.sh) for analyzer recovery. |
+| `flutter-architecture-adherence` | `lint/analyzer` | Prefer analyzer/lint expansion; existing support includes [`reset_analyzer_state.sh`](../scripts/flutter/reset_analyzer_state.sh) for analyzer recovery plus end-of-cycle cleanup hygiene. |
 | `flutter-performance-smell-scanner` | `skill-only` | Umbrella orchestration skill; deterministic support belongs in the smell-specific rules or analyzers. |
 | `flutter-smell-async-navigation` | `lint/analyzer` | Best prevented by analyzer rules for async navigation ownership. |
 | `flutter-smell-build-side-effects` | `lint/analyzer` | Best prevented by analyzer rules for side effects in widget lifecycle/build. |
