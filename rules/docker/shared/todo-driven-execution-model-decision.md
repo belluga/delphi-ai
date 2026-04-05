@@ -114,14 +114,19 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate I — Plan Review Gate (mandatory for `medium|big`)
 - Review the `Assumptions Preview` and `Execution Plan`.
-- Evaluate Architecture, Code Quality, Tests, Performance, and Security.
+- Evaluate Architecture, Code Quality, Tests, Performance, Security, Elegance, and Structural Soundness.
+- Treat brittle workarounds and structural shortcuts as explicit negative findings: ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt.
 - For each material issue, document:
   - `Issue ID`, severity, evidence (`file:line`), and why it matters now.
   - Options `A/B/C` (including **do nothing** when reasonable).
-  - For each option: implementation effort, risk, blast radius, and maintenance burden.
+  - For each option: implementation effort, risk, blast radius, maintenance burden, performance impact, elegance impact, and structural soundness impact.
   - Recommended option with rationale.
 - Include `Failure Modes & Edge Cases` and `Residual Unknowns / Risks`.
 - Challenge weak or low-confidence assumptions; either strengthen them with evidence, promote them to contract decisions, or block implementation.
+- If no clearly dominant architectural path remains after first-pass planning, proactively obtain second and, when useful, third bounded no-context opinions before locking the recommendation.
+- If subagents are available in the execution environment, delegate these opinions to fresh no-context subagents; otherwise document the constraint and proceed with bounded no-context self-opinions.
+- Every additional opinion must compare the viable options on correctness, performance, elegance (simplicity/coherence/minimal incidental complexity), structural soundness, and operational fit.
+- Record each additional opinion in the TODO as `Integrated|Challenged|Deferred with rationale`.
 - `small` tasks can use a shortened version if risk is low and scope is local.
 - Run the **Independent No-Context Critique Gate** after the review package is coherent:
   - `required` for `big`
@@ -129,8 +134,10 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
+- If a subagent is available in the execution environment, the critique must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
 - Ask for findings first, ordered by severity, with no implementation.
+- Every critique must state whether the recommended path is acceptable for performance, whether it is elegant relative to the available alternatives, and whether it preserves structural soundness rather than relying on brittle workarounds or structural shortcuts.
 - Retry once with a tighter package if the first attempt fails or times out.
 - If a required critique still cannot be obtained, record blocker/waiver handling before approval.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
@@ -178,7 +185,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - a better alternative is proposed,
   and the TODO decisions/baseline are updated plus renewed **APROVADO** is obtained.
 - If any module decision is `Regression`, delivery is invalid until an intentional supersede is approved and reflected in module consolidation targets.
-- When test confidence is material to delivery (`bugfix/regression`, `compatibility`, `critical-user-journey`, or shared contract change), run `test-quality-audit` or explicitly record why a full audit is unnecessary.
+- Run a dedicated Independent Test Quality Audit after implementation whenever tests changed or test confidence is material to delivery.
 
 ### Gate O — Security Risk Assessment (mandatory before delivery)
 - Record risk level as `none|low|medium|high`.
@@ -235,11 +242,33 @@ If the change restores previously documented or verifiably working behavior (inc
 - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
 - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
 
-### Gate S — Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)
+### Gate S — Independent Test Quality Audit (required when tests changed or test confidence is material)
+- Determine the audit decision:
+  - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`
+  - `recommended` for other TODOs that touch production behavior with non-trivial validation risk
+  - `not_needed` only for low-risk non-behavioral work with no meaningful test impact
+- Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
+- Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions below.
+- Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.
+- Use one fresh auxiliary reviewer with no inherited thread context.
+- If a subagent is available in the execution environment, the test audit must be delegated to that subagent (no-context). If no subagent is available, document the constraint and any bounded no-context self-review may only count as supporting evidence, not as satisfaction of a `required` audit gate.
+- Require explicit answers on:
+  - whether changed test logic reflects a real product/contract change
+  - whether any changed test logic appears to be a pass-the-test workaround or other brittle test-only shortcut
+  - whether assertions are effective enough to catch the intended regression/behavior break
+  - whether assertions and coverage are efficient rather than bloated, redundant, or brittle
+  - whether changed and nearby tests actually cover the required behaviors and failure modes
+- Retry once with a tighter package if the first attempt fails or times out.
+- If a required audit still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
+- `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required test-audit gate.
+- Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
+
+### Gate T — Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)
 - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
   - implemented diff or bounded touched-surface set
   - adherence tables
   - validation/test evidence
+  - test-quality-audit evidence produced by `wf-docker-independent-test-quality-audit-method`
   - security/performance evidence
   - verification-debt evidence
   - residual risks and waivers
@@ -249,8 +278,9 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, residual risks, and any existing waivers or unresolved verification debt.
-- Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
+- If a subagent is available in the execution environment, the final review must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
+- A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
+- Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
 - Retry once with a tighter package if the first attempt fails or times out.
 - If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
 - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
@@ -272,7 +302,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - If module docs still conflict with delivered implementation, TODO closure is blocked until conflicts are resolved or explicitly waived.
 
 ## Rationale
-This prevents scope creep and "hub refactors" by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
+This prevents scope creep and cross-cutting consolidation refactors by forcing a written, reviewable contract with explicit risk framing and verifiable decision adherence before code is considered delivered.
 
 ## Enforcement
 - If the user requests implementation without a TODO and the work is not exempt, Operational-Micro-Fix-eligible, or eligible for the Ephemeral TODO flow, block and request the tactical TODO.
@@ -306,6 +336,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If no explicit performance/concurrency risk assessment and validation decision exist, block delivery.
 - If performance/concurrency validation is marked `required` and no corresponding review evidence (or approved exception path) exists, block delivery.
 - If a `medium|big` TODO or debt-signaling TODO lacks verification-debt evidence (or explicit rationale for not running the full audit), block TODO closure.
+- If the TODO requires an independent test-quality audit and that audit is absent without blocker/waiver handling, block `Completed` and `Production-Ready`.
 - If the TODO requires an independent no-context final review and that review is absent without blocker/waiver handling, block `Completed` and `Production-Ready`.
 - If the TODO still includes `Blocked` in `Qualifiers`, block TODO closure.
 - If a TODO touched a `Partial` module area but did not migrate the touched legacy scope into the module, block TODO closure.

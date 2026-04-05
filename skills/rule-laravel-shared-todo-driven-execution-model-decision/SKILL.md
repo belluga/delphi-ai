@@ -169,7 +169,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - a better alternative is proposed,
   and the TODO decisions/baseline are updated plus renewed **APROVADO** is obtained.
 - If any module decision is `Regression`, delivery is invalid until an intentional supersede is approved and reflected in module consolidation targets.
-- When test confidence is material to delivery (`bugfix/regression`, `compatibility`, `critical-user-journey`, or shared contract change), run `test-quality-audit` or explicitly record why a full audit is unnecessary.
+- Run a dedicated Independent Test Quality Audit after implementation whenever tests changed or test confidence is material to delivery.
 
 ### Gate N — Security Risk Assessment (mandatory before delivery)
 - Record risk level as `none|low|medium|high`.
@@ -226,11 +226,33 @@ If the change restores previously documented or verifiably working behavior (inc
 - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
 - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
 
-### Gate R — Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)
+### Gate R — Independent Test Quality Audit (required when tests changed or test confidence is material)
+- Determine the audit decision:
+  - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`
+  - `recommended` for other TODOs that touch production behavior with non-trivial validation risk
+  - `not_needed` only for low-risk non-behavioral work with no meaningful test impact
+- Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
+- Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions.
+- Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.
+- Use a fresh auxiliary reviewer with no inherited thread context.
+- If a subagent is available in the execution environment, the test audit must be delegated to that subagent (no-context). If no subagent is available, any bounded self-review may only count as supporting evidence, not as satisfaction of a `required` audit gate.
+- Require explicit answers on:
+  - whether changed test logic reflects a real product/contract change
+  - whether any changed test logic appears to be a pass-the-test workaround or other brittle test-only shortcut
+  - whether assertions are effective enough to catch the intended regression/behavior break
+  - whether assertions and coverage are efficient rather than bloated, redundant, or brittle
+  - whether changed and nearby tests actually cover the required behaviors and failure modes
+- Retry once with a tighter package if the first attempt fails or times out.
+- If a required audit still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
+- `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required test-audit gate.
+- Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
+
+### Gate S — Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)
 - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
   - implemented diff or bounded touched-surface set
   - adherence tables
   - validation/test evidence
+  - test-quality-audit evidence produced by `wf-docker-independent-test-quality-audit-method`
   - security/performance evidence
   - verification-debt evidence
   - residual risks and waivers
@@ -240,15 +262,15 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, residual risks, and any existing waivers or unresolved verification debt.
-- Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
+- A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
+- Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
 - Retry once with a tighter package if the first attempt fails or times out.
 - If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
 - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
 - If the review reveals an adherence break or approval-material change, refresh the TODO and obtain renewed `APROVADO` before proceeding.
 
-### Gate S — Blocked-State Update (mandatory when pausing blocked)
+### Gate T — Blocked-State Update (mandatory when pausing blocked)
 - If work cannot proceed and the TODO remains open, Delphi must set `Qualifiers` to include `Blocked` before stopping.
 - Any TODO left with `Qualifiers` including `Blocked` must include:
   - explicit `Blocker Notes`
@@ -256,7 +278,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - the `Last confirmed truth` needed to resume without rediscovering the same context
 - `Blocked` is an overlay, not a replacement for the current delivery stage.
 
-### Gate T — Module Consolidation Gate (mandatory before closing TODO)
+### Gate U — Module Consolidation Gate (mandatory before closing TODO)
 - Before moving a TODO to `completed`, promote stable conceptual outcomes and approved decisions into canonical module docs under `foundation_documentation/modules/`.
 - Record promotion evidence in module decision/promotion sections and ensure TODO ↔ module cross-links are updated.
 - If the TODO touched a `Partial` module area that previously depended on legacy summary-era context, update `Canonical Coverage Status`, `Last Canonicalization Review`, and `Remaining Migration Scope`.
@@ -295,6 +317,7 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If no explicit performance/concurrency risk assessment and validation decision exist, block delivery.
 - If performance/concurrency validation is marked `required` and no corresponding review evidence (or approved exception path) exists, block delivery.
 - If a `medium|big` TODO or debt-signaling TODO lacks verification-debt evidence (or explicit rationale for not running the full audit), block TODO closure.
+- If the TODO requires an independent test-quality audit and that audit is absent without blocker/waiver handling, block `Completed` and `Production-Ready`.
 - If the TODO requires an independent no-context final review and that review is absent without blocker/waiver handling, block `Completed` and `Production-Ready`.
 - If the TODO still includes `Blocked` in `Qualifiers`, block TODO closure.
 - If a TODO touched a `Partial` module area but did not migrate the touched legacy scope into the module, block TODO closure.

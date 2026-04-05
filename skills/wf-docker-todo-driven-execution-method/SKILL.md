@@ -268,8 +268,20 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Mark release readiness outcome: `ready|ready_with_waiver|not_ready`.
 24. **Validate**
    - Run the `validation_steps` from the TODO (or explicitly report what cannot be run and why).
-   - When test confidence is material to delivery (`bugfix/regression`, `compatibility`, `critical-user-journey`, or shared contract change), run `test-quality-audit` or explicitly record why a full audit is unnecessary.
-25. **Verification Debt Audit (required before close for `medium|big` or when debt signals exist)**
+25. **Independent Test Quality Audit (required when tests changed or test confidence is material)**
+   - Determine the audit decision:
+     - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`;
+     - `recommended` for other TODOs that touch production behavior with non-trivial validation risk;
+     - `not_needed` only for low-risk non-behavioral work with no meaningful test impact.
+   - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
+   - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions.
+   - Build a bounded audit package containing frozen baseline / approved expectations, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors / Definition of Done, and residual risks.
+   - If a subagent is available, the audit must be delegated to that subagent with no inherited thread context.
+   - If no subagent is available, any bounded self-review is supporting evidence only and does not satisfy a `required` audit gate by itself.
+   - Ask explicitly whether changed test logic reflects a real product change, whether any change is a pass-the-test workaround or brittle test-only shortcut, whether assertions are effective and efficient, and whether required behaviors/failure modes are actually covered.
+   - Record findings as `Integrated|Challenged|Deferred with rationale`.
+   - If a required test audit still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`; local self-review is not equivalent.
+26. **Verification Debt Audit (required before close for `medium|big` or when debt signals exist)**
    - Inspect the TODO, delivery evidence, and touched code for verification debt signals:
      - missing or weak evidence;
      - excessive waivers or unverifiable claims;
@@ -278,11 +290,12 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - stale tactical notes that should already have been promoted or removed.
    - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
    - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
-26. **Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)**
+27. **Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)**
    - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
      - implemented diff or bounded touched-surface set;
      - adherence tables;
      - validation/test evidence;
+     - test-quality-audit evidence produced by `wf-docker-independent-test-quality-audit-method`;
      - security/performance evidence;
      - verification-debt evidence;
      - residual risks and waivers.
@@ -292,14 +305,14 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - `recommended` for other `medium`;
      - `not_needed` only for low-risk `small`.
    - Build a bounded final-review package (`bounded-file-set` or `bounded-summary`) and use one fresh auxiliary reviewer with no inherited thread context.
-   - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, residual risks, and any existing waivers or unresolved verification debt.
-   - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
+   - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
+   - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
    - Retry once with a tighter package if the first attempt fails or times out.
    - If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
    - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
    - Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
    - If the review reveals an adherence break or approval-material change, refresh the TODO and obtain renewed `APROVADO` before proceeding.
-27. **Blocked-state update (mandatory when pausing blocked)**
+28. **Blocked-state update (mandatory when pausing blocked)**
    - If work cannot currently proceed and the TODO will remain open, set `Qualifiers` to include `Blocked` before pausing.
    - When the active state is blocked, fill `Blocker Notes` with:
      - concrete blocker;
@@ -310,13 +323,13 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Always update `Next exact step` when the TODO becomes blocked.
    - Do not downgrade or clear the current delivery stage just because the TODO is blocked; `Blocked` is an overlay, not a promotion replacement.
    - Do not leave a paused TODO in an ambiguous state when the real next state is blocked.
-28. **Module Consolidation Gate (mandatory before close)**
+29. **Module Consolidation Gate (mandatory before close)**
    - Promote stable conceptual outcomes and finalized decisions from the TODO into canonical module docs.
    - Update module decision/promotion ledgers with traceability to this TODO.
    - If the TODO touched a module area previously covered only by legacy summary-era context, update `Canonical Coverage Status`, `Last Canonicalization Review`, and `Remaining Migration Scope` accordingly.
    - Remove/replace superseded tactical notes that conflict with canonical module docs.
    - Update TODO/module cross-links if files moved from `active` to `completed`.
-29. **Close TODO**
+30. **Close TODO**
    - Only mark delivery complete when all baseline decisions are `Adherent` or explicitly superseded via approved decision changes.
    - Update the TODO with outcome notes and move it to `foundation_documentation/todos/completed/` (or mark canceled).
 
