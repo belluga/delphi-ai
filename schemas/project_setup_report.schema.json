@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/project_setup_report.schema.json",
+  "title": "PACED Project Setup Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "authoritative",
+    "edit_policy",
+    "repo_root",
+    "delphi_root",
+    "lane_requested",
+    "lane_effective",
+    "readiness_status",
+    "include_adherence_sync",
+    "overall_status",
+    "recommended_next_step",
+    "readiness_output",
+    "drift_buckets",
+    "inherited_from_delphi",
+    "project_owned_specialization",
+    "unsafe_unresolved",
+    "issues"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "project-setup-report-v1"
+    },
+    "artifact_kind": {
+      "const": "project_setup_report"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "edit_policy": {
+      "const": "derived_read_only"
+    },
+    "repo_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delphi_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lane_requested": {
+      "enum": [
+        "auto",
+        "bootstrap",
+        "recalibration"
+      ]
+    },
+    "lane_effective": {
+      "enum": [
+        "bootstrap",
+        "recalibration"
+      ]
+    },
+    "readiness_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "include_adherence_sync": {
+      "type": "boolean"
+    },
+    "overall_status": {
+      "enum": [
+        "bootstrap-preflight-ready",
+        "calibrated",
+        "needs-normalization",
+        "manual-remediation-required"
+      ]
+    },
+    "recommended_next_step": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_output": {
+      "type": "string"
+    },
+    "drift_buckets": {
+      "type": "object",
+      "required": [
+        "structural",
+        "documentation",
+        "canonical_coverage",
+        "governance"
+      ],
+      "properties": {
+        "structural": {
+          "$ref": "#/$defs/drift_bucket"
+        },
+        "documentation": {
+          "$ref": "#/$defs/drift_bucket"
+        },
+        "canonical_coverage": {
+          "$ref": "#/$defs/drift_bucket"
+        },
+        "governance": {
+          "$ref": "#/$defs/drift_bucket"
+        }
+      },
+      "additionalProperties": false
+    },
+    "inherited_from_delphi": {
+      "$ref": "#/$defs/string_list"
+    },
+    "project_owned_specialization": {
+      "$ref": "#/$defs/string_list"
+    },
+    "unsafe_unresolved": {
+      "$ref": "#/$defs/string_list"
+    },
+    "issues": {
+      "type": "object",
+      "required": [
+        "structural",
+        "documentation",
+        "canonical_coverage",
+        "governance"
+      ],
+      "properties": {
+        "structural": {
+          "$ref": "#/$defs/string_list"
+        },
+        "documentation": {
+          "$ref": "#/$defs/string_list"
+        },
+        "canonical_coverage": {
+          "$ref": "#/$defs/string_list"
+        },
+        "governance": {
+          "$ref": "#/$defs/string_list"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "drift_bucket": {
+      "enum": [
+        "none",
+        "minor",
+        "material"
+      ]
+    },
+    "string_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

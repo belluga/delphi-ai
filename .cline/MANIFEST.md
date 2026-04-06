@@ -20,9 +20,15 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/workflows/docker-todo-driven-execution-method.md`
 - `.clinerules/workflows/docker-delphi-project-setup.md`
 - `.clinerules/workflows/docker-delphi-project-setup-method.md`
+- `.clinerules/workflows/docker-brownfield-normalization-method.md`
+- `.clinerules/workflows/docker-subagent-orchestration-method.md`
+- `.clinerules/workflows/docker-deterministic-todo-validation-method.md`
+- `.clinerules/workflows/docker-independent-test-quality-audit-method.md`
 - `.clinerules/workflows/docker-profile-selection.md`
 - `.clinerules/workflows/docker-profile-selection-method.md`
 - `.clinerules/workflows/docker-session-lifecycle.md`
+- `.clinerules/workflows/docker-post-session-review.md`
+- `.clinerules/workflows/docker-runtime-index-method.md`
 - `.clinerules/workflows/docker-self-improvement-session.md`
 - `.clinerules/workflows/docker-update-skill-method.md`
 - `.clinerules/workflows/laravel-create-package-method.md`
@@ -35,6 +41,9 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.cline/skills/wf-docker-update-skill-method/SKILL.md`
 - `.cline/skills/wf-docker-todo-driven-execution-method/SKILL.md`
 - `.cline/skills/wf-docker-delphi-project-setup-method/SKILL.md`
+- `.cline/skills/wf-docker-brownfield-normalization-method/SKILL.md`
+- `.cline/skills/wf-docker-subagent-orchestration-method/SKILL.md`
+- `.cline/skills/wf-docker-deterministic-todo-validation-method/SKILL.md`
 - `.cline/skills/wf-docker-profile-selection-method/SKILL.md`
 - `.cline/skills/rule-docker-shared-todo-driven-execution-model-decision/SKILL.md`
 - `.cline/skills/rule-docker-shared-delphi-project-setup-model-decision/SKILL.md`

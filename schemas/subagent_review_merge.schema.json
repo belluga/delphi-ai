@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/subagent_review_merge.schema.json",
+  "title": "PACED Subagent Review Merge",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "authoritative",
+    "edit_policy",
+    "dispatch_path",
+    "review_kind",
+    "review_count",
+    "reviewer_labels",
+    "highest_finding_severity",
+    "axis_summary",
+    "recommended_paths",
+    "exact_next_step"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "subagent-review-merge-v1"
+    },
+    "artifact_kind": {
+      "const": "subagent_review_merge"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "edit_policy": {
+      "const": "derived_merge_packet"
+    },
+    "dispatch_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_kind": {
+      "enum": [
+        "architecture_opinion",
+        "critique",
+        "test_quality_audit",
+        "final_review"
+      ]
+    },
+    "review_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reviewer_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "highest_finding_severity": {
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "axis_summary": {
+      "type": "object",
+      "required": [
+        "performance",
+        "elegance",
+        "structural_soundness",
+        "operational_fit"
+      ],
+      "properties": {
+        "performance": {
+          "type": "string",
+          "minLength": 1
+        },
+        "elegance": {
+          "type": "string",
+          "minLength": 1
+        },
+        "structural_soundness": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operational_fit": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "recommended_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "exact_next_step": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/subagent_review_result.schema.json",
+  "title": "PACED Subagent Review Result",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "dispatch_path",
+    "review_kind",
+    "reviewer_label",
+    "overall_assessment",
+    "recommended_path",
+    "performance_position",
+    "elegance_position",
+    "structural_soundness_position",
+    "operational_fit_position",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "subagent-review-result-v1"
+    },
+    "artifact_kind": {
+      "const": "subagent_review_result"
+    },
+    "dispatch_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_kind": {
+      "enum": [
+        "architecture_opinion",
+        "critique",
+        "test_quality_audit",
+        "final_review"
+      ]
+    },
+    "reviewer_label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "overall_assessment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recommended_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "performance_position": {
+      "$ref": "#/$defs/position"
+    },
+    "elegance_position": {
+      "$ref": "#/$defs/position"
+    },
+    "structural_soundness_position": {
+      "$ref": "#/$defs/position"
+    },
+    "operational_fit_position": {
+      "$ref": "#/$defs/position"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "position": {
+      "enum": [
+        "strong_positive",
+        "acceptable",
+        "mixed",
+        "regresses",
+        "unknown",
+        "not_evaluated"
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "severity",
+        "title",
+        "rationale",
+        "suggested_action"
+      ],
+      "properties": {
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "affected_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "suggested_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

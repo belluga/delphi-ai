@@ -3,20 +3,22 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: delphi_project_setup_report.sh [--repo <path>] [--lane <auto|bootstrap|recalibration>] [--include-adherence-sync]
+Usage: delphi_project_setup_report.sh [--repo <path>] [--lane <auto|bootstrap|recalibration>] [--include-adherence-sync] [--json-output <path>]
 
-Produce a read-only Delphi project setup / recalibration inventory for a downstream repository.
+Produce a read-only PACED/Delphi project setup / recalibration inventory for a downstream repository.
 
 The report:
 - classifies the setup lane as bootstrap or recalibration;
 - runs the lane-appropriate readiness preflight;
 - inventories Delphi-governed and project-owned authority surfaces;
 - classifies setup drift into structural, documentation, canonical coverage, and governance buckets.
+- optionally writes a derived machine-checkable JSON snapshot for downstream normalization tooling.
 
 Options:
   --repo <path>                Repository/environment root. Defaults to current directory.
   --lane <value>               One of auto, bootstrap, recalibration. Defaults to auto.
   --include-adherence-sync     Include `verify_adherence_sync.sh` during the readiness preflight when applicable.
+  --json-output <path>         Write a derived non-authoritative JSON snapshot to this path.
   -h, --help                   Show this help text.
 
 Exit codes:
@@ -34,6 +36,7 @@ die() {
 REPO_INPUT="."
 LANE="auto"
 INCLUDE_ADHERENCE_SYNC=false
+JSON_OUTPUT=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -50,6 +53,11 @@ while [ $# -gt 0 ]; do
     --include-adherence-sync)
       INCLUDE_ADHERENCE_SYNC=true
       shift
+      ;;
+    --json-output)
+      [ $# -ge 2 ] || die "missing value for --json-output"
+      JSON_OUTPUT="$2"
+      shift 2
       ;;
     -h|--help)
       usage
@@ -108,6 +116,17 @@ print_section() {
     done
   fi
   printf '\n'
+}
+
+write_lines_file() {
+  local output_path="$1"
+  shift
+
+  : > "$output_path"
+  local line
+  for line in "$@"; do
+    printf '%s\n' "$line" >> "$output_path"
+  done
 }
 
 classify_bucket() {
@@ -206,7 +225,7 @@ READINESS_STATUS=""
 READINESS_CODE=0
 
 if [ "$EFFECTIVE_LANE" = "bootstrap" ]; then
-  if run_and_capture bash "$DEL_ROOT/init.sh" --check; then
+  if run_and_capture env REPO_ROOT="$REPO_ROOT" DEL_ROOT="$DEL_ROOT" bash -lc 'cd "$REPO_ROOT" && bash "$DEL_ROOT/init.sh" --check'; then
     READINESS_STATUS="bootstrap-preflight-pass"
   else
     READINESS_STATUS="bootstrap-preflight-blocked"
@@ -348,6 +367,7 @@ GOVERNANCE_BUCKET="$(classify_bucket "$GOVERNANCE_MAJOR" "$GOVERNANCE_MINOR")"
 
 OVERALL_STATUS="calibrated"
 EXIT_CODE=0
+RECOMMENDED_NEXT_STEP="ready for normal work"
 
 if [ "$EFFECTIVE_LANE" = "bootstrap" ]; then
   if [ "$READINESS_CODE" -eq 0 ] && [ "$STRUCTURAL_BUCKET" != "material" ]; then
@@ -393,13 +413,94 @@ print_section "Governance issues" "${GOVERNANCE_ISSUES[@]}"
 printf 'Overall status: %s\n' "$OVERALL_STATUS"
 
 if [ "$OVERALL_STATUS" = "bootstrap-preflight-ready" ]; then
+  RECOMMENDED_NEXT_STEP="run Genesis/installation setup before normal feature work"
   printf 'Recommended next step: run Genesis/installation setup before normal feature work.\n'
 elif [ "$OVERALL_STATUS" = "calibrated" ]; then
+  RECOMMENDED_NEXT_STEP="ready for normal work"
   printf 'Recommended next step: ready for normal work.\n'
 elif [ "$OVERALL_STATUS" = "needs-normalization" ]; then
+  RECOMMENDED_NEXT_STEP="normalization TODO required"
   printf 'Recommended next step: normalization TODO required.\n'
 else
+  RECOMMENDED_NEXT_STEP="manual remediation required"
   printf 'Recommended next step: manual remediation required.\n'
+fi
+
+if [ -n "$JSON_OUTPUT" ]; then
+  TMP_JSON_DIR="$(mktemp -d)"
+  write_lines_file "$TMP_JSON_DIR/delphi_surfaces.txt" "${DELPHI_SURFACES[@]}"
+  write_lines_file "$TMP_JSON_DIR/project_surfaces.txt" "${PROJECT_SURFACES[@]}"
+  write_lines_file "$TMP_JSON_DIR/unsafe_surfaces.txt" "${UNSAFE_SURFACES[@]}"
+  write_lines_file "$TMP_JSON_DIR/structural_issues.txt" "${STRUCTURAL_ISSUES[@]}"
+  write_lines_file "$TMP_JSON_DIR/documentation_issues.txt" "${DOCUMENTATION_ISSUES[@]}"
+  write_lines_file "$TMP_JSON_DIR/coverage_issues.txt" "${COVERAGE_ISSUES[@]}"
+  write_lines_file "$TMP_JSON_DIR/governance_issues.txt" "${GOVERNANCE_ISSUES[@]}"
+
+  python3 - "$JSON_OUTPUT" "$REPO_ROOT" "$DEL_ROOT" "$LANE" "$EFFECTIVE_LANE" "$READINESS_STATUS" "$INCLUDE_ADHERENCE_SYNC" "$OVERALL_STATUS" "$RECOMMENDED_NEXT_STEP" "$STRUCTURAL_BUCKET" "$DOCUMENTATION_BUCKET" "$COVERAGE_BUCKET" "$GOVERNANCE_BUCKET" "$CURRENT_STEP_OUTPUT" "$TMP_JSON_DIR" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+
+def read_lines(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    return [line.rstrip("\n") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+output_path = Path(sys.argv[1])
+repo_root = sys.argv[2]
+del_root = sys.argv[3]
+lane_requested = sys.argv[4]
+lane_effective = sys.argv[5]
+readiness_status = sys.argv[6]
+include_adherence_sync = sys.argv[7].lower() == "true"
+overall_status = sys.argv[8]
+recommended_next_step = sys.argv[9]
+structural_bucket = sys.argv[10]
+documentation_bucket = sys.argv[11]
+coverage_bucket = sys.argv[12]
+governance_bucket = sys.argv[13]
+readiness_output = sys.argv[14]
+tmp_dir = Path(sys.argv[15])
+
+payload = {
+    "schema_version": "project-setup-report-v1",
+    "artifact_kind": "project_setup_report",
+    "authoritative": False,
+    "edit_policy": "derived_read_only",
+    "repo_root": repo_root,
+    "delphi_root": del_root,
+    "lane_requested": lane_requested,
+    "lane_effective": lane_effective,
+    "readiness_status": readiness_status,
+    "include_adherence_sync": include_adherence_sync,
+    "overall_status": overall_status,
+    "recommended_next_step": recommended_next_step,
+    "readiness_output": readiness_output,
+    "drift_buckets": {
+        "structural": structural_bucket,
+        "documentation": documentation_bucket,
+        "canonical_coverage": coverage_bucket,
+        "governance": governance_bucket,
+    },
+    "inherited_from_delphi": read_lines(tmp_dir / "delphi_surfaces.txt"),
+    "project_owned_specialization": read_lines(tmp_dir / "project_surfaces.txt"),
+    "unsafe_unresolved": read_lines(tmp_dir / "unsafe_surfaces.txt"),
+    "issues": {
+        "structural": read_lines(tmp_dir / "structural_issues.txt"),
+        "documentation": read_lines(tmp_dir / "documentation_issues.txt"),
+        "canonical_coverage": read_lines(tmp_dir / "coverage_issues.txt"),
+        "governance": read_lines(tmp_dir / "governance_issues.txt"),
+    },
+}
+
+output_path.parent.mkdir(parents=True, exist_ok=True)
+output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+PY
+  rm -rf "$TMP_JSON_DIR"
 fi
 
 exit "$EXIT_CODE"

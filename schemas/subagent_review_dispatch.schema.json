@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/subagent_review_dispatch.schema.json",
+  "title": "PACED Subagent Review Dispatch",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "authoritative",
+    "edit_policy",
+    "review_kind",
+    "bounded_package_path",
+    "reviewer_count",
+    "no_context_required",
+    "required_axes",
+    "focus_points",
+    "result_contract_fields"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "subagent-review-dispatch-v1"
+    },
+    "artifact_kind": {
+      "const": "subagent_review_dispatch"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "edit_policy": {
+      "const": "derived_dispatch_packet"
+    },
+    "review_kind": {
+      "enum": [
+        "architecture_opinion",
+        "critique",
+        "test_quality_audit",
+        "final_review"
+      ]
+    },
+    "bounded_package_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewer_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "no_context_required": {
+      "const": true
+    },
+    "required_axes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "focus_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "result_contract_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "todo_path": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

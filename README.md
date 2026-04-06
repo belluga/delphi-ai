@@ -1,10 +1,10 @@
-# Delphi-AI Setup Guide
+# PACED Setup Guide
 
 ## Purpose
-Centralized instructions to attach Delphi-AI (bootloaders, methods, templates) to any project repo.
+Centralized instructions to attach PACED (Progressively Accelerated Controlled Engineering through Determinism; formerly Delphi-AI) to any project repo.
 
-## What Delphi-AI Is
-Delphi-AI is not a prompt bundle. It is a working method for AI-assisted delivery that combines:
+## What PACED Is
+PACED is not a prompt bundle. It is an internal working method for AI-assisted delivery that combines:
 
 - bootloaders per agent
 - environment/readiness checks
@@ -15,8 +15,17 @@ Delphi-AI is not a prompt bundle. It is a working method for AI-assisted deliver
 
 The goal is not to let an agent "just code". The goal is to make execution reviewable, resumable, and less likely to drift away from architecture, contract, and verification.
 
-## Profiles
-Delphi separates its operating roles into **profiles**, not stylistic personas.
+PACED's thesis is that accumulated system complexity should accelerate correct code creation, not slow it down. Stack specificity is therefore deliberate: restricting the stack lets deterministic validators, architecture rules, and CI checks accumulate project by project, so sustained engineering velocity compounds instead of decaying.
+
+PACED is now the method name. The repository/package path remains `delphi-ai` during the transition, so filesystem references keep that name even when the documentation speaks about PACED.
+
+Terminology during the transition:
+- `PACED` = the method
+- `Delphi` = the default agent/persona implementing the method
+- `delphi-ai/` = the current repository/install surface name
+
+## PACED Profiles
+PACED separates its operating roles into **profiles**, not stylistic personas.
 
 - **Genesis**
   - `Product-Bootstrap`
@@ -37,16 +46,16 @@ This separation is intentional:
 - the strategic profile should not silently turn into an implementation profile;
 - assurance profiles should try to invalidate the delivery, not quietly absorb the delivery itself.
 
-## Method Positioning
-Delphi-AI follows a **governed, distributed spec-driven execution model**.
+## PACED Method Positioning
+PACED follows a **governed, distributed spec-driven execution model**.
 
-When a project is still in zero-state, Delphi may begin with `Genesis / Product-Bootstrap`.
+When a project is still in zero-state, PACED may begin with `Genesis / Product-Bootstrap`.
 
 - zero-state means the project may not yet have `project_constitution.md`, `system_roadmap.md`, module docs, or TODOs;
 - the genesis profile may work from interviews, references, and prototypes (including Stitch or disposable web prototypes);
-- its job is to instantiate the first canonical Delphi package, not to become the long-term owner of delivery.
+- its job is to instantiate the first canonical PACED package, not to become the long-term owner of delivery.
 
-Instead of concentrating all intent in a single spec file, Delphi distributes authority across four explicit surfaces:
+Instead of concentrating all intent in a single spec file, PACED distributes authority across four explicit surfaces:
 
 - `foundation_documentation/project_constitution.md`
   - project-specific system constitution: inter-module rules, cross-stack invariants, system topology, and approved deviations from the inherited Delphi baseline
@@ -57,45 +66,63 @@ Instead of concentrating all intent in a single spec file, Delphi distributes au
 - `foundation_documentation/todos/active/*.md`
   - tactical execution contract for one change: scope, out-of-scope, done criteria, validation steps, frozen decisions, assumptions, plan, and adherence proof
 
-Delphi may also use auxiliary non-authoritative surfaces when they improve execution discipline without replacing the canonical docs above:
+PACED may also use auxiliary non-authoritative surfaces when they improve execution discipline without replacing the canonical docs above:
 
 - `tools/manifest.md`
   - inventory of deterministic helper tools so scripts are reused instead of recreated
 - `skills/deterministic-tooling-register.md`
   - internal Delphi register that classifies canonical skills as `skill-only`, `lint/analyzer`, `partial-tool`, `full-tool-candidate`, or `already-backed`, and links any existing deterministic support
+- `foundation_documentation/artifacts/feature-briefs/*.md`
+  - pre-TODO framing surface for `medium|big` or ambiguous feature-shaped work; used to decompose ideas into story-sized slices without competing with the canonical docs
 - `foundation_documentation/artifacts/dependency-readiness.md`
   - non-blocking record of external dependency health, verification method, and workarounds
 - `foundation_documentation/artifacts/session-memory.md`
   - bounded continuity memory for recent session state, confirmed preferences/behaviors, and dependency references; never a substitute for canonical docs or TODO handoffs
+- `foundation_documentation/artifacts/tmp/runtime-index.md`
+  - generated runtime/session handoff index for active TODOs, blocked fronts, open handoffs, and session-memory carry-over; reconstructible and never authoritative
+- `foundation_documentation/artifacts/tmp/*-todo-validation-bundle.json` and `*-todo-validation-report.json`
+  - derived validator outputs for CI/local diagnostics; disposable, machine-checkable, and never a replacement for the markdown TODO
+- `foundation_documentation/artifacts/tmp/project-setup-report.json`
+  - derived setup/recalibration snapshot for brownfield drift interpretation; machine-checkable and never a replacement for canonical project docs
+- `foundation_documentation/artifacts/tmp/project-setup-report.txt`
+  - human-readable brownfield/recalibration diagnosis captured from the deterministic recalibration loop
+- `foundation_documentation/artifacts/tmp/project-normalization-packet.{json,md}`
+  - derived assistive packet that separates manual remediation from normalization-TODO tracks when a project is not yet calibrated
+- `foundation_documentation/artifacts/tmp/subagent-*-dispatch.{json,md}` and `subagent-*-merge.{json,md}`
+  - derived orchestration packets for bounded no-context reviewer dispatch and merge; useful when PACED delegates critique/audit/final-review work to subagents without creating hidden authority
+- `delphi-ai/artifacts/tmp/self-improvement-work-ledger.md`
+  - temporary instruction-only work ledger for longer Delphi self-improvement sessions; never a tactical TODO or canonical source of truth
 
-This means Delphi is neither code-first nor a loose "vibe coding" loop. Once the canonical package exists, the normal path is:
+This means PACED is neither code-first nor a loose "vibe coding" loop. Once the canonical package exists, the normal path is:
 
 1. load the right instructions and verify readiness
-2. refine the tactical TODO (`WHAT` and what counts as done)
-3. build assumptions and an execution plan (`HOW`)
-4. review the plan for architecture, tests, performance, and security
-5. request explicit approval (`APROVADO`)
-6. ingest the rules/workflows that govern the touched surfaces
-7. implement, with test-first/TDD when behavior is verifiable
-8. validate decision adherence, module coherence, security risk, and verification debt
-9. promote stable outcomes back into canonical docs
+2. for `medium|big` work that is not already one bounded slice, and for materially ambiguous work of any size, frame the feature and decompose it into story-sized slices
+3. refine the tactical TODO for the current slice (`WHAT` and what counts as done)
+4. build assumptions and an execution plan (`HOW`)
+5. review the plan for architecture, tests, performance, and security
+6. request explicit approval (`APROVADO`)
+7. ingest the rules/workflows that govern the touched surfaces
+8. implement, with test-first/TDD when behavior is verifiable
+9. validate decision adherence, module coherence, security risk, and verification debt
+10. promote stable outcomes back into canonical docs
 
-When the work crosses profile boundaries, Delphi records that handoff in the tactical TODO instead of relying on implicit session memory.
+When the work crosses profile boundaries, PACED records that handoff in the tactical TODO instead of relying on implicit session memory.
 
-In practice, this makes Delphi close to Spec-Driven Development, but with **distributed authority by responsibility** rather than one feature-spec artifact:
+In practice, this makes PACED close to Spec-Driven Development, but with **distributed authority by responsibility** rather than one feature-spec artifact:
 
 - project constitution = system-specific constitutional spec
 - roadmap = strategic spec
 - module docs = durable canonical spec
+- feature brief = non-authoritative pre-TODO framing for story decomposition
 - tactical TODO = executable change spec
 
 ## SDD + TDD
-Delphi should be read as a combination of:
+PACED should be read as a combination of:
 
 - **SDD** for defining the contract of the work
 - **TDD / test-first** for proving that the implementation actually satisfies that contract
 
-In Delphi terms:
+In PACED terms:
 
 - project constitution, roadmap, module docs, and the tactical TODO define what must be true
 - assumptions and the execution plan define how the current implementation intends to get there
@@ -105,17 +132,20 @@ This split matters because the two layers solve different failure modes:
 
 - spec-driven execution reduces direction error
 - test-first execution reduces implementation error and false confidence
+- deterministic validators progressively absorb objective structural checks so governance relies less on vibes over time
 
-## How Delphi Works
+## How PACED Works
 The core idea is simple:
 
-- the TODO defines **what** must be delivered and what counts as done
-- assumptions and the execution plan define **how** Delphi currently intends to deliver it
+- the feature brief decomposes larger or ambiguous work into story-sized slices before execution
+- the TODO defines **what** must be delivered and what counts as done for one current slice
+- assumptions and the execution plan define **how** PACED currently intends to deliver it
 - implementation is not authorized until the contract, assumptions, plan, and approval line up
 - delivery is not complete until the result is validated and stable knowledge is promoted out of tactical notes
 
 This is why the framework puts so much weight on:
 
+- feature framing before medium/big execution
 - evidence-backed assumptions instead of free guesses
 - explicit approval before implementation
 - module-first coherence checks
@@ -123,14 +153,21 @@ This is why the framework puts so much weight on:
 - test-first/TDD when behavior can be verified early
 - explicit closing checks for security risk and verification debt
 
-## What Delphi Borrowed From GSD
-Delphi absorbed a few ideas from Get Shit Done because they improve execution ergonomics:
+Tactical TODOs are also intentionally **bounded but elastic**:
+
+- bounded enough to represent one primary story slice with one primary user/value objective
+- guided by one primary module and one main approval/review/promotion cycle as strong sizing heuristics, not automatic split triggers when the slice is still cohesive
+- elastic enough to absorb local blockers and small concretization work that stays inside that same objective and approval conversation
+- not allowed to silently absorb a new independently testable behavior, a new primary objective, or a new approval/risk conversation without TODO update/split + renewed approval
+
+## What PACED Borrowed From GSD
+PACED absorbed a few ideas from Get Shit Done because they improve execution ergonomics:
 
 - make assumptions explicit instead of leaving them implicit in the plan
 - expose the difference between contract and execution strategy
 - prefer operational clarity over hidden agent reasoning
 
-But Delphi intentionally does **not** adopt the full GSD shape. It does not center work around:
+But PACED intentionally does **not** adopt the full GSD shape. It does not center work around:
 
 - `STATE.md`
 - a phase-centric artifact stack
@@ -138,8 +175,8 @@ But Delphi intentionally does **not** adopt the full GSD shape. It does not cent
 
 The tactical TODO remains the execution authority, and durable truth remains in canonical docs.
 
-## Profiles and Scope Checks
-Delphi profiles are backed by explicit scope boundaries.
+## PACED Profiles and Scope Checks
+PACED profiles are backed by explicit scope boundaries.
 
 - `Genesis / Product-Bootstrap` owns project inception, prototype-backed validation, and first-pass canonicalization.
 - `Operational / Coder` owns product behavior and tests.
@@ -155,8 +192,8 @@ python3 delphi-ai/tools/profile_scope_check.py --profile <profile-id>
 
 The check validates touched surfaces only. It does not try to infer whether mixed-scope changes came from a valid handoff, so those cases must be reconciled against the TODO handoff log.
 
-## Where TDD Fits
-Delphi now treats test strategy as part of the execution plan, not as an afterthought.
+## Where TDD Fits in PACED
+PACED now treats test strategy as part of the execution plan, not as an afterthought.
 
 For behavior that is verifiable, the preferred path is test-first:
 
@@ -194,6 +231,23 @@ bash delphi-ai/init.sh
 - For zero-state `Genesis / Product-Bootstrap` repos, treat `init.sh --check` / `init.sh` as the install preflight and instantiate `foundation_documentation/` before expecting full `verify_context.sh` readiness to pass.
 - If the validation fails only because Delphi-managed links/artifacts are missing or misaligned, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain `bash delphi-ai/verify_context.sh`.
 - For full governance mirror validation after readiness passes, run `bash delphi-ai/verify_adherence_sync.sh`.
+- For brownfield/recalibration inventory and bounded normalization tracks, prefer the end-to-end helper:
+  ```bash
+  bash delphi-ai/tools/project_recalibration_doctor.sh --repo .
+  ```
+- If you need the setup report only, run:
+  ```bash
+  bash delphi-ai/tools/delphi_project_setup_report.sh \
+    --repo . \
+    --json-output foundation_documentation/artifacts/tmp/project-setup-report.json
+  ```
+- If the setup report already exists and you only need to derive/update the packet, run:
+  ```bash
+  python3 delphi-ai/tools/project_setup_normalization_packet.py \
+    --report foundation_documentation/artifacts/tmp/project-setup-report.json \
+    --json-output foundation_documentation/artifacts/tmp/project-normalization-packet.json \
+    --markdown-output foundation_documentation/artifacts/tmp/project-normalization-packet.md
+  ```
 
 ### Option 2: Manual Setup
 

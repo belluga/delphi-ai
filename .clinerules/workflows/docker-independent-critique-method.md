@@ -60,6 +60,7 @@ It must also challenge whether the planned path is sound for performance, elegan
 ## Procedure
 1. Record the critique decision in the TODO as `required|recommended|not_needed` with rationale.
 2. Build the bounded critique package.
+   - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 3. Run one fresh auxiliary critique with no inherited thread context.
    - If a subagent is available in the environment, use that subagent with `fork_context=false`.
    - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
@@ -82,6 +83,7 @@ It must also challenge whether the planned path is sound for performance, elegan
    - `Integrated`
    - `Challenged`
    - `Deferred with rationale`
+   - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
 9. If the critique reveals contract changes, module supersedes, or approval-material plan changes, refresh the TODO and request renewed approval before implementation.
 
 ## Outputs

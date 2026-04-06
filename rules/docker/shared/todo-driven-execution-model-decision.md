@@ -7,6 +7,8 @@ description: "Before any implementation work (code/docs) that changes the projec
 ## Rule
 Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
 
+For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
+
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
@@ -30,6 +32,23 @@ If the change restores previously documented or verifiably working behavior (inc
 - Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
 - Ephemeral TODOs are disposable execution artifacts, not backlog. After the fix is validated, delete the ephemeral TODO. If the work becomes blocked, survives beyond the immediate maintenance cycle, or needs broader planning/coherence handling, retire the ephemeral TODO instead of promoting it. Consolidate any durable canonical truth directly into the relevant `MODULE`, and if broader execution work still remains, create a fresh tactical TODO under `foundation_documentation/todos/active/`.
 
+### Gate 0 — Feature Framing / Story Decomposition decision
+- Before opening or using a tactical TODO, decide whether the request is already one bounded execution slice or is still feature-shaped/idea-shaped.
+- `Direct-to-TODO` is allowed only when all of the following are true:
+  - the request already represents one primary delivery story/value slice
+  - ambiguity is low enough that TODO refinement will not become broad discovery
+  - the expected work can stay within one main approval/review/promotion conversation
+  - roadmap/constitution impact is absent or explicit enough that a separate framing pass adds little value
+- Otherwise, create or update a `Feature Brief / Story Decomposition` artifact under `foundation_documentation/artifacts/feature-briefs/` using `templates/feature_brief_template.md`.
+- Keep the feature brief lightweight. It must record only:
+  - problem / desired outcome
+  - constraints / non-goals
+  - canonical touchpoints
+  - evidence / references
+  - ambiguities that still matter
+  - story decomposition
+- A tactical TODO should normally map to one primary story slice from that brief, not to the whole initiative.
+
 ### Gate A — TODO existence
 - If no relevant TODO exists, do not start implementation.
 - Ask the user to create one (or ask permission to draft one), then proceed only after the TODO is present.
@@ -45,6 +64,7 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate C — TODO refinement (no code)
 - Read the TODO.
+- Verify the TODO records either a `Feature brief` path or an explicit `direct-to-todo` rationale.
 - Summarize `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
 - Summarize the current delivery stage, qualifiers, and `Next exact step`.
 - If `Qualifiers` includes `Blocked`, verify that `Blocker Notes` still describe the active constraint.
@@ -60,7 +80,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - `Material Decision`: contract/scope/module/UX/package-surface/validation-semantics/rollout-risk issues that need user confirmation.
   - `Implementation Detail`: local execution choices Delphi can resolve autonomously without changing the approved contract.
   - `Redundant/Already Covered`: issues already settled by the module contract or previously approved decisions and therefore not eligible to be reopened as pending questions.
-- Convert only `Material Decision` findings into `Decision Pending` entries (or equivalent pending-decision section).
+- Convert only `Material Decision` findings into `Decision Pending` entries.
 - Build a `Module Decision Baseline Snapshot` from relevant existing module decisions and reference those entries from TODO pending/frozen decisions (or explicitly mark `No Prior Decision`).
 - Resolve implementation details autonomously and record them in the TODO only when traceability is useful.
 - Group related material decisions by theme when possible and avoid serial one-by-one questioning for minor details.
@@ -79,6 +99,10 @@ If the change restores previously documented or verifiably working behavior (inc
   - `small`: consolidated planning review.
   - `medium`: one review checkpoint before approval.
   - `big`: section-by-section review checkpoints.
+- Verify the TODO remains one primary story slice with one primary user/value objective.
+- One primary module and one main approval/review/promotion cycle are strong default sizing heuristics, not automatic split triggers when the slice is still one cohesive behavior.
+- Preserve elasticity: local refinements, blockers, and concretization work may stay in the TODO while they remain inside that same objective and approval conversation, even if secondary modules are touched in service of that slice.
+- If the TODO now contains multiple independently testable story slices or multiple approval conversations, split or narrow it before planning continues.
 
 ### Gate F — Profile Scope & Handoffs (mandatory before planning continues)
 - Record the primary execution profile and active technical scope in the TODO.
@@ -96,7 +120,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - what breaks or changes if it is false
   - confidence (`High|Medium|Low`)
   - handling (`Keep as Assumption|Promote to Decision|Block`)
-- If an assumption changes `scope`, `definition_of_done`, `validation_steps`, public contract, or module coherence, promote it into the TODO contract before planning continues.
+- If an assumption changes `scope`, `definition_of_done`, required validation semantics, public contract, or module coherence, promote it into the TODO contract before planning continues.
 - If an assumption cannot be supported enough to plan safely, mark it `Block` and stop before approval.
 
 ### Gate H — Execution Plan (mandatory before `APROVADO`)
@@ -155,7 +179,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - If any module decision has unintended divergence, block implementation until it is either preserved or explicitly approved for supersede.
 
 ### Gate L — Explicit approval token (mandatory)
-- After Gates A-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
+- After Gates 0-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
   - call `apply_patch`,
@@ -175,6 +199,10 @@ If the change restores previously documented or verifiably working behavior (inc
 - The scope check validates touched surfaces only; it does not infer authorship or whether the mixed diff is justified by a valid handoff.
 - `Operational / Coder` may rely on `project_constitution.md` as read authority, but any required constitution edit must be routed through a TODO handoff to `Strategic / CTO-Tech-Lead`.
 - If rule ingestion reveals a material conflict with the approved plan, stop execution, update the plan/TODO, and request renewed **APROVADO** before continuing.
+
+### Gate M1 — Bounded But Elastic execution boundary
+- During implementation, Delphi may absorb local discoveries inside the same TODO only when they are already implied by the current objective and remain inside the same approval/review/promotion conversation.
+- If a discovery introduces a new independently testable behavior, a new primary objective, or a new approval/risk conversation, stop, update or split the TODO, and obtain renewed approval before continuing.
 
 ### Gate N — Decision Adherence Gate (mandatory before delivery)
 - Before delivery, build a `Decision Adherence Validation` table for every baseline decision ID.
@@ -310,6 +338,7 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If Operational Micro-Fix is used but any production/test file, project-specific doc (outside `artifacts/tmp/**` or `todos/**`), or product/runtime behavior is touched, block and switch to the proper TODO lane.
 - If Operational Micro-Fix is used without immediate objective validation evidence, block closure until that evidence exists.
 - If the TODO still uses an outdated delivery-status schema, block implementation until it is aligned to the canonical format.
+- If `medium|big` or materially ambiguous work proceeds without either a feature brief or an explicit `direct-to-todo` rationale, block implementation.
 - If COMMENT blocks exist, block implementation until they are resolved and removed.
 - If canonical module anchors are missing in the TODO, block implementation until anchors are added.
 - If a touched module area still depends on legacy summary-era context and the TODO has not absorbed canonicalization of that touched area, block implementation.
@@ -318,6 +347,7 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If assumptions that materially affect the TODO contract remain only implicit, block planning/approval until they are explicit.
 - If the TODO lacks a primary execution profile or technical scope, block planning/approval.
 - If an assumption lacks evidence but is still being treated as safe for execution, block planning/approval.
+- If the TODO still bundles multiple independently testable story slices or multiple approval conversations, block planning/implementation until it is split or narrowed.
 - If no execution plan exists for the approved TODO, block implementation.
 - If any frozen decision conflicts with canonical module docs, block implementation until coherence is resolved.
 - If the module decision consistency matrix (1-1) is missing, block implementation.
@@ -326,6 +356,7 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If the execution plan does not contain a recorded test strategy, block implementation.
 - If bugfix/regression or behavior-defining work does not contain fail-first targets (or explicit rationale for non-applicability), block implementation.
 - If relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`, block implementation.
+- If implementation absorbs a new independently testable behavior, a new primary objective, or a new approval/risk conversation without TODO update/split + renewed approval, block delivery.
 - If execution crosses profile boundaries without a TODO handoff entry, block implementation/delivery until the trace is recorded.
 - If `Qualifiers` includes `Provisional` and `Provisional Notes` are missing, block implementation/delivery until TODO status is coherent.
 - If `Qualifiers` includes `Blocked` and `Blocker Notes` or `Next exact step` are missing, block implementation/delivery until TODO status is coherent.
