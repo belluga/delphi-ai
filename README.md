@@ -84,6 +84,14 @@ PACED may also use auxiliary non-authoritative surfaces when they improve execut
   - generated runtime/session handoff index for active TODOs, blocked fronts, open handoffs, and session-memory carry-over; reconstructible and never authoritative
 - `foundation_documentation/artifacts/tmp/*-todo-validation-bundle.json` and `*-todo-validation-report.json`
   - derived validator outputs for CI/local diagnostics; disposable, machine-checkable, and never a replacement for the markdown TODO
+- `foundation_documentation/artifacts/metrics/rule-catalog.json`
+  - project-local ledger of teaching rules, their lifecycle labels, and their resolution contracts; used for metrics and recalibration, never as a substitute for constitution/modules
+- `foundation_documentation/artifacts/metrics/events/rule-events.jsonl`
+  - append-only rule episode log for deterministic blockers, inferred true positives, explicit false positives, escapes, and lifecycle changes
+- `foundation_documentation/artifacts/tmp/*-<review-kind>-resolution.json`
+  - derived gate-finding resolution packet extracted from the authoritative TODO so useful/discarded/formalizable findings can be aggregated without editing JSON by hand
+- `foundation_documentation/artifacts/metrics/project-metrics-summary.{json,md}`
+  - derived project-level Clean Rate and rule/gate effectiveness summary
 - `foundation_documentation/artifacts/tmp/project-setup-report.json`
   - derived setup/recalibration snapshot for brownfield drift interpretation; machine-checkable and never a replacement for canonical project docs
 - `foundation_documentation/artifacts/tmp/project-setup-report.txt`
@@ -208,6 +216,31 @@ Once a rule is in operation, effectiveness should be judged by evidence, not by 
 
 Escapes are candidates for new rules when the failure was formalizable. A rule that generates too many false positives after being considered ready is not actually ready; it should return to adjustment or be pruned.
 Until PACED ships a dedicated lifecycle ledger, treat these as stewardship labels for rule evaluation and recalibration, not as a claim that every repository already exposes full rule metrics plumbing.
+
+### Phase 1 Metrics Loop
+PACED Phase 1 closes that loop with four lightweight pieces:
+
+- a project-local `rule-catalog.json`
+- an append-only `rule-events.jsonl`
+- TODO-native gate finding resolution tables extracted into derived JSON
+- a derived metrics summary that computes rule effectiveness, gate effectiveness, and `Clean Rate`
+
+The design is intentionally event-sourced, adjudication-light, and summary-derived:
+
+- deterministic validators record episodes, not manual counters
+- true positives are inferred by default when an episode disappears after correction
+- false positives, escapes, and recalibrations are explicit events
+- no-context helper findings are resolved in the authoritative TODO, then extracted for aggregation
+
+### PACED MCP Server
+The long-term destination of this metrics/governance surface is a PACED MCP Server.
+
+Phase 1 uses local JSON/JSONL artifacts and CLI entrypoints so the schemas can mature quickly in real projects. But the underlying business logic should remain separable from CLI parsing so the same operations can later be exposed as native MCP tools such as:
+
+- `paced.rule_event.record`
+- `paced.gate_resolution.extract`
+- `paced.metrics.summary`
+- `paced.metrics.clean_rate`
 
 ## How PACED Works
 The core idea is simple:

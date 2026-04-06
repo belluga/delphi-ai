@@ -102,6 +102,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - `Challenged`
    - `Deferred with rationale`
    - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
+   - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind final_review ...` when metrics are in scope.
 9. If the final review reveals:
    - an implementation defect within approved scope, fix it and refresh the affected evidence;
    - an adherence break, block closure until the decision package is corrected or renewed approval is obtained;

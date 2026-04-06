@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/gate_finding_resolution.schema.json",
+  "title": "PACED Gate Finding Resolution",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "authoritative",
+    "edit_policy",
+    "todo_path",
+    "review_kind",
+    "gate_status",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "gate-finding-resolution-v1"
+    },
+    "artifact_kind": {
+      "const": "gate_finding_resolution"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "edit_policy": {
+      "const": "derived_from_todo"
+    },
+    "todo_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_kind": {
+      "enum": [
+        "critique",
+        "test_quality_audit",
+        "final_review"
+      ]
+    },
+    "gate_status": {
+      "enum": [
+        "not_run",
+        "running",
+        "no_material_findings",
+        "findings_integrated",
+        "blocked",
+        "waived"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "finding_id",
+        "resolution",
+        "usefulness",
+        "formalizable",
+        "candidate_rule_level",
+        "candidate_rule_id",
+        "rationale"
+      ],
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution": {
+          "enum": [
+            "Integrated",
+            "Challenged",
+            "Deferred"
+          ]
+        },
+        "usefulness": {
+          "enum": [
+            "useful",
+            "noise",
+            "mixed",
+            "unknown"
+          ]
+        },
+        "formalizable": {
+          "enum": [
+            "yes",
+            "partial",
+            "no",
+            "unknown"
+          ]
+        },
+        "candidate_rule_level": {
+          "enum": [
+            "paced",
+            "project",
+            "none",
+            "unknown"
+          ]
+        },
+        "candidate_rule_id": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

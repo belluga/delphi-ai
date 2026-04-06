@@ -50,7 +50,19 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
    - Reject prose-only feedback when deterministic merge is the chosen path.
 4. **Merge and interpret**
    - Merge reviewer outputs into a derived summary packet.
-   - Record the actual authoritative resolution back in the TODO/gate as `Integrated|Challenged|Deferred with rationale`.
+   - Record the actual authoritative resolution back in the TODO/gate as `Integrated|Challenged|Deferred` plus usefulness/formalizable classification using the machine-checkable resolution table from the tactical TODO template.
+   - If you want a ready-to-paste table, render it from the merge packet:
+     ```bash
+     python3 delphi-ai/tools/gate_finding_resolution_scaffold.py \
+       --merge foundation_documentation/artifacts/tmp/subagent-critique-merge.json
+     ```
+   - After the TODO table is filled, derive the machine-checkable packet:
+     ```bash
+     python3 delphi-ai/tools/gate_finding_resolution_extract.py \
+       --todo foundation_documentation/todos/active/docker/example.md \
+       --review-kind critique \
+       --output foundation_documentation/artifacts/tmp/example-critique-resolution.json
+     ```
 5. **Keep boundaries clear**
    - The dispatch packet, reviewer JSON, and merge packet are all derived artifacts.
    - They never replace the governing TODO or canonical module/project docs.
@@ -59,6 +71,7 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
 - `subagent-*-dispatch.{json,md}`
 - reviewer result JSON files (produced by the reviewers or harness)
 - `subagent-*-merge.{json,md}`
+- derived `*-resolution.json` packets extracted from the authoritative TODO when finding metrics are needed
 
 ## Validation
 - The dispatch packet is bounded and no-context by construction.

@@ -240,7 +240,10 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
 - **Critique status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
-- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -360,7 +363,10 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
-- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -375,7 +381,10 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`
 - **Final review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
-- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 

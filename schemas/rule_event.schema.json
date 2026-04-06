@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/rule_event.schema.json",
+  "title": "PACED Rule Event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "event_id",
+    "event_kind",
+    "timestamp",
+    "rule_id",
+    "rule_level",
+    "source_kind"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rule-event-v1"
+    },
+    "artifact_kind": {
+      "const": "rule_event"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_kind": {
+      "enum": [
+        "rule_block_observed",
+        "rule_episode_resolved",
+        "rule_escape_recorded",
+        "rule_state_changed"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rule_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rule_level": {
+      "enum": [
+        "paced",
+        "project"
+      ]
+    },
+    "todo_path": {
+      "type": "string"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "fingerprint": {
+      "type": "string"
+    },
+    "source_kind": {
+      "enum": [
+        "ci",
+        "lint",
+        "analyzer",
+        "validator",
+        "hybrid",
+        "manual"
+      ]
+    },
+    "source_ref": {
+      "type": "string"
+    },
+    "issue_code": {
+      "type": "string"
+    },
+    "field": {
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "resolution_instruction": {
+      "type": "string"
+    },
+    "outcome": {
+      "enum": [
+        "true_positive",
+        "false_positive",
+        "waived",
+        "unknown"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "from_state": {
+      "enum": [
+        "created",
+        "adjusting",
+        "ready",
+        "operating"
+      ]
+    },
+    "to_state": {
+      "enum": [
+        "created",
+        "adjusting",
+        "ready",
+        "operating"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_kind": {
+            "const": "rule_block_observed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "todo_path",
+          "episode_id",
+          "fingerprint",
+          "source_ref",
+          "issue_code",
+          "field",
+          "severity",
+          "message",
+          "resolution_instruction"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_kind": {
+            "const": "rule_episode_resolved"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "todo_path",
+          "episode_id",
+          "fingerprint",
+          "source_ref",
+          "outcome",
+          "reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_kind": {
+            "const": "rule_escape_recorded"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "todo_path",
+          "episode_id",
+          "fingerprint",
+          "source_ref",
+          "reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_kind": {
+            "const": "rule_state_changed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "source_ref",
+          "from_state",
+          "to_state",
+          "reason"
+        ]
+      }
+    }
+  ]
+}

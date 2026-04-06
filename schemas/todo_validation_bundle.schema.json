@@ -143,14 +143,14 @@
       "type": "object",
       "required": [
         "critique",
-        "test_audit",
+        "test_quality_audit",
         "final_review"
       ],
       "properties": {
         "critique": {
           "$ref": "#/$defs/gate_record"
         },
-        "test_audit": {
+        "test_quality_audit": {
           "$ref": "#/$defs/gate_record"
         },
         "final_review": {
@@ -180,7 +180,7 @@
         "gate_id": {
           "enum": [
             "critique",
-            "test_audit",
+            "test_quality_audit",
             "final_review"
           ]
         },

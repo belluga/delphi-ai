@@ -21,7 +21,8 @@ This applies only to tactical TODOs from `templates/todo_template.md`, not to pr
    python3 delphi-ai/tools/todo_deterministic_validator.py \
      --todo foundation_documentation/todos/active/<lane>/<slug>.md \
      --bundle-output foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json \
-     --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json
+     --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json \
+     --events-jsonl foundation_documentation/artifacts/metrics/events/rule-events.jsonl
    ```
 3. Treat `FAIL` as objective structural blocker until the TODO fields are corrected.
 4. Keep the markdown canonical; never patch the derived bundle instead of the TODO.

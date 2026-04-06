@@ -84,6 +84,7 @@ It must also challenge whether the planned path is sound for performance, elegan
    - `Challenged`
    - `Deferred with rationale`
    - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
+   - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind critique ...` when metrics are in scope.
 9. If the critique reveals contract changes, module supersedes, or approval-material plan changes, refresh the TODO and request renewed approval before implementation.
 
 ## Outputs

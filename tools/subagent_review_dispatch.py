@@ -20,6 +20,7 @@ CONFIG = {
             "Compare only viable architectural paths inside the bounded package.",
             "Name the recommended path and the main tradeoff behind that choice.",
             "State whether the path improves or regresses performance, elegance, and structural soundness.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
         ],
         "result_fields": [
             "overall_assessment",
@@ -28,6 +29,10 @@ CONFIG = {
             "elegance_position",
             "structural_soundness_position",
             "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
             "findings[]"
         ],
     },
@@ -37,6 +42,7 @@ CONFIG = {
             "Challenge the bounded plan or implementation for regressions, hidden scope, and weak adherence.",
             "Explicitly assess performance, elegance, structural soundness, and operational fit.",
             "Do not reopen unrelated architecture outside the bounded package.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
         ],
         "result_fields": [
             "overall_assessment",
@@ -45,6 +51,10 @@ CONFIG = {
             "elegance_position",
             "structural_soundness_position",
             "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
             "findings[]"
         ],
     },
@@ -54,6 +64,7 @@ CONFIG = {
             "Verify whether changed tests reflect real behavior/contract change or only pass-the-test repair.",
             "Assess whether assertions are effective and efficient.",
             "State whether the audit sees brittle test-only shortcuts or weak coverage.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
         ],
         "result_fields": [
             "overall_assessment",
@@ -62,6 +73,10 @@ CONFIG = {
             "elegance_position",
             "structural_soundness_position",
             "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
             "findings[]"
         ],
     },
@@ -71,6 +86,7 @@ CONFIG = {
             "Review the delivered bounded package for regressions, adherence gaps, residual risk, and waiver quality.",
             "Explicitly call out any performance regressions, elegance regressions, or brittle structural shortcuts.",
             "Stay inside the bounded package and treat the review as closure-focused.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
         ],
         "result_fields": [
             "overall_assessment",
@@ -79,6 +95,10 @@ CONFIG = {
             "elegance_position",
             "structural_soundness_position",
             "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
             "findings[]"
         ],
     },

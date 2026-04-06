@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/rule_catalog.schema.json",
+  "title": "PACED Rule Catalog",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rule-catalog-v1"
+    },
+    "artifact_kind": {
+      "const": "rule_catalog"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": [
+        "rule_id",
+        "rule_level",
+        "source_kind",
+        "source_ref",
+        "title",
+        "resolution_contract",
+        "lifecycle_state",
+        "owner"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_level": {
+          "enum": [
+            "paced",
+            "project"
+          ]
+        },
+        "source_kind": {
+          "enum": [
+            "ci",
+            "lint",
+            "analyzer",
+            "validator",
+            "hybrid",
+            "manual"
+          ]
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution_contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_state": {
+          "enum": [
+            "created",
+            "adjusting",
+            "ready",
+            "operating"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "last_recalibrated_at": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "superseded_by": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

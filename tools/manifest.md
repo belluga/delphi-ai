@@ -21,7 +21,11 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/frontend_race_probe.sh` | shell | Orchestrate real repeated frontend race probes by burst level and capture deterministic pass/fail evidence for stack-native test runners. |
 | `tools/frontend_race_validation_scaffold.sh` | shell | Generate a markdown scenario matrix for frontend race-condition validation. |
 | `tools/flutter_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Flutter controller, domain, repository, and screen workflows. |
+| `tools/gate_finding_resolution_extract.py` | python | Extract a derived machine-checkable gate-finding resolution packet from the authoritative tactical TODO. |
+| `tools/gate_finding_resolution_scaffold.py` | python | Render a TODO-ready markdown resolution table scaffold from a merged subagent review packet. |
 | `tools/laravel_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Laravel endpoint and domain workflows. |
+| `tools/paced_metrics_core.py` | python | Shared PACED metrics helpers used by CLI tools today and designed for future MCP tool exposure. |
+| `tools/paced_metrics_summary.py` | python | Aggregate rule events plus TODO-derived gate resolutions into derived Clean Rate and effectiveness summaries. |
 | `tools/flutter_route_contract_audit.sh` | shell | Scan the generated Flutter router for required non-URL argument signatures that must be classified before delivery. |
 | `tools/github_stage_promotion_snapshot.sh` | shell | Collect a local/remote GitHub PR and check snapshot to support manual stage-promotion decisions. |
 | `tools/project_setup_normalization_packet.py` | python | Turn a derived project setup report into non-authoritative manual-remediation and normalization-TODO tracks for brownfield recalibration. |
@@ -31,10 +35,13 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/profile_scope_check.py` | python | Validate touched surfaces against the active Delphi profile scope rules. |
 | `tools/runtime_session_index.py` | python | Generate a derived runtime/session continuity index from active TODOs, blocked fronts, handoff traces, and bounded session-memory carry-over. |
 | `tools/runtime_ingress_surface_audit.sh` | shell | Audit Dockerfiles, compose files, ingress/runtime configs, and basic compose readiness before runtime or ingress changes. |
+| `tools/rule_event_record.py` | python | Record explicit false positives, escapes, and lifecycle changes into the append-only PACED rule events ledger. |
+| `tools/seed_rule_catalog.py` | python | Seed a project-local PACED rule catalog with canonical teaching-rule metadata and lifecycle labels. |
 | `tools/subagent_review_dispatch.py` | python | Build a derived no-context subagent dispatch packet for architecture opinions, critique, test-quality audit, or final review. |
 | `tools/subagent_review_merge.py` | python | Merge structured no-context subagent review results into a derived summary packet for TODO/gate resolution. |
 | `tools/todo_deterministic_validator.py` | python | Run deterministic structural validation over tactical TODO gate/blocker/waiver fields and emit diagnostic blockers. |
 | `tools/todo_validation_bundle_export.py` | python | Export a machine-checkable validation bundle from a tactical TODO markdown file. |
+| `tools/todo_validation_rules.py` | python | Canonical PACED rule metadata for deterministic TODO validator issue codes and rule-catalog seeding. |
 | `tools/runtime_load_probe.sh` | shell | Run deterministic staged HTTP load/stress probes with objective thresholds for latency, error rate, and throughput. |
 | `tools/runtime_load_validation_scaffold.sh` | shell | Generate a markdown scaffold for runtime load/stress/spike/soak validation evidence. |
 | `tools/self_check.sh` | shell | Run Delphi self-maintenance validation for instruction baselines and mirrors. |

@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/paced_metrics_summary.schema.json",
+  "title": "PACED Metrics Summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "generated_at",
+    "closed_todo_count",
+    "rule_metrics",
+    "gate_metrics",
+    "clean_rates"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "paced-metrics-summary-v1"
+    },
+    "artifact_kind": {
+      "const": "paced_metrics_summary"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "closed_todo_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rule_metrics": {
+      "$ref": "#/$defs/ruleMetrics"
+    },
+    "gate_metrics": {
+      "$ref": "#/$defs/gateMetrics"
+    },
+    "clean_rates": {
+      "$ref": "#/$defs/cleanRates"
+    },
+    "todo_summaries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/todoSummary"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ruleMetrics": {
+      "type": "object",
+      "required": [
+        "block_episodes",
+        "true_positives",
+        "false_positives",
+        "escapes",
+        "recalibrations"
+      ],
+      "properties": {
+        "block_episodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "true_positives": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "false_positives": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "escapes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recalibrations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "gateMetrics": {
+      "type": "object",
+      "required": [
+        "executed_gate_count",
+        "clean_gate_count",
+        "useful_findings",
+        "discarded_findings",
+        "mixed_findings",
+        "formalizable_yes",
+        "formalizable_partial"
+      ],
+      "properties": {
+        "executed_gate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clean_gate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "useful_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "discarded_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mixed_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "formalizable_yes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "formalizable_partial": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "cleanRates": {
+      "type": "object",
+      "required": [
+        "deterministic_clean_rate",
+        "gate_clean_rate",
+        "work_clean_rate"
+      ],
+      "properties": {
+        "deterministic_clean_rate": {
+          "type": "number",
+          "minimum": 0
+        },
+        "gate_clean_rate": {
+          "type": "number",
+          "minimum": 0
+        },
+        "work_clean_rate": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "todoSummary": {
+      "type": "object",
+      "required": [
+        "todo_path",
+        "rule_blocked",
+        "useful_gate_findings",
+        "clean_work"
+      ],
+      "properties": {
+        "todo_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_blocked": {
+          "type": "boolean"
+        },
+        "useful_gate_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clean_work": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

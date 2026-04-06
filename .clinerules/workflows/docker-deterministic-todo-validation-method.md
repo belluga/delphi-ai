@@ -37,7 +37,8 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
      python3 delphi-ai/tools/todo_deterministic_validator.py \
        --todo foundation_documentation/todos/active/<lane>/<slug>.md \
        --bundle-output foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json \
-       --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json
+       --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json \
+       --events-jsonl foundation_documentation/artifacts/metrics/events/rule-events.jsonl
      ```
 3. **Interpret the result**
    - `PASS` means the objective fields required by the validator are structurally coherent.
@@ -60,8 +61,10 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
 ## Outputs
 - `foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json`
 - `foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json`
+- optional `foundation_documentation/artifacts/metrics/events/rule-events.jsonl` entries when PACED metrics are in scope
 
 ## Validation
 - The validator must produce diagnostic messages that tell the operator exactly what field is missing or invalid and, when the remedy is objective, what needs to be added or corrected.
 - The validator may block objective structural failures, but it must not pretend to judge semantics that still require human/LLM review.
 - The validator's role is deterministic convergence support, not automatic mutation of the TODO or codebase.
+- When event logging is enabled, repeated observations of the same issue must reuse the same episode identity so metrics count one blocker episode rather than inflating per retry.

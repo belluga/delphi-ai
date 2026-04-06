@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/todo_validation_report.schema.json",
+  "title": "PACED Tactical TODO Validation Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "todo_path",
+    "result",
+    "issues"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "todo-validation-report-v1"
+    },
+    "artifact_kind": {
+      "const": "todo_validation_report"
+    },
+    "todo_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "required": [
+        "severity",
+        "code",
+        "field",
+        "message",
+        "rule_id",
+        "rule_level",
+        "source_kind",
+        "source_ref",
+        "episode_id",
+        "fingerprint",
+        "resolution_instruction"
+      ],
+      "properties": {
+        "severity": {
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_level": {
+          "enum": [
+            "paced",
+            "project"
+          ]
+        },
+        "source_kind": {
+          "enum": [
+            "ci",
+            "lint",
+            "analyzer",
+            "validator",
+            "hybrid",
+            "manual"
+          ]
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "episode_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution_instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

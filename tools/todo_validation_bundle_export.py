@@ -188,9 +188,9 @@ def build_bundle(todo_path: Path) -> dict:
                 "Critique decision",
                 "Critique status"
             ),
-            "test_audit": export_gate(
+            "test_quality_audit": export_gate(
                 lines,
-                "test_audit",
+                "test_quality_audit",
                 "## Independent Test Quality Audit Gate",
                 "Audit decision",
                 "Audit status"

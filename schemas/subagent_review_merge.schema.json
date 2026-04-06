@@ -15,11 +15,12 @@
     "highest_finding_severity",
     "axis_summary",
     "recommended_paths",
-    "exact_next_step"
+    "exact_next_step",
+    "findings"
   ],
   "properties": {
     "schema_version": {
-      "const": "subagent-review-merge-v1"
+      "const": "subagent-review-merge-v2"
     },
     "artifact_kind": {
       "const": "subagent_review_merge"
@@ -99,7 +100,127 @@
     "exact_next_step": {
       "type": "string",
       "minLength": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "finding_id",
+        "severity",
+        "title",
+        "rationale",
+        "suggested_action",
+        "reviewer_labels",
+        "source_finding_ids",
+        "category",
+        "formalizable_hint",
+        "candidate_rule_level",
+        "candidate_rule_id"
+      ],
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "suggested_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewer_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "source_finding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "category": {
+          "enum": [
+            "architecture",
+            "adherence",
+            "tests",
+            "performance",
+            "security",
+            "elegance",
+            "structural_soundness",
+            "operational_fit",
+            "residual_risk",
+            "other"
+          ]
+        },
+        "formalizable_hint": {
+          "enum": [
+            "yes",
+            "partial",
+            "no",
+            "unknown"
+          ]
+        },
+        "candidate_rule_level": {
+          "enum": [
+            "paced",
+            "project",
+            "none",
+            "unknown"
+          ]
+        },
+        "candidate_rule_id": {
+          "type": "string"
+        },
+        "candidate_rule_id_options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "candidate_rule_id": {
+                "const": "multiple"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidate_rule_id_options"
+            ]
+          }
+        }
+      ]
+    }
+  }
 }

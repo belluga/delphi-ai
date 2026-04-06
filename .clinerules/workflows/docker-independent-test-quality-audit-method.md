@@ -116,6 +116,7 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
    - `Challenged`
    - `Deferred with rationale`
    - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
+   - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind test_quality_audit ...` when metrics are in scope.
 9. If the audit invalidates the claimed Definition of Done or shows that test changes do not map to real product change, treat delivery confidence as broken until the tests or scope are corrected.
 
 ## Outputs

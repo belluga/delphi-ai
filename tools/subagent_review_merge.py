@@ -9,6 +9,8 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from paced_metrics_core import combine_candidate_rule_levels, combine_formalizable_hints, normalize_text, short_hash
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DISPATCH_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
@@ -52,6 +54,77 @@ def highest_finding_severity(results: list[dict]) -> str:
     return "none"
 
 
+def finding_fingerprint(review_kind: str, finding: dict) -> str:
+    category = finding.get("category", "other")
+    return short_hash(
+        review_kind,
+        category,
+        normalize_text(finding["title"]),
+        normalize_text(finding["rationale"]),
+        normalize_text(finding["suggested_action"]),
+        length=16,
+    )
+
+
+def merged_findings(results: list[dict], review_kind: str) -> list[dict]:
+    merged: dict[str, dict] = {}
+    for result in results:
+        for index, finding in enumerate(result["findings"], start=1):
+            fingerprint = finding_fingerprint(review_kind, finding)
+            source_finding_id = finding.get("finding_id") or f"{result['reviewer_label']}-{index}"
+            record = merged.setdefault(
+                fingerprint,
+                {
+                    "finding_id": f"F-{fingerprint[:8].upper()}",
+                    "severity": finding["severity"],
+                    "title": finding["title"],
+                    "rationale": finding["rationale"],
+                    "suggested_action": finding["suggested_action"],
+                    "reviewer_labels": [],
+                    "source_finding_ids": [],
+                    "category": finding.get("category", "other"),
+                    "formalizable_hints": [],
+                    "candidate_rule_levels": [],
+                    "candidate_rule_ids": [],
+                },
+            )
+            if SEVERITY_ORDER[finding["severity"]] > SEVERITY_ORDER[record["severity"]]:
+                record["severity"] = finding["severity"]
+            if result["reviewer_label"] not in record["reviewer_labels"]:
+                record["reviewer_labels"].append(result["reviewer_label"])
+            if source_finding_id not in record["source_finding_ids"]:
+                record["source_finding_ids"].append(source_finding_id)
+            record["formalizable_hints"].append(finding.get("formalizable_hint", "unknown"))
+            record["candidate_rule_levels"].append(finding.get("candidate_rule_level", "unknown"))
+            candidate_rule_id = finding.get("candidate_rule_id", "")
+            if candidate_rule_id:
+                record["candidate_rule_ids"].append(candidate_rule_id)
+
+    normalized: list[dict] = []
+    for fingerprint, finding in sorted(merged.items(), key=lambda item: (SEVERITY_ORDER[item[1]["severity"]], item[1]["title"]), reverse=True):
+        candidate_rule_ids = sorted({item for item in finding["candidate_rule_ids"] if item})
+        normalized_record = {
+            "finding_id": finding["finding_id"],
+            "severity": finding["severity"],
+            "title": finding["title"],
+            "rationale": finding["rationale"],
+            "suggested_action": finding["suggested_action"],
+            "reviewer_labels": finding["reviewer_labels"],
+            "source_finding_ids": finding["source_finding_ids"],
+            "category": finding["category"],
+            "formalizable_hint": combine_formalizable_hints(finding["formalizable_hints"]),
+            "candidate_rule_level": combine_candidate_rule_levels(finding["candidate_rule_levels"]),
+            "candidate_rule_id": "n/a",
+        }
+        if len(candidate_rule_ids) == 1:
+            normalized_record["candidate_rule_id"] = candidate_rule_ids[0]
+        elif len(candidate_rule_ids) > 1:
+            normalized_record["candidate_rule_id"] = "multiple"
+            normalized_record["candidate_rule_id_options"] = candidate_rule_ids
+        normalized.append(normalized_record)
+    return normalized
+
+
 def render_markdown(payload: dict, results: list[dict]) -> str:
     lines = [
         f"# PACED Subagent Review Merge: {payload['review_kind']}",
@@ -74,7 +147,32 @@ def render_markdown(payload: dict, results: list[dict]) -> str:
     ]
     for item in payload["recommended_paths"]:
         lines.append(f"- `{item}`")
-    lines.extend(["", "## Reviewer Summaries"])
+    lines.extend(["", "## Merged Findings"])
+    if payload["findings"]:
+        for finding in payload["findings"]:
+                lines.extend(
+                [
+                    f"### {finding['finding_id']} [{finding['severity']}] {finding['title']}",
+                    f"- **Reviewers:** {', '.join(finding['reviewer_labels'])}",
+                    f"- **Category:** `{finding['category']}`",
+                    f"- **Formalizable hint:** `{finding['formalizable_hint']}`",
+                    f"- **Candidate rule level:** `{finding['candidate_rule_level']}`",
+                    f"- **Candidate rule id:** `{finding['candidate_rule_id']}`",
+                    *(
+                        [f"- **Candidate rule id options:** `{', '.join(finding['candidate_rule_id_options'])}`"]
+                        if finding.get("candidate_rule_id_options")
+                        else []
+                    ),
+                    f"- **Suggested action:** {finding['suggested_action']}",
+                    f"- **Rationale:** {finding['rationale']}",
+                    "",
+                ]
+            )
+    else:
+        lines.append("- `none`")
+        lines.append("")
+
+    lines.extend(["## Reviewer Summaries"])
     for result in results:
         lines.extend(
             [
@@ -90,7 +188,8 @@ def render_markdown(payload: dict, results: list[dict]) -> str:
         if result["findings"]:
             lines.append("- **Findings:**")
             for finding in result["findings"]:
-                lines.append(f"  - [{finding['severity']}] {finding['title']}: {finding['rationale']}")
+                rendered_id = finding.get("finding_id") or "derived-at-merge"
+                lines.append(f"  - [{finding['severity']}] {rendered_id} {finding['title']}: {finding['rationale']}")
         lines.append("")
 
     lines.extend(["## Exact Next Step", payload["exact_next_step"], ""])
@@ -123,9 +222,10 @@ def main() -> int:
     reviewer_labels = [item["reviewer_label"] for item in results]
     recommended_paths = sorted({item["recommended_path"] for item in results})
     highest_severity = highest_finding_severity(results)
+    findings = merged_findings(results, dispatch["review_kind"])
 
     payload = {
-        "schema_version": "subagent-review-merge-v1",
+        "schema_version": "subagent-review-merge-v2",
         "artifact_kind": "subagent_review_merge",
         "authoritative": False,
         "edit_policy": "derived_merge_packet",
@@ -142,9 +242,10 @@ def main() -> int:
         },
         "recommended_paths": recommended_paths,
         "exact_next_step": (
-            "Record reviewer resolutions as `Integrated|Challenged|Deferred with rationale` in the governing TODO "
-            "or gate summary, then decide whether another bounded review pass is still required."
+            "Record reviewer resolutions in the governing TODO using the machine-checkable resolution table or equivalent gate ledger, "
+            "then extract the derived resolution packet and decide whether another bounded review pass is still required."
         ),
+        "findings": findings,
     }
     validate(payload, MERGE_SCHEMA_PATH, "subagent review merge")
 
