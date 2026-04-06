@@ -17,6 +17,8 @@ The goal is not to let an agent "just code". The goal is to make execution revie
 
 PACED's thesis is that accumulated system complexity should accelerate correct code creation, not slow it down. Stack specificity is therefore deliberate: restricting the stack lets deterministic validators, architecture rules, and CI checks accumulate project by project, so sustained engineering velocity compounds instead of decaying.
 
+PACED is not a market-facing generic framework. It is an internal engineering method designed to compound deterministic quality inside a deliberately restricted stack. The restriction is a strategy: every project can contribute more reusable deterministic enforcement, so the next project starts with more law already compiled.
+
 PACED is now the method name. The repository/package path remains `delphi-ai` during the transition, so filesystem references keep that name even when the documentation speaks about PACED.
 
 Terminology during the transition:
@@ -71,7 +73,7 @@ PACED may also use auxiliary non-authoritative surfaces when they improve execut
 - `tools/manifest.md`
   - inventory of deterministic helper tools so scripts are reused instead of recreated
 - `skills/deterministic-tooling-register.md`
-  - internal Delphi register that classifies canonical skills as `skill-only`, `lint/analyzer`, `partial-tool`, `full-tool-candidate`, or `already-backed`, and links any existing deterministic support
+  - internal PACED register that classifies canonical skills as `skill-only`, `lint/analyzer`, `partial-tool`, `full-tool-candidate`, or `already-backed`, and links any existing deterministic support; it is an extractability register, not a rule-lifecycle or rule-metrics ledger
 - `foundation_documentation/artifacts/feature-briefs/*.md`
   - pre-TODO framing surface for `medium|big` or ambiguous feature-shaped work; used to decompose ideas into story-sized slices without competing with the canonical docs
 - `foundation_documentation/artifacts/dependency-readiness.md`
@@ -116,6 +118,17 @@ In practice, this makes PACED close to Spec-Driven Development, but with **distr
 - feature brief = non-authoritative pre-TODO framing for story decomposition
 - tactical TODO = executable change spec
 
+This distributed authority also separates two levels of rules:
+
+- **PACED-level rules**
+  - live in `delphi-ai/` and apply across the supported stack
+  - encode reusable architecture patterns, workflow discipline, and deterministic enforcement that should hold project after project
+- **PROJECT-level rules**
+  - live inside the downstream project and are governed by that project's constitution, modules, and promoted canonical decisions
+  - encode project-specific resolvers, canonical services, ownership rules, and invariants that should be enforced locally once they become stable enough to formalize
+
+PACED-level rules must not quietly absorb project-specific truth. PROJECT-level rules must not remain trapped in agent memory once they are stable and formalizable.
+
 ## SDD + TDD
 PACED should be read as a combination of:
 
@@ -133,6 +146,68 @@ This split matters because the two layers solve different failure modes:
 - spec-driven execution reduces direction error
 - test-first execution reduces implementation error and false confidence
 - deterministic validators progressively absorb objective structural checks so governance relies less on vibes over time
+
+## Progressive Determinism
+Progressive determinism is the operating model underneath PACED.
+
+The core claim is not "the agent always writes correct code on the first try." The claim is stronger and more realistic:
+
+- the agent should converge against deterministic law before delivery reaches a human
+- the iteration cost should be mostly computational, not human
+- every project should leave behind more deterministic intelligence than it consumed
+
+### Rules Carry Resolution Instructions
+PACED rules are not meant to stop at `violation detected`.
+
+Whenever a deterministic validator or CI blocker can explain what is wrong objectively, the output should also carry the resolution instruction that tells the operator or agent how to fix the violation. The diagnostic is therefore part of the runtime guidance, not just a red light.
+
+This is why PACED prefers blockers such as:
+
+- `changed tests detected but no Independent Test Quality Audit evidence found; add the audit evidence block for the changed test scope`
+- `bugfix TODO missing fail-first target; record the failing baseline test or equivalent restoration evidence in the bugfix section`
+- `TODO marked Blocked without Blocker Notes and Next exact step; add both fields before closure or handoff`
+- `waiver record incomplete: missing approver_id and approval_reference; complete the waiver record before claiming the gate was waived`
+
+The more mature the rule base becomes, the less the agent has to guess.
+
+### The Cost Is Computational, Not Human
+PACED does not promise zero retries. It promises that retries increasingly happen against deterministic validators before the work reaches a human reviewer.
+
+That changes the cost structure:
+
+- more iteration is paid in tokens and compute time
+- less iteration is paid in human review time, rework, and escaped defects
+- bounded work packages become safer to delegate, and larger initiatives can be decomposed with more confidence, because the deterministic filter is stronger
+
+Sustained velocity in PACED comes from lower human review burden and fewer post-merge corrections as the rule base matures.
+
+### Deterministic Blockers, Not Destructive Enforcement
+PACED does not treat deterministic enforcement as a license to mutate or delete the agent's work automatically.
+
+- CI does not delete code
+- CI does not silently rewrite the output
+- CI blocks, explains, and waits for correction
+
+What CI can judge objectively should move into deterministic enforcement. What CI cannot judge honestly, such as architectural elegance, semantic sufficiency, or the quality of a high-level tradeoff, remains under LLM/human gate governance.
+
+### Rules Accumulate and Recalibrate
+PACED treats deterministic rules as an evolving system with memory.
+
+A rule should move through a lifecycle such as:
+
+- `created`
+- `adjusting`
+- `ready`
+- `operating`
+
+Once a rule is in operation, effectiveness should be judged by evidence, not by prestige:
+
+- `true positives`
+- `false positives`
+- `escapes`
+
+Escapes are candidates for new rules when the failure was formalizable. A rule that generates too many false positives after being considered ready is not actually ready; it should return to adjustment or be pruned.
+Until PACED ships a dedicated lifecycle ledger, treat these as stewardship labels for rule evaluation and recalibration, not as a claim that every repository already exposes full rule metrics plumbing.
 
 ## How PACED Works
 The core idea is simple:

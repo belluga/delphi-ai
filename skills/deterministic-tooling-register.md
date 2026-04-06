@@ -1,8 +1,12 @@
 # Deterministic Tooling Register
 
-Canonical Delphi register for deciding whether a skill's repeatable mechanics should stay in prose, move into lint/analyzer enforcement, or be extracted into deterministic tooling.
+Canonical PACED register for deciding whether a skill's repeatable mechanics should stay in prose, move into lint/analyzer enforcement, or be extracted into deterministic tooling.
 
 This register is advisory for skill maintenance. It does not authorize tool creation by itself. If a new canonical tool is added or materially changed, `tools/manifest.md` must still be updated in the same change.
+It is intentionally an **extractability register**, not a rule-lifecycle, rule-metrics, or project-rule ledger.
+PACED-level rules belong in `delphi-ai/`; PROJECT-level rules belong in the downstream repository and should be governed there by project constitution, modules, and any project-local deterministic enforcement.
+
+Deterministic tooling extracted from this register should prefer diagnostic outputs that carry resolution instructions whenever the remedy is objective enough to state precisely. The goal is convergent enforcement, not opaque blocking.
 
 ## Classification Model
 - `skill-only`

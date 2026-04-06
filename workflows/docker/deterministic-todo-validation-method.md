@@ -8,6 +8,7 @@ description: Export a machine-checkable TODO validation bundle and run determini
 Turn the canonical tactical TODO markdown into a machine-checkable validation bundle, then run deterministic structural validation over the fields PACED already treats as objective.
 
 This method does **not** judge architectural quality or elegance. It exists to block missing structural obligations with explicit diagnostics.
+Those diagnostics should work as resolution instructions whenever possible: the operator should be able to see exactly what field or record must be added or corrected without guessing.
 It applies only to tactical TODOs from `templates/todo_template.md`, not to profile-scoped capped no-code ledgers from `templates/capped_todo_template.md`.
 
 ## Triggers
@@ -38,6 +39,7 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
 3. **Interpret the result**
    - `PASS` means the objective fields required by the validator are structurally coherent.
    - `FAIL` means CI or local review should block until the reported fields are corrected.
+   - `FAIL` is non-destructive: the validator must not rewrite or delete work; it only blocks and explains.
 4. **Keep the Markdown canonical**
    - The exported bundle is derived from the TODO. Do not update the bundle instead of the markdown TODO.
 
@@ -57,5 +59,6 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
 - `foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json`
 
 ## Validation
-- The validator must produce diagnostic messages that tell the operator exactly what field is missing or invalid.
+- The validator must produce diagnostic messages that tell the operator exactly what field is missing or invalid and, when the remedy is objective, what needs to be added or corrected.
 - The validator may block objective structural failures, but it must not pretend to judge semantics that still require human/LLM review.
+- The validator's role is deterministic convergence support, not automatic mutation of the TODO or codebase.
