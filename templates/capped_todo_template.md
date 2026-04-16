@@ -10,6 +10,7 @@ This template is **not** a tactical implementation TODO.
 
 ## 0. Artifact Role
 
+- **Artifact type:** `capped_no_code_ledger`
 - **Active profile:** `<genesis-product-bootstrap|strategic-cto>`
 - **Current phase (if Genesis):** `<GEN-01 Initial Interview|GEN-02 Gap Closure + Project Constitution|GEN-03 Module Decomposition|n/a>`
 - **Purpose in this session:** `<why this capped TODO exists right now>`

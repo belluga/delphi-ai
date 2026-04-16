@@ -23,6 +23,7 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
    - Confirm availability/readiness of `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen scope tasks.
    - Note the session purpose (architecture vs. self-improvement).
    - Run Profile Selection before task-specific workflows.
+   - If this is a downstream tactical resume and any runtime-index predicate is true (`2+ active TODOs`, `any Blocked TODO`, `any open handoff`, or session-memory carry-over that changes the likely resume front), generate a derived runtime index via `workflows/docker/runtime-index-method.md` before deciding where to resume first.
 2. **Normal Work Sessions**
    - Follow standard architectural workflows (create domain, repository, etc.).
    - For route/module/screen work, require explicit scope-context confirmation (`EnvironmentType`, main scope, subscope) from the canonical policy before implementation.
@@ -30,6 +31,7 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
    - If a task requires implementation, apply the TODO-Driven Execution Method (`workflows/docker/todo-driven-execution-method.md`) before coding.
 3. **Self Improvement Sessions**
    - Redirect to `workflows/docker/self-improvement-session-method.md` and follow that checklist.
+   - If the instruction-only scope is long or multi-step, allow the temporary self-improvement work ledger under `delphi-ai/artifacts/tmp/` described by that workflow; do not substitute a tactical TODO for this purpose.
 4. **Instruction Changes During Normal Session**
    - If any core instruction file is modified, finish that work and **do not** proceed to architectural tasks until we explicitly reload the updated instructions.
    - Reload means re-reading the updated `delphi-ai/` files (at minimum `main_instructions.md` plus the edited rule/workflow files) and confirming the new expectations with the user.
@@ -37,7 +39,7 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
 5. **Session Closure**
    - Summarise the work completed.
    - Evaluate whether any friction or rework from the session warrants a new method or an update to an existing one; note the opportunity so it can be addressed next iteration.
-   - If the user signals they are done, run the Post-Session Review Method (`workflows/docker/post-session-review-method.md`) before acknowledging closure.
+   - If the user signals they are done, run the Post-Session Review Method (`workflows/docker/post-session-review-method.md`) before acknowledging closure. That review owns bounded session-memory sync and any derived runtime-index refresh.
    - If a hard boundary is desired, state “session ended” after the post-session review.
 
 ## Outputs

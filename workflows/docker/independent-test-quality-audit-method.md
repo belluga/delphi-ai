@@ -86,6 +86,7 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
 ## Procedure
 1. Record the audit decision in the TODO as `required|recommended|not_needed` with rationale.
 2. Build the bounded test-audit package.
+   - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind test_quality_audit ...`.
 3. Run one fresh auxiliary audit with no inherited thread context.
    - If a subagent is available in the environment, use that subagent with `fork_context=false`.
    - If no subagent is available, document the constraint and optionally run a bounded no-context self-review from the package only as supporting evidence; this does not satisfy a `required` independent audit gate by itself.
@@ -111,6 +112,8 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
    - `Integrated`
    - `Challenged`
    - `Deferred with rationale`
+   - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
+   - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind test_quality_audit ...` when metrics are in scope.
 9. If the audit invalidates the claimed Definition of Done or shows that test changes do not map to real product change, treat delivery confidence as broken until the tests or scope are corrected.
 
 ## Outputs

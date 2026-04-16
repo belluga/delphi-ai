@@ -71,6 +71,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 ## Procedure
 1. Record the final-review decision in the TODO as `required|recommended|not_needed` with rationale.
 2. Build the bounded final-review package.
+   - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
 3. Run one fresh auxiliary final review with no inherited thread context.
    - If a subagent is available in the environment, use that subagent with `fork_context=false`.
    - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
@@ -97,6 +98,8 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - `Integrated`
    - `Challenged`
    - `Deferred with rationale`
+   - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
+   - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind final_review ...` when metrics are in scope.
 9. If the final review reveals:
    - an implementation defect within approved scope, fix it and refresh the affected evidence;
    - an adherence break, block closure until the decision package is corrected or renewed approval is obtained;

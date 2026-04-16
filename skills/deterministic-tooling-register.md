@@ -1,8 +1,12 @@
 # Deterministic Tooling Register
 
-Canonical Delphi register for deciding whether a skill's repeatable mechanics should stay in prose, move into lint/analyzer enforcement, or be extracted into deterministic tooling.
+Canonical PACED register for deciding whether a skill's repeatable mechanics should stay in prose, move into lint/analyzer enforcement, or be extracted into deterministic tooling.
 
 This register is advisory for skill maintenance. It does not authorize tool creation by itself. If a new canonical tool is added or materially changed, `tools/manifest.md` must still be updated in the same change.
+It is intentionally an **extractability register**, not a rule-lifecycle, rule-metrics, or project-rule ledger.
+PACED-level rules belong in `delphi-ai/`; PROJECT-level rules belong in the downstream repository and should be governed there by project constitution, modules, and any project-local deterministic enforcement.
+
+Deterministic tooling extracted from this register should prefer diagnostic outputs that carry resolution instructions whenever the remedy is objective enough to state precisely. The goal is convergent enforcement, not opaque blocking.
 
 ## Classification Model
 - `skill-only`
@@ -109,8 +113,10 @@ This register is advisory for skill maintenance. It does not authorize tool crea
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
 | `wf-docker-architecture-mode-transition-method` | `skill-only` | Strategic transition workflow; keep judgment-driven. |
-| `wf-docker-delphi-project-setup-method` | `already-backed` | Existing support via [`delphi_project_setup_report.sh`](../tools/delphi_project_setup_report.sh); use it to collect lane/readiness/drift evidence before deciding whether normalization is required. |
+| `wf-docker-brownfield-normalization-method` | `already-backed` | Existing support via [`project_setup_normalization_packet.py`](../tools/project_setup_normalization_packet.py) plus [`project_recalibration_doctor.sh`](../tools/project_recalibration_doctor.sh); use them to separate manual-remediation versus normalization-TODO tracks from a derived setup report before opening remediation work. |
+| `wf-docker-delphi-project-setup-method` | `already-backed` | Existing support via [`delphi_project_setup_report.sh`](../tools/delphi_project_setup_report.sh), [`project_setup_normalization_packet.py`](../tools/project_setup_normalization_packet.py), and [`project_recalibration_doctor.sh`](../tools/project_recalibration_doctor.sh); use them to collect lane/readiness/drift evidence and derive bounded normalization tracks before deciding whether remediation TODOs are required. |
 | `wf-docker-documentation-migration-method` | `skill-only` | Migration/gap analysis is too judgment-heavy for deterministic extraction. |
+| `wf-docker-deterministic-todo-validation-method` | `already-backed` | Existing support via [`todo_validation_bundle_export.py`](../tools/todo_validation_bundle_export.py) and [`todo_deterministic_validator.py`](../tools/todo_deterministic_validator.py); use them to block missing structural TODO obligations with diagnostic output. |
 | `wf-docker-environment-readiness-method` | `already-backed` | Existing support via [`environment_readiness_report.sh`](../tools/environment_readiness_report.sh), plus [`verify_context.sh`](../tools/verify_context.sh), [`verify_adherence_sync.sh`](../tools/verify_adherence_sync.sh), and [`verify_environment.sh`](../scripts/docker/verify_environment.sh). |
 | `wf-docker-genesis-bootstrap-method` | `skill-only` | Bootstrap interviews and canonicalization remain human-led. |
 | `wf-docker-independent-critique-method` | `skill-only` | Independent no-context critique is governance and package hygiene; deterministic tooling may assist packaging later, but the challenge itself should stay reviewer-driven. |
@@ -118,10 +124,13 @@ This register is advisory for skill maintenance. It does not authorize tool crea
 | `wf-docker-persona-selection-method` | `skill-only` | Profile/persona choice is governance, not deterministic tooling. |
 | `wf-docker-performance-concurrency-validation-method` | `skill-only` | This workflow is the canonical `pcv-1` policy package. Deterministic tooling belongs in the lane-specific helpers, not in faux-deterministic policy automation. |
 | `wf-docker-post-session-review-method` | `skill-only` | Principle extraction and English review remain human tasks; automation should stay assistive only. |
+| `wf-docker-progressive-determinism-metrics-method` | `already-backed` | Existing support via [`seed_rule_catalog.py`](../tools/seed_rule_catalog.py), [`rule_event_record.py`](../tools/rule_event_record.py), [`gate_finding_resolution_extract.py`](../tools/gate_finding_resolution_extract.py), [`gate_finding_resolution_scaffold.py`](../tools/gate_finding_resolution_scaffold.py), and [`paced_metrics_summary.py`](../tools/paced_metrics_summary.py); use them to seed teaching-rule metadata, log episodes, extract TODO-native gate resolutions, and derive clean-rate summaries without central manual counters. |
 | `wf-docker-profile-selection-method` | `skill-only` | Profile selection is governance, not deterministic tooling. |
+| `wf-docker-runtime-index-method` | `already-backed` | Existing support via [`runtime_session_index.py`](../tools/runtime_session_index.py); use it to surface active TODO continuity, blockers, and open handoffs without creating a new source of truth. |
 | `wf-docker-realtime-delta-streams-method` | `skill-only` | SSE contract design remains architectural judgment. |
 | `wf-docker-self-improvement-session-method` | `skill-only` | Instruction-only session governance should stay human-led. |
 | `wf-docker-session-lifecycle-method` | `skill-only` | Lifecycle governance should stay human-led. |
+| `wf-docker-subagent-orchestration-method` | `already-backed` | Existing support via [`subagent_review_dispatch.py`](../tools/subagent_review_dispatch.py) and [`subagent_review_merge.py`](../tools/subagent_review_merge.py); use them to package bounded no-context review requests and merge structured reviewer output without inventing hidden authority. |
 | `wf-docker-todo-driven-execution-method` | `skill-only` | Tactical execution governance can be supported by checks, but not replaced by tooling. |
 | `wf-docker-update-ci-pipeline-method` | `already-backed` | Existing support via [`ci_pipeline_surface_audit.sh`](../tools/ci_pipeline_surface_audit.sh); use it to inventory workflow coverage and expected stack hints before/after CI edits. |
 | `wf-docker-update-runtime-and-ingress-method` | `already-backed` | Existing support via [`runtime_ingress_surface_audit.sh`](../tools/runtime_ingress_surface_audit.sh); use it to inventory runtime/ingress surfaces and compose readiness before/after runtime edits. |

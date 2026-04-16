@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/todo_validation_bundle.schema.json",
+  "title": "PACED Tactical TODO Validation Bundle",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "todo_path",
+    "artifact_type",
+    "artifact_state",
+    "delivery_status",
+    "blocker_record",
+    "provisional_record",
+    "gates"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "todo-validation-bundle-v1"
+    },
+    "todo_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_type": {
+      "enum": [
+        "tactical_execution_contract",
+        "capped_no_code_ledger",
+        "unknown"
+      ]
+    },
+    "artifact_state": {
+      "enum": [
+        "active",
+        "completed",
+        "ephemeral",
+        "unknown"
+      ]
+    },
+    "delivery_status": {
+      "type": "object",
+      "required": [
+        "stage",
+        "raw_qualifiers",
+        "qualifiers",
+        "invalid_qualifiers",
+        "next_exact_step"
+      ],
+      "properties": {
+        "stage": {
+          "type": "string"
+        },
+        "raw_qualifiers": {
+          "type": "string"
+        },
+        "qualifiers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Provisional",
+              "Blocked"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "invalid_qualifiers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "next_exact_step": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "blocker_record": {
+      "type": "object",
+      "required": [
+        "required",
+        "present",
+        "blocker",
+        "why_blocked_now",
+        "what_unblocks_it",
+        "owner_source",
+        "last_confirmed_truth"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "blocker": {
+          "type": "string"
+        },
+        "why_blocked_now": {
+          "type": "string"
+        },
+        "what_unblocks_it": {
+          "type": "string"
+        },
+        "owner_source": {
+          "type": "string"
+        },
+        "last_confirmed_truth": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provisional_record": {
+      "type": "object",
+      "required": [
+        "required",
+        "present",
+        "missing_for_production_ready",
+        "revisit_criteria",
+        "dependencies_unblocked"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "missing_for_production_ready": {
+          "type": "string"
+        },
+        "revisit_criteria": {
+          "type": "string"
+        },
+        "dependencies_unblocked": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "object",
+      "required": [
+        "critique",
+        "test_quality_audit",
+        "final_review"
+      ],
+      "properties": {
+        "critique": {
+          "$ref": "#/$defs/gate_record"
+        },
+        "test_quality_audit": {
+          "$ref": "#/$defs/gate_record"
+        },
+        "final_review": {
+          "$ref": "#/$defs/gate_record"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "gate_record": {
+      "type": "object",
+      "required": [
+        "gate_id",
+        "section_present",
+        "decision",
+        "status",
+        "evidence_reference",
+        "waiver_reference",
+        "decision_present",
+        "status_present",
+        "evidence_present",
+        "waiver_present"
+      ],
+      "properties": {
+        "gate_id": {
+          "enum": [
+            "critique",
+            "test_quality_audit",
+            "final_review"
+          ]
+        },
+        "section_present": {
+          "type": "boolean"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "evidence_reference": {
+          "type": "string"
+        },
+        "waiver_reference": {
+          "type": "string"
+        },
+        "decision_present": {
+          "type": "boolean"
+        },
+        "status_present": {
+          "type": "boolean"
+        },
+        "evidence_present": {
+          "type": "boolean"
+        },
+        "waiver_present": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

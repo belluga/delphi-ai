@@ -1,6 +1,6 @@
 ---
 name: "docker-delphi-project-setup-method"
-description: "Prepare or recalibrate a downstream project to operate under the current Delphi AI baseline before feature work resumes."
+description: "Prepare or recalibrate a downstream project to operate under the current PACED/Delphi baseline before feature work resumes."
 ---
 
 <!-- Generated from `workflows/docker/delphi-project-setup-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
@@ -8,7 +8,7 @@ description: "Prepare or recalibrate a downstream project to operate under the c
 # Workflow: Delphi Project Setup
 
 ## Purpose
-Prepare or recalibrate a downstream project so it can operate under the current Delphi AI baseline with clear authority boundaries, explicit drift visibility, and a safe handoff into normal feature work. This method is for project bootstrap and for older projects that need re-alignment after meaningful Delphi or project drift. It does not replace the TODO-driven execution method for actual remediation work.
+Prepare or recalibrate a downstream project so it can operate under the current PACED method baseline packaged through `delphi-ai/`, with clear authority boundaries, explicit drift visibility, and a safe handoff into normal feature work. This method is for project bootstrap and for older projects that need re-alignment after meaningful PACED or project drift. It does not replace the TODO-driven execution method for actual remediation work.
 
 ## Triggers
 - The user asks to onboard a downstream project to Delphi AI.
@@ -20,7 +20,31 @@ Prepare or recalibrate a downstream project so it can operate under the current 
 - Downstream repository root and active bootloader surface (`AGENTS.md`, `CLINE.md`, `GEMINI.md`, or equivalent).
 - `.gitmodules`, Delphi-managed links/artifacts, and project README guidance.
 - `foundation_documentation/` core files and any populated module docs.
-- Current Delphi AI baseline (`main_instructions.md`, core rules, workflows, templates, and setup/readiness scripts).
+- Current PACED baseline (`main_instructions.md`, core rules, workflows, templates, and setup/readiness scripts shipped through `delphi-ai/`).
+
+## Preferred Deterministic Helpers
+- Prefer the end-to-end recalibration helper when a full downstream pass is needed:
+```bash
+bash delphi-ai/tools/project_recalibration_doctor.sh \
+  --repo <repo-root> \
+  --lane auto \
+  --artifacts-dir foundation_documentation/artifacts/tmp
+```
+- Or generate the read-only setup inventory directly:
+  ```bash
+  bash delphi-ai/tools/delphi_project_setup_report.sh \
+    --repo <repo-root> \
+    --lane auto \
+    --json-output foundation_documentation/artifacts/tmp/project-setup-report.json
+  ```
+- When the report returns `needs-normalization` or `manual-remediation-required`, derive a normalization packet before opening TODOs:
+  ```bash
+  python3 delphi-ai/tools/project_setup_normalization_packet.py \
+    --report foundation_documentation/artifacts/tmp/project-setup-report.json \
+    --json-output foundation_documentation/artifacts/tmp/project-normalization-packet.json \
+    --markdown-output foundation_documentation/artifacts/tmp/project-normalization-packet.md
+  ```
+- Treat both outputs as derived artifacts. They assist setup interpretation and normalization planning, but they never replace canonical project authority.
 
 ## Procedure
 1. **Classify the setup lane**
@@ -41,6 +65,7 @@ Prepare or recalibrate a downstream project so it can operate under the current 
      - load and execute the Environment Readiness Workflow (`delphi-ai/workflows/docker/environment-readiness-method.md`);
      - treat readiness as a prerequisite for calibration, not as the full calibration itself;
      - if readiness fails because of project-owned path conflicts, stop and report the blockers for manual remediation before continuing.
+   - If the full recalibration helper was already used, treat its setup report and normalization packet as derived evidence; do not rerun ad hoc commands unless the workspace changed materially.
 
 3. **Inventory Delphi-governed surfaces**
    - Confirm bootloader/install surfaces are present and aligned (`AGENTS.md`, `.codex/skills/`, `.agents/rules/`, `.agents/workflows/`, `.agents/skills/`, `.clinerules/`, `.cline/skills/`, or the runtime-specific equivalents that apply).
@@ -74,17 +99,25 @@ Prepare or recalibrate a downstream project so it can operate under the current 
      - `Unsafe / unresolved`: areas where the AI should not proceed without remediation, clarification, or documentation.
    - The goal is to make explicit what the project can assume and what it still owes the method.
 
-7. **Decide the project status**
+7. **Build a normalization packet when needed**
+   - If the deterministic setup report returned `needs-normalization` or `manual-remediation-required`, derive `project-normalization-packet.{json,md}` before deciding on remediation.
+   - Use the packet to separate:
+     - `manual remediation` tracks for Delphi-managed/readiness blockers;
+     - `normalization TODO` tracks for project-owned authority and canonical coverage drift.
+   - Keep the packet bounded and non-authoritative. It is a planning aid, not a new source of truth.
+
+8. **Decide the project status**
    - If all material drift is cleared and the operational surface is coherent, mark the project:
      - `calibrated`: ready for normal Delphi work.
    - If material drift remains, mark the project:
      - `needs-normalization`: feature work should not proceed yet.
    - If normalization requires changes to project artifacts, do not apply them ad hoc:
+     - use the normalization packet to keep the TODO boundary narrow and explicit;
      - create or update a tactical TODO under `foundation_documentation/todos/active/`;
      - switch to the TODO-Driven Execution Method (`delphi-ai/workflows/docker/todo-driven-execution-method.md`);
      - request `APROVADO` before remediation starts.
 
-8. **Publish the setup outcome**
+9. **Publish the setup outcome**
    - Summarize:
      - lane (`bootstrap|recalibration`);
      - readiness result;
@@ -96,10 +129,16 @@ Prepare or recalibrate a downstream project so it can operate under the current 
      - `ready for normal work`,
      - `manual remediation required`,
      - `normalization TODO required`.
+   - When normalization is still required, hand off to `workflows/docker/brownfield-normalization-method.md` so remediation stays separated into manual-remediation versus bounded normalization-TODO fronts.
 
 ## Outputs
 - A setup/recalibration summary with explicit lane classification.
 - Drift report covering `structural`, `documentation`, `canonical coverage`, and `governance` buckets.
+- Optional derived setup artifacts for deterministic reuse:
+  - `project-setup-report.txt`
+  - `project-setup-report.json`
+  - `project-normalization-packet.json`
+  - `project-normalization-packet.md`
 - Operational surface map:
   - inherited from Delphi,
   - project-owned specialization,
@@ -112,4 +151,5 @@ Prepare or recalibrate a downstream project so it can operate under the current 
   - `recalibration`: Environment Readiness Workflow.
 - If the project is declared `calibrated`, no material structural or governance drift remains unresolved.
 - If the project is not ready, the blocking drift is explicitly recorded and feature work does not proceed under implicit assumptions.
+- If a normalization packet was generated, it stays derived/non-authoritative and any project mutation still flows through a tactical TODO plus `APROVADO`.
 - If remediation touches project artifacts, the handoff to TODO-driven execution is explicit and no implementation starts before `APROVADO`.

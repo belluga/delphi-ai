@@ -1,129 +1,54 @@
 ---
-name: docker-session-lifecycle
-description: "Ensure every Delphi session respects instruction-loading rules, especially during Self Improvement Sessions, and that no architectural work proceeds with stale directives."
+name: "docker-session-lifecycle"
+description: "Ensure every Delphi session respects instruction-loading rules, especially during Self Improvement Sessions, and that no architectural work proceeds with stale directives. This method formalises how sessions start, run, and end."
 ---
+
+<!-- Generated from `workflows/docker/session-lifecycle-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Workflow: Session Lifecycle
 
 ## Purpose
-
-Ensure every Delphi session respects instruction-loading rules, especially during Self Improvement Sessions, and that no architectural work proceeds with stale directives.
+Ensure every Delphi session respects instruction-loading rules, especially during Self Improvement Sessions, and that no architectural work proceeds with stale directives. This method formalises how sessions start, run, and end.
 
 ## Triggers
+- A new terminal/IDE session starts (fresh instructions must be loaded).
+- The user initiates a “Self Improvement Session”.
+- Instructions are edited during the current session (requires an explicit reload/transition before continuing normal work).
 
-- A new terminal/IDE session starts (fresh instructions must be loaded)
-- The user initiates a "Self Improvement Session"
-- Instructions are edited during the current session (requires reload)
+## Inputs
+- Current `delphi-ai/main_instructions.md` and supporting core docs.
+- Any updated project-specific docs referenced for the session.
 
 ## Procedure
-
-### Step 1: Session Start
-
-At the beginning of each session:
-
-1. **Read bootloader and core instructions**
-   - Read the active bootloader (`CLINE.md`, `AGENTS.md`, or another agent-specific equivalent)
-   - Read `.clinerules/00-main-instructions.md`
-   - Load relevant project documentation
-
-2. **Note the session purpose**
-   - Architecture work
-   - Self-improvement
-   - Bug fixes / maintenance
-
-### Step 2: Normal Work Sessions
-
-For standard architectural work:
-
-1. **Follow standard workflows**
-   - Use appropriate workflow for the task (create domain, repository, etc.)
-   - Apply architecture rules from `.clinerules/`
-
-2. **Session continuity**
-   - If instructions do not change, session can continue across tasks
-   - If a task requires implementation, apply TODO-driven execution
-
-3. **Task transitions**
-   - When switching between major tasks, reload relevant workflows
-   - Confirm context with user if scope changes significantly
-
-### Step 3: Self Improvement Sessions
-
-When the user requests a self-improvement session:
-
-1. **Redirect to self-improvement workflow**
-   - Load `docker-self-improvement-session` workflow
-   - Follow that checklist exclusively
-
-2. **Constraint during self-improvement**
-   - Only instruction refinement occurs
-   - No implementation work until session ends
-   - Must reload updated instructions before architectural work
-
-### Step 4: Instruction Changes During Session
-
-If any core instruction file is modified:
-
-1. **Stop architectural work**
-   - Finish current task
-   - Do NOT proceed to new architectural tasks
-
-2. **Reload instructions**
-   - Re-read updated `.clinerules/` files
-   - Confirm new expectations with user
-   - Document the instruction change
-
-3. **Optional hard boundary**
-   - User may prefer to explicitly end session
-   - Resume only after fresh start
-
-### Step 5: Session Closure
-
-When ending a session:
-
-1. **Summarize work completed**
-   - List files modified
-   - List decisions made
-   - Note any pending work
-
-2. **Evaluate friction/rework**
-   - Identify any process improvements
-   - Note opportunities for method/workflow updates
-
-3. **Run Post-Session Review**
-   - Load `docker-post-session-review` workflow
-   - Follow the review checklist
-
-4. **Acknowledge closure**
-   - State "session ended" after review
-   - User can start fresh session when ready
-
-## Session State Tracking
-
-### Session Start Checklist
-
-- [ ] Read bootloader (`CLINE.md`)
-- [ ] Read core instructions (`.clinerules/00-main-instructions.md`)
-- [ ] Load project-specific documentation
-- [ ] Confirm session purpose with user
-- [ ] Note any special considerations
-
-### Session End Checklist
-
-- [ ] Summarize work completed
-- [ ] List files modified
-- [ ] Evaluate process improvements
-- [ ] Run post-session review
-- [ ] Acknowledge session end
+1. **Session Start**
+   - Explicitly read the active bootloader (`AGENTS.md` or the agent-specific equivalent such as `CLINE.md`/`GEMINI.md`) and `delphi-ai/main_instructions.md`.
+   - Confirm availability/readiness of `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen scope tasks.
+   - Note the session purpose (architecture vs. self-improvement).
+   - Run Profile Selection before task-specific workflows.
+   - If this is a downstream tactical resume and any runtime-index predicate is true (`2+ active TODOs`, `any Blocked TODO`, `any open handoff`, or session-memory carry-over that changes the likely resume front), generate a derived runtime index via `workflows/docker/runtime-index-method.md` before deciding where to resume first.
+2. **Normal Work Sessions**
+   - Follow standard architectural workflows (create domain, repository, etc.).
+   - For route/module/screen work, require explicit scope-context confirmation (`EnvironmentType`, main scope, subscope) from the canonical policy before implementation.
+   - If instructions do not change, the session can continue across tasks.
+   - If a task requires implementation, apply the TODO-Driven Execution Method (`workflows/docker/todo-driven-execution-method.md`) before coding.
+3. **Self Improvement Sessions**
+   - Redirect to `workflows/docker/self-improvement-session-method.md` and follow that checklist.
+   - If the instruction-only scope is long or multi-step, allow the temporary self-improvement work ledger under `delphi-ai/artifacts/tmp/` described by that workflow; do not substitute a tactical TODO for this purpose.
+4. **Instruction Changes During Normal Session**
+   - If any core instruction file is modified, finish that work and **do not** proceed to architectural tasks until we explicitly reload the updated instructions.
+   - Reload means re-reading the updated `delphi-ai/` files (at minimum `main_instructions.md` plus the edited rule/workflow files) and confirming the new expectations with the user.
+   - If the user prefers a hard boundary, explicitly end the session after the instruction edits and resume only after a fresh start.
+5. **Session Closure**
+   - Summarise the work completed.
+   - Evaluate whether any friction or rework from the session warrants a new method or an update to an existing one; note the opportunity so it can be addressed next iteration.
+   - If the user signals they are done, run the Post-Session Review Method (`workflows/docker/post-session-review-method.md`) before acknowledging closure. That review owns bounded session-memory sync and any derived runtime-index refresh.
+   - If a hard boundary is desired, state “session ended” after the post-session review.
 
 ## Outputs
-
-- Clear log of session purpose and closure statement
-- Updated instruction files when applicable
-- Notes on process improvement opportunities
+- Clear log of session purpose and closure statement.
+- Updated instruction files when applicable.
 
 ## Validation
-
-- User acknowledgment that session ended before continuing under updated instructions
-- No architectural commits after instructions change within same session
-- Explicit reload of updated instructions before resuming work
+- User acknowledgment that the session ended before continuing work under updated instructions.
+- Do not require a special “new session start” phrase. If continuing in the same conversation after instruction edits, explicitly reload the updated instruction files before resuming work.
+- No architectural commits occur after instructions change within the same session.

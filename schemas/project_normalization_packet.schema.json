@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/project_normalization_packet.schema.json",
+  "title": "PACED Project Normalization Packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "authoritative",
+    "edit_policy",
+    "source_report_path",
+    "repo_root",
+    "lane_effective",
+    "overall_status",
+    "recommended_next_step",
+    "manual_remediation_required",
+    "normalization_todo_required",
+    "tracks",
+    "exact_next_step"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "project-normalization-packet-v1"
+    },
+    "artifact_kind": {
+      "const": "project_normalization_packet"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "edit_policy": {
+      "const": "derived_assistive_packet"
+    },
+    "source_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repo_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lane_effective": {
+      "enum": [
+        "bootstrap",
+        "recalibration"
+      ]
+    },
+    "overall_status": {
+      "enum": [
+        "bootstrap-preflight-ready",
+        "calibrated",
+        "needs-normalization",
+        "manual-remediation-required"
+      ]
+    },
+    "recommended_next_step": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manual_remediation_required": {
+      "type": "boolean"
+    },
+    "normalization_todo_required": {
+      "type": "boolean"
+    },
+    "tracks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/track"
+      }
+    },
+    "exact_next_step": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "track": {
+      "type": "object",
+      "required": [
+        "track_id",
+        "action_type",
+        "reason",
+        "scope_boundary",
+        "suggested_owner",
+        "blocking_buckets",
+        "issue_count",
+        "suggested_todo_slug",
+        "requires_aprovado",
+        "notes"
+      ],
+      "properties": {
+        "track_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_type": {
+          "enum": [
+            "manual_remediation",
+            "normalization_todo",
+            "observe_only"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_boundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "suggested_owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocking_buckets": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "structural",
+              "documentation",
+              "canonical_coverage",
+              "governance"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "issue_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "suggested_todo_slug": {
+          "type": "string"
+        },
+        "requires_aprovado": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

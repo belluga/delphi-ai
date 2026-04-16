@@ -22,11 +22,13 @@ Run a fresh external critique for higher-complexity or higher-impact tactical TO
 1. Decide whether the critique gate is `required|recommended|not_needed`.
 2. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen decisions, approved scope boundary, assumptions preview, execution plan summary, material issue cards, residual risks, and existing waivers/blockers.
+   - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 3. Use a fresh auxiliary reviewer with no inherited thread context.
 4. Ask for findings first, ordered by severity, with no implementation.
 5. Retry once with a tighter package if the first attempt fails or times out.
 6. If a required critique still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy the gate.
 7. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
+   - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
 
 ## Outputs
 - Critique gate decision with rationale.

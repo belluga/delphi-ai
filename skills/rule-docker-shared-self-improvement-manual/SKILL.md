@@ -6,7 +6,7 @@ description: "Rule: MUST use whenever the scope matches this purpose: Run the se
 ## Rule
 When the user initiates a “self improvement session” (or equivalent command), switch to instruction-only mode:
 - Freeze architectural work and acknowledge that only `delphi-ai/` instruction files may change.
-- Run the Self Improvement Workflow (`delphi-ai/workflows/docker/self-improvement-session-method.md`): plan instruction updates, apply them, perform manual agnosticism review plus applicable local checks, and summarize changes.
+- Run the Self Improvement Workflow (`delphi-ai/workflows/docker/self-improvement-session-method.md`): triage correction scope, use a temporary work ledger under `delphi-ai/artifacts/tmp/` when the instruction-only scope is long enough to need one, plan instruction updates, apply them, perform manual agnosticism review plus applicable local checks, and summarize changes.
 - After instruction refinements are complete and the user confirms scope is done, explicitly reload the updated instruction files before resuming normal work (or end the session if a hard boundary is preferred).
 
 ## Rationale
@@ -17,4 +17,4 @@ Self-improvement sessions modify core instructions; treating them as a manual wo
 - Reject any attempt to mix instruction edits with normal work in the same session.
 
 ## Notes
-Remember to run the post-session review after closing the self-improvement session to capture any new mandates or feedback.
+Remember to run the post-session review after closing the self-improvement session to capture any new mandates or feedback. Any temporary work ledger under `delphi-ai/artifacts/tmp/` remains non-authoritative and must be deleted or intentionally refreshed at closure.

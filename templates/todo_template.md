@@ -2,6 +2,8 @@
 
 Use this file as a starting point for `foundation_documentation/todos/active/<short_slug>.md`.
 Do not create TODOs from scratch; always copy this template first.
+Fill the contract sections first. Gate-driven sections below are completed only when their gate triggers. For `small` work, keep non-triggered sections concise or mark them `n/a` instead of inflating the TODO just to “use the whole template”.
+Deterministic validators currently read a narrow set of canonical headings/labels from this tactical template. If those headings/labels are intentionally changed, update the supporting schema/tooling in the same change so the diagnostics stay aligned with the markdown.
 
 ## Quick Start
 ```bash
@@ -11,13 +13,23 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Title
 <Short, specific title>
 
+## Artifact Identity
+- **Artifact type:** `tactical_execution_contract`
+
 ## Context
 <Why this matters and where it appears in the product>
+
+## Framing Source & Story Slice
+- **Feature brief:** `<foundation_documentation/artifacts/feature-briefs/<slug>.md|direct-to-todo>`
+- **Primary story ID:** `<ST-01|n/a>`
+- **Why this is the right current slice:** <why this TODO is the correct bounded slice right now>
+- **Direct-to-TODO rationale (required when `Feature brief = direct-to-todo`):** <why a separate feature brief is unnecessary>
 
 ## Contract Boundary
 - This TODO defines **WHAT** must be delivered and what counts as done.
 - `Assumptions Preview` and `Execution Plan` below define **HOW** Delphi currently intends to deliver this contract.
-- If any assumption or plan step changes `Scope`, `Out of Scope`, `Definition of Done`, `Validation Steps`, public contract, or frozen decisions, update the TODO contract first and request renewed approval before execution continues.
+- This TODO is **bounded but elastic**: Delphi may absorb local discoveries only while they remain inside the same primary objective and the same main approval/review/promotion conversation. Secondary modules may still be touched when they are subordinate to that same slice.
+- If any assumption or plan step changes `Scope`, `Out of Scope`, `Definition of Done`, required validation semantics, public contract, or frozen decisions, update the TODO contract first and request renewed approval before execution continues.
 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`
@@ -60,6 +72,10 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 
 ## Out of Scope
 - [ ] <What will NOT be done>
+
+## Bounded But Elastic Guardrails
+- **May stay inside this TODO:** <local refinement, blocker resolution, or small concretization that stays within the same objective and approval conversation, even if secondary modules are touched in service of that slice>
+- **Must update or split the TODO:** <new primary objective, new independently testable story slice, or new approval/risk conversation>
 
 ## Definition of Done
 - [ ] <Concrete, testable checklist item>
@@ -104,7 +120,10 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - **Module decision consolidation targets (required):**
   - `<module section where finalized decisions from this TODO will be persisted>`
 
-## Decisions
+## Decision Pending (Resolve Before Freeze)
+- [ ] `D-01` <Pending contract decision, viable options, and module decision ref (or `No Prior Decision`)>
+
+## Decisions (Resolved Before Freeze)
 - [ ] `D-01` <Decision: chosen option + short rationale + module decision ref (or `No Prior Decision`)>
 
 ## Module Decision Baseline Snapshot (Required Before APROVADO)
@@ -122,6 +141,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 Assumptions here must be evidence-backed inferences from canonical modules, code, docs, tests, or repository state. They are not free guesses.
 
 - Promote an assumption to `Decisions` before planning continues if it changes `Scope`, `Definition of Done`, `Validation Steps`, public contract, or module coherence.
+- Promote an assumption to `Decisions` before planning continues if it changes `Scope`, `Definition of Done`, required validation semantics, public contract, or module coherence.
 - Mark handling as `Block` when the assumption cannot be supported enough to plan safely.
 
 | Assumption ID | Assumption | Evidence | If False | Confidence (`High|Medium|Low`) | Handling (`Keep as Assumption|Promote to Decision|Block`) |
@@ -220,7 +240,10 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
 - **Critique status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
-- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -340,7 +363,10 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
-- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -355,7 +381,10 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`
 - **Final review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
-- **Resolution ledger:** <for each material finding: `Integrated|Challenged|Deferred with rationale`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 

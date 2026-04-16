@@ -6,6 +6,8 @@ description: "Rule: MUST use whenever the scope matches this purpose: Before any
 ## Rule
 Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
 
+For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
+
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
@@ -29,6 +31,12 @@ If the change restores previously documented or verifiably working behavior (inc
 - Ephemeral TODOs are local-only and should not be committed. Keep the folder in git via `.gitkeep`, and add a `.gitignore` in `foundation_documentation/todos/ephemeral/` that ignores all other files.
 - Ephemeral TODOs are disposable execution artifacts, not backlog. After the fix is validated, delete the ephemeral TODO. If the work becomes blocked, survives beyond the immediate maintenance cycle, or needs broader planning/coherence handling, retire the ephemeral TODO instead of promoting it. Consolidate any durable canonical truth directly into the relevant `MODULE`, and if broader execution work still remains, create a fresh tactical TODO under `foundation_documentation/todos/active/`.
 
+### Gate 0 — Feature Framing / Story Decomposition decision
+- Before opening or using a tactical TODO, decide whether the request is already one bounded execution slice or is still feature-shaped/idea-shaped.
+- `Direct-to-TODO` is allowed only when the request already represents one primary story/value slice with low ambiguity and one approval conversation.
+- Otherwise, create or update a `Feature Brief / Story Decomposition` artifact under `foundation_documentation/artifacts/feature-briefs/`, keeping it lightweight.
+- A tactical TODO should normally map to one primary story slice from that brief, not to the whole initiative.
+
 ### Gate A — TODO existence
 - If no relevant TODO exists, do not start implementation.
 - Ask the user to create one (or ask permission to draft one), then proceed only after the TODO is present.
@@ -44,6 +52,7 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate C — TODO refinement (no code)
 - Read the TODO.
+- Verify the TODO records either a `Feature brief` path or an explicit `direct-to-todo` rationale.
 - Summarize `scope`, `out_of_scope`, `definition_of_done`, and `validation_steps`.
 - Summarize the current delivery stage, qualifiers, and `Next exact step`.
 - If `Qualifiers` includes `Blocked`, verify that `Blocker Notes` still describe the active constraint.
@@ -78,6 +87,10 @@ If the change restores previously documented or verifiably working behavior (inc
   - `small`: consolidated planning review.
   - `medium`: one review checkpoint before approval.
   - `big`: section-by-section review checkpoints.
+- Verify the TODO remains one primary story slice with one primary user/value objective.
+- One primary module and one main approval/review/promotion cycle are strong default sizing heuristics, not automatic split triggers when the slice is still cohesive.
+- Preserve elasticity: local refinements, blockers, and concretization work may stay in the TODO while they remain inside that same objective and approval conversation.
+- If the TODO now contains multiple independently testable story slices or multiple approval conversations, split or narrow it before planning continues.
 
 ### Gate F — Profile Scope & Handoffs (mandatory before planning continues)
 - Record the primary execution profile and active technical scope in the TODO.
@@ -95,7 +108,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - what breaks or changes if it is false
   - confidence (`High|Medium|Low`)
   - handling (`Keep as Assumption|Promote to Decision|Block`)
-- If an assumption changes `scope`, `definition_of_done`, `validation_steps`, public contract, or module coherence, promote it into the TODO contract before planning continues.
+- If an assumption changes `scope`, `definition_of_done`, required validation semantics, public contract, or module coherence, promote it into the TODO contract before planning continues.
 - If an assumption cannot be supported enough to plan safely, mark it `Block` and stop before approval.
 
 ### Gate H — Execution Plan (mandatory before `APROVADO`)
@@ -147,7 +160,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - If any module decision has unintended divergence, block implementation until it is either preserved or explicitly approved for supersede.
 
 ### Gate L — Explicit approval token (mandatory)
-- After Gates A-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
+- After Gates 0-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
   - call `apply_patch`,

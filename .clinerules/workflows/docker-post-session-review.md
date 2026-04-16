@@ -1,145 +1,55 @@
 ---
-name: docker-post-session-review
-description: "Close a session with discipline: capture newly surfaced business principles, keep foundation_documentation authoritative, and provide rigorous English feedback."
+name: "docker-post-session-review"
+description: "Run Delphi’s mandatory post-session review (principle extraction + bounded memory sync + English feedback) after the user signals the session is done."
 ---
+
+<!-- Generated from `workflows/docker/post-session-review-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Workflow: Post-Session Review
 
 ## Purpose
-
-Close a session with discipline: capture newly surfaced business principles, keep `foundation_documentation/` authoritative, and provide rigorous English feedback.
+Close a session with discipline: capture newly surfaced business principles, keep `foundation_documentation/` authoritative, sync bounded session memory without elevating it into source-of-truth status, and provide rigorous English feedback.
 
 ## Triggers
+- The user explicitly signals the session is ending (e.g., “session ended”, “we’re done”, “stop here”).
 
-- The user explicitly signals the session is ending
-- Examples: "session ended", "we're done", "stop here"
-
-## Prerequisites
-
-- [ ] Full session dialogue available for review
-- [ ] `foundation_documentation/project_mandate.md` accessible
-- [ ] Any adjacent mandate docs referenced during session
+## Inputs
+- The full session dialogue.
+- `foundation_documentation/project_mandate.md` (and any adjacent mandate docs referenced during the session) when downstream mandate sync is in scope.
+- `foundation_documentation/artifacts/session-memory.md` when bounded session memory is in scope.
+- `foundation_documentation/todos/active/**/*.md` when downstream tactical continuity is in scope.
 
 ## Procedure
-
-### Step 1: Principle Extraction
-
-Review the entire session dialogue and identify:
-
-1. **New Core Business Principles**
-   - Ethical principles discussed
-   - Social principles discussed
-   - Visionary/strategic principles discussed
-
-2. **Evolved Principles**
-   - Existing principles that were refined
-   - Principles that changed scope or application
-
-3. **Principles to Consider**
-   - Document candidate principles
-   - Note context where they surfaced
-
-### Step 2: Mandate Validation
-
-For each candidate principle:
-
-1. **Present to user**
-   - State the principle clearly
-   - Provide context from session
-   - Ask for confirmation
-
-2. **If confirmed**
-   - Update `foundation_documentation/project_mandate.md`
-   - Follow project documentation conventions
-   - Note the addition date
-
-3. **If rejected**
-   - Document why it was rejected
-   - Note for future reference
-
-### Step 3: English Feedback
-
-Provide a direct, technically rigorous review:
-
-1. **Grammar issues**
-   - Subject-verb agreement
-   - Tense consistency
-   - Article usage
-
-2. **Style issues**
-   - Clarity of expression
-   - Word choice
-   - Sentence structure
-
-3. **Technical writing**
-   - Consistency of terminology
-   - Proper use of technical terms
-   - Documentation style
-
-**Note:** Focus on correctness over encouragement. Be objective and specific.
-
-### Step 4: Closure
-
-Only after steps 1–3 are complete:
-
-1. **Summarize review results**
-   - Principles identified (confirmed or rejected)
-   - English feedback highlights
-   - Any follow-up actions
-
-2. **Acknowledge session end**
-   - State "Session review complete"
-   - Note any pending work for next session
-
-## Template: Principle Documentation
-
-```markdown
-## Principle: [Name]
-
-**Type:** Ethical | Social | Visionary
-**Added:** [Date]
-**Context:** [Where/why this surfaced]
-
-### Statement
-[Clear, concise principle statement]
-
-### Application
-[How this principle should be applied]
-
-### Rationale
-[Why this principle matters]
-```
-
-## Template: English Feedback
-
-```markdown
-## English Feedback
-
-### Grammar
-- [Issue 1]: [Correction]
-- [Issue 2]: [Correction]
-
-### Style
-- [Issue 1]: [Suggestion]
-- [Issue 2]: [Suggestion]
-
-### Technical Writing
-- [Issue 1]: [Recommendation]
-
-### Overall Assessment
-[Brief summary of language proficiency and areas for improvement]
-```
+1. **Principle extraction**
+   - Identify any new or evolved Core Business Principles discussed (ethical, social, or visionary).
+2. **Mandate validation**
+   - Present each candidate principle to the user for confirmation.
+   - If the active session is a Self Improvement Session, do **not** edit `foundation_documentation/` during this review. Instead, record the confirmed candidate as deferred downstream follow-up and ask whether the user wants a fresh non-self-improvement session to apply it.
+   - Otherwise, if confirmed, update `foundation_documentation/project_mandate.md` (or the appropriate mandate doc) using the project’s documentation conventions.
+3. **English feedback**
+   - Provide a direct, technically rigorous review of the user’s English across the session.
+4. **Session memory sync**
+   - If bounded session memory is in scope, create/update it using `templates/session_memory_template.md`.
+   - Auto-sync only the latest continuity summary and dependency statuses touched during the session.
+   - Require explicit user confirmation before adding stable user preferences or learned operational behaviors.
+   - Do **not** let session memory override canonical docs, TODO decisions, approvals, or handoff logs.
+   - If the active session is a Self Improvement Session, do **not** edit `foundation_documentation/` during this review. Record the intended session-memory update as deferred downstream follow-up instead.
+5. **Runtime index refresh**
+   - If any runtime-index predicate is true after the review (`2+ active TODOs`, `any Blocked TODO`, `any open handoff`, or session-memory carry-over that changes the likely resume front), regenerate the derived runtime index via `workflows/docker/runtime-index-method.md`.
+   - The runtime index remains non-authoritative and must be regenerated, not hand-edited.
+   - If the active session is a Self Improvement Session, do **not** edit `foundation_documentation/` during this review. Record the intended runtime-index refresh as deferred downstream follow-up instead.
+6. **Closure**
+   - Only after steps 1–5 are complete, acknowledge closure.
 
 ## Outputs
+- Confirmed list of new principles (or an explicit “none found”).
+- Any required mandate updates (only if the user confirms and downstream edits are in scope), or an explicit deferred follow-up note for self-improvement-session closures.
+- Any bounded session-memory sync performed, or an explicit deferred follow-up note when the review happened inside a self-improvement session.
+- Any runtime-index refresh performed, or an explicit deferred follow-up note when the review happened inside a self-improvement session.
+- English feedback delivered.
 
-- [ ] Confirmed list of new principles (or explicit "none found")
-- [ ] Any required mandate updates (only if user confirms)
-- [ ] English feedback delivered
-- [ ] Session closure acknowledged
-
-## Validation Checklist
-
-- [ ] All steps 1–4 completed in order
-- [ ] No new work requests accepted until review complete
-- [ ] User has opportunity to respond to feedback
-- [ ] Documentation updated if principles were added
+## Validation
+- Do not accept new work requests until the review is complete.
+- Self Improvement Sessions must not modify `foundation_documentation/` during this review; any confirmed mandate or runtime-index changes are deferred until the instruction-only session is closed.
+- Session memory must remain auxiliary; it cannot replace canonical docs, TODO approvals, or handoff traces.
+- The runtime index must remain derived and non-authoritative; it cannot override TODO status, approvals, or handoff truth.
