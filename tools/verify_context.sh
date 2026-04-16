@@ -311,10 +311,49 @@ ensure_cascading_rules() {
   # 2. Stack Deterministic (Presets, Linters)
   if [ -d "$REPO_ROOT/delphi-ai/deterministic/stacks/$namespace" ]; then
     ensure_symlink_path "$module_path/.agents/deterministic/stack" "$rel_prefix/deterministic/stacks/$namespace" "$label .agents/deterministic/stack"
+    
+    # ── Flutter-Specific Plugin Sync & Drift Detection ───────────────────────
+    if [ "$namespace" = "flutter" ]; then
+      sync_flutter_plugin "$module_path" "$label"
+    fi
   fi
 
   # 3. Local Deterministic (Project-specific config/rules)
   ensure_symlink_path "$module_path/.agents/deterministic/local" "../foundation_documentation/deterministic" "$label .agents/deterministic/local"
+}
+
+# Sync Flutter Global Plugin and detect Drift
+sync_flutter_plugin() {
+  local module_path="$1"
+  local label="$2"
+  local target_dir="$module_path/tool/paced_global_plugin"
+  local source_dir="$REPO_ROOT/delphi-ai/deterministic/stacks/flutter/packages/paced_global_plugin"
+
+  if [ ! -d "$source_dir" ]; then return; fi
+
+  if [ ! -d "$target_dir" ]; then
+    echo "[$label] Initializing Flutter global plugin (copying from PACED)..."
+    mkdir -p "$(dirname "$target_dir")"
+    cp -r "$source_dir" "$target_dir"
+  else
+    # Drift Detection: Compare checksums
+    local source_hash target_hash
+    source_hash=$(find "$source_dir" -type f -not -path '*/.*' -exec md5sum {} + | sort | md5sum | cut -d' ' -f1)
+    target_hash=$(find "$target_dir" -type f -not -path '*/.*' -exec md5sum {} + | sort | md5sum | cut -d' ' -f1)
+
+    if [ "$source_hash" != "$target_hash" ]; then
+      if [ "$REPAIR" = "true" ]; then
+        echo "[$label] Drift detected in Flutter plugin. Repairing (syncing with PACED global)..."
+        rm -rf "$target_dir"
+        cp -r "$source_dir" "$target_dir"
+      else
+        echo "[$label] ❌ NO-GO: Flutter global plugin drift detected!"
+        echo "    Local plugin in $target_dir does not match PACED global."
+        echo "    INVESTIGATE: Compare changes and decide to CONSOLIDATE (push to delphi-ai) or REPAIR (run --repair)."
+        EXIT_CODE=2
+      fi
+    fi
+  fi
 }
 
 # Ensure Cline artifacts are properly symlinked
