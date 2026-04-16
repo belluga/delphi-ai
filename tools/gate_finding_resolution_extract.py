@@ -54,9 +54,13 @@ def parse_resolution_rows(lines: list[str], heading_prefix: str) -> list[dict]:
         stripped = line.strip()
         if stripped.startswith("## ") and not stripped.startswith(heading_prefix):
             break
-        if not stripped.startswith("|"):
+        # Accept both '| ...' and '- | ...' (bullet-list-wrapped tables)
+        table_line = stripped
+        if table_line.startswith("- "):
+            table_line = table_line[2:].strip()
+        if not table_line.startswith("|"):
             continue
-        cells = [cell.strip().strip("`") for cell in stripped.strip("|").split("|")]
+        cells = [cell.strip().strip("`") for cell in table_line.strip("|").split("|")]
         if not found_header:
             if cells and cells[0] == "Finding ID":
                 found_header = True
