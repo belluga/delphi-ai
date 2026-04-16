@@ -1,5 +1,25 @@
 # PACED (formerly Delphi-AI)
 
+## 🚀 Quick Start (30s)
+
+To attach PACED authority to any repository:
+
+1.  **Clone PACED** (inside your project root, git ignored):
+    ```bash
+    git clone https://github.com/belluga/delphi-ai.git delphi-ai
+    ```
+2.  **Initialize Bootloaders:**
+    ```bash
+    bash delphi-ai/init.sh
+    ```
+3.  **Link & Validate Environment:**
+    ```bash
+    bash delphi-ai/verify_context.sh --repair
+    ```
+*Note: Ensure your project has a `foundation_documentation/project_constitution.md` with a declared `Namespace` (e.g., `flutter`, `laravel`) to enable stack-specific rules.*
+
+---
+
 ## The Method
 **PACED** (Progressively Accelerated Controlled Engineering through Determinism) is an internal engineering method designed to compound deterministic quality inside a deliberately restricted stack. 
 
