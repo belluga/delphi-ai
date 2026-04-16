@@ -16,6 +16,8 @@ To attach PACED authority to any repository:
     ```bash
     bash delphi-ai/verify_context.sh --repair
     ```
+4.  **Automate CI:** Call the `laravel-ci-engine.yml` in your project's GitHub Actions.
+
 *Note: Ensure your project has a `foundation_documentation/project_constitution.md` with a declared `Namespace` (e.g., `flutter`, `laravel`) to enable stack-specific rules.*
 
 ---
@@ -126,6 +128,42 @@ If a project has a unique business rule that must be enforced:
 1.  Create a script or config in `foundation_documentation/deterministic/`.
 2.  The `verify_context.sh --repair` will automatically link it to `.agents/deterministic/local/`.
 3.  The Delphi agent will prioritize this local check over stack or core rules.
+
+---
+
+## 🏗️ Cascading CI/CD (GitHub Actions)
+
+O PACED centraliza a inteligência do CI/CD no `delphi-ai`. Os projetos (ex: `belluga_now_backend`) apenas "assinam" o contrato de CI global, garantindo que os **Deterministic Guards** rodem em todos os commits.
+
+#### Exemplo: Assinatura do Belluga Now (`.github/workflows/ci.yml`)
+
+```yaml
+name: "CI: Belluga Now Backend"
+
+on:
+  push:
+    branches: [dev, stage, main]
+  pull_request:
+    branches: [dev, stage, main]
+
+jobs:
+  paced-ci:
+    uses: belluga/delphi-ai/.github/workflows/shared/laravel-ci-engine.yml@main
+    with:
+      namespace: "belluga-now"
+      php_version: "8.2"
+      node_version: "18"
+      lint_command: "composer lint:strict"
+      architecture_guard_command: "php scripts/architecture_guardrails.php"
+    secrets:
+      # O token deve ter acesso de leitura ao repositório belluga/delphi-ai
+      GH_PAT: ${{ secrets.GH_PAT }}
+```
+
+**Benefícios da Assinatura:**
+- **Zero Drift:** O CI remoto é 100% simétrico ao ambiente local (via `--repair`).
+- **Guardrails Obrigatórios:** O `todo_completion_guard.py` barra o commit se houver TODOs inconsistentes.
+- **Manutenção Centralizada:** Atualize o motor no `delphi-ai` e todos os projetos herdam a melhoria instantaneamente.
 
 ---
 
