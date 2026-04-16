@@ -473,6 +473,49 @@ elif [ "$TODOS_MISSING" = true ]; then
   warnings+=("Optional TODO structure missing at foundation_documentation/todos/. If you want Delphi to create it, rerun with: bash delphi-ai/verify_context.sh --repair --fix-todos")
 fi
 
+# ── Phase 0 metrics readiness ───────────────────────────────────────────────
+METRICS_DIR="$REPO_ROOT/foundation_documentation/artifacts/metrics"
+RULE_CATALOG="$METRICS_DIR/rule-catalog.json"
+SEED_SCRIPT="$REPO_ROOT/delphi-ai/tools/seed_rule_catalog.py"
+
+if [ ! -d "$METRICS_DIR" ]; then
+  if [ "$REPAIR_MODE" = true ]; then
+    mkdir -p "$METRICS_DIR"
+    touch "$METRICS_DIR/.gitkeep"
+    warnings+=("Phase 0 metrics directory created at foundation_documentation/artifacts/metrics/")
+  else
+    warnings+=("Phase 0 metrics directory missing at foundation_documentation/artifacts/metrics/. Rerun with --repair to create it.")
+  fi
+fi
+
+if [ -d "$METRICS_DIR" ] && [ ! -f "$RULE_CATALOG" ] && [ -f "$SEED_SCRIPT" ]; then
+  if [ "$REPAIR_MODE" = true ]; then
+    if python3 "$SEED_SCRIPT" --output "$RULE_CATALOG" 2>/dev/null; then
+      warnings+=("Phase 0 rule catalog seeded at foundation_documentation/artifacts/metrics/rule-catalog.json")
+    else
+      warnings+=("Phase 0 rule catalog seed failed. Run manually: python3 delphi-ai/tools/seed_rule_catalog.py --output foundation_documentation/artifacts/metrics/rule-catalog.json")
+    fi
+  else
+    warnings+=("Phase 0 rule catalog not yet seeded. Run: python3 delphi-ai/tools/seed_rule_catalog.py --output foundation_documentation/artifacts/metrics/rule-catalog.json")
+  fi
+fi
+
+# Check for pending formalizable findings that haven't been seeded into the catalog
+RULE_EVENTS="$METRICS_DIR/rule-events.jsonl"
+if [ -f "$RULE_EVENTS" ] && [ -f "$RULE_CATALOG" ]; then
+  PENDING_FORMALIZABLES=$(python3 -c "
+import json, sys
+events = [json.loads(l) for l in open('$RULE_EVENTS') if l.strip()]
+catalog = json.load(open('$RULE_CATALOG'))
+catalog_ids = {r['rule_id'] for r in catalog.get('rules', [])}
+pending = {e['rule_id'] for e in events if e.get('issue_code','').startswith('FORMALIZABLE-') and e['rule_id'] not in catalog_ids}
+print(len(pending))
+" 2>/dev/null || echo "0")
+  if [ "$PENDING_FORMALIZABLES" != "0" ] && [ "$PENDING_FORMALIZABLES" != "" ]; then
+    warnings+=("Phase 0: $PENDING_FORMALIZABLES formalizable finding(s) in rule-events.jsonl not yet in the rule catalog. Review and seed them.")
+  fi
+fi
+
 ROOT_ENV="$REPO_ROOT/.env"
 if [ -f "$ROOT_ENV" ]; then
   project_name_val="$(get_env_value "PROJECT_NAME" "$ROOT_ENV")"

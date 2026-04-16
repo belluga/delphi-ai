@@ -36,14 +36,27 @@ Close a session with discipline: capture newly surfaced business principles, kee
    - If any runtime-index predicate is true after the review (`2+ active TODOs`, `any Blocked TODO`, `any open handoff`, or session-memory carry-over that changes the likely resume front), regenerate the derived runtime index via `workflows/docker/runtime-index-method.md`.
    - The runtime index remains non-authoritative and must be regenerated, not hand-edited.
    - If the active session is a Self Improvement Session, do **not** edit `foundation_documentation/` during this review. Record the intended runtime-index refresh as deferred downstream follow-up instead.
-6. **Closure**
-   - Only after steps 1–5 are complete, acknowledge closure.
+6. **Phase 0 metrics collection**
+   - For each TODO that was actively worked during this session, run the deterministic guards to collect rule events:
+     ```bash
+     python3 delphi-ai/tools/todo_completion_guard.py <todo_path> --events-jsonl foundation_documentation/artifacts/metrics/rule-events.jsonl
+     ```
+   - If any TODO was closed (moved to `completed/`) during this session, also run the metrics consolidation trigger to extract formalizable findings:
+     ```bash
+     python3 delphi-ai/tools/metrics_consolidation_trigger.py --todo <todo_path> --events-jsonl foundation_documentation/artifacts/metrics/rule-events.jsonl
+     ```
+   - The canonical events file is `foundation_documentation/artifacts/metrics/rule-events.jsonl`. Create the `metrics/` directory if it does not exist.
+   - If the active session is a Self Improvement Session, defer metrics collection to the next non-self-improvement session.
+   - This step is silent when no TODOs were touched during the session.
+7. **Closure**
+   - Only after steps 1–6 are complete, acknowledge closure.
 
 ## Outputs
-- Confirmed list of new principles (or an explicit “none found”).
+- Confirmed list of new principles (or an explicit "none found").
 - Any required mandate updates (only if the user confirms and downstream edits are in scope), or an explicit deferred follow-up note for self-improvement-session closures.
 - Any bounded session-memory sync performed, or an explicit deferred follow-up note when the review happened inside a self-improvement session.
 - Any runtime-index refresh performed, or an explicit deferred follow-up note when the review happened inside a self-improvement session.
+- Phase 0 metrics collected (rule events appended to `foundation_documentation/artifacts/metrics/rule-events.jsonl`), or an explicit note that no TODOs were touched.
 - English feedback delivered.
 
 ## Validation

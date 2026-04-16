@@ -142,9 +142,13 @@ def validate_completion(todo_path: Path) -> dict:
                 "code": "DOD-INCOMPLETE",
                 "message": f"{len(unwaived_items)} unchecked item(s) without waiver: {item_list}",
                 "resolution": (
-                    f"Complete the {len(unwaived_items)} unchecked Definition of Done item(s), "
-                    "or add a '## Waivers' section documenting why each pending item "
-                    "is acceptable for closure."
+                    f"BEFORE accepting this blocker: verify in the actual codebase "
+                    f"whether the {len(unwaived_items)} unchecked item(s) were already "
+                    f"implemented but not marked. If the code/tests confirm the item "
+                    f"is done, mark the checkbox and rerun the guard. "
+                    f"If genuinely incomplete, either complete the item(s) or add a "
+                    f"'## Waivers' section documenting why each pending item "
+                    f"is acceptable for closure."
                 ),
             })
 
@@ -166,8 +170,12 @@ def validate_completion(todo_path: Path) -> dict:
             "code": "VS-INCOMPLETE",
             "message": f"{len(unchecked_vs)} unchecked validation step(s): {item_list}",
             "resolution": (
-                f"Run and check off the {len(unchecked_vs)} remaining validation step(s), "
-                "or document why they are not applicable for this delivery."
+                f"BEFORE accepting this blocker: cross-check each unchecked step "
+                f"against the actual code, tests, and CI results — the step may "
+                f"have been completed without the checkbox being marked. "
+                f"If evidence confirms the step passes, mark it and rerun. "
+                f"Otherwise, run the {len(unchecked_vs)} remaining validation step(s), "
+                f"or document why they are not applicable for this delivery."
             ),
         })
 
