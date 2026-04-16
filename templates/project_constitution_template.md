@@ -11,26 +11,38 @@ The brief purpose/boundary section below is orientation only. Enduring business 
 - **Project purpose:** `<what the system exists to do>`
 - **System boundary:** `<what is inside vs outside this project>`
 - **Inherited Delphi stack baseline:** `<which Delphi-level stack/method assumptions are inherited here>`
-
-## 2. Authority Model
-
-- **Delphi-level authority (inherited):**
-  - `delphi-ai/system_architecture_principles.md`
-  - Delphi rules, workflows, skills, and templates
-- **Project-level authority (this file):**
-  - system-specific inter-module rules
-  - cross-stack invariants
-  - project-specific exceptions to the Delphi baseline
-- **Module-level authority:**
-  - `foundation_documentation/modules/*.md`
-- **Tactical execution authority:**
-  - `foundation_documentation/todos/active/*.md`
-- **Strategic direction and follow-up:**
-  - `foundation_documentation/system_roadmap.md`
-
-## 3. System Topology
-
-### 3.1 Repositories / Runtime Surfaces
+15	## 2. Authority Model
+16	
+17	### 2.1 Rule Subscriptions (Cascading Rules)
+18	
+19	This project follows the PACED **Cascading Rules** hierarchy. The `verify_context.sh --repair` tool uses the `Namespace` below to establish deterministic symlinks for the active stack.
+20	
+21	- **Namespace:** `<docker | flutter | laravel>`
+22	- **Rule Subscriptions:**
+23	  - [x] **Core Rules:** Universal Delphi patterns (T.E.A.C.H., TODOs, session workflows).
+24	  - [x] **Stack Rules:** Specialized patterns for the `<namespace>` stack.
+25	  - [x] **Local Rules:** Project-specific constitution, modules, and decisions.
+26	
+27	### 2.2 Authority Hierarchy
+28	
+29	When rules conflict, the following order of precedence applies:
+30	1.  **Local Rules (`.agents/rules/local/`):** This file, module docs, and local decisions. **Local rules always override.**
+31	2.  **Stack Rules (`.agents/rules/stack/`):** Inherited from `delphi-ai/rules/stacks/<namespace>/`.
+32	3.  **Core Rules (`.agents/rules/core/`):** Inherited from `delphi-ai/rules/core/`.
+33	
+34	- **Delphi-level authority (inherited):**
+35	  - `delphi-ai/system_architecture_principles.md`
+36	  - Delphi rules, workflows, skills, and templates
+37	- **Project-level authority (this file):**
+38	  - system-specific inter-module rules
+39	  - cross-stack invariants
+40	  - project-specific exceptions to the Delphi baseline
+41	- **Module-level authority:**
+42	  - `foundation_documentation/modules/*.md`
+43	- **Tactical execution authority:**
+44	  - `foundation_documentation/todos/active/*.md`
+45	- **Strategic direction and follow-up:**
+46	  - `foundation_documentation/system_roadmap.md`s / Runtime Surfaces
 - `<repo or runtime surface>`: `<role>`
 
 ### 3.2 Major Modules / Bounded Contexts

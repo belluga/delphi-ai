@@ -253,6 +253,60 @@ ensure_codex_skills_link() {
   ensure_symlink_path "$module_path/.codex/skills" "../delphi-ai/skills" "$label .codex/skills"
 }
 
+# Detect the project stack/namespace from the constitution
+get_project_namespace() {
+  local module_path="$1"
+  local constitution="$module_path/foundation_documentation/project_constitution.md"
+  if [ -f "$constitution" ]; then
+    # Look for Namespace: [docker|flutter|laravel]
+    local ns
+    ns=$(grep -i "Namespace:" "$constitution" | awk -F'[:[]' '{print $2}' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+    if [ -n "$ns" ]; then
+      echo "$ns"
+      return 0
+    fi
+  fi
+  # Fallback based on directory name or structure
+  if [ -d "$module_path/flutter-app" ] || [ -d "$module_path/laravel-app" ]; then
+    echo "docker"
+  elif [[ "$module_path" == *"flutter-app"* ]]; then
+    echo "flutter"
+  elif [[ "$module_path" == *"laravel-app"* ]]; then
+    echo "laravel"
+  else
+    echo "core"
+  fi
+}
+
+# Ensure Cascading Rules (Core + Stack + Local) are properly symlinked
+ensure_cascading_rules() {
+  local module_path="$1"
+  local label="$2"
+  local rel_prefix
+  if [ "$module_path" = "$REPO_ROOT" ]; then
+    rel_prefix="delphi-ai"
+  else
+    rel_prefix="../delphi-ai"
+  fi
+
+  local namespace
+  namespace=$(get_project_namespace "$module_path")
+  
+  # 1. Core Rules (Universal)
+  # Symlink .agents/rules/core -> delphi-ai/rules/core
+  ensure_symlink_path "$module_path/.agents/rules/core" "$rel_prefix/rules/core" "$label .agents/rules/core"
+
+  # 2. Stack Rules (Specialized)
+  # Symlink .agents/rules/stack -> delphi-ai/rules/stacks/$namespace
+  if [ -d "$REPO_ROOT/delphi-ai/rules/stacks/$namespace" ]; then
+    ensure_symlink_path "$module_path/.agents/rules/stack" "$rel_prefix/rules/stacks/$namespace" "$label .agents/rules/stack"
+  fi
+
+  # 3. Local Rules (Project-specific)
+  # Symlink .agents/rules/local -> foundation_documentation
+  ensure_symlink_path "$module_path/.agents/rules/local" "../foundation_documentation" "$label .agents/rules/local"
+}
+
 # Ensure Cline artifacts are properly symlinked
 # Per Cline documentation:
 # - Skills: .cline/skills/ (directories with SKILL.md)
@@ -286,6 +340,9 @@ ensure_cline_artifacts() {
   # Also create CLINE.md symlink at root if it doesn't exist
   local cline_md_target="$rel_prefix/CLINE.md"
   ensure_symlink_path "$module_path/CLINE.md" "$cline_md_target" "$label CLINE.md"
+
+  # Apply Cascading Rules structure
+  ensure_cascading_rules "$module_path" "$label"
 }
 
 validate_cline_skills_catalog() {
