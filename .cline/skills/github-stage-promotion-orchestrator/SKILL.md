@@ -51,7 +51,9 @@ Classify the promotion request before acting:
 ## Preferred Deterministic Helper
 - Use `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <source-branch> --base origin/dev [--require-diff-shape submodule-only]` as the first gate for the authoritative source branch. The helper must return `Overall outcome: go` before the lane opens its first PR.
 - Use `bash delphi-ai/tools/github_stage_promotion_snapshot.sh [--repo <owner/name>] [--pr <number>] [--branch <name>]` to capture the current local status, candidate PR, and check snapshot before making promotion decisions.
+- Before claiming the lane is finished, use `bash delphi-ai/tools/github_promotion_completion_guard.sh --lane stage --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>]` and require `Overall outcome: go`.
 - Treat the preflight helper as deterministic `GO|NO-GO` branch-shape gating that implements TEACH at runtime: objective git checks trigger it, exit code `2` enforces the stop, `context` carries the branch evidence, and `resolution_prompt` is the exact next-step guidance to follow before retrying. The snapshot helper is evidence collection only; Copilot triage, root-cause analysis, and merge decisions remain in this skill.
+- Treat the completion guard as deterministic end-of-lane TEACH enforcement: if Docker finalization, target-branch health, or gitlink alignment is still missing, exit code `2` blocks the completion claim and `resolution_prompt` tells the operator what must still happen.
 
 ## Finding Scrutiny Gate
 For any blocking PR/review finding, perform this gate before deciding to patch:
@@ -134,7 +136,8 @@ Steps:
 4. Promote `dev -> stage`.
 5. Wait for checks and comments.
 6. Merge and wait for post-merge `stage` runs.
-7. Expect the Docker dispatcher to create/update Scenario 2 state automatically.
+7. Wait for the Docker dispatcher/repository-dispatch flow to create or refresh the Docker submodule promotion state, then complete the required Docker lane work.
+8. Run the completion guard and require `Overall outcome: go` before claiming the promotion is finished. A Flutter/Laravel-only promotion is not complete while Docker finalization is still pending.
 
 ## Failure Handling
 If any run fails:
@@ -175,4 +178,5 @@ When the promotion finishes, report:
 - final SHAs in `stage`
 - post-merge run IDs
 - whether Docker Scenario 2 was regenerated cleanly
+- completion-guard outcome and the exact command used
 - any residual blocker requiring user action

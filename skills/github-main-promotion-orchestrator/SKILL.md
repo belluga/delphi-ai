@@ -47,7 +47,8 @@ Classify the request before acting:
 
 ## Preferred Deterministic Helper
 - Use `bash delphi-ai/tools/github_stage_promotion_snapshot.sh [--repo <owner/name>] [--pr <number>] [--branch <name>]` to capture current local status, candidate PR, and check snapshot before promotion decisions.
-- Treat the helper as evidence collection only; main-promotion gating, comment triage, and merge decisions remain manual in this skill.
+- Before claiming the lane is finished, use `bash delphi-ai/tools/github_promotion_completion_guard.sh --lane main --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>] [--web-pr <number>]` and require `Overall outcome: go`.
+- Treat the snapshot helper as evidence collection only; main-promotion gating, comment triage, and merge decisions remain manual in this skill. Treat the completion guard as deterministic end-of-lane TEACH enforcement for Docker finalization and Flutter web follow-through.
 
 ## Finding Scrutiny Gate
 For any blocking PR/review finding, perform this gate before deciding to patch:
@@ -78,6 +79,7 @@ For any blocking PR/review finding, perform this gate before deciding to patch:
   - identify the downstream `web-app` publish/PR/update path triggered by that run
   - wait until the relevant `web-app` pre/post-merge path is green
 - Do not proceed to Docker `stage -> main` while the required `web-app` follow-through is still pending, failed, or ambiguous.
+- Do not claim main-lane completion until the completion guard confirms the required `web-app` evidence and Docker finalization together.
 
 ### Docker Finalization
 - Only after every pertinent application repo is green on `main`, and the required `web-app` path is green when Flutter participated:
@@ -116,4 +118,5 @@ When the promotion finishes, report:
 - post-merge run IDs
 - `web-app` downstream evidence when Flutter participated
 - whether Docker production-lane completion finished green
+- completion-guard outcome and the exact command used
 - any residual blocker requiring user action
