@@ -46,7 +46,12 @@ jobs:
         with:
           repository: "belluga/delphi-ai"
           path: "project/delphi-ai"
-          ref: "manus" # Temporariamente em manus para teste
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+
+      - name: "Setup Python"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
 
       - name: "Setup PHP"
         uses: shivammathur/setup-php@v2
@@ -64,7 +69,6 @@ jobs:
         working-directory: "project"
         run: |
           bash delphi-ai/tools/verify_context.sh --repair
-          # Garante que os symlinks determinísticos e as regras da stack estejam no lugar
 
       - name: "Install Dependencies (Composer)"
         working-directory: "project"
@@ -74,7 +78,6 @@ jobs:
       - name: "Deterministic Guard: TODO Completion"
         working-directory: "project"
         run: |
-          # Verifica se há TODOs movidos para completed que não passam no guard
           python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed
 
       - name: "Deterministic Guard: Architecture (Stack)"
