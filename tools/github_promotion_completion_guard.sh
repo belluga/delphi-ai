@@ -417,12 +417,64 @@ validate_submodule_alignment() {
     return
   fi
 
-  if [ "$actual_sha" != "$expected_sha" ]; then
-    add_violation "Docker target branch '$TARGET_BRANCH' is not finalized for $human_label: path '$docker_path' points to '$actual_sha' instead of '$expected_sha'."
-    add_resolution "Finish the Docker promotion for '$DOCKER_REPO' so '$docker_path' on '$TARGET_BRANCH' points to the $human_label target SHA '$expected_sha', then wait for Docker post-merge push runs to finish green."
+  local aligned_by="none"
+
+  if [ "$actual_sha" = "$expected_sha" ]; then
+    aligned_by="exact"
+  elif [ "$LANE" = "main" ]; then
+    # ── lane=main ancestry acceptance ──
+    #
+    # The canonical sync pipeline works like this:
+    #   1. App merges to stage  →  web-artifact-publish dispatches Docker sync
+    #   2. Docker receives gitlink in bot/next-version  →  dev  →  stage  →  main
+    #   3. The gitlink SHA is the app *stage* head at sync time
+    #   4. When app stage→main is promoted, the main head is a merge commit
+    #      that *contains* the stage SHA but is not equal to it
+    #
+    # So for lane=main the Docker gitlink will normally point to the app
+    # stage SHA, which must be reachable from (contained in) app/main.
+    # We verify this via GitHub compare: actual_sha...expected_sha.
+    # If behind_by == 0 the expected (app/main head) contains the actual
+    # (gitlink SHA), proving the gitlink was effectively promoted to main.
+    #
+    # Crucially, if the gitlink SHA was never promoted to main (e.g. it
+    # only exists on stage), behind_by will be > 0 and we reject.
+    #
+    # lane=stage keeps exact equality (no change).
+    # ──────────────────────────────────────────────
+    local app_repo=""
+    case "$role" in
+      flutter) app_repo="$FLUTTER_REPO" ;;
+      laravel) app_repo="$LARAVEL_REPO" ;;
+    esac
+
+    if [ -n "$app_repo" ]; then
+      local ancestry_line
+      ancestry_line="$(compare_summary "$app_repo" "$actual_sha" "$expected_sha")"
+      local anc_status="" anc_behind="" anc_ahead=""
+      if [ -n "$ancestry_line" ]; then
+        IFS=$'\t' read -r anc_status anc_behind anc_ahead <<< "$ancestry_line"
+      fi
+      # behind_by == 0  →  app/main head contains the gitlink SHA
+      # ahead_by  >  0  →  app/main is strictly ahead (expected for merge commit)
+      # This proves the gitlink SHA was promoted to main.
+      if [ "$anc_behind" = "0" ] && [ -n "$anc_ahead" ] && [ "$anc_ahead" != "0" ]; then
+        aligned_by="ancestry"
+      fi
+    fi
   fi
 
-  add_context "docker-gitlink-$role | repo=$DOCKER_REPO | branch=$TARGET_BRANCH | path=$docker_path | actual_sha=$actual_sha | expected_sha=$expected_sha | aligned=$([ "$actual_sha" = "$expected_sha" ] && printf yes || printf no)"
+  if [ "$aligned_by" = "none" ]; then
+    if [ "$LANE" = "main" ]; then
+      add_violation "Docker target branch '$TARGET_BRANCH' gitlink for $human_label ('$docker_path' -> '$actual_sha') is not reachable from the app main head '$expected_sha'.  The gitlink SHA must have been effectively promoted to main."
+      add_resolution "Verify that the Docker submodule sync from stage propagated correctly through bot/next-version -> dev -> stage -> main, and that the app stage SHA was promoted to app/main.  The gitlink must point to a commit contained in the $human_label main history."
+    else
+      add_violation "Docker target branch '$TARGET_BRANCH' is not finalized for $human_label: path '$docker_path' points to '$actual_sha' instead of '$expected_sha'."
+      add_resolution "Finish the Docker promotion for '$DOCKER_REPO' so '$docker_path' on '$TARGET_BRANCH' points to the $human_label target SHA '$expected_sha', then wait for Docker post-merge push runs to finish green."
+    fi
+  fi
+
+  add_context "docker-gitlink-$role | repo=$DOCKER_REPO | branch=$TARGET_BRANCH | path=$docker_path | actual_sha=$actual_sha | expected_sha=$expected_sha | aligned_by=$aligned_by"
 }
 
 validate_green_branch_only() {
