@@ -4,6 +4,8 @@ Use this file as the canonical project-level constitution for `foundation_docume
 
 This document is not a roadmap and not a module replacement. Its purpose is to capture the **current system-specific constitution** of a project that inherits the Delphi stack.
 
+The brief purpose/boundary section below is orientation only. Enduring business purpose, principles, and high-level target outcomes belong in `foundation_documentation/project_mandate.md`, while module-local contracts remain in `foundation_documentation/modules/*.md`.
+
 ## 1. Purpose
 
 - **Project purpose:** `<what the system exists to do>`
@@ -81,6 +83,7 @@ Only include this section when the project intentionally deviates from inherited
 ## 9. Maintenance Rules
 
 - Update this document when project-level rules change.
+- Keep this file focused on cross-module rules, systemic invariants, and project-level truths; do not use it as a second mandate and do not duplicate module-local contracts here.
 - Do not duplicate module-local contracts here.
 - Do not turn this into a changelog or TODO list.
 - If a change only affects one module, update the module doc instead.

@@ -41,6 +41,8 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 
 ## Decision Gate: Compatibility vs Speed
 - If scope includes compatibility/integration/e2e, real-backend integration is mandatory.
+- If scope includes any large or architectural change, integration is mandatory in addition to unit/widget stages.
+- If the architectural change is compatibility-critical or backend-coupled, freeze the required platform matrix to the relevant real-backend integration surfaces before execution.
 - If scope is unit-only regression, unit/widget suites may be sufficient.
 - Freeze this decision before execution as `D-RUN-*`.
 - Freeze required platform matrix (`web-only` vs `web+mobile`) as a decision; do not downgrade mid-run without explicit baseline update.
@@ -89,6 +91,7 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 
 ## Flutter Stage
 - Run unit + widget first.
+- Do not stop at unit + widget when the Flutter change is large or architectural; required integration flows for the affected critical paths must also run.
 - For unstable environments, use resilient detached runner when appropriate.
 - Run integration with domain/scheme overrides for local backend.
 - No mock fallback when real backend is required.

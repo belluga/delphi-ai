@@ -16,10 +16,16 @@ Apply these Flutter architectural tenets on every task:
 - Enforce DTO → Domain → Projection flow; DTOs never reach widgets, and projections expose UI-ready primitives only.
 - Enforce repository transport boundary: DAO/decoder layers own raw map payload parsing/building, while repositories consume typed outputs and must not own `Map<String, Object?>` transport extraction/assembly.
 - Register routes via AutoRoute with guards (tenant shell/auth); use RouteModelResolver for hydration and keep route docs updated.
+- AutoRoute is the canonical navigation authority; do not bypass it with ad-hoc `Navigator` usage, synthetic browser-history seeding, manual ancestry fabrication, or mutable singleton handoff stores whose only responsibility is route outcome transfer.
+- Distinguish cold entry (`URL`, deeplink, startup builder) from warm in-app navigation. Warm flows that must preserve predecessor history must commit a real router entry before any interruption/boundary logic resolves.
+- Boundary/interruption routes (permission gates, promotion/auth handoffs, confirmation boundaries) must declare explicit success, cancel/dismiss, and no-history outcomes. Visible back and system/device back must converge semantically for the same boundary route.
+- Result-return boundary routes are valid architectural shapes when a flow interrupts another route; model them explicitly in router contracts instead of letting dismissal behavior emerge from ad-hoc `replace/pop` combinations.
 - Enforce canonical scope/subscope ownership from `foundation_documentation/policies/scope_subscope_governance.md` for any route/screen placement.
 - Never create implicit/undefined subscopes; new subscope introduction requires explicit decision and policy update first.
 - Align repos/contracts with documented pagination/filtering expectations and mirror them in Laravel roadmaps.
-- Analyzer/tests are mandatory: `fvm flutter analyze` must be clean; add targeted controller/widget tests when behaviour changes.
+- Any large or architectural Flutter change must carry a multi-lane test matrix for the affected critical paths: unit + widget + integration. Routing/navigation/shell/guard changes are examples, not the only trigger.
+- Compatibility-critical or backend-coupled architectural changes must additionally prove real-backend integration on the required platform matrix; analyzer or widget-only confidence is insufficient.
+- Analyzer/tests are mandatory: `fvm flutter analyze` must be clean; add targeted unit/widget tests when behaviour changes and do not treat them as a substitute for required integration evidence on architectural scope.
 - When an active debt TODO requires branch-delta enforcement for disabled lint rules, run the documented branch guard command(s) before delivery and fail on new/preserved violations in branch-touched files.
 
 ## Rationale
@@ -28,7 +34,7 @@ These tenets keep the Flutter client aligned with backend contracts, maintain pu
 ## Enforcement
 - Structure checks during PR/code review; ensure routes/controllers follow ModuleScope and AutoRoute rules.
 - Analyzer: `fvm flutter analyze` must be clean.
-- Tests: add/maintain unit/widget tests where impacted flows change.
+- Tests: add/maintain unit/widget tests where impacted flows change, and require integration evidence for any large/architectural change before delivery closure.
 
 ## Notes
 Reference `foundation_documentation/system_architecture_principles.md` Appendix A for full context. Update module/route docs when adding screens or routes.

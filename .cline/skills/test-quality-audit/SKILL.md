@@ -40,6 +40,7 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
    - Confirm target stacks and compatibility intent (`compatibility` vs `unit-only`).
    - If an active tactical TODO exists, capture relevant decision IDs to validate (`Decision Baseline` reference).
    - Identify critical user journeys that must be proven (for example Home event listing, search, create/edit flows).
+   - If the change is large or architectural, require explicit evidence that unit + widget + integration coverage exists for the affected critical paths.
 2. **Check fail-first / TDD alignment**
    - Identify the recorded or implied test strategy: `test-first|test-after|unknown`.
    - For bugfix/regression or behavior-defining work, identify the concrete failing assertion(s) that should exist before implementation.
@@ -51,6 +52,7 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
 4. **Verify real-backend coverage where required**
    - If compatibility is in scope, confirm integration tests hit a real local backend.
    - Confirm both API reachability and authenticated/identity path are exercised where required.
+   - If the change is large or architectural, missing integration evidence is a material finding even when unit/widget coverage exists.
 5. **Check fallback logic**
    - Ensure tests do not silently switch to mocks when real calls fail.
    - Ensure runners do not silently switch output/artifact paths when canonical directories are not writable.
@@ -95,12 +97,14 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
 - Assertions that ignore required UI state transitions (loading -> success/error).
 - Assertions coupled only to implementation details while missing user-visible or contract-visible outcomes.
 - Test harnesses that bypass navigation/entry flow while claiming end-to-end coverage.
+- Architectural changes claimed safe from unit/widget-only evidence.
 - Flaky-required gates accepted as pass in CI/promotion flow.
 - Runner fallback output dirs that hide ownership/permission defects.
 - Behavior-defining changes with no clear fail-first target and no rationale for skipping test-first work.
 
 ## Required Evidence
 - Explicit assertion that real backend was used when required.
+- Explicit evidence that large or architectural changes received unit + widget + integration coverage for the affected critical paths.
 - For bugfix/regression or behavior-defining work, evidence of a fail-first target (or explicit rationale for non-applicability).
 - Logs/output proving the correct domain + scheme were used.
 - Evidence DI wiring matches production, or documented/validated exception.
@@ -111,6 +115,7 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
 ## Done Criteria
 - No bypass patterns in changed tests.
 - No unresolved `retrofit-risk` for bugfix/regression or behavior-defining work.
+- Large or architectural changes are not closed on unit/widget-only evidence.
 - Compatibility tests are real-backend and fail loudly on mismatch.
 - CI steps align with local Mongo usage and domain overrides.
 - Material findings include issue cards with tradeoffs.

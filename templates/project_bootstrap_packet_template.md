@@ -11,6 +11,8 @@ This packet is a **capped Genesis artifact**. It is not a tactical TODO, approva
 - When the session needs a live tracked ledger of open decisions or interview fronts, that live ledger should default to a profile-scoped capped TODO under `foundation_documentation/todos/active/` (for example via `templates/capped_todo_template.md`), while this packet remains the higher-level snapshot/reference companion.
 - It may continue to act as the active Genesis decision ledger while the foundation interview is still refining business concepts, as long as it remains explicitly no-code.
 - After those canonical docs exist and Genesis refinement is complete, promote durable truth into them and retire or archive this packet.
+- Do not use this packet as a generic sink for stable truths whose final canonical home is already clear. After each answered Genesis interview turn, either promote the stabilized content into its correct artifact or keep it here/TODO explicitly as unresolved.
+- If an item is clearly module-local but the module boundary is not ready yet, record the intended future home instead of parking that fact in `project_mandate.md` or leaving it here indefinitely.
 
 ## 0. Artifact Role
 

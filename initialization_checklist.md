@@ -91,6 +91,7 @@ Optional preflight:
 ```bash
 bash delphi-ai/init.sh --check
 ```
+This preflight may be invoked from the repository root or from supported app submodules that expose `delphi-ai -> ../delphi-ai`; the helper should normalize back to the downstream environment root before evaluating Delphi-managed paths.
 
 Run the setup script to create all necessary symlinks:
 ```bash

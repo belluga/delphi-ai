@@ -57,10 +57,12 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - Assumptions must be evidence-backed, not guesses.
    - Promote an assumption into contract if it changes scope, DoD, required validation semantics, public contract, or module coherence.
    - Record touched surfaces, ordered steps, test strategy, fail-first targets when required, and rollout/runtime notes.
+   - Any large or architectural change must explicitly record the required unit + widget + integration evidence matrix for the affected critical paths.
 8. Run planning gates before approval:
    - **Plan Review Gate** for `medium|big` (or abbreviated for low-risk `small`);
    - additional bounded no-context architectural opinions when the path remains materially unclear;
    - independent no-context critique when required by complexity/impact.
+   - when the user or TODO explicitly requires the dedicated multi-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), use `audit-protocol-triple-review` as the canonical orchestration surface and record the audit session path plus clean/latest round evidence in the TODO.
    - When subagents are used programmatically for those opinions/reviews, prefer derived dispatch/merge packets from `subagent_review_dispatch.py` and `subagent_review_merge.py`.
 9. Freeze the approved decisions under **Decision Baseline (Frozen)** before implementation.
 10. Ask for explicit `APROVADO`.
@@ -79,6 +81,8 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - independent test-quality audit when required;
    - verification-debt audit when required;
    - independent no-context final review when required.
+   - large or architectural changes cannot close on analyzer or unit/widget evidence alone; required integration lanes must be resolved first.
+   - when the delivery gate uses the dedicated three-lane external audit loop, the governing evidence must come from `audit-protocol-triple-review` rather than ad hoc reviewer sequencing.
 14. If pausing blocked, set `Blocked` explicitly with blocker notes and next exact step.
 15. Before close, promote stable outcomes into canonical module docs and then move the TODO to completed/canceled.
 

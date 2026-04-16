@@ -24,8 +24,10 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 1. **Define target and intent**
    - Target stack: Flutter / Laravel / Web.
    - Intent: `compatibility` vs `unit-regression` vs `critical-user-journey`.
+   - Any large or architectural change automatically requires integration coverage in addition to unit/widget coverage for the affected critical paths.
 2. **Choose minimum test types that prove intent**
    - Compatibility and critical-user-journey require integration tests against real backend.
+   - Large or architectural changes cannot claim safety from unit/widget evidence alone.
    - Unit-regression cannot be used to claim end-to-end safety.
 3. **Freeze test decisions**
    - Record decision IDs (e.g., `D-T01`, `D-T02`) for scope, environments, and gate criteria.
@@ -40,6 +42,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
      - Repository/controller state tests.
      - Screen integration test.
      - Navigation test from shell/entry route.
+   - For large or architectural changes, make the unit + widget + integration lanes explicit in the matrix for every affected critical path.
    - If behavior depends on legacy data shape, add fixture/backfill compatibility tests.
    - If the changed flow includes async UI/buttons/search/filter/pagination/retry behavior, add explicit race-condition scenarios (duplicate trigger, stale response, dispose/navigation mid-flight) or record why they are not applicable.
 6. **Define CI prerequisites**
@@ -75,6 +78,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 
 ## Flutter Guidelines
 - Use `integration_test` for compatibility flows.
+- For large or architectural Flutter changes, the minimum evidence matrix is unit + widget + integration for the affected critical paths.
 - Use `--dart-define` for local backend targeting:
   - `LANDLORD_DOMAIN` (e.g., `local.test`)
   - `API_SCHEME` (e.g., `http`)
@@ -112,6 +116,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - Decision-adherence table for frozen `D-T*` decisions.
 
 ## Done Criteria
+- Large or architectural changes have unit + widget + integration evidence for the affected critical paths.
 - Compatibility-critical flows covered by real-backend integration tests across required platforms.
 - When TDD/test-first is applicable, at least one fail-first target exists for each behavior-defining path under change.
 - Flutter tests gate bundle build.

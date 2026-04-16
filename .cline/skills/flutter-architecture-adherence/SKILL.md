@@ -68,6 +68,10 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - Classes extending `ModuleContract` must not call direct `GetIt.I.register*`; use module lifecycle wrappers (`registerLazySingleton/registerFactory/registerRouteResolver`) for teardown-safe scope ownership.
 - Global app-lifecycle registrations must not use UI controller naming (`*Controller` / `*ControllerContract`).
 - Do not introduce ad-hoc mutable global stores for navigation/UI flow handoff; prefer route model/query params and controller state.
+- AutoRoute is the canonical navigation authority; do not bypass it with ad-hoc `Navigator` usage, synthetic browser-history seeding, or manual ancestry fabrication.
+- Distinguish cold entry (`URL`, deeplink, startup builder) from warm in-app navigation. Warm flows that must preserve predecessor history must commit a real router entry before any interruption/boundary logic resolves.
+- Boundary/interruption routes (permission gates, promotion/auth handoffs, confirmation boundaries) must declare explicit success, cancel/dismiss, and no-history outcomes. Visible back and system/device back must converge semantically for the same boundary route.
+- Result-return boundary routes are valid when a flow interrupts another route, but they must be explicitly typed in router contracts and backed by tests instead of relying on ad-hoc `replace/pop` combinations.
 - UI controllers (TextEditingController/ScrollController/AnimationController/GlobalKey<FormState>/etc.) live in feature controllers, not screens/widgets.
 - Screens/widgets only accept `_controller` and static view data parameters; any controlling parameter belongs in the controller.
 - Navigation is owned by widgets/screens; controllers never navigate. Widget calls controller for decisions, then performs non-async navigation.

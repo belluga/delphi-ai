@@ -10,6 +10,9 @@ Turn an under-defined project intent into Delphi's first canonical project packa
 - Treat validated prototype findings as evidence, not as the final source of truth.
 - Use profile-scoped capped TODOs under `foundation_documentation/todos/active/` when the live Genesis decision ledger needs to steer the session, and use `foundation_documentation/artifacts/**` for companion packets, snapshots, and supporting references. `templates/capped_todo_template.md` is the default starting point when such a ledger is needed.
 - Follow the standard Genesis sequence from `workflows/docker/genesis-bootstrap-method.md`: `GEN-01 Initial Interview`, `GEN-02 Gap Closure + Project Constitution`, `GEN-03 Module Decomposition`.
+- Classify stabilized interview answers continuously into `project_mandate.md`, `domain_entities.md`, `project_constitution.md`, `system_roadmap.md`, `modules/*.md`, or the Genesis ledger, instead of using `project_mandate.md` as a generic holding area for operational facts.
+- In `GEN-03`, be suggestive rather than purely interrogative: when the confirmed facts already support a plausible first-pass decomposition, propose candidate capability/module blocks and ask the user to refine that proposal instead of asking for architectural taxonomy from a blank slate.
+- Treat generic module-taxonomy questions as last-resort gap-closure only: if Delphi cannot safely propose a first-pass decomposition, it must first name the confirmed facts it already has, why they are still insufficient, and the single missing answer that would unlock a useful proposal.
 - Use other repositories as comparative references for topology and reusable patterns only; do not inherit names, entities, or functional behavior from them unless the user explicitly confirms those carry-over decisions.
 - Hand ongoing governance to `Strategic / CTO-Tech-Lead` once the first canonical package exists.
 
