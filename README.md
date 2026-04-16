@@ -76,12 +76,36 @@ PACED closes the feedback loop by collecting metrics at the end of every session
 
 ---
 
-## 🧩 Extensibility
-The architecture is **extensible by design**. To add a new technology stack:
-1. Create `deterministic/stacks/<new_stack>/` for presets and scripts.
-2. Create `rules/stacks/<new_stack>/` for instruction sets.
-3. Declare `Namespace: <new_stack>` in the project's `project_constitution.md`.
-4. Run `--repair` to link the new authority layer.
+## 🧩 How-to: Extending & Using the Ecosystem
+
+### 1. How to Add a New Technology Stack
+To introduce a new stack (e.g., `python`, `go`, `react`) into the PACED ecosystem:
+1.  **Create the Deterministic Layer:** Create `deterministic/stacks/<new_stack>/` and add presets like `lint_config.yaml` or architecture scripts.
+2.  **Create the Instruction Layer:** Create `rules/stacks/<new_stack>/` and add Markdown files explaining the patterns and standards for that stack.
+3.  **Update the Linker (Optional):** If you want auto-detection, update the `get_project_namespace` function in `tools/verify_context.sh`. Otherwise, manual declaration in the project is sufficient.
+
+### 2. How to "Subscribe" a Project to a Stack
+In the project's `foundation_documentation/project_constitution.md`, add the following metadata:
+```markdown
+## PACED Context
+- **Namespace:** <new_stack>
+- **Rule Subscriptions:**
+  - [x] **Core Rules:** (Always enabled)
+  - [x] **Stack Rules:** (Enabled for <new_stack>)
+```
+
+### 3. How to Apply Changes (The Linker)
+After updating the constitution or the `delphi-ai` core, always run:
+```bash
+bash delphi-ai/verify_context.sh --repair
+```
+This will dynamically rebuild the symlinks in `.agents/rules/` and `.agents/deterministic/`, ensuring the agent is operating under the latest authority.
+
+### 4. How to Add Local Project Guardrails
+If a project has a unique business rule that must be enforced:
+1.  Create a script or config in `foundation_documentation/deterministic/`.
+2.  The `verify_context.sh --repair` will automatically link it to `.agents/deterministic/local/`.
+3.  The Delphi agent will prioritize this local check over stack or core rules.
 
 ---
 
