@@ -1,0 +1,94 @@
+name: "PACED: Laravel CI Engine"
+
+on:
+  workflow_call:
+    inputs:
+      php_version:
+        description: "PHP version to use"
+        type: string
+        default: "8.2"
+      node_version:
+        description: "Node.js version to use"
+        type: string
+        default: "18"
+      test_command:
+        description: "Command to run tests"
+        type: string
+        default: "php artisan test"
+      lint_command:
+        description: "Command to run lint (Pint)"
+        type: string
+        default: "./vendor/bin/pint --test"
+      architecture_guard_command:
+        description: "Command to run architecture guardrails"
+        type: string
+        default: "php scripts/architecture_guardrails.php"
+      with_database:
+        description: "Whether to setup a database (MySQL)"
+        type: boolean
+        default: true
+      namespace:
+        description: "Project namespace for PACED"
+        type: string
+        required: true
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Project"
+        uses: actions/checkout@v4
+        with:
+          path: "project"
+
+      - name: "Checkout PACED (delphi-ai)"
+        uses: actions/checkout@v4
+        with:
+          repository: "belluga/delphi-ai"
+          path: "project/delphi-ai"
+          ref: "manus" # Temporariamente em manus para teste
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php_version }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - name: "Setup PACED Environment (Repair)"
+        working-directory: "project"
+        run: |
+          bash delphi-ai/tools/verify_context.sh --repair
+          # Garante que os symlinks determinísticos e as regras da stack estejam no lugar
+
+      - name: "Install Dependencies (Composer)"
+        working-directory: "project"
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: "Deterministic Guard: TODO Completion"
+        working-directory: "project"
+        run: |
+          # Verifica se há TODOs movidos para completed que não passam no guard
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed
+
+      - name: "Deterministic Guard: Architecture (Stack)"
+        working-directory: "project"
+        run: |
+          ${{ inputs.architecture_guard_command }}
+
+      - name: "Stack Analysis: Lint (Pint)"
+        working-directory: "project"
+        run: |
+          ${{ inputs.lint_command }}
+
+      - name: "Stack Analysis: Tests"
+        working-directory: "project"
+        if: ${{ inputs.test_command != '' }}
+        run: |
+          ${{ inputs.test_command }}
