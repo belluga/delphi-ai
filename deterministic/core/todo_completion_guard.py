@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Deterministic completion guard for tactical TODOs."""
+"""Deterministic completion guard for tactical TODOs (Level 0 Scrutiny Edition)."""
 
 from __future__ import annotations
 import argparse
 import json
 import re
 import sys
+import traceback
 from pathlib import Path
 
 # Shared infrastructure
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import todo_validation_bundle_export as exporter
 
 # Constants
 RULE_ID = "paced.todo.completion-guard"
@@ -60,69 +60,92 @@ def find_waiver_section(lines: list[str]) -> list[str]:
     return content
 
 def validate_completion(todo_path: Path) -> dict:
-    lines = todo_path.read_text(encoding="utf-8").splitlines()
-    bundle = exporter.build_bundle(todo_path)
-    violations: list[dict] = []
-    context: dict = {}
+    try:
+        import todo_validation_bundle_export as exporter
+    except ImportError as e:
+        return {
+            "status": "blocked",
+            "violations": [{
+                "section": "System Integrity",
+                "code": "DEPENDENCY-FAILURE",
+                "message": f"Critical dependency failure: {str(e)}",
+                "resolution": "Check if PACED infrastructure is properly linked via verify_context.sh."
+            }]
+        }
 
-    # 1. DoD
-    dod_items = parse_checkboxes(lines, "## Definition of Done")
-    unchecked_dod = [i for i in dod_items if not i["checked"]]
-    if unchecked_dod:
-        waiver_lines = find_waiver_section(lines)
-        unwaived = [i for i in unchecked_dod if not any(i["text"][:40].lower() in w.lower() for w in waiver_lines)]
-        if unwaived:
+    try:
+        lines = todo_path.read_text(encoding="utf-8").splitlines()
+        bundle = exporter.build_bundle(todo_path)
+        violations: list[dict] = []
+        
+        # 1. DoD
+        dod_items = parse_checkboxes(lines, "## Definition of Done")
+        unchecked_dod = [i for i in dod_items if not i["checked"]]
+        if unchecked_dod:
+            waiver_lines = find_waiver_section(lines)
+            unwaived = [i for i in unchecked_dod if not any(i["text"][:40].lower() in w.lower() for w in waiver_lines)]
+            if unwaived:
+                violations.append({
+                    "section": "Definition of Done",
+                    "code": "DOD-INCOMPLETE",
+                    "message": f"{len(unwaived)} unchecked item(s) without waiver.",
+                    "resolution": "Mark as done or add a ## Waivers section."
+                })
+
+        # 2. Validation Steps
+        vs_items = parse_checkboxes(lines, "## Validation Steps")
+        unchecked_vs = [i for i in vs_items if not i["checked"]]
+        if unchecked_vs:
             violations.append({
-                "section": "Definition of Done",
-                "code": "DOD-INCOMPLETE",
-                "message": f"{len(unwaived)} unchecked item(s) without waiver.",
-                "resolution": "Mark as done or add a ## Waivers section."
+                "section": "Validation Steps",
+                "code": "VS-INCOMPLETE",
+                "message": f"{len(unchecked_vs)} unchecked validation step(s).",
+                "resolution": "Run the steps or document why they are not applicable."
             })
 
-    # 2. Validation Steps
-    vs_items = parse_checkboxes(lines, "## Validation Steps")
-    unchecked_vs = [i for i in vs_items if not i["checked"]]
-    if unchecked_vs:
-        violations.append({
-            "section": "Validation Steps",
-            "code": "VS-INCOMPLETE",
-            "message": f"{len(unchecked_vs)} unchecked validation step(s).",
-            "resolution": "Run the steps or document why they are not applicable."
-        })
-
-    # 3. Delivery Stage
-    stage = bundle["delivery_status"]["stage"]
-    if stage != "Production-Ready":
-        violations.append({
-            "section": "Delivery Status",
-            "code": "STAGE-NOT-READY",
-            "message": f"Stage is '{stage}', expected 'Production-Ready'.",
-            "resolution": "Update stage after verification."
-        })
-
-    # 4. Mandatory Gates per Namespace
-    namespace = bundle.get("namespace", "core")
-    mandatory = NAMESPACE_MANDATORY_GATES.get(namespace, NAMESPACE_MANDATORY_GATES["core"])
-    for g_id in mandatory:
-        if g_id not in bundle["gates"]:
+        # 3. Delivery Stage
+        stage = bundle["delivery_status"]["stage"]
+        if stage != "Production-Ready":
             violations.append({
-                "section": f"Gate: {g_id}",
-                "code": f"GATE-{g_id.upper()}-MISSING",
-                "message": f"Mandatory gate '{g_id}' for namespace '{namespace}' is missing.",
-                "resolution": f"Add ## Gate: {g_id.capitalize()} to the TODO."
+                "section": "Delivery Status",
+                "code": "STAGE-NOT-READY",
+                "message": f"Stage is '{stage}', expected 'Production-Ready'.",
+                "resolution": "Update stage after verification."
             })
 
-    # 5. Gate Statuses
-    for g_id, gate in bundle["gates"].items():
-        if gate["decision"] == "required" and gate["status"] not in SATISFYING_GATE_STATUSES:
-            violations.append({
-                "section": f"Gate: {g_id}",
-                "code": f"GATE-{g_id.upper()}-UNRESOLVED",
-                "message": f"Gate '{g_id}' status is '{gate['status']}'.",
-                "resolution": "Resolve gate or record a waiver."
-            })
+        # 4. Mandatory Gates per Namespace
+        namespace = bundle.get("namespace", "core")
+        mandatory = NAMESPACE_MANDATORY_GATES.get(namespace, NAMESPACE_MANDATORY_GATES["core"])
+        for g_id in mandatory:
+            if g_id not in bundle["gates"]:
+                violations.append({
+                    "section": f"Gate: {g_id}",
+                    "code": f"GATE-{g_id.upper()}-MISSING",
+                    "message": f"Mandatory gate '{g_id}' for namespace '{namespace}' is missing.",
+                    "resolution": f"Add ## Gate: {g_id.capitalize()} to the TODO."
+                })
 
-    return {"status": "go" if not violations else "blocked", "violations": violations}
+        # 5. Gate Statuses
+        for g_id, gate in bundle["gates"].items():
+            if gate["decision"] == "required" and gate["status"] not in SATISFYING_GATE_STATUSES:
+                violations.append({
+                    "section": f"Gate: {g_id}",
+                    "code": f"GATE-{g_id.upper()}-UNRESOLVED",
+                    "message": f"Gate '{g_id}' status is '{gate['status']}'.",
+                    "resolution": "Resolve gate or record a waiver."
+                })
+
+        return {"status": "go" if not violations else "blocked", "violations": violations}
+    except Exception as e:
+        return {
+            "status": "blocked",
+            "violations": [{
+                "section": "Parser Integrity",
+                "code": "PARSER-CRASH",
+                "message": f"Parser crashed: {str(e)}",
+                "resolution": "Fix the malformed TODO or the parser script. Traceback: " + traceback.format_exc()
+            }]
+        }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
