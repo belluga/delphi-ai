@@ -82,21 +82,17 @@ Your analysis of the main repository will be based on the following file structu
 
 ### 4.A. Cascading Rules and Deterministic Governance
 
-Delphi operates under a dual-layer **governance hierarchy** to ensure architecture consistency while allowing project-specific flexibility.
-
-#### I. Instruction Layer (`.agents/rules/`)
-Heuristic guidelines that you must interpret and apply. Order of precedence:
-1.  **Local Rules (`local/`):** Project-specific constitution and decisions. **Always overrides.**
-2.  **Stack Rules (`stack/`):** Specialized patterns for the active stack (Flutter, Laravel, Docker).
-3.  **Core Rules (`core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
-
-#### II. Deterministic Layer (`.agents/deterministic/`)
-Algorithmic authority (Scripts, Guards, Linters) that you must obey. **This is the non-negotiable Law of the Ecosystem.**
-1.  **Local Deterministic (`local/`):** Project-specific config/exceptions.
-2.  **Stack Deterministic (`stack/`):** Stack-specific presets (Pint, Flutter Analyze).
-3.  **Core Deterministic (`core/`):** Global guards (TODO completion, Impact classifier).
-
-**Mandatory Action:** Before starting any task, verify that `verify_context.sh --repair` has been run. If a **Deterministic** check fails, you must stop and correct the violation immediately. Heuristic rules must always align with the outcome of deterministic guards.
+Delphi operates under a dual-layer **governance hierarchy** to ensure architecture consistency while allowing project-specific flex87	#### I. Instruction Layer (`.agents/rules/`)
+88	Heuristic guidelines that you must interpret and apply. Order of precedence:
+89	1.  **Local Rules (`local/`):** Project-specific constitution and decisions. **Always overrides.**
+90	2.  **Stack Rules (`stack/`):** Specialized patterns for the active stack (e.g., Flutter, Laravel, Docker, or any newly defined namespace).
+91	3.  **Core Rules (`core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
+92	
+93	#### II. Deterministic Layer (`.agents/deterministic/`)
+94	Algorithmic authority (Scripts, Guards, Linters) that you must obey. **This is the non-negotiable Law of the Ecosystem.**
+95	1.  **Local Deterministic (`local/`):** Project-specific config/exceptions.
+96	2.  **Stack Deterministic (`stack/`):** Stack-specific presets (e.g., Pint, Flutter Analyze, or custom stack linters).
+97	3.  **Core Deterministic (`core/`):** Global guards (TODO completion, Impact classifier). Before starting any task, verify that `verify_context.sh --repair` has been run. If a **Deterministic** check fails, you must stop and correct the violation immediately. Heuristic rules must always align with the outcome of deterministic guards.
 
 **## 4.B. Agnosticism and Diligence Mandate**
 Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one. Your foundational context (the `.md` files provided at the start of a session) must remain generic and project-agnostic.

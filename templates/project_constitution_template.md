@@ -17,11 +17,11 @@ The brief purpose/boundary section below is orientation only. Enduring business 
 18	
 19	This project follows the PACED **Cascading Rules** hierarchy. The `verify_context.sh --repair` tool uses the `Namespace` below to establish deterministic symlinks for the active stack.
 20	
-21	- **Namespace:** `<docker | flutter | laravel>`
-22	- **Rule Subscriptions:**
-23	  - [x] **Core Rules:** Universal Delphi patterns (T.E.A.C.H., TODOs, session workflows).
-24	  - [x] **Stack Rules:** Specialized patterns for the `<namespace>` stack.
-25	  - [x] **Local Rules:** Project-specific constitution, modules, and decisions.
+20	- **Namespace:** `<docker | flutter | laravel | custom_stack>`
+21	- **Rule Subscriptions:**
+22	  - [x] **Core Rules:** Universal Delphi patterns (T.E.A.C.H., TODOs, session workflows).
+23	  - [x] **Stack Rules:** Specialized patterns for the `<namespace>` stack (extensible via delphi-ai/deterministic/stacks/).
+24	  - [x] **Local Rules:** Project-specific constitution, modules, and decisions.
 26	
 27	### 2.2 Authority Hierarchy
 28	
