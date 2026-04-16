@@ -62,7 +62,8 @@
         "analyzer",
         "validator",
         "hybrid",
-        "manual"
+        "manual",
+        "completion_guard"
       ]
     },
     "source_ref": {

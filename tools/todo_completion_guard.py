@@ -410,14 +410,21 @@ def main() -> int:
                 append_jsonl,
                 build_rule_event_id,
                 build_rule_fingerprint,
+                next_rule_episode_id,
+                load_jsonl,
                 utc_now,
+                validate_schema,
             )
 
             events_path = Path(args.events_jsonl).resolve()
+            prior_events = load_jsonl(events_path)
             timestamp = utc_now()
 
             for v in result["violations"]:
                 fingerprint = build_rule_fingerprint([v["code"], v["section"]])
+                episode_id = next_rule_episode_id(
+                    prior_events, RULE_ID, result["todo_path"], fingerprint,
+                )
                 event_id = build_rule_event_id(
                     "rule_block_observed", RULE_ID,
                     result["todo_path"], fingerprint, timestamp,
@@ -431,6 +438,7 @@ def main() -> int:
                     "rule_id": RULE_ID,
                     "rule_level": "paced",
                     "todo_path": result["todo_path"],
+                    "episode_id": episode_id,
                     "fingerprint": fingerprint,
                     "source_kind": "completion_guard",
                     "source_ref": "delphi-ai/tools/todo_completion_guard.py",
@@ -440,7 +448,9 @@ def main() -> int:
                     "message": v["message"],
                     "resolution_instruction": v["resolution"],
                 }
+                validate_schema(payload, "rule_event.schema.json", "completion guard rule event")
                 append_jsonl(events_path, payload)
+                prior_events.append(payload)
 
         except ImportError:
             print(
