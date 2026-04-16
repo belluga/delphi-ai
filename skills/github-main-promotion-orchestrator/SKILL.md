@@ -39,16 +39,19 @@ Classify the request before acting:
 ## Common Preconditions
 - Confirm the target repo(s), source branch `stage`, and destination branch `main`.
 - Confirm the user has explicitly approved promotion to `main`.
-- Review the current `stage` promotion state using the same evidence discipline as `github-stage-promotion-orchestrator`; if the upstream lane is not demonstrably healthy, stop and fix that first.
+- Run the deterministic main-promotion preflight before opening the first PR in the lane:
+  - `bash delphi-ai/tools/github_main_promotion_preflight.sh --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>]`
+  - Treat any `Overall outcome: no-go` result as a hard stop. Follow the emitted `resolution_prompt` before creating or reopening promotion PRs.
+  - The preflight validates: stage health per repo (contains dev tip, green push runs), promotable diff beyond main, and Docker submodule alignment.
 - Run `git status --short` in each touched repo for evidence collection.
 - Check open PRs before creating new ones.
 - For every promotion PR to `main`, include `- Expected SHA: <40-char-sha>` in the body if the repo enforces it.
 - Monitor PR checks and post-merge runs; do not assume merge success means the lane is healthy.
 
-## Preferred Deterministic Helper
-- Use `bash delphi-ai/tools/github_stage_promotion_snapshot.sh [--repo <owner/name>] [--pr <number>] [--branch <name>]` to capture current local status, candidate PR, and check snapshot before promotion decisions.
-- Before claiming the lane is finished, use `bash delphi-ai/tools/github_promotion_completion_guard.sh --lane main --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>] [--web-pr <number>]` and require `Overall outcome: go`.
-- Treat the snapshot helper as evidence collection only; main-promotion gating, comment triage, and merge decisions remain manual in this skill. Treat the completion guard as deterministic end-of-lane TEACH enforcement for Docker finalization and Flutter web follow-through.
+## Preferred Deterministic Helpers
+- **Preflight (before first PR):** Use `bash delphi-ai/tools/github_main_promotion_preflight.sh --scenario <scenario> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>]` as the first gate. The helper must return `Overall outcome: go` before the lane opens its first PR. Treat it as deterministic `GO|NO-GO` lane-health gating that implements TEACH at runtime: objective remote-repo checks trigger it, exit code `2` enforces the stop, `context` carries per-repo evidence, and `resolution_prompt` is the exact next-step guidance to follow before retrying.
+- **Snapshot (evidence collection):** Use `bash delphi-ai/tools/github_stage_promotion_snapshot.sh [--repo <owner/name>] [--pr <number>] [--branch <name>]` to capture current local status, candidate PR, and check snapshot before promotion decisions. Treat as evidence collection only; main-promotion gating, comment triage, and merge decisions remain manual in this skill.
+- **Completion guard (after all merges):** Before claiming the lane is finished, use `bash delphi-ai/tools/github_promotion_completion_guard.sh --lane main --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>] [--web-pr <number>]` and require `Overall outcome: go`. Treat as deterministic end-of-lane TEACH enforcement for Docker finalization and Flutter web follow-through.
 
 ## Finding Scrutiny Gate
 For any blocking PR/review finding, perform this gate before deciding to patch:
