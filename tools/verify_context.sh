@@ -316,10 +316,67 @@ ensure_cascading_rules() {
     if [ "$namespace" = "flutter" ]; then
       sync_flutter_plugin "$module_path" "$label"
     fi
+
+    # ── Laravel-Specific Guardrails Sync & Drift Detection ───────────────────
+    if [ "$namespace" = "laravel" ]; then
+      sync_laravel_guardrails "$module_path" "$label"
+    fi
   fi
 
   # 3. Local Deterministic (Project-specific config/rules)
   ensure_symlink_path "$module_path/.agents/deterministic/local" "../foundation_documentation/deterministic" "$label .agents/deterministic/local"
+}
+
+# Sync Laravel Global Guardrails and detect Drift
+sync_laravel_guardrails() {
+  local module_path="$1"
+  local label="$2"
+  
+  # 1. Sync architecture_guardrails.php
+  local target_script="$module_path/scripts/architecture_guardrails.php"
+  local source_script="$REPO_ROOT/delphi-ai/deterministic/stacks/laravel/scripts/architecture_guardrails.php"
+  
+  if [ -f "$source_script" ]; then
+    sync_file_with_drift "$source_script" "$target_script" "$label" "Laravel Architecture Guardrails"
+  fi
+
+  # 2. Sync pint.json
+  local target_pint="$module_path/pint.json"
+  local source_pint="$REPO_ROOT/delphi-ai/deterministic/stacks/laravel/pint.json"
+  
+  if [ -f "$source_pint" ]; then
+    sync_file_with_drift "$source_pint" "$target_pint" "$label" "Laravel Pint Config"
+  fi
+}
+
+# Generic file sync with drift detection
+sync_file_with_drift() {
+  local source_file="$1"
+  local target_file="$2"
+  local label="$3"
+  local file_desc="$4"
+
+  if [ ! -f "$target_file" ]; then
+    echo "[$label] Initializing $file_desc (copying from PACED)..."
+    mkdir -p "$(dirname "$target_file")"
+    cp "$source_file" "$target_file"
+  else
+    local source_hash target_hash
+    source_hash=$(md5sum "$source_file" | cut -d' ' -f1)
+    target_hash=$(md5sum "$target_file" | cut -d' ' -f1)
+
+    if [ "$source_hash" != "$target_hash" ]; then
+      if [ "$REPAIR" = "true" ]; then
+        echo "[$label] Drift detected in $file_desc. Repairing (syncing with PACED global)..."
+        cp "$source_file" "$target_file"
+      else
+        echo "[$label] ❌ NO-GO: $file_desc drift detected!"
+        echo "    Local file $target_file does not match PACED global."
+        echo "    INVESTIGATE: Compare changes and decide to CONSOLIDATE (push to delphi-ai) or REPAIR (run --repair)."
+        EXIT_CODE=2
+      fi
+    fi
+  fi
 }
 
 # Sync Flutter Global Plugin and detect Drift
