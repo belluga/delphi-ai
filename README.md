@@ -1,460 +1,92 @@
-# PACED Setup Guide
-
-## Purpose
-Centralized instructions to attach PACED (Progressively Accelerated Controlled Engineering through Determinism; formerly Delphi-AI) to any project repo.
-
-## What PACED Is
-PACED is not a prompt bundle. It is an internal working method for AI-assisted delivery that combines:
-
-- bootloaders per agent
-- environment/readiness checks
-- rules, workflows, and skills
-- tactical TODO-driven execution
-- adherence and validation gates
-- promotion of stable outcomes into canonical documentation
-
-The goal is not to let an agent "just code". The goal is to make execution reviewable, resumable, and less likely to drift away from architecture, contract, and verification.
-
-PACED's thesis is that accumulated system complexity should accelerate correct code creation, not slow it down. Stack specificity is therefore deliberate: restricting the stack lets deterministic validators, architecture rules, and CI checks accumulate project by project, so sustained engineering velocity compounds instead of decaying.
-
-PACED is not a market-facing generic framework. It is an internal engineering method designed to compound deterministic quality inside a deliberately restricted stack. The restriction is a strategy: every project can contribute more reusable deterministic enforcement, so the next project starts with more law already compiled.
-
-PACED is now the method name. The repository/package path remains `delphi-ai` during the transition, so filesystem references keep that name even when the documentation speaks about PACED.
-
-Terminology during the transition:
-- `PACED` = the method
-- `Delphi` = the default agent/persona implementing the method
-- `delphi-ai/` = the current repository/install surface name
-
-## PACED Profiles
-PACED separates its operating roles into **profiles**, not stylistic personas.
-
-- **Genesis**
-  - `Product-Bootstrap`
-- **Strategic**
-  - `CTO-Tech-Lead`
-- **Operational**
-  - `Coder`
-  - `DevOps`
-- **Assurance**
-  - `Tester-Quality`
-  - `Security-Adversarial`
-
-Profiles are paired with a technical scope such as `flutter`, `laravel`, `docker`, or `cross-stack`.
-
-This separation is intentional:
-- the genesis profile may start from zero-state, but it must hand ongoing governance to the canonical Delphi surfaces it creates;
-- the delivery profile should not be able to quietly rewrite the gates that validate its own work;
-- the strategic profile should not silently turn into an implementation profile;
-- assurance profiles should try to invalidate the delivery, not quietly absorb the delivery itself.
-
-## PACED Method Positioning
-PACED follows a **governed, distributed spec-driven execution model**.
-
-When a project is still in zero-state, PACED may begin with `Genesis / Product-Bootstrap`.
-
-- zero-state means the project may not yet have `project_constitution.md`, `system_roadmap.md`, module docs, or TODOs;
-- the genesis profile may work from interviews, references, and prototypes (including Stitch or disposable web prototypes);
-- its job is to instantiate the first canonical PACED package, not to become the long-term owner of delivery.
-
-Instead of concentrating all intent in a single spec file, PACED distributes authority across four explicit surfaces:
-
-- `foundation_documentation/project_constitution.md`
-  - project-specific system constitution: inter-module rules, cross-stack invariants, system topology, and approved deviations from the inherited Delphi baseline
-- `foundation_documentation/system_roadmap.md`
-  - strategic direction, stages, sequencing, and cross-stack follow-up
-- `foundation_documentation/modules/*.md`
-  - durable canonical truth: contracts, flows, schemas, invariants, and stable decisions
-- `foundation_documentation/todos/active/*.md`
-  - tactical execution contract for one change: scope, out-of-scope, done criteria, validation steps, frozen decisions, assumptions, plan, and adherence proof
-
-PACED may also use auxiliary non-authoritative surfaces when they improve execution discipline without replacing the canonical docs above:
-
-- `tools/manifest.md`
-  - inventory of deterministic helper tools so scripts are reused instead of recreated
-- `skills/deterministic-tooling-register.md`
-  - internal PACED register that classifies canonical skills as `skill-only`, `lint/analyzer`, `partial-tool`, `full-tool-candidate`, or `already-backed`, and links any existing deterministic support; it is an extractability register, not a rule-lifecycle or rule-metrics ledger
-- `foundation_documentation/artifacts/feature-briefs/*.md`
-  - pre-TODO framing surface for `medium|big` or ambiguous feature-shaped work; used to decompose ideas into story-sized slices without competing with the canonical docs
-- `foundation_documentation/artifacts/dependency-readiness.md`
-  - non-blocking record of external dependency health, verification method, and workarounds
-- `foundation_documentation/artifacts/session-memory.md`
-  - bounded continuity memory for recent session state, confirmed preferences/behaviors, and dependency references; never a substitute for canonical docs or TODO handoffs
-- `foundation_documentation/artifacts/tmp/runtime-index.md`
-  - generated runtime/session handoff index for active TODOs, blocked fronts, open handoffs, and session-memory carry-over; reconstructible and never authoritative
-- `foundation_documentation/artifacts/tmp/*-todo-validation-bundle.json` and `*-todo-validation-report.json`
-  - derived validator outputs for CI/local diagnostics; disposable, machine-checkable, and never a replacement for the markdown TODO
-- `foundation_documentation/artifacts/metrics/rule-catalog.json`
-  - project-local ledger of teaching rules, their lifecycle labels, and their resolution contracts; used for metrics and recalibration, never as a substitute for constitution/modules
-- `foundation_documentation/artifacts/metrics/events/rule-events.jsonl`
-  - append-only rule episode log for deterministic blockers, inferred true positives, explicit false positives, escapes, and lifecycle changes
-- `foundation_documentation/artifacts/tmp/*-<review-kind>-resolution.json`
-  - derived gate-finding resolution packet extracted from the authoritative TODO so useful/discarded/formalizable findings can be aggregated without editing JSON by hand
-- `foundation_documentation/artifacts/metrics/project-metrics-summary.{json,md}`
-  - derived project-level Clean Rate and rule/gate effectiveness summary
-- `foundation_documentation/artifacts/tmp/project-setup-report.json`
-  - derived setup/recalibration snapshot for brownfield drift interpretation; machine-checkable and never a replacement for canonical project docs
-- `foundation_documentation/artifacts/tmp/project-setup-report.txt`
-  - human-readable brownfield/recalibration diagnosis captured from the deterministic recalibration loop
-- `foundation_documentation/artifacts/tmp/project-normalization-packet.{json,md}`
-  - derived assistive packet that separates manual remediation from normalization-TODO tracks when a project is not yet calibrated
-- `foundation_documentation/artifacts/tmp/subagent-*-dispatch.{json,md}` and `subagent-*-merge.{json,md}`
-  - derived orchestration packets for bounded no-context reviewer dispatch and merge; useful when PACED delegates critique/audit/final-review work to subagents without creating hidden authority
-- `delphi-ai/artifacts/tmp/self-improvement-work-ledger.md`
-  - temporary instruction-only work ledger for longer Delphi self-improvement sessions; never a tactical TODO or canonical source of truth
+# PACED (formerly Delphi-AI)
 
-This means PACED is neither code-first nor a loose "vibe coding" loop. Once the canonical package exists, the normal path is:
+## The Method
+**PACED** (Progressively Accelerated Controlled Engineering through Determinism) is an internal engineering method designed to compound deterministic quality inside a deliberately restricted stack. 
 
-1. load the right instructions and verify readiness
-2. for `medium|big` work that is not already one bounded slice, and for materially ambiguous work of any size, frame the feature and decompose it into story-sized slices
-3. refine the tactical TODO for the current slice (`WHAT` and what counts as done)
-4. build assumptions and an execution plan (`HOW`)
-5. review the plan for architecture, tests, performance, and security
-6. request explicit approval (`APROVADO`)
-7. ingest the rules/workflows that govern the touched surfaces
-8. implement, with test-first/TDD when behavior is verifiable
-9. validate decision adherence, module coherence, security risk, and verification debt
-10. promote stable outcomes back into canonical docs
+The core thesis is that **accumulated system complexity should accelerate correct code creation, not slow it down.** By restricting the stack, deterministic validators, architecture rules, and CI checks can accumulate project by project, ensuring that engineering velocity compounds instead of decaying.
 
-When the work crosses profile boundaries, PACED records that handoff in the tactical TODO instead of relying on implicit session memory.
+---
 
-In practice, this makes PACED close to Spec-Driven Development, but with **distributed authority by responsibility** rather than one feature-spec artifact:
+## 🏗️ Cascading Architecture (Governance Hierarchy)
 
-- project constitution = system-specific constitutional spec
-- roadmap = strategic spec
-- module docs = durable canonical spec
-- feature brief = non-authoritative pre-TODO framing for story decomposition
-- tactical TODO = executable change spec
+PACED operates under a dual-layer **governance hierarchy** to ensure architecture consistency while allowing project-specific flexibility. This is managed through two distinct surfaces:
 
-This distributed authority also separates two levels of rules:
+### I. Instruction Layer (`rules/`)
+Heuristic guidelines that the agent (Delphi) must interpret and apply.
+1.  **Local Rules (`.agents/rules/local/`):** Project-specific constitution and decisions. **Always overrides.**
+2.  **Stack Rules (`.agents/rules/stack/`):** Specialized patterns for the active stack (Flutter, Laravel, Docker, etc.).
+3.  **Core Rules (`.agents/rules/core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
 
-- **PACED-level rules**
-  - live in `delphi-ai/` and apply across the supported stack
-  - encode reusable architecture patterns, workflow discipline, and deterministic enforcement that should hold project after project
-- **PROJECT-level rules**
-  - live inside the downstream project and are governed by that project's constitution, modules, and promoted canonical decisions
-  - encode project-specific resolvers, canonical services, ownership rules, and invariants that should be enforced locally once they become stable enough to formalize
+### II. Deterministic Layer (`deterministic/`)
+Algorithmic authority (Scripts, Guards, Linters) that the agent **must obey**. This is the non-negotiable Law of the Ecosystem.
+1.  **Local Deterministic (`local/`):** Project-specific configurations, exceptions, and business-logic guardrails.
+2.  **Stack Deterministic (`stack/`):** Technology-specific presets (e.g., Pint, Flutter Analyze, or custom architecture scripts).
+3.  **Core Deterministic (`core/`):** Global PACED guards (TODO completion, Impact classifier, Session management).
 
-PACED-level rules must not quietly absorb project-specific truth. PROJECT-level rules must not remain trapped in agent memory once they are stable and formalizable.
+---
 
-## SDD + TDD
-PACED should be read as a combination of:
+## 🚀 Progressive Determinism
 
-- **SDD** for defining the contract of the work
-- **TDD / test-first** for proving that the implementation actually satisfies that contract
+Progressive determinism is the operating model underneath PACED. It ensures:
+- The agent converges against **deterministic law** before delivery reaches a human.
+- The iteration cost is mostly **computational**, not human.
+- Every project leaves behind more **deterministic intelligence** than it consumed.
 
-In PACED terms:
+### Deterministic Guards (Phase 0)
+The following guards are now active in the `deterministic/core/` directory:
+- `todo_completion_guard.py`: Enforces Definition of Done (DoD), validation steps, and gate resolution before a TODO can be closed.
+- `finding_impact_classifier.py`: Analyzes code diffs to classify findings (Logic vs. Cosmetic) and prevents risky promotions.
+- `session_lock_manager.py`: Manages session state and prevents concurrent agent conflicts.
+- `metrics_consolidation_trigger.py`: Automatically extracts formalizable findings and populates the rule-events ledger.
 
-- project constitution, roadmap, module docs, and the tactical TODO define what must be true
-- assumptions and the execution plan define how the current implementation intends to get there
-- tests provide executable feedback that the promised behavior is real
+---
 
-This split matters because the two layers solve different failure modes:
+## 🛠️ Setup & Environment Readiness
 
-- spec-driven execution reduces direction error
-- test-first execution reduces implementation error and false confidence
-- deterministic validators progressively absorb objective structural checks so governance relies less on vibes over time
+PACED uses a "Linker" strategy to inject the correct rules and deterministic guards into any project repository without polluting the git history.
 
-## Progressive Determinism
-Progressive determinism is the operating model underneath PACED.
+### The PACED Linker (`verify_context.sh --repair`)
+The `verify_context.sh` script is the orchestrator of the environment. When run with `--repair`, it:
+1.  **Detects the Namespace:** Reads the `project_constitution.md` to identify the stack (e.g., `flutter`, `laravel`).
+2.  **Establishes Symlinks:** Creates the `.agents/rules/` and `.agents/deterministic/` structures pointing to the correct global and stack-specific resources in `delphi-ai/`.
+3.  **Validates Adherence:** Ensures that the local environment is 100% compliant with the PACED contract.
 
-The core claim is not "the agent always writes correct code on the first try." The claim is stronger and more realistic:
-
-- the agent should converge against deterministic law before delivery reaches a human
-- the iteration cost should be mostly computational, not human
-- every project should leave behind more deterministic intelligence than it consumed
-
-### Rules Carry Resolution Instructions
-PACED rules are not meant to stop at `violation detected`.
-
-Whenever a deterministic validator or CI blocker can explain what is wrong objectively, the output should also carry the resolution instruction that tells the operator or agent how to fix the violation. The diagnostic is therefore part of the runtime guidance, not just a red light.
-
-This is why PACED prefers blockers such as:
-
-- `changed tests detected but no Independent Test Quality Audit evidence found; add the audit evidence block for the changed test scope`
-- `bugfix TODO missing fail-first target; record the failing baseline test or equivalent restoration evidence in the bugfix section`
-- `TODO marked Blocked without Blocker Notes and Next exact step; add both fields before closure or handoff`
-- `waiver record incomplete: missing approver_id and approval_reference; complete the waiver record before claiming the gate was waived`
-
-The more mature the rule base becomes, the less the agent has to guess.
-
-### The Cost Is Computational, Not Human
-PACED does not promise zero retries. It promises that retries increasingly happen against deterministic validators before the work reaches a human reviewer.
-
-That changes the cost structure:
-
-- more iteration is paid in tokens and compute time
-- less iteration is paid in human review time, rework, and escaped defects
-- bounded work packages become safer to delegate, and larger initiatives can be decomposed with more confidence, because the deterministic filter is stronger
-
-Sustained velocity in PACED comes from lower human review burden and fewer post-merge corrections as the rule base matures.
-
-### Deterministic Blockers, Not Destructive Enforcement
-PACED does not treat deterministic enforcement as a license to mutate or delete the agent's work automatically.
-
-- CI does not delete code
-- CI does not silently rewrite the output
-- CI blocks, explains, and waits for correction
-
-What CI can judge objectively should move into deterministic enforcement. What CI cannot judge honestly, such as architectural elegance, semantic sufficiency, or the quality of a high-level tradeoff, remains under LLM/human gate governance.
-
-### Rules Accumulate and Recalibrate
-PACED treats deterministic rules as an evolving system with memory.
-
-A rule should move through a lifecycle such as:
-
-- `created`
-- `adjusting`
-- `ready`
-- `operating`
-
-Once a rule is in operation, effectiveness should be judged by evidence, not by prestige:
-
-- `true positives`
-- `false positives`
-- `escapes`
-
-Escapes are candidates for new rules when the failure was formalizable. A rule that generates too many false positives after being considered ready is not actually ready; it should return to adjustment or be pruned.
-Until PACED ships a dedicated lifecycle ledger, treat these as stewardship labels for rule evaluation and recalibration, not as a claim that every repository already exposes full rule metrics plumbing.
-
-### Phase 1 Metrics Loop
-PACED Phase 1 closes that loop with four lightweight pieces:
-
-- a project-local `rule-catalog.json`
-- an append-only `rule-events.jsonl`
-- TODO-native gate finding resolution tables extracted into derived JSON
-- a derived metrics summary that computes rule effectiveness, gate effectiveness, and `Clean Rate`
-
-The design is intentionally event-sourced, adjudication-light, and summary-derived:
-
-- deterministic validators record episodes, not manual counters
-- true positives are inferred by default when an episode disappears after correction
-- false positives, escapes, and recalibrations are explicit events
-- no-context helper findings are resolved in the authoritative TODO, then extracted for aggregation
-
-### PACED MCP Server
-The long-term destination of this metrics/governance surface is a PACED MCP Server.
-
-Phase 1 uses local JSON/JSONL artifacts and CLI entrypoints so the schemas can mature quickly in real projects. But the underlying business logic should remain separable from CLI parsing so the same operations can later be exposed as native MCP tools such as:
-
-- `paced.rule_event.record`
-- `paced.gate_resolution.extract`
-- `paced.metrics.summary`
-- `paced.metrics.clean_rate`
-
-## How PACED Works
-The core idea is simple:
-
-- the feature brief decomposes larger or ambiguous work into story-sized slices before execution
-- the TODO defines **what** must be delivered and what counts as done for one current slice
-- assumptions and the execution plan define **how** PACED currently intends to deliver it
-- implementation is not authorized until the contract, assumptions, plan, and approval line up
-- delivery is not complete until the result is validated and stable knowledge is promoted out of tactical notes
-
-This is why the framework puts so much weight on:
-
-- feature framing before medium/big execution
-- evidence-backed assumptions instead of free guesses
-- explicit approval before implementation
-- module-first coherence checks
-- test strategy recorded inside the plan
-- test-first/TDD when behavior can be verified early
-- explicit closing checks for security risk and verification debt
-
-Tactical TODOs are also intentionally **bounded but elastic**:
-
-- bounded enough to represent one primary story slice with one primary user/value objective
-- guided by one primary module and one main approval/review/promotion cycle as strong sizing heuristics, not automatic split triggers when the slice is still cohesive
-- elastic enough to absorb local blockers and small concretization work that stays inside that same objective and approval conversation
-- not allowed to silently absorb a new independently testable behavior, a new primary objective, or a new approval/risk conversation without TODO update/split + renewed approval
-
-## What PACED Borrowed From GSD
-PACED absorbed a few ideas from Get Shit Done because they improve execution ergonomics:
-
-- make assumptions explicit instead of leaving them implicit in the plan
-- expose the difference between contract and execution strategy
-- prefer operational clarity over hidden agent reasoning
-
-But PACED intentionally does **not** adopt the full GSD shape. It does not center work around:
-
-- `STATE.md`
-- a phase-centric artifact stack
-- extra planning surfaces that compete with roadmap, modules, and tactical TODOs
-
-The tactical TODO remains the execution authority, and durable truth remains in canonical docs.
-
-## PACED Profiles and Scope Checks
-PACED profiles are backed by explicit scope boundaries.
-
-- `Genesis / Product-Bootstrap` owns project inception, prototype-backed validation, and first-pass canonicalization.
-- `Operational / Coder` owns product behavior and tests.
-- `Operational / DevOps` owns CI/CD, runtime, ingress, and promotion-lane mechanics.
-- `Strategic / CTO-Tech-Lead` owns constitution, roadmap, and cross-module direction.
-- `Assurance` profiles own challenge and validation, not silent takeover of delivery.
-
-Deterministic scope checks can be run with:
-
-```bash
-python3 delphi-ai/tools/profile_scope_check.py --profile <profile-id>
-```
-
-The check validates touched surfaces only. It does not try to infer whether mixed-scope changes came from a valid handoff, so those cases must be reconciled against the TODO handoff log.
-
-## Where TDD Fits in PACED
-PACED now treats test strategy as part of the execution plan, not as an afterthought.
-
-For behavior that is verifiable, the preferred path is test-first:
-
-- the TODO and module docs define what must be true
-- tests provide executable proof of that contract
-- implementation is driven by those checks instead of by plausibility alone
-
-This is especially important for bugfixes, regressions, compatibility-sensitive work, and behavior-defining UI/API changes, where false confidence is expensive.
-
-## Supported AI Tools
-
-| Tool | Bootloader | Artifacts |
-|------|------------|-----------|
-| **Cline** | Auto-loads `.clinerules/` | `.clinerules/`, `.cline/skills/` |
-| **Codex/Antigravity** | `AGENTS.md` | `.codex/skills/`, `.agents/` |
-| **Gemini** | `GEMINI.md` | `.agents/skills/` directory |
-
-## Quick Setup
-
-### Option 1: Full Setup (Recommended)
-Optional preflight before making changes:
-```bash
-bash delphi-ai/init.sh --check
-```
-
-Run the setup helper from the project root:
-```bash
-bash delphi-ai/init.sh
-```
-- In non-interactive environments, the helper reuses the current `.gitmodules` URLs unless `DELPHI_*_URL` overrides are provided.
-- Prompts for Laravel/Flutter/Web submodule URLs (defaults to current entries).
-- Creates the documented bootloaders/symlinks for Cline, Codex, and Gemini, and links `.agents` rules/workflows when the downstream layout is available.
-- If a required Delphi path is already occupied by a different file/symlink/directory, setup fails clearly and prints the blocking paths. Fix them manually, then rerun.
-- For normal downstream environments, run `bash delphi-ai/verify_context.sh` afterward as a read-only validation pass.
-- For zero-state `Genesis / Product-Bootstrap` repos, treat `init.sh --check` / `init.sh` as the install preflight and instantiate `foundation_documentation/` before expecting full `verify_context.sh` readiness to pass.
-- If the validation fails only because Delphi-managed links/artifacts are missing or misaligned, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain `bash delphi-ai/verify_context.sh`.
-- For full governance mirror validation after readiness passes, run `bash delphi-ai/verify_adherence_sync.sh`.
-- For brownfield/recalibration inventory and bounded normalization tracks, prefer the end-to-end helper:
-  ```bash
-  bash delphi-ai/tools/project_recalibration_doctor.sh --repo .
-  ```
-- If you need the setup report only, run:
-  ```bash
-  bash delphi-ai/tools/delphi_project_setup_report.sh \
-    --repo . \
-    --json-output foundation_documentation/artifacts/tmp/project-setup-report.json
-  ```
-- If the setup report already exists and you only need to derive/update the packet, run:
-  ```bash
-  python3 delphi-ai/tools/project_setup_normalization_packet.py \
-    --report foundation_documentation/artifacts/tmp/project-setup-report.json \
-    --json-output foundation_documentation/artifacts/tmp/project-normalization-packet.json \
-    --markdown-output foundation_documentation/artifacts/tmp/project-normalization-packet.md
-  ```
-
-### Option 2: Manual Setup
-
-1. Clone Delphi-AI (if not present):
+### Quick Install
+1. Clone PACED into your project (git ignored):
    ```bash
    git clone https://github.com/belluga/delphi-ai.git delphi-ai
    ```
-
-2. **For Cline** (auto-loads rules):
+2. Run the initialization:
    ```bash
-   ln -s delphi-ai/.clinerules .clinerules
-   mkdir -p .cline
-   ln -s ../delphi-ai/.cline/skills .cline/skills
-   ```
-
-3. **For Codex/Antigravity**:
-   ```bash
-   ln -s delphi-ai/templates/agents/root.md AGENTS.md
-   mkdir -p .codex
-   ln -s ../delphi-ai/skills .codex/skills
-   bash delphi-ai/tools/sync_agent_rules.sh
-   ```
-
-4. **For Gemini**:
-   ```bash
-   ln -s delphi-ai/GEMINI.md GEMINI.md
-   mkdir -p .agents
-   ln -s ../delphi-ai/skills .agents/skills
-   ```
-
-5. Check `git status` to ensure submodule URLs point to your project forks, not boilerplate.
-
-## If Setup Fails
-
-The installer now fails on path conflicts instead of trying to overwrite them silently.
-
-Common blocking paths are:
-- `AGENTS.md`
-- `CLINE.md`
-- `GEMINI.md`
-- `.agents/skills/`
-- `.agents/rules/`
-- `.agents/workflows/`
-- `.clinerules/`
-- `.cline/skills/`
-- `.codex/skills/`
-- `flutter-app/AGENTS.md`
-- `laravel-app/AGENTS.md`
-- `flutter-app/foundation_documentation`
-- `laravel-app/foundation_documentation`
-- `flutter-app/delphi-ai`
-- `laravel-app/delphi-ai`
-- `flutter-app/scripts`
-- `laravel-app/scripts/delphi`
-
-Manual resolution rules:
-- If the path already belongs to your project, keep it and install Delphi manually only where it does not conflict.
-- If the path is supposed to be Delphi-managed, rename or remove the conflicting file/directory, then rerun `bash delphi-ai/init.sh`.
-- After any manual fix, run `bash delphi-ai/init.sh --check`, then `bash delphi-ai/init.sh`, then `bash delphi-ai/verify_context.sh`.
-
-## AI Install Guide
-
-If an AI agent is asked to install Delphi in a host repo, it should follow this exact behavior:
-
-1. Inspect the required Delphi-owned paths before running setup.
-2. If any required path already exists and is not the expected Delphi symlink, stop immediately and report the exact conflicting paths.
-3. Do not overwrite project-owned files or directories.
-4. After the user resolves conflicts, run:
-   ```bash
-   bash delphi-ai/init.sh --check
    bash delphi-ai/init.sh
-   bash delphi-ai/verify_context.sh
-   bash delphi-ai/verify_adherence_sync.sh
    ```
-5. If `verify_context` fails only on repairable Delphi-managed links/artifacts, run:
+3. Repair and Validate:
    ```bash
    bash delphi-ai/verify_context.sh --repair
-   bash delphi-ai/verify_context.sh
    ```
-6. Report whether setup completed cleanly or whether manual remediation is still required.
 
-## Cline-Specific Details
+---
 
-Cline automatically discovers artifacts without a bootloader file:
+## 📊 Metrics & Self-Improvement (Phase 0)
 
-| Artifact | Location | Auto-Loaded |
-|----------|----------|-------------|
-| Rules | `.clinerules/*.md` | ✅ Always |
-| Conditional Rules | `.clinerules/glob/*.md` | ✅ On file match |
-| Workflows | `.clinerules/workflows/*.md` | ✅ Via `/filename.md` |
-| Hooks | `.clinerules/hooks/*` | ✅ If executable |
-| Skills | `.cline/skills/*/SKILL.md` | ✅ On-demand |
+PACED closes the feedback loop by collecting metrics at the end of every session:
+- **Location:** `foundation_documentation/artifacts/metrics/rule-events.jsonl`
+- **Automation:** The `post-session-review` workflow automatically triggers metrics collection.
+- **Goal:** Identify which rules are effective (True Positives) and which are escaping, allowing the ecosystem to recalibrate its deterministic layer.
 
-### Available Workflows
-- `/create-controller.md` - New Flutter controller
-- `/create-screen.md` - New Flutter screen
-- `/create-domain.md` - New Flutter domain
-- `/create-repository.md` - New Flutter repository
+---
 
-## Notes
-- Delphi instructions remain agnostic; project-specific stack details should live under `foundation_documentation/`.
-- Always run the DevOps readiness workflow before builds (`delphi-ai/workflows/docker/environment-readiness-method.md`).
+## 🧩 Extensibility
+The architecture is **extensible by design**. To add a new technology stack:
+1. Create `deterministic/stacks/<new_stack>/` for presets and scripts.
+2. Create `rules/stacks/<new_stack>/` for instruction sets.
+3. Declare `Namespace: <new_stack>` in the project's `project_constitution.md`.
+4. Run `--repair` to link the new authority layer.
+
+---
+
+## Terminology
+- **PACED**: The engineering method.
+- **Delphi**: The agent persona implementing the method.
+- **delphi-ai/**: The repository/install surface.
+- **T.E.A.C.H.**: The communication protocol (Title, Evidence, Action, Context, Hint).
