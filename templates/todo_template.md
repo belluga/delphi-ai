@@ -237,6 +237,8 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
 - **Critique isolation mode:** `<fresh no-context auxiliary reviewer>`
 - **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
+- **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
 - **Critique status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
@@ -352,7 +354,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 ## Independent Test Quality Audit Gate (Required When Tests Changed Or Test Confidence Is Material)
 - **Audit decision:** `<required|recommended|not_needed>`
 - **Why this decision:** <complexity/impact rationale>
-- **Trigger signals in scope:** `<changed test logic|bugfix/regression|behavior-defining change|shared contract/api/schema|compatibility|critical-user-journey|non-trivial validation risk|none>`
+- **Trigger signals in scope:** `<changed test logic|bugfix/regression|behavior-defining change|architectural change|shared contract/api/schema|compatibility|critical-user-journey|non-trivial validation risk|none>`
+- **Required evidence matrix (when architectural):** `<unit|widget|integration|web real-backend|mobile real-backend|n/a>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded implementation diff|bounded test diff|validation evidence|expected behaviors/DoD|residual risks>`
 - **Canonical method:** `wf-docker-independent-test-quality-audit-method`
@@ -378,6 +381,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence from wf-docker-independent-test-quality-audit-method|residual risks|existing waivers|verification debt>`
 - **Review isolation mode:** `<fresh no-context auxiliary reviewer>`
 - **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
+- **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`
 - **Final review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>

@@ -159,6 +159,8 @@ If the change restores previously documented or verifiably working behavior (inc
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
 - If a subagent is available in the execution environment, the critique must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
+- When the user or TODO explicitly requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), use `audit-protocol-triple-review` as the canonical orchestration surface instead of ad hoc reviewer sequencing.
+- Record the audit session path plus the decisive round summary (`clean`, `needs_resolution`, or `needs_adjudication`) in the TODO evidence whenever that protocol is used.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
 - Ask for findings first, ordered by severity, with no implementation.
 - Every critique must state whether the recommended path is acceptable for performance, whether it is elegant relative to the available alternatives, and whether it preserves structural soundness rather than relying on brittle workarounds or structural shortcuts.
@@ -272,9 +274,11 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate R — Independent Test Quality Audit (required when tests changed or test confidence is material)
 - Determine the audit decision:
-  - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`
-  - `recommended` for other TODOs that touch production behavior with non-trivial validation risk
-  - `not_needed` only for low-risk non-behavioral work with no meaningful test impact
+  - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `architectural` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`
+- `recommended` for other TODOs that touch production behavior with non-trivial validation risk
+- `not_needed` only for low-risk non-behavioral work with no meaningful test impact
+- Large or architectural changes must carry unit + widget + integration evidence for the affected critical paths before delivery closure.
+- If the architectural change is compatibility-critical or backend-coupled, require `test-creation-standard` plus `test-orchestration-suite` and the relevant real-backend integration platform matrix; `blocked` is not a passing substitute.
 - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
 - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions below.
 - Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.
@@ -307,6 +311,8 @@ If the change restores previously documented or verifiably working behavior (inc
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
 - If a subagent is available in the execution environment, the final review must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
+- When the delivery requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
+- Record the audit session path and the clean/latest round summary in the TODO before claiming the gate is satisfied.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
 - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
 - Retry once with a tighter package if the first attempt fails or times out.

@@ -1,10 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Resolve repository root
-if ! REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+SCRIPT_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+
+# Resolve repository root, normalizing submodule invocations back to the
+# downstream environment root when this setup helper is called from inside
+# flutter-app/ or laravel-app/.
+GIT_ROOT_DETECTED=false
+REPO_ROOT="$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -n "$REPO_ROOT" ]]; then
+  GIT_ROOT_DETECTED=true
+fi
+
+if [[ -z "$REPO_ROOT" ]]; then
   echo "Run this script from inside the repository (git root not found)." >&2
   exit 1
+fi
+
+find_environment_root() {
+  local start="$1"
+  local current="$start"
+  for _ in 1 2 3 4 5; do
+    if [[ -d "$current/foundation_documentation" && -d "$current/delphi-ai" && -d "$current/flutter-app" && -d "$current/laravel-app" ]]; then
+      echo "$current"
+      return 0
+    fi
+    current="$(cd "$current/.." 2>/dev/null && pwd || true)"
+    if [[ -z "$current" ]]; then
+      break
+    fi
+  done
+  return 1
+}
+
+SUPERPROJECT_ROOT=""
+if [[ "$GIT_ROOT_DETECTED" == "true" ]]; then
+  SUPERPROJECT_ROOT="$(git -C "$REPO_ROOT" rev-parse --show-superproject-working-tree 2>/dev/null || true)"
+fi
+
+if [[ -n "$SUPERPROJECT_ROOT" ]]; then
+  if ENV_ROOT="$(find_environment_root "$SUPERPROJECT_ROOT" 2>/dev/null)"; then
+    REPO_ROOT="$ENV_ROOT"
+  fi
 fi
 
 cd "$REPO_ROOT"

@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Usage: branch_rebaseline_preflight.sh [--repo <path>] [--apply-safe-local-cleanup] [--rebaseline-dev]
 
-Audit local/remote branches against the Delphi promotion lane policy and optionally:
+Audit local/remote branches against the Delphi promotion lane policy using ancestry plus patch-equivalence checks, and optionally:
 - delete safe local-only merged branches outside the lane;
 - switch to local `dev` and align it to `origin/dev` when it is safe.
 
@@ -72,7 +72,7 @@ is_local_lane_branch() {
 
 is_remote_lane_branch() {
   case "$1" in
-    origin/HEAD|origin/dev|origin/stage|origin/main|origin/bot/next-version) return 0 ;;
+    origin|origin/HEAD|origin/dev|origin/stage|origin/main|origin/bot/next-version) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -90,6 +90,27 @@ has_live_remote_ref() {
 ref_merged_into_origin_dev() {
   local ref="$1"
   repo_git merge-base --is-ancestor "$ref" origin/dev
+}
+
+ref_patch_equivalent_to_origin_dev() {
+  local ref="$1"
+  local cherry_output
+
+  cherry_output="$(repo_git cherry -v origin/dev "$ref" 2>/dev/null || true)"
+  [ -n "$cherry_output" ] || return 1
+
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    case "$line" in
+      -*)
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  done <<< "$cherry_output"
+
+  return 0
 }
 
 append_assoc_list() {
@@ -138,6 +159,7 @@ declare -A REMOTE_TRACKING_LOCALS=()
 declare -a BLOCKING_BRANCHES=()
 declare -a SAFE_LOCAL_CLEANUP_CANDIDATES=()
 declare -a LOCAL_ANOMALIES=()
+declare -a PATCH_EQUIVALENT_FALSE_POSITIVES=()
 declare -a REMOTE_CLEANUP_CANDIDATES=()
 declare -a SAFE_LOCAL_CLEANUP_PERFORMED=()
 declare -a SAFE_LOCAL_CLEANUP_SKIPPED=()
@@ -218,6 +240,16 @@ while IFS=$'\t' read -r branch upstream; do
       SAFE_LOCAL_CLEANUP_CANDIDATES+=("$branch")
       SAFE_LOCAL_IS_CURRENT["$branch"]="${LOCAL_IS_CURRENT[$branch]}"
     fi
+  elif ref_patch_equivalent_to_origin_dev "$branch"; then
+    PATCH_EQUIVALENT_FALSE_POSITIVES+=(
+      "local: $local_detail (ancestry mismatch; non-merge commits already present in origin/dev)"
+    )
+    if [ "${LOCAL_HAS_LIVE_UPSTREAM[$branch]}" = true ]; then
+      append_assoc_list "$upstream" "$branch"
+    elif ! is_local_anomaly "$branch"; then
+      SAFE_LOCAL_CLEANUP_CANDIDATES+=("$branch")
+      SAFE_LOCAL_IS_CURRENT["$branch"]="${LOCAL_IS_CURRENT[$branch]}"
+    fi
   else
     BLOCKING_BRANCHES+=("local: $local_detail")
   fi
@@ -235,6 +267,11 @@ while IFS= read -r remote_ref; do
   fi
 
   if ref_merged_into_origin_dev "$remote_ref"; then
+    REMOTE_CLEANUP_CANDIDATES+=("$remote_detail")
+  elif ref_patch_equivalent_to_origin_dev "$remote_ref"; then
+    PATCH_EQUIVALENT_FALSE_POSITIVES+=(
+      "remote: $remote_detail (ancestry mismatch; non-merge commits already present in origin/dev)"
+    )
     REMOTE_CLEANUP_CANDIDATES+=("$remote_detail")
   else
     BLOCKING_BRANCHES+=("remote: $remote_detail")
@@ -355,6 +392,9 @@ done <<< "$STATUS_BRANCH"
 printf '\n'
 
 format_list "Blocking branches:" "${BLOCKING_BRANCHES[@]}"
+printf '\n'
+
+format_list "Patch-equivalent false positives:" "${PATCH_EQUIVALENT_FALSE_POSITIVES[@]}"
 printf '\n'
 
 SAFE_LOCAL_DISPLAY=()

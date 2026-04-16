@@ -11,7 +11,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | --- | --- | --- |
 | `tools/audit_instruction_baselines.sh` | shell | Audit canonical Delphi skills/rules/workflows and mirror coherence. |
 | `tools/backend_concurrency_probe.sh` | shell | Send real concurrent HTTP requests and summarize response-code/latency evidence for concurrency/idempotency validation. |
-| `tools/branch_rebaseline_preflight.sh` | shell | Audit non-lane branches against `origin/dev`, optionally apply safe local cleanup, and safely rebaseline `dev` when no blockers remain. |
+| `tools/branch_rebaseline_preflight.sh` | shell | Audit non-lane branches against `origin/dev`, classify ancestry-vs-patch-equivalence false positives, optionally apply safe local cleanup, and safely rebaseline `dev` when no blockers remain. |
 | `tools/bug_fix_evidence_scaffold.sh` | shell | Generate a markdown evidence packet scaffold for the Bug Fix Evidence Loop workflow. |
 | `tools/ci_pipeline_surface_audit.sh` | shell | Audit CI workflow files for Flutter/Laravel/Docker coverage hints, cache hints, and permission/secret surfaces. |
 | `tools/delphi_project_setup_report.sh` | shell | Produce a read-only downstream setup/recalibration inventory covering lane classification, readiness preflight, surface inventory, drift buckets, and an optional derived JSON snapshot. |
@@ -27,6 +27,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/paced_metrics_core.py` | python | Shared PACED metrics helpers used by CLI tools today and designed for future MCP tool exposure. |
 | `tools/paced_metrics_summary.py` | python | Aggregate rule events plus TODO-derived gate resolutions into derived Clean Rate and effectiveness summaries. |
 | `tools/flutter_route_contract_audit.sh` | shell | Scan the generated Flutter router for required non-URL argument signatures that must be classified before delivery. |
+| `tools/github_stage_promotion_preflight.sh` | shell | Deterministically gate promotion source branches against the authoritative base lane and emit a TEACH runtime blocker before the first PR is opened: exit `2` stops the lane, `context` exposes the branch evidence, and `resolution_prompt` tells the operator how to repair the source branch. |
 | `tools/github_stage_promotion_snapshot.sh` | shell | Collect a local/remote GitHub PR and check snapshot to support manual stage-promotion decisions. |
 | `tools/project_setup_normalization_packet.py` | python | Turn a derived project setup report into non-authoritative manual-remediation and normalization-TODO tracks for brownfield recalibration. |
 | `tools/project_recalibration_doctor.sh` | shell | Run downstream recalibration automation end-to-end by generating the setup report plus normalization packet and printing the exact next step. |
