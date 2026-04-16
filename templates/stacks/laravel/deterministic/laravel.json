@@ -1,0 +1,18 @@
+{
+  "stack": "laravel",
+  "subscriptions": [
+    "core",
+    "api-security",
+    "tenant-isolation",
+    "package-coupling"
+  ],
+  "custom_guardrails": [
+    "foundation_documentation/deterministic/rules/local_business_rules.php"
+  ],
+  "parameters": {
+    "allowed_service_locators": [
+      "App\\Support\\Log"
+    ],
+    "mongo_cast_ban_enabled": true
+  }
+}

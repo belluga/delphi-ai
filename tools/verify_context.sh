@@ -347,6 +347,16 @@ sync_laravel_guardrails() {
   if [ -f "$source_pint" ]; then
     sync_file_with_drift "$source_pint" "$target_pint" "$label" "Laravel Pint Config"
   fi
+
+  # 3. Initialize/Sync Deterministic Manifest (laravel.json)
+  local target_manifest="$module_path/foundation_documentation/deterministic/laravel.json"
+  local source_manifest="$REPO_ROOT/delphi-ai/templates/stacks/laravel/deterministic/laravel.json"
+
+  if [ ! -f "$target_manifest" ] && [ -f "$source_manifest" ]; then
+    echo "[$label] Initializing Laravel deterministic manifest (from template)..."
+    mkdir -p "$(dirname "$target_manifest")"
+    cp "$source_manifest" "$target_manifest"
+  fi
 }
 
 # Generic file sync with drift detection
