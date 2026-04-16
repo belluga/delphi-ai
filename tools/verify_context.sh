@@ -292,19 +292,29 @@ ensure_cascading_rules() {
   local namespace
   namespace=$(get_project_namespace "$module_path")
   
+  # ── Rules (Instruction Layer) ───────────────────────────────────────────────
   # 1. Core Rules (Universal)
-  # Symlink .agents/rules/core -> delphi-ai/rules/core
   ensure_symlink_path "$module_path/.agents/rules/core" "$rel_prefix/rules/core" "$label .agents/rules/core"
 
   # 2. Stack Rules (Specialized)
-  # Symlink .agents/rules/stack -> delphi-ai/rules/stacks/$namespace
   if [ -d "$REPO_ROOT/delphi-ai/rules/stacks/$namespace" ]; then
     ensure_symlink_path "$module_path/.agents/rules/stack" "$rel_prefix/rules/stacks/$namespace" "$label .agents/rules/stack"
   fi
 
   # 3. Local Rules (Project-specific)
-  # Symlink .agents/rules/local -> foundation_documentation
   ensure_symlink_path "$module_path/.agents/rules/local" "../foundation_documentation" "$label .agents/rules/local"
+
+  # ── Deterministic Layer (Authority Layer) ───────────────────────────────────
+  # 1. Core Deterministic (Guards, Tools)
+  ensure_symlink_path "$module_path/.agents/deterministic/core" "$rel_prefix/deterministic/core" "$label .agents/deterministic/core"
+
+  # 2. Stack Deterministic (Presets, Linters)
+  if [ -d "$REPO_ROOT/delphi-ai/deterministic/stacks/$namespace" ]; then
+    ensure_symlink_path "$module_path/.agents/deterministic/stack" "$rel_prefix/deterministic/stacks/$namespace" "$label .agents/deterministic/stack"
+  fi
+
+  # 3. Local Deterministic (Project-specific config/rules)
+  ensure_symlink_path "$module_path/.agents/deterministic/local" "../foundation_documentation/deterministic" "$label .agents/deterministic/local"
 }
 
 # Ensure Cline artifacts are properly symlinked
