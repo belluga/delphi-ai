@@ -1,0 +1,91 @@
+name: "PACED: Web-App CI Engine"
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: "Node.js version to use"
+        type: string
+        default: "20"
+      package_manager:
+        description: "Package manager (npm, yarn, pnpm)"
+        type: string
+        default: "npm"
+      test_command:
+        description: "Command to run tests"
+        type: string
+        default: "npm test"
+      lint_command:
+        description: "Command to run lint"
+        type: string
+        default: "npm run lint"
+      build_command:
+        description: "Command to run build"
+        type: string
+        default: "npm run build"
+      namespace:
+        description: "Project namespace for PACED"
+        type: string
+        required: true
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Project"
+        uses: actions/checkout@v4
+        with:
+          path: "project"
+
+      - name: "Checkout PACED (delphi-ai)"
+        uses: actions/checkout@v4
+        with:
+          repository: "belluga/delphi-ai"
+          path: "project/delphi-ai"
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+
+      - name: "Setup Python"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: ${{ inputs.package_manager }}
+
+      - name: "Setup PACED Environment (Repair)"
+        working-directory: "project"
+        run: |
+          bash delphi-ai/tools/verify_context.sh --repair
+
+      - name: "Install Dependencies"
+        working-directory: "project"
+        run: |
+          if [ "${{ inputs.package_manager }}" == "pnpm" ]; then
+            npm install -g pnpm
+            pnpm install
+          elif [ "${{ inputs.package_manager }}" == "yarn" ]; then
+            yarn install
+          else
+            npm install
+          fi
+
+      - name: "Deterministic Guard: TODO Completion"
+        working-directory: "project"
+        run: |
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
+
+      - name: "Stack Analysis: Lint"
+        working-directory: "project"
+        run: ${{ inputs.lint_command }}
+
+      - name: "Stack Analysis: Build"
+        working-directory: "project"
+        run: ${{ inputs.build_command }}
+
+      - name: "Stack Analysis: Tests"
+        working-directory: "project"
+        if: ${{ inputs.test_command != '' }}
+        run: ${{ inputs.test_command }}

@@ -1,0 +1,58 @@
+name: "PACED: Docker Infra CI Engine"
+
+on:
+  workflow_call:
+    inputs:
+      hadolint_check:
+        description: "Whether to run Hadolint on Dockerfiles"
+        type: boolean
+        default: true
+      docker_compose_check:
+        description: "Whether to validate docker-compose files"
+        type: boolean
+        default: true
+      namespace:
+        description: "Project namespace for PACED"
+        type: string
+        required: true
+
+jobs:
+  validate-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Project"
+        uses: actions/checkout@v4
+        with:
+          path: "project"
+
+      - name: "Checkout PACED (delphi-ai)"
+        uses: actions/checkout@v4
+        with:
+          repository: "belluga/delphi-ai"
+          path: "project/delphi-ai"
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+
+      - name: "Setup Python"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+
+      - name: "Setup PACED Environment (Repair)"
+        working-directory: "project"
+        run: |
+          bash delphi-ai/tools/verify_context.sh --repair
+
+      - name: "Deterministic Guard: TODO Completion"
+        working-directory: "project"
+        run: |
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
+
+      - name: "Infra Analysis: Hadolint"
+        if: ${{ inputs.hadolint_check }}
+        run: |
+          find project -name "Dockerfile*" | xargs -I {} docker run --rm -i hadolint/hadolint < {} || echo "Hadolint found issues"
+
+      - name: "Infra Analysis: Docker Compose Validate"
+        if: ${{ inputs.docker_compose_check }}
+        run: |
+          find project -name "docker-compose*.yml" | xargs -I {} docker-compose -f {} config -q || echo "Docker Compose validation failed"

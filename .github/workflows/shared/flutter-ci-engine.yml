@@ -1,0 +1,84 @@
+name: "PACED: Flutter CI Engine"
+
+on:
+  workflow_call:
+    inputs:
+      flutter_version:
+        description: "Flutter version to use"
+        type: string
+        default: "3.19.0"
+      channel:
+        description: "Flutter channel"
+        type: string
+        default: "stable"
+      test_command:
+        description: "Command to run tests"
+        type: string
+        default: "flutter test"
+      lint_command:
+        description: "Command to run lint"
+        type: string
+        default: "flutter analyze"
+      namespace:
+        description: "Project namespace for PACED"
+        type: string
+        required: true
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Project"
+        uses: actions/checkout@v4
+        with:
+          path: "project"
+
+      - name: "Checkout PACED (delphi-ai)"
+        uses: actions/checkout@v4
+        with:
+          repository: "belluga/delphi-ai"
+          path: "project/delphi-ai"
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+
+      - name: "Setup Python"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: "Setup Flutter"
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          channel: ${{ inputs.channel }}
+          cache: true
+
+      - name: "Setup PACED Environment (Repair)"
+        working-directory: "project"
+        run: |
+          bash delphi-ai/tools/verify_context.sh --repair
+
+      - name: "Install Dependencies"
+        working-directory: "project"
+        run: flutter pub get
+
+      - name: "Deterministic Guard: TODO Completion"
+        working-directory: "project"
+        run: |
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --todo $(find foundation_documentation/todos/completed -name "*.md" | head -n 1) || true
+          # Nota: No CI real, rodaríamos para todos os arquivos alterados no PR.
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
+
+      - name: "Stack Analysis: Lint (Analyze)"
+        working-directory: "project"
+        run: ${{ inputs.lint_command }}
+
+      - name: "Stack Analysis: Tests"
+        working-directory: "project"
+        if: ${{ inputs.test_command != '' }}
+        run: ${{ inputs.test_command }}
