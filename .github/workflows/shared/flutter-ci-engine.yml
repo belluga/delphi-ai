@@ -1,4 +1,4 @@
-name: "PACED: Flutter CI Engine"
+name: "PACED: Unified Flutter CI Engine (Mobile & Web)"
 
 on:
   workflow_call:
@@ -11,6 +11,14 @@ on:
         description: "Flutter channel"
         type: string
         default: "stable"
+      run_web_build:
+        description: "Whether to build for Web"
+        type: boolean
+        default: true
+      run_mobile_build:
+        description: "Whether to build for Mobile (APK/Bundle)"
+        type: boolean
+        default: false
       test_command:
         description: "Command to run tests"
         type: string
@@ -25,7 +33,7 @@ on:
         required: true
 
 jobs:
-  validate-and-test:
+  validate-and-build:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Project"
@@ -70,8 +78,6 @@ jobs:
       - name: "Deterministic Guard: TODO Completion"
         working-directory: "project"
         run: |
-          python3 delphi-ai/deterministic/core/todo_completion_guard.py --todo $(find foundation_documentation/todos/completed -name "*.md" | head -n 1) || true
-          # Nota: No CI real, rodaríamos para todos os arquivos alterados no PR.
           python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
 
       - name: "Stack Analysis: Lint (Analyze)"
@@ -82,3 +88,13 @@ jobs:
         working-directory: "project"
         if: ${{ inputs.test_command != '' }}
         run: ${{ inputs.test_command }}
+
+      - name: "Stack Build: Flutter Web"
+        working-directory: "project"
+        if: ${{ inputs.run_web_build }}
+        run: flutter build web --release
+
+      - name: "Stack Build: Flutter Mobile (Android)"
+        working-directory: "project"
+        if: ${{ inputs.run_mobile_build }}
+        run: flutter build apk --release
