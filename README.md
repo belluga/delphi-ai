@@ -148,7 +148,7 @@ on:
 
 jobs:
   paced-ci:
-    uses: belluga/delphi-ai/.github/workflows/shared/laravel-ci-engine.yml@main
+    uses: belluga/delphi-ai/.github/workflows/shared/laravel-app-engine.yml@main
     with:
       namespace: "belluga-now"
       php_version: "8.2"
@@ -158,7 +158,7 @@ jobs:
     secrets:
       # O token deve ter acesso de leitura ao repositório belluga/delphi-ai
       GH_PAT: ${{ secrets.GH_PAT }}
-```
+```},{find:
 
 **Benefícios da Assinatura:**
 - **Zero Drift:** O CI remoto é 100% simétrico ao ambiente local (via `--repair`).
