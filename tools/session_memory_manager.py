@@ -53,6 +53,12 @@ def close_memory(session_id: str, repo_root: Path):
     archive_dir = repo_root / "foundation_documentation" / "sessions" / "archive"
     archive_dir.mkdir(parents=True, exist_ok=True)
     
+    # Run Reconciler before archiving
+    import subprocess
+    print(f"Running reconciler for session '{session_id}'...")
+    subprocess.run([sys.executable, str(Path(__file__).parent / "reconcile_session.py"), 
+                    "--session-id", session_id, "--repo-root", str(repo_root)], check=False)
+
     target = archive_dir / f"session_{session_id}_memory.md"
     memory_file.rename(target)
     print(f"Archived session memory to: {target}")
