@@ -20,6 +20,53 @@ TEST_CMD="${3:-}"
 GATES_LIST="${4:-}"
 RUNTIME_VER="${5:-}"
 
+# ============================================================
+# COLLISION GUARD: Verify that the new stack does not conflict
+# with any existing PACED artifacts.
+# ============================================================
+COLLISION_FOUND=0
+
+check_collision() {
+  local artifact_path="$1"
+  local artifact_desc="$2"
+  if [ -e "$artifact_path" ]; then
+    echo "COLLISION: $artifact_desc already exists at: $artifact_path"
+    COLLISION_FOUND=1
+  fi
+}
+
+# Check all artifact directories that the bootstrap would create or overwrite
+check_collision "$SCRIPT_ROOT/rules/stacks/$STACK_KEY" "Rules directory"
+check_collision "$SCRIPT_ROOT/deterministic/stacks/$STACK_KEY" "Deterministic guards directory"
+check_collision "$SCRIPT_ROOT/.github/workflows/shared/${STACK_KEY}-engine.yml" "CI engine workflow"
+check_collision "$SCRIPT_ROOT/templates/agents/${STACK_KEY}.md" "Agent template"
+
+# Check namespace_gates.json for existing registration
+NAMESPACE_GATES_PATH="$SCRIPT_ROOT/deterministic/core/namespace_gates.json"
+if [ -f "$NAMESPACE_GATES_PATH" ]; then
+  if python3 -c "
+import json, sys
+data = json.loads(open('$NAMESPACE_GATES_PATH').read())
+if '$STACK_KEY' in data and not '$STACK_KEY'.startswith('_'):
+    print('COLLISION: Stack \"$STACK_KEY\" is already registered in namespace_gates.json')
+    sys.exit(1)
+" 2>/dev/null; then
+    : # no collision
+  else
+    COLLISION_FOUND=1
+  fi
+fi
+
+if [ "$COLLISION_FOUND" -eq 1 ]; then
+  echo ""
+  echo "ERROR: Cannot bootstrap stack [$STACK_KEY] — collisions detected with existing PACED artifacts."
+  echo "If you intend to UPDATE an existing stack, use the appropriate update workflow."
+  echo "If this is a new stack with a name conflict, choose a different stack-key."
+  exit 2
+fi
+
+echo "PACED: No collisions detected. Proceeding with bootstrap for [$STACK_KEY]."
+
 # Interactivity: If parameters are missing, ask for them (only if in a terminal)
 if [ -z "$LINTER_CMD" ] || [ -z "$TEST_CMD" ] || [ -z "$GATES_LIST" ] || [ -z "$RUNTIME_VER" ]; then
   if [ ! -t 0 ]; then
@@ -27,13 +74,13 @@ if [ -z "$LINTER_CMD" ] || [ -z "$TEST_CMD" ] || [ -z "$GATES_LIST" ] || [ -z "$
     usage
   fi
   echo "============================================================"
-  echo "🚀 PACED: STACK ARCHITECT ASSISTANT (Interactive Mode)"
+  echo "PACED: STACK ARCHITECT ASSISTANT (Interactive Mode)"
   echo "Registering new authority for: [$STACK_KEY]"
   echo "============================================================"
-  [ -z "$LINTER_CMD" ] && read -p "🔹 Linter oficial para $STACK_KEY: " LINTER_CMD
-  [ -z "$TEST_CMD" ] && read -p "🔹 Comando de Teste: " TEST_CMD
-  [ -z "$GATES_LIST" ] && read -p "🔹 Gates obrigatórios (vírgula): " GATES_LIST
-  [ -z "$RUNTIME_VER" ] && read -p "🔹 Versão da Runtime: " RUNTIME_VER
+  [ -z "$LINTER_CMD" ] && read -p "Linter oficial para $STACK_KEY: " LINTER_CMD
+  [ -z "$TEST_CMD" ] && read -p "Comando de Teste: " TEST_CMD
+  [ -z "$GATES_LIST" ] && read -p "Gates obrigatorios (virgula): " GATES_LIST
+  [ -z "$RUNTIME_VER" ] && read -p "Versao da Runtime: " RUNTIME_VER
 fi
 
 echo "PACED: Bootstrapping stack [$STACK_KEY] with $LINTER_CMD..."
@@ -47,9 +94,9 @@ cat <<EOF > "$SCRIPT_ROOT/rules/stacks/$STACK_KEY/00_manifest.md"
 - **Mandatory Gates:** [$GATES_LIST]
 
 ## Deterministic Standards
-1. **Linting:** O código DEVE passar no \`$LINTER_CMD\` sem avisos.
-2. **Testing:** Cobertura mínima de testes deve ser validada via \`$TEST_CMD\`.
-3. **Architecture:** Seguir os padrões definidos em \`rules/stacks/$STACK_KEY/\`.
+1. **Linting:** O codigo DEVE passar no \`$LINTER_CMD\` sem avisos.
+2. **Testing:** Cobertura minima de testes deve ser validada via \`$TEST_CMD\`.
+3. **Architecture:** Seguir os padroes definidos em \`rules/stacks/$STACK_KEY/\`.
 EOF
 
 # 2. Deterministic Layer (Guards/Linters)
@@ -111,7 +158,6 @@ jobs:
 EOF
 
 # 4. Register in namespace_gates.json (Single Source of Truth)
-NAMESPACE_GATES_PATH="$SCRIPT_ROOT/deterministic/core/namespace_gates.json"
 python3 <<EOF
 import json
 from pathlib import Path
@@ -123,12 +169,15 @@ else:
     data = {"_comment": "PACED: Mandatory gates per namespace.", "core": ["logic", "critique"]}
 
 gates_list = [g.strip() for g in "$GATES_LIST".split(",") if g.strip()]
-if "$STACK_KEY" not in data:
-    data["$STACK_KEY"] = gates_list
-    gates_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    print(f"Registered '$STACK_KEY' gates in namespace_gates.json")
-else:
-    print(f"Stack '$STACK_KEY' already registered in namespace_gates.json")
+data["$STACK_KEY"] = gates_list
+gates_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+print(f"Registered '$STACK_KEY' gates in namespace_gates.json")
 EOF
 
-echo "✅ SUCCESS: Stack [$STACK_KEY] is now part of the PACED Ecosystem."
+echo ""
+echo "SUCCESS: Stack [$STACK_KEY] is now part of the PACED Ecosystem."
+echo "Artifacts created:"
+echo "  - Rules:         rules/stacks/$STACK_KEY/"
+echo "  - Deterministic: deterministic/stacks/$STACK_KEY/"
+echo "  - CI Engine:     .github/workflows/shared/${STACK_KEY}-engine.yml"
+echo "  - Gates:         namespace_gates.json (entry: $STACK_KEY)"

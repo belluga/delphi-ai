@@ -11,6 +11,29 @@ from pathlib import Path
 
 QUALIFIER_SPLIT_RE = re.compile(r"[+,/|]")
 
+# Legacy gate mappings for backward compatibility.
+# These map the old fixed headings to canonical gate IDs.
+LEGACY_GATE_MAP: dict[str, dict] = {
+    "critique": {
+        "heading": "## Independent No-Context Critique Gate",
+        "decision_label": "Critique decision",
+        "status_label": "Critique status",
+    },
+    "test_quality_audit": {
+        "heading": "## Independent Test Quality Audit Gate",
+        "decision_label": "Audit decision",
+        "status_label": "Audit status",
+    },
+    "final_review": {
+        "heading": "## Independent No-Context Final Review Gate",
+        "decision_label": "Final review decision",
+        "status_label": "Final review status",
+    },
+}
+
+# Regex to detect dynamic gate sections: "## Gate: <gate_id>"
+DYNAMIC_GATE_RE = re.compile(r"^##\s+Gate:\s+(.+)$", re.IGNORECASE)
+
 
 def read_lines(path: Path) -> list[str]:
     return path.read_text(encoding="utf-8").splitlines()
@@ -39,7 +62,7 @@ def extract_field(lines: list[str], label: str) -> str:
     prefix = f"- **{label}:**"
     for line in lines:
         if line.startswith(prefix):
-            return clean_value(line[len(prefix) :])
+            return clean_value(line[len(prefix):])
     return "missing"
 
 
@@ -54,7 +77,7 @@ def extract_field_in_section(lines: list[str], heading_prefix: str, label: str) 
         if stripped.startswith("## ") and not stripped.startswith(heading_prefix):
             break
         if stripped.startswith(prefix):
-            return clean_value(stripped[len(prefix) :])
+            return clean_value(stripped[len(prefix):])
     return "missing"
 
 
@@ -110,6 +133,36 @@ def infer_artifact_type(lines: list[str]) -> str:
     return "unknown"
 
 
+def resolve_namespace(todo_path: Path) -> str:
+    """Resolve the project namespace from the Constitution (Single Source of Truth).
+
+    The namespace is read from the project_constitution.md file, following the
+    same logic as verify_context.sh. The search walks upward from the TODO file
+    to find the foundation_documentation directory.
+
+    Fallback order:
+    1. Constitution field ``- **Namespace:** <value>``
+    2. ``"core"`` (default)
+    """
+    # Walk up from the TODO to find foundation_documentation/project_constitution.md
+    search = todo_path.resolve().parent
+    for _ in range(10):  # safety limit
+        constitution = search / "foundation_documentation" / "project_constitution.md"
+        if constitution.is_file():
+            for line in constitution.read_text(encoding="utf-8").splitlines():
+                if "**Namespace:**" in line:
+                    # Extract value after "Namespace:" — strip markdown formatting
+                    raw = line.split("**Namespace:**", 1)[1]
+                    cleaned = clean_value(raw)
+                    if cleaned and cleaned != "missing":
+                        return cleaned.lower().strip("`").strip()
+            break
+        if search.parent == search:
+            break
+        search = search.parent
+    return "core"
+
+
 def export_gate(lines: list[str], gate_id: str, heading_prefix: str, decision_label: str, status_label: str) -> dict:
     evidence = extract_field_in_section(lines, heading_prefix, "Evidence / reference")
     waiver = extract_field_in_section(lines, heading_prefix, "Waiver authority / reference (required if waived)")
@@ -127,6 +180,31 @@ def export_gate(lines: list[str], gate_id: str, heading_prefix: str, decision_la
         "evidence_present": not is_placeholder(evidence),
         "waiver_present": not is_placeholder(waiver)
     }
+
+
+def discover_dynamic_gates(lines: list[str]) -> dict[str, dict]:
+    """Discover gates declared with the dynamic heading format ``## Gate: <id>``.
+
+    For each discovered gate, the standard fields (Decision, Status, Evidence,
+    Waiver) are extracted from the section body using canonical labels:
+    - ``Gate decision``
+    - ``Gate status``
+    - ``Evidence / reference``
+    - ``Waiver authority / reference (required if waived)``
+    """
+    gates: dict[str, dict] = {}
+    for line in lines:
+        match = DYNAMIC_GATE_RE.match(line.strip())
+        if match:
+            raw_id = match.group(1).strip()
+            gate_id = re.sub(r"[^a-z0-9]+", "_", raw_id.lower()).strip("_")
+            heading = f"## Gate: {raw_id}"
+            gates[gate_id] = export_gate(
+                lines, gate_id, heading,
+                decision_label="Gate decision",
+                status_label="Gate status",
+            )
+    return gates
 
 
 def build_bundle(todo_path: Path) -> dict:
@@ -152,9 +230,27 @@ def build_bundle(todo_path: Path) -> dict:
         for value in [missing_for_production_ready, revisit_criteria, dependencies_unblocked]
     )
 
+    # --- Namespace (SSoT: Constitution) ---
+    namespace = resolve_namespace(todo_path)
+
+    # --- Gates: merge legacy + dynamic ---
+    # 1. Legacy gates (backward compatible)
+    legacy_gates: dict[str, dict] = {}
+    for g_id, cfg in LEGACY_GATE_MAP.items():
+        gate_data = export_gate(lines, g_id, cfg["heading"], cfg["decision_label"], cfg["status_label"])
+        if gate_data["section_present"]:
+            legacy_gates[g_id] = gate_data
+
+    # 2. Dynamic gates (new format: ## Gate: <name>)
+    dynamic_gates = discover_dynamic_gates(lines)
+
+    # 3. Merge: dynamic gates take priority over legacy if same ID
+    merged_gates = {**legacy_gates, **dynamic_gates}
+
     return {
-        "schema_version": "todo-validation-bundle-v1",
+        "schema_version": "todo-validation-bundle-v2",
         "todo_path": str(todo_path),
+        "namespace": namespace,
         "artifact_type": infer_artifact_type(lines),
         "artifact_state": classify_artifact_state(todo_path),
         "delivery_status": {
@@ -180,29 +276,7 @@ def build_bundle(todo_path: Path) -> dict:
             "revisit_criteria": revisit_criteria,
             "dependencies_unblocked": dependencies_unblocked
         },
-        "gates": {
-            "critique": export_gate(
-                lines,
-                "critique",
-                "## Independent No-Context Critique Gate",
-                "Critique decision",
-                "Critique status"
-            ),
-            "test_quality_audit": export_gate(
-                lines,
-                "test_quality_audit",
-                "## Independent Test Quality Audit Gate",
-                "Audit decision",
-                "Audit status"
-            ),
-            "final_review": export_gate(
-                lines,
-                "final_review",
-                "## Independent No-Context Final Review Gate",
-                "Final review decision",
-                "Final review status"
-            )
-        }
+        "gates": merged_gates
     }
 
 
