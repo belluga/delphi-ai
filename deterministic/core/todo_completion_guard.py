@@ -125,7 +125,18 @@ def validate_completion(todo_path: Path) -> dict:
                     "resolution": f"Add ## Gate: {g_id.capitalize()} to the TODO."
                 })
 
-        # 5. Gate Statuses
+        # 5. Ecosystem Reuse Analysis (Mandatory for Features)
+        if bundle.get("type") == "feature" or "feature" in todo_path.name.lower():
+            todo_content = todo_path.read_text(encoding="utf-8").lower()
+            if "ecosystem impact" not in todo_content and "reuse analysis" not in todo_content:
+                violations.append({
+                    "section": "Ecosystem Alignment",
+                    "code": "REUSE-ANALYSIS-MISSING",
+                    "message": "Meaningful features must include an 'Ecosystem Impact' or 'Reuse Analysis' section.",
+                    "resolution": "Add a section to the TODO discussing if this should be a package or remain local."
+                })
+
+        # 6. Gate Statuses
         for g_id, gate in bundle["gates"].items():
             if gate["decision"] == "required" and gate["status"] not in SATISFYING_GATE_STATUSES:
                 violations.append({
