@@ -16,11 +16,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 RULE_ID = "paced.todo.completion-guard"
 SATISFYING_GATE_STATUSES = {"no_material_findings", "findings_integrated", "waived"}
 
-NAMESPACE_MANDATORY_GATES = {
-    "laravel": ["logic", "architecture", "security"],
-    "flutter": ["logic", "ui_fidelity", "performance"],
-    "core": ["logic", "critique"]
-}
+def _load_namespace_gates() -> dict:
+    """Load mandatory gates from external JSON config (Single Source of Truth)."""
+    config_path = Path(__file__).resolve().parent / "namespace_gates.json"
+    if config_path.exists():
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+        return {k: v for k, v in data.items() if not k.startswith("_")}
+    # Fallback if config file is missing (fail-safe)
+    return {"core": ["logic", "critique"]}
+
+NAMESPACE_MANDATORY_GATES = _load_namespace_gates()
 
 CHECKBOX_RE = re.compile(r"^\s*-\s+\[([ xX])\]\s+(.+)$")
 
@@ -69,7 +74,7 @@ def validate_completion(todo_path: Path) -> dict:
                 "section": "System Integrity",
                 "code": "DEPENDENCY-FAILURE",
                 "message": f"Critical dependency failure: {str(e)}",
-                "resolution": "Check if PACED infrastructure is properly linked via verify_context.sh."
+                "resolution_instruction": "Check if PACED infrastructure is properly linked via verify_context.sh."
             }]
         }
 
@@ -89,7 +94,7 @@ def validate_completion(todo_path: Path) -> dict:
                     "section": "Definition of Done",
                     "code": "DOD-INCOMPLETE",
                     "message": f"{len(unwaived)} unchecked item(s) without waiver.",
-                    "resolution": "Mark as done or add a ## Waivers section."
+                    "resolution_instruction": "Mark as done or add a ## Waivers section."
                 })
 
         # 2. Validation Steps
@@ -100,7 +105,7 @@ def validate_completion(todo_path: Path) -> dict:
                 "section": "Validation Steps",
                 "code": "VS-INCOMPLETE",
                 "message": f"{len(unchecked_vs)} unchecked validation step(s).",
-                "resolution": "Run the steps or document why they are not applicable."
+                    "resolution_instruction": "Run the steps or document why they are not applicable."
             })
 
         # 3. Delivery Stage
@@ -110,7 +115,7 @@ def validate_completion(todo_path: Path) -> dict:
                 "section": "Delivery Status",
                 "code": "STAGE-NOT-READY",
                 "message": f"Stage is '{stage}', expected 'Production-Ready'.",
-                "resolution": "Update stage after verification."
+                    "resolution_instruction": "Update stage after verification."
             })
 
         # 4. Mandatory Gates per Namespace
@@ -122,7 +127,7 @@ def validate_completion(todo_path: Path) -> dict:
                     "section": f"Gate: {g_id}",
                     "code": f"GATE-{g_id.upper()}-MISSING",
                     "message": f"Mandatory gate '{g_id}' for namespace '{namespace}' is missing.",
-                    "resolution": f"Add ## Gate: {g_id.capitalize()} to the TODO."
+                    "resolution_instruction": f"Add ## Gate: {g_id.capitalize()} to the TODO."
                 })
 
         # 5. Ecosystem Reuse Analysis (Mandatory for Features)
@@ -133,7 +138,7 @@ def validate_completion(todo_path: Path) -> dict:
                     "section": "Ecosystem Alignment",
                     "code": "REUSE-ANALYSIS-MISSING",
                     "message": "Meaningful features must include an 'Ecosystem Impact' or 'Reuse Analysis' section.",
-                    "resolution": "Add a section to the TODO discussing if this should be a package or remain local."
+                    "resolution_instruction": "Add a section to the TODO discussing if this should be a package or remain local."
                 })
 
         # 6. Gate Statuses
@@ -143,7 +148,7 @@ def validate_completion(todo_path: Path) -> dict:
                     "section": f"Gate: {g_id}",
                     "code": f"GATE-{g_id.upper()}-UNRESOLVED",
                     "message": f"Gate '{g_id}' status is '{gate['status']}'.",
-                    "resolution": "Resolve gate or record a waiver."
+                    "resolution_instruction": "Resolve gate or record a waiver."
                 })
 
         return {"status": "go" if not violations else "blocked", "violations": violations}
@@ -154,7 +159,7 @@ def validate_completion(todo_path: Path) -> dict:
                 "section": "Parser Integrity",
                 "code": "PARSER-CRASH",
                 "message": f"Parser crashed: {str(e)}",
-                "resolution": "Fix the malformed TODO or the parser script. Traceback: " + traceback.format_exc()
+                "resolution_instruction": "Fix the malformed TODO or the parser script. Traceback: " + traceback.format_exc()
             }]
         }
 

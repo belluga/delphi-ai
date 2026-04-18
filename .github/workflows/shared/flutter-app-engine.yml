@@ -66,6 +66,14 @@ jobs:
           channel: ${{ inputs.channel }}
           cache: true
 
+      - name: "Pre-flight: Stack Integrity Check"
+        working-directory: "project"
+        run: |
+          if [ -f "package.json" ] && [ ! -f "pubspec.yaml" ]; then
+            echo "ERROR: This engine is for Flutter apps. For Node/Next/React, use 'next-app-engine.yml'."
+            exit 1
+          fi
+
       - name: "Setup PACED Environment (Repair)"
         working-directory: "project"
         run: |
@@ -78,7 +86,7 @@ jobs:
       - name: "Deterministic Guard: TODO Completion"
         working-directory: "project"
         run: |
-          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed
 
       - name: "Stack Analysis: Lint (Analyze)"
         working-directory: "project"

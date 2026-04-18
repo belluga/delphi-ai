@@ -45,14 +45,14 @@ jobs:
       - name: "Deterministic Guard: TODO Completion"
         working-directory: "project"
         run: |
-          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed
 
       - name: "Infra Analysis: Hadolint"
         if: ${{ inputs.hadolint_check }}
         run: |
-          find project -name "Dockerfile*" | xargs -I {} docker run --rm -i hadolint/hadolint < {} || echo "Hadolint found issues"
+          find project -name "Dockerfile*" -exec docker run --rm -i hadolint/hadolint < {} \;
 
       - name: "Infra Analysis: Docker Compose Validate"
         if: ${{ inputs.docker_compose_check }}
         run: |
-          find project -name "docker-compose*.yml" | xargs -I {} docker-compose -f {} config -q || echo "Docker Compose validation failed"
+          find project -name "docker-compose*.yml" -exec docker-compose -f {} config -q \;

@@ -1,0 +1,6 @@
+{
+  "_comment": "PACED: Mandatory gates per namespace. Managed by bootstrap_stack.sh. Do not edit manually unless adding a new stack.",
+  "laravel": ["logic", "architecture", "security"],
+  "flutter": ["logic", "ui_fidelity", "performance"],
+  "core": ["logic", "critique"]
+}

@@ -110,17 +110,25 @@ jobs:
         run: $TEST_CMD
 EOF
 
-# 4. Register in Linker (Python injection)
+# 4. Register in namespace_gates.json (Single Source of Truth)
+NAMESPACE_GATES_PATH="$SCRIPT_ROOT/deterministic/core/namespace_gates.json"
 python3 <<EOF
-import sys
+import json
 from pathlib import Path
 
-guard_path = Path("$SCRIPT_ROOT/deterministic/core/todo_completion_guard.py")
-content = guard_path.read_text()
-new_gate_entry = '    "$STACK_KEY": ["${GATES_LIST.replace(",", '", "')}"],'
-if 'NAMESPACE_MANDATORY_GATES = {' in content and '"$STACK_KEY"' not in content:
-    content = content.replace('NAMESPACE_MANDATORY_GATES = {', f'NAMESPACE_MANDATORY_GATES = {{\n{new_gate_entry}')
-    guard_path.write_text(content)
+gates_path = Path("$NAMESPACE_GATES_PATH")
+if gates_path.exists():
+    data = json.loads(gates_path.read_text(encoding="utf-8"))
+else:
+    data = {"_comment": "PACED: Mandatory gates per namespace.", "core": ["logic", "critique"]}
+
+gates_list = [g.strip() for g in "$GATES_LIST".split(",") if g.strip()]
+if "$STACK_KEY" not in data:
+    data["$STACK_KEY"] = gates_list
+    gates_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Registered '$STACK_KEY' gates in namespace_gates.json")
+else:
+    print(f"Stack '$STACK_KEY' already registered in namespace_gates.json")
 EOF
 
 echo "✅ SUCCESS: Stack [$STACK_KEY] is now part of the PACED Ecosystem."

@@ -83,7 +83,7 @@ jobs:
       - name: "Deterministic Guard: TODO Completion"
         working-directory: "project"
         run: |
-          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed || echo "No completed todos to check"
+          python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed
 
       - name: "Stack Analysis: Lint"
         working-directory: "project"

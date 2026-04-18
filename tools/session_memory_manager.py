@@ -44,11 +44,35 @@ def close_memory(session_id: str, repo_root: Path):
         print(f"Error: Session memory '{session_id}' not found.")
         return 1
     
-    # Check for pending transpositions
+    # Check for pending transpositions (FAIL-CLOSED: blocks if transpositions remain)
     content = memory_file.read_text()
-    if "<!-- List items" not in content and len(content.split("## 🛠️ Pending Transpositions")[1].strip()) > 50:
-        print(f"WARNING: Session '{session_id}' has pending transpositions. Transpose to TODO before archiving.")
-        # In Level 0, we could block here, but for now we just warn.
+    transposition_marker = "## 🛠️ Pending Transpositions"
+    if transposition_marker in content:
+        section_content = content.split(transposition_marker)[1]
+        # Stop at the next section or end of file
+        if "## " in section_content[1:]:
+            section_content = section_content[:section_content.index("## ", 1)]
+        # Remove HTML comments and blank lines
+        meaningful_lines = [
+            line.strip() for line in section_content.strip().splitlines()
+            if line.strip()
+            and not line.strip().startswith("<!--")
+            and not line.strip().startswith("---")
+            and not line.strip().startswith("**Authority")
+        ]
+        if meaningful_lines:
+            print(
+                f"TEACH runtime response\n"
+                f"status: blocked\n"
+                f"enforcement: stop_before_close\n"
+                f"rule_id: paced.session.pending-transpositions\n"
+                f"violation:\n"
+                f"  - [TRANSPOSITION-PENDING] Session '{session_id}' has {len(meaningful_lines)} "
+                f"pending transposition(s) that MUST be moved to the TODO or Rulebook before closing.\n"
+                f"hint: Clear the '## 🛠️ Pending Transpositions' section by moving each item "
+                f"to the linked TODO, project_memory.md, or a rule file. Then retry close."
+            )
+            return 2
     
     archive_dir = repo_root / "foundation_documentation" / "sessions" / "archive"
     archive_dir.mkdir(parents=True, exist_ok=True)
