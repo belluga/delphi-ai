@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/pattern_index.schema.json",
+  "title": "PACED Pattern Index",
+  "type": "object",
+  "required": ["schema_version", "scope", "patterns"],
+  "properties": {
+    "schema_version": {
+      "const": "pattern-index-v1"
+    },
+    "scope": {
+      "type": "string",
+      "description": "Scope level: core, stack:<namespace>, or local"
+    },
+    "patterns": {
+      "type": "array",
+      "items": {
+        "$ref": "pattern.schema.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

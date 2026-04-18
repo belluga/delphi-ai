@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/pattern.schema.json",
+  "title": "PACED Pattern / Anti-Pattern Index Entry",
+  "type": "object",
+  "required": ["id", "type", "title", "category", "severity", "file", "deprecated"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(PAT|ANTI)-(CORE|LARAVEL|FLUTTER|DOCKER|LOCAL)-\\d{3}-v\\d+$",
+      "description": "Unique pattern identifier with scope and version"
+    },
+    "type": {
+      "enum": ["pattern", "anti-pattern"]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "category": {
+      "enum": ["architecture", "logic", "security", "performance", "testing", "convention"]
+    },
+    "severity": {
+      "enum": ["must", "should", "may"],
+      "description": "RFC 2119 severity level"
+    },
+    "file": {
+      "type": "string",
+      "pattern": "\\.md$"
+    },
+    "deprecated": {
+      "type": "boolean"
+    },
+    "supersedes": {
+      "type": ["string", "null"],
+      "description": "ID of the pattern this one replaces"
+    },
+    "deprecated_by": {
+      "type": ["string", "null"],
+      "description": "ID of the pattern that deprecated this one"
+    }
+  },
+  "additionalProperties": false
+}

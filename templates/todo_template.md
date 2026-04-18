@@ -137,6 +137,15 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Questions To Close
 - [ ] <Question that changes implementation>
 
+## Pattern References (Optional; Enforced When Cited)
+List any patterns or anti-patterns from the PACED library that this TODO implements, follows, or explicitly avoids. The `todo_completion_guard.py` validates that all cited IDs exist in the cascading authority chain (Core -> Stack -> Local).
+
+| Pattern/Anti-Pattern ID | Type | Why Referenced | Level |
+| --- | --- | --- | --- |
+| `<PAT-CORE-001-v1>` | `<pattern|anti-pattern>` | <why this pattern applies> | `<core|stack|local>` |
+
+> **T.E.A.C.H. Enforced:** If your implementation follows a catalogued pattern, cite it here with `[PATTERN: <id>]`. Phantom references (IDs that do not exist) will block completion.
+
 ## Assumptions Preview (Required Before Plan Review)
 Assumptions here must be evidence-backed inferences from canonical modules, code, docs, tests, or repository state. They are not free guesses.
 

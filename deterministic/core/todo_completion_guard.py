@@ -18,6 +18,12 @@ from pathlib import Path
 # Shared infrastructure
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+try:
+    from pattern_resolver import validate_refs as _validate_pattern_refs, _find_delphi_root
+    _PATTERN_RESOLVER_AVAILABLE = True
+except ImportError:
+    _PATTERN_RESOLVER_AVAILABLE = False
+
 # Constants
 RULE_ID = "paced.todo.completion-guard"
 SATISFYING_GATE_STATUSES = {"no_material_findings", "findings_integrated", "waived"}
@@ -161,6 +167,23 @@ def validate_completion(todo_path: Path) -> dict:
                     "message": f"Gate '{g_id}' status is '{gate['status']}'.",
                     "resolution_instruction": "Resolve gate or record a waiver."
                 })
+
+        # 7. Pattern Reference Validation
+        if _PATTERN_RESOLVER_AVAILABLE:
+            delphi_root = _find_delphi_root(todo_path.parent)
+            if delphi_root:
+                # Resolve project root (parent of delphi-ai)
+                project_root = delphi_root.parent if delphi_root.name == "delphi-ai" else None
+                pat_violations = _validate_pattern_refs(
+                    todo_path, delphi_root, namespace, project_root
+                )
+                for pv in pat_violations:
+                    violations.append({
+                        "section": "Pattern References",
+                        "code": f"PATTERN-{pv['type'].upper().replace('_', '-')}",
+                        "message": pv["message"],
+                        "resolution_instruction": pv["resolution_instruction"],
+                    })
 
         return {"status": "go" if not violations else "blocked", "violations": violations}
     except Exception as e:

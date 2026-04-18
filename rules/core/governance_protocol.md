@@ -43,3 +43,56 @@ Após o veredito, siga o protocolo de acordo com a stack:
 
 ## 5. Fechamento de Ciclo
 Sempre rodar `bash delphi-ai/verify_context.sh --repair` após a extração para validar que a nova regra está ativa e o ambiente está íntegro.
+
+---
+
+## 6. Cascading Patterns & Anti-Patterns
+
+### 6.1 Hierarquia de Autoridade
+
+Patterns e Anti-Patterns seguem a mesma cascata de autoridade do PACED:
+
+| Nível | Diretório | Precedência | Quem Mantém |
+| :--- | :--- | :--- | :--- |
+| **Core** | `delphi-ai/patterns/core/` | Mais baixa (base universal) | Strategic (Manus/Marcelo) |
+| **Stack** | `delphi-ai/patterns/stacks/<namespace>/` | Média (específico da stack) | Strategic + Operational |
+| **Local** | `foundation_documentation/patterns/local/` | Mais alta (específico do projeto) | Operational (Codex/Cline) |
+
+**Regra de resolução:** Local sobrescreve Stack, Stack sobrescreve Core. Toda sobrescrita DEVE ser explícita via campo `supersedes` no `_index.json`. Shadowing silencioso é uma violação.
+
+### 6.2 Integração T.E.A.C.H.
+
+O componente **E (Enforced)** do T.E.A.C.H. agora inclui a obrigação de rastreabilidade de patterns:
+
+> **Enforced Rule — Pattern Traceability:**
+> Quando um TODO implementa ou se baseia em um pattern catalogado, o agente DEVE incluir a referência `[PATTERN: <id>]` no corpo do TODO (preferencialmente na seção de decisão ou na DoD). O `todo_completion_guard.py` valida que todos os IDs referenciados existem na cadeia de autoridade.
+
+### 6.3 Ciclo de Vida de um Pattern
+
+```
+Descoberta (sessão/audit) → [PATTERN] tag na session_memory
+        ↓
+Reconciliação (reconcile_session.py) → project_memory.md
+        ↓
+Formalização (humano/strategic) → pattern_template.md + _index.json
+        ↓
+Enforcement (guard) → Validação de referências em TODOs
+```
+
+### 6.4 Promoção de Anti-Patterns
+
+O `reconcile_session.py` rastreia anti-patterns via `[ANTI-PATTERN]` tags e mantém um ledger de frequência (`anti_pattern_ledger.json`). Quando um anti-pattern atinge o threshold de recorrência (2x), o sistema:
+
+1. Gera um **candidato de promoção** em `foundation_documentation/patterns/candidates/`.
+2. O candidato é revisado pelo Strategic (Manus/Marcelo).
+3. Após aprovação, é formalizado como anti-pattern no nível apropriado (local/stack/core).
+
+### 6.5 Validação Determinística
+
+O `todo_completion_guard.py` valida referências `[PATTERN: id]` em TODOs:
+
+| Violação | Código | Ação |
+| :--- | :--- | :--- |
+| ID não existe em nenhum nível | `PATTERN-PHANTOM-REFERENCE` | **Bloqueia** — criar o pattern ou remover a referência |
+| ID está deprecated | `PATTERN-DEPRECATED-REFERENCE` | **Bloqueia** — atualizar para o pattern substituto |
+| ID foi sobrescrito por nível superior | `PATTERN-OVERRIDDEN-REFERENCE` | **Aviso** — considerar usar o override |

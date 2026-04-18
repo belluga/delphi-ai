@@ -1,0 +1,50 @@
+{
+  "schema_version": "pattern-index-v1",
+  "scope": "core",
+  "patterns": [
+    {
+      "id": "PAT-CORE-001-v1",
+      "type": "pattern",
+      "title": "TODO-Driven Execution",
+      "category": "convention",
+      "severity": "must",
+      "file": "PAT-CORE-001-v1.md",
+      "deprecated": false,
+      "supersedes": null,
+      "deprecated_by": null
+    },
+    {
+      "id": "PAT-CORE-002-v1",
+      "type": "pattern",
+      "title": "Fail-Closed Guard Design",
+      "category": "security",
+      "severity": "must",
+      "file": "PAT-CORE-002-v1.md",
+      "deprecated": false,
+      "supersedes": null,
+      "deprecated_by": null
+    },
+    {
+      "id": "PAT-CORE-003-v1",
+      "type": "pattern",
+      "title": "Cascading Authority Resolution",
+      "category": "architecture",
+      "severity": "must",
+      "file": "PAT-CORE-003-v1.md",
+      "deprecated": false,
+      "supersedes": null,
+      "deprecated_by": null
+    },
+    {
+      "id": "ANTI-CORE-001-v1",
+      "type": "anti-pattern",
+      "title": "Silent Guard Bypass",
+      "category": "security",
+      "severity": "must",
+      "file": "ANTI-CORE-001-v1.md",
+      "deprecated": false,
+      "supersedes": null,
+      "deprecated_by": null
+    }
+  ]
+}
