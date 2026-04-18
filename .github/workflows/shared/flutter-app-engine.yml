@@ -70,7 +70,7 @@ jobs:
         working-directory: "project"
         run: |
           if [ -f "package.json" ] && [ ! -f "pubspec.yaml" ]; then
-            echo "ERROR: This engine is for Flutter apps. For Node/Next/React, use 'next-app-engine.yml'."
+            echo "ERROR: This engine is for Flutter apps only. Found package.json without pubspec.yaml."
             exit 1
           fi
 

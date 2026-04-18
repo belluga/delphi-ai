@@ -64,14 +64,15 @@
       "allowed": [
         "flutter-app/**",
         "laravel-app/**",
-        "web-app/**",
         "foundation_documentation/modules/**",
         "foundation_documentation/todos/**",
         "foundation_documentation/artifacts/**",
         "foundation_documentation/domain_entities.md",
         "foundation_documentation/policies/**"
       ],
-      "review_required": [],
+      "review_required": [
+        "web-app/**"
+      ],
       "forbidden": [
         "foundation_documentation/project_constitution.md",
         ".github/workflows/**",
@@ -96,6 +97,7 @@
         "k8s/**",
         "terraform/**",
         "ansible/**",
+        "web-app/**",
         "foundation_documentation/todos/**",
         "foundation_documentation/artifacts/**"
       ],
@@ -111,9 +113,7 @@
         "laravel-app/app/**",
         "laravel-app/routes/**",
         "laravel-app/database/**",
-        "laravel-app/tests/**",
-        "web-app/src/**",
-        "web-app/test/**"
+        "laravel-app/tests/**"
       ]
     },
     "assurance-tester-quality": {
@@ -122,7 +122,6 @@
         "flutter-app/test/**",
         "flutter-app/integration_test/**",
         "laravel-app/tests/**",
-        "web-app/test/**",
         "foundation_documentation/todos/**",
         "foundation_documentation/artifacts/**"
       ],
@@ -154,8 +153,7 @@
         "foundation_documentation/project_constitution.md",
         "flutter-app/test/**",
         "flutter-app/integration_test/**",
-        "laravel-app/tests/**",
-        "web-app/test/**"
+        "laravel-app/tests/**"
       ],
       "review_required": [
         "flutter-app/**",

@@ -12,9 +12,6 @@ from paced_metrics_core import load_jsonl, normalize_repo_relative, utc_now, val
 from todo_validation_bundle_export import build_bundle
 
 
-REVIEW_KINDS = ("critique", "test_quality_audit", "final_review")
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Aggregate PACED metrics into a derived summary.")
     parser.add_argument("--repo", default=".", help="Project repository root.")
@@ -38,15 +35,22 @@ def discover_closed_todos(repo_root: Path) -> list[Path]:
         normalized = str(path).replace("\\", "/")
         if "/ephemeral/" in normalized:
             continue
-        bundle = build_bundle(path)
-        if bundle["artifact_type"] != "tactical_execution_contract":
+        try:
+            bundle = build_bundle(path)
+        except Exception:
             continue
-        if bundle["artifact_state"] == "completed" or bundle["delivery_status"]["stage"] == "Production-Ready":
+        if bundle.get("artifact_type") != "tactical_execution_contract":
+            continue
+        delivery = bundle.get("delivery_status", {})
+        if bundle.get("artifact_state") == "completed" or delivery.get("stage") == "Production-Ready":
             discovered.append(path)
     return sorted(discovered)
 
 
 def load_rule_events(events_path: Path) -> tuple[dict[str, dict], int, dict[str, int]]:
+    if not events_path.exists():
+        return {}, 0, {"true_positive": 0, "false_positive": 0}
+
     events = load_jsonl(events_path)
     episodes: dict[str, dict] = {}
     recalibrations = 0
@@ -161,28 +165,30 @@ def main() -> int:
         todo_useful_findings = 0
         todo_all_gates_clean = True
 
-        for review_kind in REVIEW_KINDS:
-            gate = bundle["gates"][review_kind]
-            if gate["decision"] == "not_needed":
+        # Iterate over all gates present in the bundle dynamically
+        # instead of hardcoded REVIEW_KINDS — respects namespace-specific gates
+        bundle_gates = bundle.get("gates", {})
+        for gate_id, gate in bundle_gates.items():
+            if gate.get("decision") == "not_needed":
                 continue
             executed_gate_count += 1
 
-            if gate["status"] == "no_material_findings":
+            if gate.get("status") == "no_material_findings":
                 clean_gate_count += 1
                 continue
 
-            if gate["status"] != "findings_integrated":
+            if gate.get("status") != "findings_integrated":
                 todo_all_gates_clean = False
                 continue
 
             try:
-                packet = build_resolution_packet(todo_path, review_kind, repo_root)
-            except SystemExit:
+                packet = build_resolution_packet(todo_path, gate_id, repo_root)
+            except (SystemExit, Exception):
                 todo_all_gates_clean = False
                 continue
             gate_useful = 0
-            for finding in packet["findings"]:
-                usefulness = finding["usefulness"]
+            for finding in packet.get("findings", []):
+                usefulness = finding.get("usefulness", "unknown")
                 if usefulness == "useful":
                     useful_findings += 1
                     gate_useful += 1
@@ -193,9 +199,9 @@ def main() -> int:
                     gate_useful += 1
 
                 if usefulness in {"useful", "mixed"}:
-                    if finding["formalizable"] == "yes":
+                    if finding.get("formalizable") == "yes":
                         formalizable_yes += 1
-                    elif finding["formalizable"] == "partial":
+                    elif finding.get("formalizable") == "partial":
                         formalizable_partial += 1
 
             todo_useful_findings += gate_useful

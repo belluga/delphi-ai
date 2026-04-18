@@ -16,7 +16,7 @@ This document is not a roadmap and not a module replacement. Its purpose is to c
 
 This project follows the PACED **Cascading Rules** hierarchy. The `verify_context.sh --repair` tool uses the `Namespace` below to establish deterministic symlinks for the active stack.
 
-- **Namespace:** `<docker-infra | flutter-app | laravel-app | next-app | custom_stack>`
+- **Namespace:** `<docker-infra | flutter-app | laravel-app | custom_stack>`
 - **Rule Subscriptions:**
   - [x] **Core Rules:** Universal Delphi patterns (T.E.A.C.H., TODOs, session workflows).
   - [x] **Stack Rules:** Specialized patterns for the `<namespace>` stack.
