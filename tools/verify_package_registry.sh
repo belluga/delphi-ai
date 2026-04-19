@@ -13,6 +13,20 @@
 
 set -euo pipefail
 
+# --- Known ecosystem packages (published on pub.dev / Packagist by the org) ---
+# These are detected by exact name match, regardless of vendor prefix.
+# Add new ecosystem packages here as they are published.
+KNOWN_ECOSYSTEM_PACKAGES=(
+  # Flutter (pub.dev)
+  "event_tracker_handler"   # Multi-provider event tracking (Firebase Analytics, Mixpanel, webhooks)
+  "stream_value"            # Lightweight state management wrapping StreamController/StreamBuilder
+  "value_object_pattern"    # Value Objects pattern implementation
+  "push_handler"            # Firebase Messaging push UI handler with layouts and action routing
+  "belluga_admin_ui"        # Reusable admin UI primitives for Belluga apps
+  # Laravel (Packagist / VCS) — add as needed
+  # "belluga/belluga-core"
+)
+
 # --- Argument parsing ---
 PROJECT_ROOT="."
 VENDOR_PREFIX="belluga"
@@ -126,9 +140,15 @@ for dep, ver in sorted(all_deps.items()):
 get_flutter_ecosystem_packages() {
   local pubspec="$1"
   local prefix="$2"
+  # Build known packages list as comma-separated for Python
+  local known_list=""
+  for kp in "${KNOWN_ECOSYSTEM_PACKAGES[@]}"; do
+    known_list+="'$kp',"
+  done
   if [[ -f "$pubspec" ]]; then
     python3 -c "
 import sys
+known = {${known_list}}
 # Simple YAML parser for pubspec dependencies
 in_deps = False
 in_dep_block = False
@@ -148,7 +168,8 @@ with open('$pubspec') as f:
             if indent == 2 and ':' in stripped:
                 dep_name = stripped.split(':')[0].strip()
                 rest = stripped.split(':', 1)[1].strip()
-                if '$prefix' in dep_name:
+                # Match by vendor prefix OR by known ecosystem package name
+                if '$prefix' in dep_name or dep_name in known:
                     if rest and not rest.startswith('{'):
                         # Simple version constraint — ecosystem package
                         deps[dep_name] = ('ecosystem', rest)
@@ -233,7 +254,7 @@ build_laravel_local_checklist() {
 
       # Check if declared in composer.json (as path repo or require)
       local in_use=false
-      if [[ -f "$composer" ]] && grep -q "$vendor/$pkg\|$vendor_$pkg" "$composer" 2>/dev/null; then
+      if [[ -f "$composer" ]] && grep -q "$vendor/$pkg\|${vendor}_${pkg}" "$composer" 2>/dev/null; then
         in_use=true
       fi
 
