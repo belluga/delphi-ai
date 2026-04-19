@@ -89,6 +89,39 @@ if [ "$REPAIR_MODE" = true ]; then
     ensure_safe_link "$REPO_ROOT/.agents/deterministic/stack" "$SCRIPT_ROOT/deterministic/stacks/$NAMESPACE" "Stack Deterministic"
   fi
   ensure_safe_link "$REPO_ROOT/.agents/deterministic/local" "$REPO_ROOT/foundation_documentation/deterministic" "Local Deterministic"
+
+  # Claude Code Layer
+  if [ -d "$SCRIPT_ROOT/.claude" ]; then
+    mkdir -p "$REPO_ROOT/.claude"
+    ensure_safe_link "$REPO_ROOT/.claude/rules" "$SCRIPT_ROOT/.claude/rules" "Claude Code Rules"
+    ensure_safe_link "$REPO_ROOT/.claude/skills" "$SCRIPT_ROOT/.claude/skills" "Claude Code Skills"
+    ensure_safe_link "$REPO_ROOT/.claude/settings.json" "$SCRIPT_ROOT/.claude/settings.json" "Claude Code Settings"
+    ensure_safe_link "$REPO_ROOT/CLAUDE.md" "$SCRIPT_ROOT/CLAUDE.md" "Claude Code Bootloader"
+  fi
+fi
+
+# Validate Claude Code artifacts exist (read-only check)
+CLAUDE_ISSUES=0
+if [ -d "$SCRIPT_ROOT/.claude" ]; then
+  if [ ! -d "$SCRIPT_ROOT/.claude/rules" ]; then
+    echo "WARN: .claude/rules/ directory missing in delphi-ai"
+    CLAUDE_ISSUES=$((CLAUDE_ISSUES + 1))
+  fi
+  if [ ! -d "$SCRIPT_ROOT/.claude/skills" ]; then
+    echo "WARN: .claude/skills/ directory missing in delphi-ai"
+    CLAUDE_ISSUES=$((CLAUDE_ISSUES + 1))
+  fi
+  if [ ! -f "$SCRIPT_ROOT/.claude/settings.json" ]; then
+    echo "WARN: .claude/settings.json missing in delphi-ai"
+    CLAUDE_ISSUES=$((CLAUDE_ISSUES + 1))
+  fi
+  if [ ! -f "$SCRIPT_ROOT/CLAUDE.md" ]; then
+    echo "WARN: CLAUDE.md bootloader missing in delphi-ai"
+    CLAUDE_ISSUES=$((CLAUDE_ISSUES + 1))
+  fi
+  if [ $CLAUDE_ISSUES -eq 0 ]; then
+    echo "Claude Code artifacts: OK"
+  fi
 fi
 
 echo "Environment Verified: PACED-Ready."

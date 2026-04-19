@@ -95,6 +95,31 @@ ensure_link "$ENV_ROOT/laravel-app/.agents/skills" "../delphi-ai/skills" "larave
 ensure_link "$ENV_ROOT/laravel-app/.agents/rules" "../delphi-ai/rules/laravel" "laravel-app .agents/rules" || true
 ensure_link "$ENV_ROOT/laravel-app/.agents/workflows" "../delphi-ai/workflows/laravel" "laravel-app .agents/workflows" || true
 
+# Claude Code artifacts (root + submodules)
+if [ -d "$ENV_ROOT/delphi-ai/.claude" ]; then
+  mkdir -p "$ENV_ROOT/.claude"
+  ensure_link "$ENV_ROOT/.claude/rules" "../delphi-ai/.claude/rules" "root .claude/rules" || true
+  ensure_link "$ENV_ROOT/.claude/skills" "../delphi-ai/.claude/skills" "root .claude/skills" || true
+  ensure_link "$ENV_ROOT/.claude/settings.json" "../delphi-ai/.claude/settings.json" "root .claude/settings.json" || true
+  ensure_link "$ENV_ROOT/CLAUDE.md" "delphi-ai/CLAUDE.md" "root CLAUDE.md" || true
+
+  if [ -d "$ENV_ROOT/flutter-app" ]; then
+    mkdir -p "$ENV_ROOT/flutter-app/.claude"
+    ensure_link "$ENV_ROOT/flutter-app/.claude/rules" "../delphi-ai/.claude/rules" "flutter-app .claude/rules" || true
+    ensure_link "$ENV_ROOT/flutter-app/.claude/skills" "../delphi-ai/.claude/skills" "flutter-app .claude/skills" || true
+    ensure_link "$ENV_ROOT/flutter-app/.claude/settings.json" "../delphi-ai/.claude/settings.json" "flutter-app .claude/settings.json" || true
+    ensure_link "$ENV_ROOT/flutter-app/CLAUDE.md" "../delphi-ai/CLAUDE.md" "flutter-app CLAUDE.md" || true
+  fi
+
+  if [ -d "$ENV_ROOT/laravel-app" ]; then
+    mkdir -p "$ENV_ROOT/laravel-app/.claude"
+    ensure_link "$ENV_ROOT/laravel-app/.claude/rules" "../delphi-ai/.claude/rules" "laravel-app .claude/rules" || true
+    ensure_link "$ENV_ROOT/laravel-app/.claude/skills" "../delphi-ai/.claude/skills" "laravel-app .claude/skills" || true
+    ensure_link "$ENV_ROOT/laravel-app/.claude/settings.json" "../delphi-ai/.claude/settings.json" "laravel-app .claude/settings.json" || true
+    ensure_link "$ENV_ROOT/laravel-app/CLAUDE.md" "../delphi-ai/CLAUDE.md" "laravel-app CLAUDE.md" || true
+  fi
+fi
+
 if [ ${#sync_warnings[@]} -gt 0 ]; then
     echo "Link sync warnings:"
     for warn in "${sync_warnings[@]}"; do
@@ -111,4 +136,4 @@ if [ ${#sync_errors[@]} -gt 0 ]; then
     exit 1
 fi
 
-echo "Link sync complete! .agents/{skills,rules,workflows} are aligned."
+echo "Link sync complete! .agents/{skills,rules,workflows} and .claude/{rules,skills,settings.json} are aligned."

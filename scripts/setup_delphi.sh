@@ -268,6 +268,73 @@ setup_script_links() {
   fi
 }
 
+# --- Setup Claude Code artifacts ---
+# Per Claude Code documentation:
+# - Rules: .claude/rules/ (markdown files with YAML frontmatter, auto-loaded)
+# - Skills: .claude/skills/ (directories with SKILL.md)
+# - Settings: .claude/settings.json (permissions configuration)
+# - Bootloader: CLAUDE.md (entry point in project root)
+setup_claude_code_artifacts() {
+  local module="$1"
+  local base_path="${REPO_ROOT}/${module}"
+
+  if [[ -n "$module" && ! -d "$base_path" ]]; then
+    warn "Submodule ${module} not found; skipping Claude Code symlinks."
+    return
+  fi
+
+  if [[ -z "$module" ]]; then
+    base_path="$REPO_ROOT"
+  fi
+
+  # Determine relative path based on whether this is root or a submodule
+  local rel_prefix
+  if [[ -z "$module" ]]; then
+    rel_prefix="delphi-ai"
+  else
+    rel_prefix="../delphi-ai"
+  fi
+
+  # Create .claude directory
+  if [[ "$CHECK_ONLY" == "true" ]]; then
+    if [[ ! -d "${base_path}/.claude" ]]; then
+      setup_notes+=("${base_path}/.claude would be created")
+    fi
+  else
+    mkdir -p "${base_path}/.claude"
+  fi
+
+  # Symlink .claude/rules/ (rules with YAML frontmatter)
+  local rules_target
+  if [[ -z "$module" ]]; then
+    rules_target="../delphi-ai/.claude/rules"
+  else
+    rules_target="${rel_prefix}/.claude/rules"
+  fi
+  ensure_symlink "$rules_target" "${base_path}/.claude/rules"
+
+  # Symlink .claude/skills/ (skill directories with SKILL.md)
+  local skills_target
+  if [[ -z "$module" ]]; then
+    skills_target="../delphi-ai/.claude/skills"
+  else
+    skills_target="${rel_prefix}/.claude/skills"
+  fi
+  ensure_symlink "$skills_target" "${base_path}/.claude/skills"
+
+  # Symlink .claude/settings.json
+  local settings_target
+  if [[ -z "$module" ]]; then
+    settings_target="../delphi-ai/.claude/settings.json"
+  else
+    settings_target="${rel_prefix}/.claude/settings.json"
+  fi
+  ensure_symlink "$settings_target" "${base_path}/.claude/settings.json"
+
+  # Symlink CLAUDE.md bootloader
+  ensure_symlink "${rel_prefix}/CLAUDE.md" "${base_path}/CLAUDE.md"
+}
+
 # --- Setup Cline artifacts ---
 # Per Cline documentation:
 # - Skills: .cline/skills/ (directories with SKILL.md)
@@ -333,6 +400,11 @@ setup_cline_artifacts "flutter-app"
 setup_codex_artifacts ""
 setup_codex_artifacts "laravel-app"
 setup_codex_artifacts "flutter-app"
+# Setup Claude Code artifacts for root and submodules
+setup_claude_code_artifacts ""
+setup_claude_code_artifacts "laravel-app"
+setup_claude_code_artifacts "flutter-app"
+
 setup_gemini_artifacts
 setup_script_links
 
@@ -372,5 +444,5 @@ if [[ ${#setup_errors[@]} -gt 0 ]]; then
 fi
 
 info "Delphi setup complete. Review 'git status' and commit the updated submodule references if needed."
-info "Configured agent surfaces: AGENTS.md, CLINE.md/.clinerules/.cline, .codex/skills, GEMINI.md + .agents/skills, and .agents/{rules,workflows} where possible."
+info "Configured agent surfaces: AGENTS.md, CLINE.md/.clinerules/.cline, CLAUDE.md/.claude/{rules,skills,settings.json}, .codex/skills, GEMINI.md + .agents/skills, and .agents/{rules,workflows} where possible."
 info "Next step: run 'bash delphi-ai/verify_context.sh' to validate downstream wiring."
