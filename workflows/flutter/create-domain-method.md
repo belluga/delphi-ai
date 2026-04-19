@@ -19,7 +19,7 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 - Backend/API contracts for the new entity, if available.
 
 ## Procedure
-1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Flutter library or core module already covers this domain or a closely related one. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+1. **Package-First gate** – read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Flutter library or core module already covers this domain or a closely related one. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 2. **Run Profile Selection** – confirm we're acting as `Operational / Coder` with `flutter` scope.
 3. **Document first**
    - Add/extend the domain entry in `foundation_documentation/domain_entities.md` (purpose, invariants, value objects).

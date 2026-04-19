@@ -19,7 +19,7 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 - Existing DocumentModels, migrations, factories/seeders related to the domain.
 
 ## Procedure
-1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Laravel package already owns this domain or a closely related one. If the domain belongs to a package, implement there. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+1. **Package-First gate** – read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Laravel package already owns this domain or a closely related one. If the domain belongs to a package, implement there. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 2. **Profile alignment** – run Profile Selection as `Operational / Coder` with `laravel` scope and review roadmap entries only when strategic follow-up is part of the change.
 3. **Document first**
    - Add/expand the domain entry in `foundation_documentation/domain_entities.md` (fields, invariants, collections).

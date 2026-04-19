@@ -22,7 +22,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 - When exact-lookup paths are created or changed, run `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <flutter-repository-path>` to catch list-scan/page-walk heuristics.
 
 ## Procedure
-1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides the data access layer or repository contract for this domain. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+1. **Package-First gate** – read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides the data access layer or repository contract for this domain. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 2. **Run Profile Selection** – confirm `Operational / Coder` with `flutter` scope.
 3. **Define domain contract**
    - Update/create `lib/domain/repositories/<name>_repository_contract.dart` using domain verbs (no “screen” references). Annotate temporary projection returns with TODOs if the full entity is pending.

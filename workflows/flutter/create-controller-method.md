@@ -21,7 +21,7 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 - Treat the helper as a checklist generator only; controller ownership, state shape, and DI decisions remain in this workflow.
 
 ## Procedure
-1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides a controller, service, or utility that covers this functionality. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+1. **Package-First gate** – read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides a controller, service, or utility that covers this functionality. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 2. **Document intent** – note the controller's responsibilities in the module doc and Flutter roadmap if it affects API contracts or shared behaviour.
 3. **File location** – create the controller under `lib/presentation/.../screens/<screen>/controllers/` (or feature-level controllers folder if shared).
 4. **Class structure**

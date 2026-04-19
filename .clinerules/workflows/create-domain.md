@@ -26,7 +26,7 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 
 
 ### Step 0: Package-First Gate
-Read `foundation_documentation/package_registry.md` and check whether an existing Flutter library already covers this domain. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
+Read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Flutter library already covers this domain. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
 
 
 ### Step 1: Document First

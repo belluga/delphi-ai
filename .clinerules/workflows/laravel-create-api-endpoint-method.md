@@ -28,7 +28,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring documen
 ## Procedure
 
 ### Step 0: Package-First Gate
-Read `foundation_documentation/package_registry.md` and check whether an existing Laravel package already provides the capability this endpoint needs. If a matching package exists, extend it instead of creating new host-level services. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+Read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Laravel package already provides the capability this endpoint needs. If a matching package exists, extend it instead of creating new host-level services. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 
 
 ### Step 1: Persona Alignment
