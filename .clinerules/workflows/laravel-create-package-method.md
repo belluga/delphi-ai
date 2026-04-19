@@ -46,6 +46,10 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
 
 14. Run `composer run architecture:guardrails`.
 15. Run targeted tests and full Laravel suite for milestone completion.
+16. Consolidate in proprietary packages checklist:
+- Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` to regenerate `foundation_documentation/package_registry.md`.
+- Verify the new package appears with correct checkbox status.
+- Mandatory for both local project packages and ecosystem-wide packages.
 
 ## Validation
 
@@ -60,3 +64,4 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
 - Decoupling assertions pass.
 - Architecture guardrails pass.
 - Test gates pass.
+- Package appears in `foundation_documentation/package_registry.md` checklist.
