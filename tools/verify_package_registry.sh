@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # verify_package_registry.sh — Scans proprietary packages in packages/ directories,
-# cross-references with stack manifests (pubspec.yaml / composer.json), and generates
-# or updates the checklist at foundation_documentation/package_registry.md.
+# detects ecosystem (global) packages from manifests, cross-references usage status,
+# and generates the checklist at foundation_documentation/package_registry.md.
 #
-# Usage: bash delphi-ai/tools/verify_package_registry.sh [--project-root <path>]
+# Two categories:
+#   - Ecosystem (Global): non-path dependencies matching the proprietary vendor prefix.
+#   - Local (Project-Bound): packages under packages/ integrated via path.
+#
+# Usage: bash delphi-ai/tools/verify_package_registry.sh [--project-root <path>] [--vendor-prefix <prefix>]
 #
 # Authority: paced.core.package-first
 
@@ -11,9 +15,11 @@ set -euo pipefail
 
 # --- Argument parsing ---
 PROJECT_ROOT="."
+VENDOR_PREFIX="belluga"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --project-root) PROJECT_ROOT="$2"; shift 2 ;;
+    --vendor-prefix) VENDOR_PREFIX="$2"; shift 2 ;;
     *) PROJECT_ROOT="$1"; shift ;;
   esac
 done
@@ -25,7 +31,8 @@ ERRORS=0
 WARNINGS=0
 
 echo "=== Proprietary Package Registry Verification ==="
-echo "Project root: $PROJECT_ROOT"
+echo "Project root:    $PROJECT_ROOT"
+echo "Vendor prefix:   $VENDOR_PREFIX"
 echo ""
 
 # --- Detect stack type ---
@@ -34,21 +41,175 @@ HAS_LARAVEL=false
 [[ -f "$PROJECT_ROOT/pubspec.yaml" ]] && HAS_FLUTTER=true
 [[ -f "$PROJECT_ROOT/composer.json" ]] && HAS_LARAVEL=true
 
+# Also check submodule paths (docker monorepo pattern)
+FLUTTER_ROOT="$PROJECT_ROOT"
+LARAVEL_ROOT="$PROJECT_ROOT"
+if [[ -d "$PROJECT_ROOT/flutter-app" ]] && [[ -f "$PROJECT_ROOT/flutter-app/pubspec.yaml" ]]; then
+  HAS_FLUTTER=true
+  FLUTTER_ROOT="$PROJECT_ROOT/flutter-app"
+fi
+if [[ -d "$PROJECT_ROOT/laravel-app" ]] && [[ -f "$PROJECT_ROOT/laravel-app/composer.json" ]]; then
+  HAS_LARAVEL=true
+  LARAVEL_ROOT="$PROJECT_ROOT/laravel-app"
+fi
+
 # --- Helper: extract first line of description from README ---
 readme_oneliner() {
   local readme="$1"
   if [[ -f "$readme" ]]; then
-    # Grab first non-empty, non-heading line after the title
     sed -n '/^[^#]/p' "$readme" | head -1 | sed 's/^[[:space:]]*//' | cut -c1-80
   else
     echo "(no README)"
   fi
 }
 
-# --- Build Laravel checklist ---
-build_laravel_checklist() {
-  local pkg_base="$PROJECT_ROOT/packages"
-  local composer="$PROJECT_ROOT/composer.json"
+# --- Collect local path packages from composer.json ---
+get_laravel_path_packages() {
+  local composer="$1"
+  if [[ -f "$composer" ]]; then
+    python3 -c "
+import json, sys
+with open('$composer') as f:
+    data = json.load(f)
+paths = set()
+for repo in data.get('repositories', []):
+    if repo.get('type') == 'path':
+        url = repo.get('url', '')
+        paths.add(url)
+for p in sorted(paths):
+    print(p)
+" 2>/dev/null || true
+  fi
+}
+
+# --- Collect ecosystem (non-path) vendor dependencies from composer.json ---
+get_laravel_ecosystem_packages() {
+  local composer="$1"
+  local prefix="$2"
+  if [[ -f "$composer" ]]; then
+    python3 -c "
+import json, sys
+with open('$composer') as f:
+    data = json.load(f)
+# Collect all path URLs to exclude
+path_urls = set()
+for repo in data.get('repositories', []):
+    if repo.get('type') == 'path':
+        path_urls.add(repo.get('url', ''))
+# Collect VCS URLs for vendor packages
+vcs_repos = {}
+for repo in data.get('repositories', []):
+    if repo.get('type') in ('vcs', 'git') and '$prefix' in repo.get('url', ''):
+        # Extract package name from URL
+        url = repo.get('url', '')
+        name = url.rstrip('/').rstrip('.git').split('/')[-1]
+        vcs_repos[name] = url
+# Find require entries matching vendor prefix that are NOT path packages
+require = data.get('require', {})
+require_dev = data.get('require-dev', {})
+all_deps = {**require, **require_dev}
+for dep, ver in sorted(all_deps.items()):
+    if '$prefix' in dep.lower():
+        # Check if this is a path package
+        is_path = False
+        for p in path_urls:
+            if dep.replace('/', '_') in p or dep.split('/')[-1] in p:
+                is_path = True
+                break
+        if not is_path:
+            print(f'{dep}|{ver}')
+" 2>/dev/null || true
+  fi
+}
+
+# --- Collect ecosystem (non-path) vendor dependencies from pubspec.yaml ---
+get_flutter_ecosystem_packages() {
+  local pubspec="$1"
+  local prefix="$2"
+  if [[ -f "$pubspec" ]]; then
+    python3 -c "
+import sys
+# Simple YAML parser for pubspec dependencies
+in_deps = False
+in_dep_block = False
+dep_name = ''
+deps = {}
+with open('$pubspec') as f:
+    for line in f:
+        stripped = line.strip()
+        indent = len(line) - len(line.lstrip())
+        if stripped in ('dependencies:', 'dev_dependencies:'):
+            in_deps = True
+            continue
+        if in_deps and indent == 0 and stripped and not stripped.startswith('#'):
+            in_deps = False
+            in_dep_block = False
+        if in_deps:
+            if indent == 2 and ':' in stripped:
+                dep_name = stripped.split(':')[0].strip()
+                rest = stripped.split(':', 1)[1].strip()
+                if '$prefix' in dep_name:
+                    if rest and not rest.startswith('{'):
+                        # Simple version constraint — ecosystem package
+                        deps[dep_name] = ('ecosystem', rest)
+                    elif not rest:
+                        # Block follows
+                        in_dep_block = True
+                        deps[dep_name] = ('unknown', '')
+            elif in_dep_block and indent == 4:
+                if 'path:' in stripped:
+                    deps[dep_name] = ('local', stripped.split('path:')[1].strip())
+                    in_dep_block = False
+                elif 'git:' in stripped or 'url:' in stripped:
+                    deps[dep_name] = ('ecosystem', stripped)
+                    in_dep_block = False
+                elif 'hosted:' in stripped:
+                    deps[dep_name] = ('ecosystem', stripped)
+                    in_dep_block = False
+                elif stripped.startswith('^') or stripped.startswith('>') or stripped.startswith('='):
+                    deps[dep_name] = ('ecosystem', stripped)
+                    in_dep_block = False
+            elif in_dep_block and indent <= 2:
+                in_dep_block = False
+# Print only ecosystem packages
+for name, (kind, ver) in sorted(deps.items()):
+    if kind == 'ecosystem':
+        print(f'{name}|{ver}')
+" 2>/dev/null || true
+  fi
+}
+
+# --- Build ecosystem packages section ---
+build_ecosystem_checklist() {
+  local lines=()
+
+  # Laravel ecosystem packages
+  if $HAS_LARAVEL; then
+    while IFS='|' read -r pkg ver; do
+      [[ -z "$pkg" ]] && continue
+      lines+=("- [x] \`$pkg\` — $ver (Laravel, ecosystem)")
+    done < <(get_laravel_ecosystem_packages "$LARAVEL_ROOT/composer.json" "$VENDOR_PREFIX")
+  fi
+
+  # Flutter ecosystem packages
+  if $HAS_FLUTTER; then
+    while IFS='|' read -r pkg ver; do
+      [[ -z "$pkg" ]] && continue
+      lines+=("- [x] \`$pkg\` — $ver (Flutter, ecosystem)")
+    done < <(get_flutter_ecosystem_packages "$FLUTTER_ROOT/pubspec.yaml" "$VENDOR_PREFIX")
+  fi
+
+  if [[ ${#lines[@]} -eq 0 ]]; then
+    echo "_No ecosystem packages detected. All proprietary packages are local._"
+  else
+    printf '%s\n' "${lines[@]}"
+  fi
+}
+
+# --- Build Laravel local checklist ---
+build_laravel_local_checklist() {
+  local pkg_base="$LARAVEL_ROOT/packages"
+  local composer="$LARAVEL_ROOT/composer.json"
   local lines=()
 
   if [[ ! -d "$pkg_base" ]]; then
@@ -70,9 +231,9 @@ build_laravel_checklist() {
       local desc
       desc=$(readme_oneliner "$readme")
 
-      # Check if declared in composer.json
+      # Check if declared in composer.json (as path repo or require)
       local in_use=false
-      if [[ -f "$composer" ]] && grep -q "\"$vendor/$pkg\"" "$composer" 2>/dev/null; then
+      if [[ -f "$composer" ]] && grep -q "$vendor/$pkg\|$vendor_$pkg" "$composer" 2>/dev/null; then
         in_use=true
       fi
 
@@ -91,16 +252,16 @@ build_laravel_checklist() {
   done
 
   if [[ ${#lines[@]} -eq 0 ]]; then
-    echo "_No proprietary packages found in packages/._"
+    echo "_No local proprietary packages found in packages/._"
   else
     printf '%s\n' "${lines[@]}"
   fi
 }
 
-# --- Build Flutter checklist ---
-build_flutter_checklist() {
-  local pkg_base="$PROJECT_ROOT/packages"
-  local pubspec="$PROJECT_ROOT/pubspec.yaml"
+# --- Build Flutter local checklist ---
+build_flutter_local_checklist() {
+  local pkg_base="$FLUTTER_ROOT/packages"
+  local pubspec="$FLUTTER_ROOT/pubspec.yaml"
   local lines=()
 
   if [[ ! -d "$pkg_base" ]]; then
@@ -140,7 +301,7 @@ build_flutter_checklist() {
   done
 
   if [[ ${#lines[@]} -eq 0 ]]; then
-    echo "_No proprietary Flutter packages found in packages/._"
+    echo "_No local proprietary Flutter packages found in packages/._"
   else
     printf '%s\n' "${lines[@]}"
   fi
@@ -151,9 +312,10 @@ build_antipattern_warnings() {
   local warnings=()
 
   # Laravel: app/Helpers
-  if [[ -d "$PROJECT_ROOT/app/Helpers" ]]; then
+  local laravel_helpers="$LARAVEL_ROOT/app/Helpers"
+  if [[ -d "$laravel_helpers" ]]; then
     local count
-    count=$(find "$PROJECT_ROOT/app/Helpers" -name "*.php" 2>/dev/null | wc -l)
+    count=$(find "$laravel_helpers" -name "*.php" 2>/dev/null | wc -l)
     if [[ "$count" -gt 0 ]]; then
       warnings+=("- **$count helper(s)** in \`app/Helpers/\` — candidates for package extraction")
       WARNINGS=$((WARNINGS + count))
@@ -161,9 +323,10 @@ build_antipattern_warnings() {
   fi
 
   # Flutter: lib/utils
-  if [[ -d "$PROJECT_ROOT/lib/utils" ]]; then
+  local flutter_utils="$FLUTTER_ROOT/lib/utils"
+  if [[ -d "$flutter_utils" ]]; then
     local count
-    count=$(find "$PROJECT_ROOT/lib/utils" -name "*.dart" 2>/dev/null | wc -l)
+    count=$(find "$flutter_utils" -name "*.dart" 2>/dev/null | wc -l)
     if [[ "$count" -gt 0 ]]; then
       warnings+=("- **$count util(s)** in \`lib/utils/\` — candidates for library extraction")
       WARNINGS=$((WARNINGS + count))
@@ -179,7 +342,6 @@ build_antipattern_warnings() {
 
 # --- Generate the registry file ---
 generate_registry() {
-  local laravel_section flutter_section antipattern_section
   local timestamp
   timestamp=$(date -u +"%Y-%m-%d %H:%M UTC")
 
@@ -198,26 +360,49 @@ generate_registry() {
 
 HEADER
 
+  # Ecosystem (Global) section
+  {
+    echo "## Ecosystem Packages (Global)"
+    echo ""
+    echo "Mature, domain-agnostic packages published as independent repositories for cross-project reuse."
+    echo "Integrated via VCS repositories or private registries — NOT via local path."
+    echo ""
+    echo "<!-- AUTO-GENERATED — do not edit manually -->"
+    echo ""
+    build_ecosystem_checklist
+    echo ""
+    echo "---"
+    echo ""
+  } >> "$REGISTRY"
+
+  # Local Laravel section
   if $HAS_LARAVEL; then
     {
-      echo "## Laravel Packages"
+      echo "## Local Proprietary Packages — Laravel"
+      echo ""
+      echo "Project-bound packages under \`packages/<vendor>/<package>/\` in the Laravel app."
+      echo "Integrated via path repositories in \`composer.json\`."
       echo ""
       echo "<!-- AUTO-GENERATED — do not edit manually -->"
       echo ""
-      build_laravel_checklist
+      build_laravel_local_checklist
       echo ""
       echo "---"
       echo ""
     } >> "$REGISTRY"
   fi
 
+  # Local Flutter section
   if $HAS_FLUTTER; then
     {
-      echo "## Flutter Packages"
+      echo "## Local Proprietary Packages — Flutter"
+      echo ""
+      echo "Project-bound packages under \`packages/<package>/\` in the Flutter app."
+      echo "Integrated via path dependencies in \`pubspec.yaml\`."
       echo ""
       echo "<!-- AUTO-GENERATED — do not edit manually -->"
       echo ""
-      build_flutter_checklist
+      build_flutter_local_checklist
       echo ""
       echo "---"
       echo ""
@@ -239,6 +424,13 @@ HEADER
     echo "## Anti-Pattern Watchlist"
     echo ""
     build_antipattern_warnings
+    echo ""
+    echo "---"
+    echo ""
+    echo "## Promotion Path (Local → Global)"
+    echo ""
+    echo "When a local package matures and becomes domain-agnostic, it can be promoted to ecosystem."
+    echo "See \`paced.core.package-first\` rule for criteria and procedure."
     echo ""
     echo "---"
     echo ""
