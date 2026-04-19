@@ -9,7 +9,7 @@
 #
 # Local (project-bound) packages are NOT listed here — they are
 # auto-detected from packages/ directories and tracked in
-# foundation_documentation/package_registry.md per project.
+# foundation_documentation/local_packages.yaml per project.
 #
 # To register a new ecosystem package:
 #   1. Add an entry below under the appropriate stack.

@@ -44,7 +44,7 @@ bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>
 
 ## Mandatory Steps
 
-1. **Query** packages via CLI: `bash delphi-ai/tools/query_packages.sh --search "<keyword>"`
+1. **Query** packages via CLI: `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"`
 2. **Read details** for relevant results: `--detail "<package_name>"`
 3. **Apply tier-appropriate autonomy:**
    - Local: modify the package directly if its API does not fit. Fix callers in the same PR.

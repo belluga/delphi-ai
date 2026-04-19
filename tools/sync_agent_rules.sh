@@ -95,7 +95,7 @@ ensure_link "$ENV_ROOT/laravel-app/.agents/skills" "../delphi-ai/skills" "larave
 ensure_link "$ENV_ROOT/laravel-app/.agents/rules" "../delphi-ai/rules/laravel" "laravel-app .agents/rules" || true
 ensure_link "$ENV_ROOT/laravel-app/.agents/workflows" "../delphi-ai/workflows/laravel" "laravel-app .agents/workflows" || true
 
-# Claude Code artifacts (root + submodules)
+# Claude Code artifacts (root + flutter-app + laravel-app)
 if [ -d "$ENV_ROOT/delphi-ai/.claude" ]; then
   mkdir -p "$ENV_ROOT/.claude"
   ensure_link "$ENV_ROOT/.claude/rules" "../delphi-ai/.claude/rules" "root .claude/rules" || true

@@ -1,228 +1,58 @@
 ---
-name: laravel-create-domain
-description: "Introduce or extend a Laravel domain aggregate following MongoDB + Sanctum architecture: DocumentModels, migrations, controllers, and documentation."
+name: "laravel-create-domain-method"
+description: "Introduce or extend a Laravel domain aggregate following the current MongoDB + Sanctum architecture: DocumentModels, migrations, controllers, and documentation must stay aligned with canonical module docs and the system principles."
 ---
+
+<!-- Generated from `workflows/laravel/create-domain-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Workflow: Create Domain (Laravel)
 
 ## Purpose
-
-Introduce or extend a Laravel domain aggregate following the current MongoDB + Sanctum architecture: DocumentModels, migrations, controllers, and documentation must stay aligned.
+Introduce or extend a Laravel domain aggregate following the current MongoDB + Sanctum architecture: DocumentModels, migrations, controllers, and documentation must stay aligned with canonical module docs and the system principles.
 
 ## Triggers
+- A feature needs a landlord/tenant/account entity that does not exist yet.
+- Mongo collections require new fields/snapshots to satisfy Flutter/API contracts.
+- Documentation references a domain that is missing or outdated in code.
 
-- Feature needs a landlord/tenant/account entity that doesn't exist
-- **Any edit** to existing domain/entity model (add/remove fields, change payload)
-- Mongo collections require new fields/snapshots for Flutter/API contracts
-- Documentation references a domain missing or outdated in code
-
-## Prerequisites
-
-- [ ] `foundation_documentation/domain_entities.md` reviewed
-- [ ] `foundation_documentation/submodule_laravel-app_summary.md` reviewed
-- [ ] Relevant `system_roadmap.md` entries reviewed for Laravel + Flutter follow-up
-- [ ] Existing DocumentModels, migrations, factories/seeders understood
+## Inputs
+- `foundation_documentation/domain_entities.md` and project mandate (confirm architecture mode).
+- Relevant `foundation_documentation/modules/*.md` entries for routing, schema, and touched domain context.
+- Relevant `foundation_documentation/system_roadmap.md` entries for Laravel/Flutter follow-up.
+- Existing DocumentModels, migrations, factories/seeders related to the domain.
 
 ## Procedure
-
-### Step 0: Package-First Gate
-Run `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"` to query proprietary packages and check whether an existing Laravel package already owns this domain. If the domain belongs to a package, implement there. Record the Package-First Assessment. See `paced.core.package-first`.
-
-
-### Step 1: Persona Alignment
-
-- Run Persona Selection (Laravel Engineer)
-- Review roadmap entries tied to this domain
-
-### Step 2: Document First
-
-Add/expand domain entry in:
-- `foundation_documentation/domain_entities.md` (fields, invariants, collections)
-- System/module roadmap
-- Shared roadmap entry with planned work and cross-stack follow-up
-
-### Step 3: Plan Schema + Validations
-
-Determine:
-- Collection name
-- Embedded documents
-- Indexes
-- Size constraints
-
-Draft migration/update scripts under:
-```
-database/migrations/landlord/
-database/migrations/tenant/
-```
-
-If the domain is package-owned, use package migration directories and wire tenant scope through `config/multitenancy.php` `tenant_migration_paths`.
-
-Index lifecycle rule:
-- Provision indexes via migration/provisioning flow in tenant context
-- Do NOT create indexes inside runtime request/query paths
-
-### Step 4: Implement DocumentModel
-
-**Create/extend model:**
-```
-App\Models\Landlord\...
-App\Models\Tenants\...
-```
-
-**Use traits as needed:**
-- `DocumentModel`
-- `SoftDeletes`
-- `UsesTenantConnection`
-- `HasSlug`
-
-**Define:**
-- `$fillable`
-- Relationships
-- Scopes
-- Helper methods
-
-### Step 5: MongoDB Rules (NON-NEGOTIABLE)
-
-**❌ NEVER use Eloquent `$casts` for arrays/objects on MongoDB-backed models:**
-```php
-// ❌ WRONG - Never do this on MongoDB models
-protected $casts = [
-    'settings' => 'array',
-    'metadata' => 'object',
-];
-```
-
-**Why:** Persist raw BSON from the driver. Let MongoDB handle native types.
-
-**✅ Correct approach:**
-```php
-// ✅ CORRECT - No casts, raw BSON
-class Booking extends DocumentModel
-{
-    protected $fillable = [
-        'id',
-        'status',
-        'settings', // Raw BSON
-        'metadata',  // Raw BSON
-    ];
-    
-    // No $casts for array/object fields!
-}
-```
-
-**Hard Ban:**
-- Do NOT add `array`, `json`, or `object` casts to Mongo-backed models
-- If you find one, remove it and refactor the consumer
-- Normalization belongs outside the model
-
-### Step 6: Data Objects (When to Use)
-
-Use `App\DataObjects\...` when you must:
-- Normalize/shape nested settings or payloads
-- Add array/object casts (put here instead of model)
-- Introduce accessors/mutators for nested structures
-- Perform payload shaping for API responses
-- Enforce defaults/derived fields on nested blobs
-
-**Data Objects should:**
-- Accept raw BSON/array inputs from Mongo
-- Normalize/validate/derive output for API contracts
-- Keep Models free of array casts/accessors
-
-**Example Data Object:**
-```php
-class BookingSettingsData
-{
-    public function __construct(
-        public readonly bool $notificationsEnabled,
-        public readonly int $maxParticipants,
-        public readonly array $allowedDays,
-    ) {}
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            notificationsEnabled: $data['notifications_enabled'] ?? true,
-            maxParticipants: $data['max_participants'] ?? 10,
-            allowedDays: $data['allowed_days'] ?? [],
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'notifications_enabled' => $this->notificationsEnabled,
-            'max_participants' => $this->maxParticipants,
-            'allowed_days' => $this->allowedDays,
-        ];
-    }
-}
-
-// Usage in controller/service
-$settings = BookingSettingsData::fromArray($booking->settings);
-```
-
-### Step 7: Seeders/Factories
-
-If needed, update seeder classes:
-```php
-// database/seeders/BookingSeeder.php
-class BookingSeeder extends Seeder
-{
-    public function run(): void
-    {
-        Booking::create([
-            'status' => 'pending',
-            'settings' => [
-                'notifications_enabled' => true,
-                'max_participants' => 10,
-            ],
-        ]);
-    }
-}
-```
-
-### Step 8: Controllers/Services
-
-- Reference new model in controllers
-- Keep logic thin
-- Extract reusable actions to Services
-
-### Step 9: Tests & Validation
-
-```bash
-# Run all tests
-php artisan test
-
-# Run targeted suites
-php artisan test --filter=BookingTest
-```
-
-Add/extend feature tests covering:
-- New endpoints
-- New behaviors
-- Validation rules
-
-### Step 10: Documentation + Roadmap Sync
-
-- Record pending backend work for Flutter in roadmap
-- Note schema/index changes in Laravel submodule summary
-- Update API contracts if behavior changed
+1. **Package-First gate** – run `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"` to query proprietary packages and check whether an existing Laravel package already owns this domain or a closely related one. If the domain belongs to a package, implement there. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+2. **Profile alignment** – run Profile Selection as `Operational / Coder` with `laravel` scope and review roadmap entries only when strategic follow-up is part of the change.
+3. **Document first**
+   - Add/expand the domain entry in `foundation_documentation/domain_entities.md` (fields, invariants, collections).
+   - Update `foundation_documentation/system_roadmap.md` and any affected module docs with the planned work and cross-stack follow-up.
+4. **Plan schema + validations**
+   - Determine collection name, embedded documents, indexes, and size constraints (per P‑14).
+   - Draft migration/update scripts under `database/migrations/landlord|tenant` or package migration directories when the domain is package-owned.
+   - For tenant-scoped domains, enforce Spatie tenant migration flow (`tenant_migration_paths` + tenant connection/context).
+   - Do not create indexes in runtime request/query paths; indexes must be provisioned via migration/provisioning flow.
+5. **Implement DocumentModel**
+   - Create/extend `App\Models\Landlord|Tenants\...` using `DocumentModel`, `SoftDeletes`, and relevant traits (UsesTenantConnection, HasSlug, etc.).
+   - Define `$fillable`, `$casts`, relationships, scopes, and helper methods consistent with existing models.
+6. **Seeders/factories** (if needed)
+   - Update seeder classes to provision required documents for bootstrap flows.
+7. **Controllers / services**
+   - Ensure existing controllers reference the new model; keep logic thin by extracting reusable actions into Services when possible.
+8. **Tests & validation**
+   - Add/extend feature tests covering new endpoints or behaviors.
+   - Re-run `composer test` or targeted suites as appropriate.
+9. **Documentation + roadmap sync**
+   - Record any pending backend work for Flutter in the roadmap (e.g., API blueprints that need client coordination).
+   - Record schema/index and domain-behavior changes in the affected module docs.
+   - If the touched module area is still marked `Partial`, migrate that touched legacy scope into the module as part of the same TODO.
 
 ## Outputs
+- Updated domain documentation, affected module docs, and roadmaps.
+- New/modified DocumentModel + migrations/seeders/tests checked in.
+- Controllers/services referencing the new model.
 
-- [ ] Updated domain documentation
-- [ ] Updated roadmaps
-- [ ] New/modified DocumentModel
-- [ ] Migrations/seeders if needed
-- [ ] Controllers/services updated
-- [ ] Tests passing
-
-## Validation Checklist
-
-- [ ] `php artisan test` succeeds
-- [ ] Schema updates reflected in docs
-- [ ] Flutter roadmap mentions new payloads
-- [ ] NO array/object casts on MongoDB models
-- [ ] Data Objects used for normalization (not model accessors)
-- [ ] Indexes provisioned via migration/provisioning flow (not runtime query code)
+## Validation
+- `php artisan test` (or targeted suites) succeeds.
+- Schema updates are reflected in docs; Flutter roadmap entries mention any new payloads.
+- Do not add Eloquent casts for arrays or objects on MongoDB-backed models; leave these fields uncast so the MongoDB driver persists native BSON types.

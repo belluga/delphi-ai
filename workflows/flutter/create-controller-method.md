@@ -1,5 +1,5 @@
 ---
-description: Introduce a new Flutter domain aggregate with full architectural rigor—docs, value objects, projections, repository contracts, and DI wiring—aligned with our principles (backend-driven UI, DTO→Domain→Projection flow, feature-first structure).
+description: Introduce a new Flutter controller that owns UI state, side effects, and StreamValue exposure per the architecture mandates.
 ---
 
 # Method: Create Controller (Flutter)
