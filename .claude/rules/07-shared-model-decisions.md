@@ -54,19 +54,18 @@ When adding or revising realtime feed behavior (SSE streams, delta updates, or p
 
 When planning implementation of any new feature, endpoint, domain, screen, controller, service, repository, or utility:
 
-- Read **two YAML files** to identify proprietary packages:
-  - `delphi-ai/config/ecosystem_packages.yaml` — Ecosystem (Global) packages.
-  - `foundation_documentation/local_packages.yaml` — Local (Project-Bound) packages.
-- If `local_packages.yaml` is missing, run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` first.
-- For ecosystem packages: check if already a dependency in the project manifest.
-- For local packages: `in_use: true` → **use directly**. `in_use: false` → **recommend adoption**.
-- **Read the README** of each relevant package to understand its API.
+- **Query packages via deterministic CLI** — do not read YAML files directly:
+  ```bash
+  bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"
+  ```
+- For relevant results, get full detail: `--detail "<package_name>"`
+- CLI options: `--all`, `--search <term>`, `--tier local|ecosystem`, `--stack flutter|laravel`, `--unused`, `--detail <name>`
 - Apply **tier-appropriate autonomy**:
   - **Local** (in `packages/`, path dep): Treat as code. Modify freely, breaking changes OK — fix callers in same PR.
   - **Ecosystem** (Belluga org, VCS/registry dep): Can modify, but version and evaluate cross-project impact.
   - **External** (pub.dev, Packagist, etc.): Do not modify. Wrap in adapter if behavior needs to change.
-- Record a Package-First Assessment in the TODO (include tier classification).
-- After creating a new package, run `bash delphi-ai/tools/verify_package_registry.sh` to update `local_packages.yaml`.
+- Record a Package-First Assessment in the TODO (include query executed and tier classification).
+- After creating a new package, run `bash delphi-ai/tools/verify_package_registry.sh` to update local YAML.
 - If ecosystem-level, add entry to `delphi-ai/config/ecosystem_packages.yaml`.
 - See canonical rule: `rules/core/package-first-model-decision.md`.
 

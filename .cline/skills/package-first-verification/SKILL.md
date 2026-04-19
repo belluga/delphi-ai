@@ -1,22 +1,35 @@
 ---
 name: package-first-verification
-description: "Guardrail: MUST invoke before implementing any new feature, endpoint, domain, screen, controller, service, or repository. Verifies packages across three tiers (Local, Ecosystem, External) with tier-appropriate autonomy."
+description: "Guardrail: MUST invoke before implementing any new feature, endpoint, domain, screen, controller, service, or repository. Queries proprietary packages via deterministic CLI tool across three tiers (Local, Ecosystem, External)."
 ---
 
 # Skill: Package-First Verification
 
 ## Purpose
-Enforce the package-first architecture by ensuring every implementation begins with a package scan across all three tiers. The checklist at `foundation_documentation/package_registry.md` is auto-generated and organizes packages by tier.
+Enforce the package-first architecture by querying proprietary packages via a **deterministic CLI tool** before every implementation. The agent does not read YAML files directly — it runs the script and gets structured results.
+
+## CLI Tool
+
+```bash
+bash delphi-ai/tools/query_packages.sh --project-root <path> [options]
+```
+
+| Option | Purpose |
+| :--- | :--- |
+| `--all` | List all proprietary packages (ecosystem + local) |
+| `--search <term>` | Search by name or description (case-insensitive) |
+| `--tier local\|ecosystem` | Filter by tier |
+| `--stack flutter\|laravel` | Filter by stack |
+| `--unused` | Show local packages that exist but are not in use |
+| `--detail <name>` | Full detail including README content |
 
 ## Package Tier Model
 
-Every dependency falls into one of three tiers that determine how freely the agent can interact with it:
-
-| Tier | Autonomy | How to Identify | Agent Behavior |
-| :--- | :--- | :--- | :--- |
-| **Local** | Total | In `packages/` dir, path dependency | Treat as modular code. Modify freely. Breaking changes OK — fix callers in the same PR. |
-| **Ecosystem** | High | Belluga org repo, VCS/registry dependency | Can modify, but version and evaluate cross-project impact. Prefer additive changes. |
-| **External** | Low | pub.dev, Packagist, npm, etc. | Do not modify. Wrap in adapter if behavior needs to change. |
+| Tier | Autonomy | Agent Behavior |
+| :--- | :--- | :--- |
+| **Local** | Total | Treat as modular code. Modify freely. Breaking changes OK — fix callers in the same PR. |
+| **Ecosystem** | High | Can modify, but version and evaluate cross-project impact. Prefer additive changes. |
+| **External** | Low | Do not modify. Wrap in adapter if behavior needs to change. |
 
 ## When to Invoke
 - Before planning implementation of any new feature.
@@ -26,28 +39,29 @@ Every dependency falls into one of three tiers that determine how freely the age
 
 ## Procedure
 
-### 1. Read the Checklist
-Open `foundation_documentation/package_registry.md`. Review **all three sections**:
-- Ecosystem Packages (Global)
-- Local Proprietary Packages — Laravel
-- Local Proprietary Packages — Flutter
+### 1. Query Packages
+Run the CLI with a keyword relevant to the planned implementation:
 
-If the checklist does not exist or is stale, run:
 ```bash
-bash delphi-ai/tools/verify_package_registry.sh --project-root <path>
+bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"
 ```
 
-### 2. Interpret the Checkboxes
+If unsure about keywords, list all:
 
-| Status | Meaning | Agent Behavior |
-| :--- | :--- | :--- |
-| `[x]` (in use) | Package is a declared dependency | **Use it.** Read its README, understand its API, extend if needed. |
-| `[ ]` (available) | Package exists but is NOT a dependency | **Recommend adoption.** Read its README, evaluate if it covers the planned work. |
+```bash
+bash delphi-ai/tools/query_packages.sh --project-root <path> --all
+```
 
-### 3. Read the README
-For each relevant package, read its `README.md` to understand purpose, public API, and integration. The README is the authoritative documentation — not the checklist.
+The script auto-generates `local_packages.yaml` if missing. No manual setup needed.
 
-### 4. Evaluate and Decide (Tier-Aware)
+### 2. Read Details for Relevant Packages
+For each package returned, get full details including README:
+
+```bash
+bash delphi-ai/tools/query_packages.sh --project-root <path> --detail "<package_name>"
+```
+
+### 3. Evaluate and Decide (Tier-Aware)
 
 | Situation | Local Package | Ecosystem Package | External Package |
 | :--- | :--- | :--- | :--- |
@@ -56,12 +70,12 @@ For each relevant package, read its `README.md` to understand purpose, public AP
 | No match, code is reusable | Create **new local package**. | Propose ecosystem package if cross-project. | N/A |
 | Code is host-specific | Implement locally. Document rationale. | N/A | N/A |
 
-### 5. Record the Assessment
+### 4. Record the Assessment
 Add to the TODO:
 
 ```markdown
 ## Package-First Assessment
-- Checklist consulted: Yes
+- Query executed: bash delphi-ai/tools/query_packages.sh --search "<term>"
 - Relevant packages found:
   - [Local] <name> — <action taken>
   - [Ecosystem] <name> — <action taken>
@@ -72,16 +86,16 @@ Add to the TODO:
 - Rationale: <brief>
 ```
 
-### 6. Post-Implementation
+### 5. Post-Implementation
 If a new proprietary package was created:
 - [ ] Package has `README.md` following canonical format (`delphi-ai/templates/package_readme_template.md`)
-- [ ] Run `bash delphi-ai/tools/verify_package_registry.sh` to update the checklist
-- [ ] Package appears in the correct section (Local or Ecosystem)
+- [ ] Run `bash delphi-ai/tools/verify_package_registry.sh` to update `local_packages.yaml`
+- [ ] If ecosystem-level, add entry to `delphi-ai/config/ecosystem_packages.yaml`
+- [ ] Verify: `bash delphi-ai/tools/query_packages.sh --detail "<new_package>"`
 
 ## Validation
-- Package-First Assessment is present in the TODO with tier classification.
-- If a proprietary package was found (used or available), the implementation leverages it.
+- Package-First Assessment is present in the TODO with query output.
+- If a proprietary package was found, the implementation leverages it.
 - No new host-level utility files duplicate proprietary package capabilities.
-- Local packages are modified directly when needed — no workarounds in host app to avoid touching them.
+- Local packages are modified directly when needed — no workarounds in host app.
 - External packages are never forked without explicit user approval.
-- Checklist is current (re-run script if packages were added/removed).

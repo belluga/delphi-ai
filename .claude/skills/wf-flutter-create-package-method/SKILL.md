@@ -27,6 +27,6 @@ Key steps:
 8. **Consolidate:** run `bash delphi-ai/tools/verify_package_registry.sh` to update the checklist.
 
 ## Validation
-- Package appears as `[x]` in `foundation_documentation/package_registry.md`.
+- Package appears in `bash delphi-ai/tools/query_packages.sh --detail "<name>"` output.
 - README follows canonical template.
 - No host app references inside package code.

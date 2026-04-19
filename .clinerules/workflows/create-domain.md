@@ -26,7 +26,7 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 
 
 ### Step 0: Package-First Gate
-Read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and check whether an existing Flutter library already covers this domain. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
+Run `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"` to query proprietary packages and check whether an existing Flutter library already covers this domain. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
 
 
 ### Step 1: Document First

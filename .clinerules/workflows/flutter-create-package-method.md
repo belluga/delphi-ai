@@ -11,7 +11,7 @@ Ensure Flutter packages follow the proprietary package-first architecture with c
 ## Steps
 
 ### Step 0: Package-First Gate
-Read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and confirm no existing package already covers this capability. If one does, extend it instead. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+Run `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"` to query proprietary packages and confirm no existing package already covers this capability. If one does, extend it instead. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 
 ### Step 1: Classify Package Category
 - `core`: Foundation utilities (networking, auth, storage, logging).

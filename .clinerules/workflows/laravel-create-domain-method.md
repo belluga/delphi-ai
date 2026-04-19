@@ -26,7 +26,7 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 ## Procedure
 
 ### Step 0: Package-First Gate
-Read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and check whether an existing Laravel package already owns this domain. If the domain belongs to a package, implement there. Record the Package-First Assessment. See `paced.core.package-first`.
+Run `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"` to query proprietary packages and check whether an existing Laravel package already owns this domain. If the domain belongs to a package, implement there. Record the Package-First Assessment. See `paced.core.package-first`.
 
 
 ### Step 1: Persona Alignment
