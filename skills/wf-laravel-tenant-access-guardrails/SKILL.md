@@ -11,9 +11,9 @@ Ensure any tenant-authenticated API routes consistently enforce tenant access vi
 ## Preconditions
 - Laravel scope (routes/middleware changes).
 - Related rules loaded:
-  - `delphi-ai/rules/laravel/shared/core-instructions-always-on.md`
-  - `delphi-ai/rules/laravel/shared/todo-driven-execution-model-decision.md`
-  - `delphi-ai/rules/laravel/shared/tenant-access-guardrails-model-decision.md`
+  - `delphi-ai/rules/core/core-instructions-always-on.md`
+  - `delphi-ai/rules/core/todo-driven-execution-model-decision.md`
+  - `delphi-ai/rules/stacks/laravel/shared/tenant-access-guardrails-model-decision.md`
 
 ## Preferred Deterministic Helper
 - Default static route-file audit:

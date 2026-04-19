@@ -1,4 +1,4 @@
-<!-- Generated from `rules/docker/shared/delphi-project-setup-model-decision.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
+<!-- Generated from `rules/core/delphi-project-setup-model-decision.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Delphi Project Setup (Model Decision)
 

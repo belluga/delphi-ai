@@ -1,4 +1,4 @@
-<!-- Generated from `rules/docker/shared/initialization-readiness-model-decision.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
+<!-- Generated from `rules/core/initialization-readiness-model-decision.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Initialization Readiness (Model Decision)
 

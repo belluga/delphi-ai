@@ -70,6 +70,29 @@ canonicalize_dir() {
   (cd "$path" >/dev/null 2>&1 && pwd)
 }
 
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+yaml_unquote() {
+  local value
+  value="$(trim "$1")"
+
+  if [[ ${#value} -ge 2 ]] && [[ "${value:0:1}" == "'" ]] && [[ "${value: -1}" == "'" ]]; then
+    value="${value:1:${#value}-2}"
+    value="$(printf '%s' "$value" | sed "s/''/'/g")"
+  elif [[ ${#value} -ge 2 ]] && [[ "${value:0:1}" == '"' ]] && [[ "${value: -1}" == '"' ]]; then
+    value="${value:1:${#value}-2}"
+    value="${value//\\\"/\"}"
+    value="${value//\\\\/\\}"
+  fi
+
+  printf '%s' "$value"
+}
+
 validate_project_root() {
   [[ -d "$PROJECT_ROOT" ]] || die "Project root '$PROJECT_ROOT' does not exist or is not a directory."
 
@@ -240,20 +263,15 @@ parse_ecosystem() {
         if [[ -n "$name" ]]; then
           echo "ECOSYSTEM|$current_stack|$name|$description|$pub_url"
         fi
-        name="${BASH_REMATCH[1]}"
-        name="${name//\"/}"
-        name="${name# }"
+        name="$(yaml_unquote "${BASH_REMATCH[1]}")"
         description=""
         pub_url=""
       elif [[ "$line" =~ ^[[:space:]]*description:[[:space:]]*(.+) ]]; then
-        description="${BASH_REMATCH[1]}"
-        description="${description//\"/}"
+        description="$(yaml_unquote "${BASH_REMATCH[1]}")"
       elif [[ "$line" =~ ^[[:space:]]*pub_dev:[[:space:]]*(.+) ]]; then
-        pub_url="${BASH_REMATCH[1]}"
-        pub_url="${pub_url//\"/}"
+        pub_url="$(yaml_unquote "${BASH_REMATCH[1]}")"
       elif [[ "$line" =~ ^[[:space:]]*packagist:[[:space:]]*(.+) ]]; then
-        pub_url="${BASH_REMATCH[1]}"
-        pub_url="${pub_url//\"/}"
+        pub_url="$(yaml_unquote "${BASH_REMATCH[1]}")"
       fi
     fi
   done < "$ECOSYSTEM_YAML"
@@ -291,23 +309,23 @@ parse_local() {
     fi
 
     if [[ -n "$current_stack" ]]; then
-      if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*\"([^\"]+)\" ]]; then
+      if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*(.+)$ ]]; then
         if [[ -n "$name" ]]; then
           echo "LOCAL|$current_stack|$name|$path|$in_use|$has_readme|$description"
         fi
-        name="${BASH_REMATCH[1]}"
+        name="$(yaml_unquote "${BASH_REMATCH[1]}")"
         path=""
         in_use=""
         has_readme=""
         description=""
-      elif [[ "$line" =~ ^[[:space:]]*path:[[:space:]]*\"([^\"]+)\" ]]; then
-        path="${BASH_REMATCH[1]}"
+      elif [[ "$line" =~ ^[[:space:]]*path:[[:space:]]*(.+)$ ]]; then
+        path="$(yaml_unquote "${BASH_REMATCH[1]}")"
       elif [[ "$line" =~ ^[[:space:]]*in_use:[[:space:]]*(true|false) ]]; then
         in_use="${BASH_REMATCH[1]}"
       elif [[ "$line" =~ ^[[:space:]]*has_readme:[[:space:]]*(true|false) ]]; then
         has_readme="${BASH_REMATCH[1]}"
-      elif [[ "$line" =~ ^[[:space:]]*description:[[:space:]]*\"([^\"]*)\" ]]; then
-        description="${BASH_REMATCH[1]}"
+      elif [[ "$line" =~ ^[[:space:]]*description:[[:space:]]*(.*)$ ]]; then
+        description="$(yaml_unquote "${BASH_REMATCH[1]}")"
       fi
     fi
   done < "$LOCAL_YAML"

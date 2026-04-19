@@ -10,9 +10,9 @@ Ensure tests that depend on tenant resolution clearly distinguish web (host/doma
 ## Preconditions
 - Laravel test scope (Feature/API tests).
 - Related rules loaded:
-  - `delphi-ai/rules/laravel/shared/core-instructions-always-on.md`
-  - `delphi-ai/rules/laravel/shared/todo-driven-execution-model-decision.md`
-  - `delphi-ai/rules/laravel/shared/domain-resolution-testing-model-decision.md`
+  - `delphi-ai/rules/core/core-instructions-always-on.md`
+  - `delphi-ai/rules/core/todo-driven-execution-model-decision.md`
+  - `delphi-ai/rules/stacks/laravel/shared/domain-resolution-testing-model-decision.md`
 
 ## Steps
 1. Identify tests that rely on tenant resolution (branding, registration, domain/app-domain tests).

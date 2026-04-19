@@ -126,6 +126,12 @@ map_workflow_skill_to_canonical_workflow() {
 map_workflow_skill_to_cline_workflow() {
   local skill_name="$1"
   local slug="${skill_name#wf-}"
+  local direct_match="$REPO_ROOT/delphi-ai/.clinerules/workflows/${slug}.md"
+
+  if [ -f "$direct_match" ]; then
+    echo "$direct_match"
+    return
+  fi
 
   case "$slug" in
     docker-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/docker-${slug#docker-}.md" ;;
@@ -241,55 +247,43 @@ compare_agent_ruleset() {
   local generated_dir="$1"
   local source_dir="$2"
   local label_prefix="$3"
-  local include_shared="$4"
-  local shared_source_dir="$REPO_ROOT/delphi-ai/rules/docker/shared"
-
-  if [ -d "$source_dir/shared" ]; then
-    shared_source_dir="$source_dir/shared"
-  fi
+  local _include_shared="${4:-false}"
 
   if [ ! -d "$generated_dir" ]; then
     errors+=("Missing directory: $generated_dir")
     return
   fi
 
-  # Generated -> Source mapping
-  while IFS= read -r -d '' gen_file; do
-    local rel
-    rel="${gen_file#$generated_dir/}"
+  local layer
+  for layer in core stack local; do
+    local source_layer="$source_dir/$layer"
+    local generated_layer="$generated_dir/$layer"
 
-    local src
-    if [[ "$rel" == shared/* ]]; then
-      src="$shared_source_dir/${rel#shared/}"
-    else
-      src="$source_dir/$rel"
+    [ -d "$source_layer" ] || continue
+
+    if [ ! -d "$generated_layer" ]; then
+      errors+=("Missing directory: $generated_layer")
+      continue
     fi
 
-    if require_file "$src" && require_file "$gen_file"; then
-      compare_rule_body "$src" "$gen_file" "$label_prefix rule $rel"
-    fi
-  done < <(find -L "$generated_dir" -type f -name '*.md' -print0 | sort -z)
-
-  # Source -> Generated coverage
-  while IFS= read -r -d '' src_file; do
-    local rel
-    rel="$(basename "$src_file")"
-    local gen="$generated_dir/$rel"
-    if require_file "$src_file" && require_file "$gen"; then
-      compare_rule_body "$src_file" "$gen" "$label_prefix source coverage $rel"
-    fi
-  done < <(find "$source_dir" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
-
-  if [ "$include_shared" = "true" ]; then
     while IFS= read -r -d '' src_file; do
       local rel
       rel="$(basename "$src_file")"
-      local gen="$generated_dir/shared/$rel"
+      local gen="$generated_layer/$rel"
       if require_file "$src_file" && require_file "$gen"; then
-        compare_rule_body "$src_file" "$gen" "$label_prefix shared source coverage $rel"
+        compare_rule_body "$src_file" "$gen" "$label_prefix $layer source coverage $rel"
       fi
-    done < <(find "$shared_source_dir" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
-  fi
+    done < <(find -L "$source_layer" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
+
+    while IFS= read -r -d '' gen_file; do
+      local rel
+      rel="$(basename "$gen_file")"
+      local src="$source_layer/$rel"
+      if require_file "$src" && require_file "$gen_file"; then
+        compare_rule_body "$src" "$gen_file" "$label_prefix $layer generated coverage $rel"
+      fi
+    done < <(find -L "$generated_layer" -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
+  done
 }
 
 compare_agent_workflowset() {
@@ -367,8 +361,8 @@ verify_clinerules_controls() {
 }
 
 verify_workflow_definition_controls() {
-  local docker_rule="$REPO_ROOT/delphi-ai/rules/docker/shared/workflow-definition-model-decision.md"
-  local laravel_rule="$REPO_ROOT/delphi-ai/rules/laravel/shared/workflow-definition-model-decision.md"
+  local docker_rule="$REPO_ROOT/delphi-ai/rules/core/workflow-definition-model-decision.md"
+  local laravel_rule="$REPO_ROOT/delphi-ai/rules/stacks/laravel/shared/workflow-definition-model-decision.md"
   local cline_rule="$REPO_ROOT/delphi-ai/.clinerules/model-decision/shared-workflow-definition.md"
   local docker_skill="$REPO_ROOT/delphi-ai/skills/rule-docker-shared-workflow-definition-model-decision/SKILL.md"
   local laravel_skill="$REPO_ROOT/delphi-ai/skills/rule-laravel-shared-workflow-definition-model-decision/SKILL.md"

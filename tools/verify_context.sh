@@ -101,6 +101,7 @@ if [ "$REPAIR_MODE" = true ]; then
 fi
 
 # Validate Claude Code artifacts exist (read-only check)
+VERIFY_ISSUES=0
 CLAUDE_ISSUES=0
 if [ -d "$SCRIPT_ROOT/.claude" ]; then
   if [ ! -d "$SCRIPT_ROOT/.claude/rules" ]; then
@@ -121,6 +122,8 @@ if [ -d "$SCRIPT_ROOT/.claude" ]; then
   fi
   if [ $CLAUDE_ISSUES -eq 0 ]; then
     echo "Claude Code artifacts: OK"
+  else
+    VERIFY_ISSUES=$((VERIFY_ISSUES + CLAUDE_ISSUES))
   fi
 fi
 
@@ -130,20 +133,39 @@ if [ -f "$SCRIPT_ROOT/config/ecosystem_packages.yaml" ]; then
   echo "Ecosystem packages YAML: OK"
 else
   echo "WARN: Ecosystem packages YAML not found at $SCRIPT_ROOT/config/ecosystem_packages.yaml"
+  VERIFY_ISSUES=$((VERIFY_ISSUES + 1))
 fi
 
 # Local YAML lives in foundation_documentation (project data)
 if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/foundation_documentation" ]; then
   if [ ! -f "$REPO_ROOT/foundation_documentation/local_packages.yaml" ]; then
-    echo "WARN: Local packages YAML not found. Generating..."
-    if [ -f "$SCRIPT_ROOT/tools/verify_package_registry.sh" ]; then
-      bash "$SCRIPT_ROOT/tools/verify_package_registry.sh" --project-root "$REPO_ROOT" 2>/dev/null || true
-      echo "Local packages YAML generated at foundation_documentation/local_packages.yaml"
+    if [ "$REPAIR_MODE" = true ]; then
+      echo "WARN: Local packages YAML not found. Repairing..."
+      if [ -f "$SCRIPT_ROOT/tools/verify_package_registry.sh" ]; then
+        bash "$SCRIPT_ROOT/tools/verify_package_registry.sh" --project-root "$REPO_ROOT"
+        if [ -f "$REPO_ROOT/foundation_documentation/local_packages.yaml" ]; then
+          echo "Local packages YAML generated at foundation_documentation/local_packages.yaml"
+        else
+          echo "ERROR: verify_package_registry.sh completed without producing foundation_documentation/local_packages.yaml"
+          VERIFY_ISSUES=$((VERIFY_ISSUES + 1))
+        fi
+      else
+        echo "ERROR: verify_package_registry.sh not found — cannot repair local_packages.yaml"
+        VERIFY_ISSUES=$((VERIFY_ISSUES + 1))
+      fi
     else
-      echo "WARN: verify_package_registry.sh not found — cannot generate local_packages.yaml"
+      echo "WARN: Local packages YAML not found at $REPO_ROOT/foundation_documentation/local_packages.yaml"
+      echo "Remediation: run 'bash delphi-ai/verify_context.sh --repair' or 'bash delphi-ai/tools/verify_package_registry.sh --project-root $REPO_ROOT'"
+      VERIFY_ISSUES=$((VERIFY_ISSUES + 1))
     fi
   else
     echo "Local packages YAML: OK"
   fi
 fi
+
+if [ "$VERIFY_ISSUES" -gt 0 ]; then
+  echo "Environment Verification: FAILED ($VERIFY_ISSUES issue(s))"
+  exit 1
+fi
+
 echo "Environment Verified: PACED-Ready."

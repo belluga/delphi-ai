@@ -23,7 +23,7 @@ MIRRORS: tuple[Mirror, ...] = (
     Mirror(
         key="shared-initialization-readiness",
         kind="model_decision",
-        source="rules/docker/shared/initialization-readiness-model-decision.md",
+        source="rules/core/initialization-readiness-model-decision.md",
         destination=".clinerules/model-decision/shared-initialization-readiness.md",
         title="Initialization Readiness (Model Decision)",
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-environment-readiness.md`\n",
@@ -31,14 +31,14 @@ MIRRORS: tuple[Mirror, ...] = (
     Mirror(
         key="shared-workflow-definition",
         kind="model_decision",
-        source="rules/docker/shared/workflow-definition-model-decision.md",
+        source="rules/core/workflow-definition-model-decision.md",
         destination=".clinerules/model-decision/shared-workflow-definition.md",
         title="Workflow Definition (Model Decision)",
     ),
     Mirror(
         key="shared-session-lifecycle",
         kind="model_decision",
-        source="rules/docker/shared/session-lifecycle-model-decision.md",
+        source="rules/core/session-lifecycle-model-decision.md",
         destination=".clinerules/model-decision/shared-session-lifecycle.md",
         title="Session Lifecycle (Model Decision)",
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-session-lifecycle.md`\n",
@@ -46,7 +46,7 @@ MIRRORS: tuple[Mirror, ...] = (
     Mirror(
         key="shared-delphi-project-setup",
         kind="model_decision",
-        source="rules/docker/shared/delphi-project-setup-model-decision.md",
+        source="rules/core/delphi-project-setup-model-decision.md",
         destination=".clinerules/model-decision/shared-delphi-project-setup.md",
         title="Delphi Project Setup (Model Decision)",
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-delphi-project-setup.md`\n",

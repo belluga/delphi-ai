@@ -19,7 +19,7 @@ When defining or editing a workflow:
   - explicit `APROVADO` gate;
   - Decision Adherence Gate before delivery;
   - Cline advisory-only planning boundary.
-- Place stack-specific rules under the appropriate stack folder; shared rules go in `rules/docker/shared/` (symlinked to other stacks).
+- Place cross-stack rules in `rules/core/`. Place stack-specific rules in `rules/stacks/<stack>/`, and use `rules/stacks/<stack>/shared/` only for stack-scoped shared rules.
 - Remove or archive obsolete workflows/rules/skills together to avoid drift.
 
 ## Rationale

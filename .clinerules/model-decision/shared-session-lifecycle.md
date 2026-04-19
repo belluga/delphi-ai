@@ -1,4 +1,4 @@
-<!-- Generated from `rules/docker/shared/session-lifecycle-model-decision.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
+<!-- Generated from `rules/core/session-lifecycle-model-decision.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Session Lifecycle (Model Decision)
 

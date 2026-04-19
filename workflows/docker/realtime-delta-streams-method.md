@@ -11,7 +11,7 @@ Specify realtime SSE streams that deliver delta updates for paginated feeds (eve
 - `delphi-ai/system_architecture_principles.md` (P-15 Deterministic Pagination + Delta Streams).
 - Current contracts in `foundation_documentation/endpoints_mvp_contracts.md`.
 - Relevant route files under `routes/api/`.
-- Related rules to load: `rules/docker/shared/core-instructions-always-on.md`, `rules/docker/shared/project-mandate-always-on.md`.
+- Related rules to load: `rules/core/core-instructions-always-on.md`, `rules/core/project-mandate-always-on.md`.
 
 ## Steps
 1. Confirm the list endpoint remains page-based and define its filters.

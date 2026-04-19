@@ -28,4 +28,4 @@ Foundation docs are the contract source for all stacks. Keeping them synchronize
 ## Notes
 Apply stack-specific rules (Flutter/Laravel glob rules) alongside this sync rule to ensure code and documentation stay in lockstep.
 
-Also apply the TODO-Driven Execution Rule (`rules/docker/shared/todo-driven-execution-model-decision.md`) so tactical TODOs define scope and decisions before implementation begins.
+Also apply the TODO-Driven Execution Rule (`rules/core/todo-driven-execution-model-decision.md`) so tactical TODOs define scope and decisions before implementation begins.
