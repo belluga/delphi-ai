@@ -125,17 +125,25 @@ if [ -d "$SCRIPT_ROOT/.claude" ]; then
 fi
 
 # Package Registry Verification
+# Ecosystem YAML lives in delphi-ai (PACED governance)
+if [ -f "$SCRIPT_ROOT/config/ecosystem_packages.yaml" ]; then
+  echo "Ecosystem packages YAML: OK"
+else
+  echo "WARN: Ecosystem packages YAML not found at $SCRIPT_ROOT/config/ecosystem_packages.yaml"
+fi
+
+# Local YAML lives in foundation_documentation (project data)
 if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/foundation_documentation" ]; then
-  if [ ! -f "$REPO_ROOT/foundation_documentation/package_registry.md" ]; then
-    echo "WARN: Package registry not found. Creating from template..."
-    if [ -f "$SCRIPT_ROOT/templates/package_registry_template.md" ]; then
-      cp "$SCRIPT_ROOT/templates/package_registry_template.md" "$REPO_ROOT/foundation_documentation/package_registry.md"
-      echo "Package registry created at foundation_documentation/package_registry.md"
+  if [ ! -f "$REPO_ROOT/foundation_documentation/local_packages.yaml" ]; then
+    echo "WARN: Local packages YAML not found. Generating..."
+    if [ -f "$SCRIPT_ROOT/tools/verify_package_registry.sh" ]; then
+      bash "$SCRIPT_ROOT/tools/verify_package_registry.sh" --project-root "$REPO_ROOT" 2>/dev/null || true
+      echo "Local packages YAML generated at foundation_documentation/local_packages.yaml"
     else
-      echo "WARN: Template not found at $SCRIPT_ROOT/templates/package_registry_template.md"
+      echo "WARN: verify_package_registry.sh not found — cannot generate local_packages.yaml"
     fi
   else
-    echo "Package registry: OK"
+    echo "Local packages YAML: OK"
   fi
 fi
 echo "Environment Verified: PACED-Ready."

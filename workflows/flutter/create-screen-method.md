@@ -15,7 +15,7 @@ Scaffold a new feature screen following the Feature-First architecture with prop
 ## Steps
 
 ### 0. Package-First Gate
-Read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides UI components, controllers, or shared widgets that cover this screen's functionality. If a matching library exists, extend it instead of creating new screen-level code. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+Read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and check whether an existing Flutter library already provides UI components, controllers, or shared widgets that cover this screen's functionality. If a matching library exists, extend it instead of creating new screen-level code. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 
 ### 1. Create Feature Directory Structure
 ```

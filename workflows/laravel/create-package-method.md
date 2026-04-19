@@ -104,7 +104,7 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
 - Run full Laravel suite (`php artisan test`) as final gate for important milestones.
 
 13. Consolidate in proprietary packages checklist.
-- Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` to regenerate `foundation_documentation/package_registry.md`.
+- Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` to regenerate `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml`.
 - Verify the new package appears in the checklist with correct status.
 - If this is an ecosystem-wide package (published for cross-project reuse), complete the publication steps before this consolidation.
 - This step is mandatory for both local project packages and ecosystem packages.
@@ -125,7 +125,7 @@ python3 delphi-ai/skills/wf-laravel-create-package-method/scripts/assert_package
 - `composer run architecture:guardrails` passes.
 - Targeted tests pass.
 - Full Laravel suite passes.
-- Package appears in `foundation_documentation/package_registry.md` checklist (auto-generated).
+- Package appears in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` checklist (auto-generated).
 
 ## Output
 - Decoupled package with explicit contracts/adapters boundaries.

@@ -1,0 +1,55 @@
+# Ecosystem Packages Registry
+# Authority: paced.core.package-first
+#
+# This file is the single source of truth for ecosystem-level (global)
+# proprietary packages published by the organization.
+#
+# The verify_package_registry.sh script reads this file to identify
+# ecosystem packages in project manifests (pubspec.yaml / composer.json).
+#
+# Local (project-bound) packages are NOT listed here — they are
+# auto-detected from packages/ directories and tracked in
+# foundation_documentation/package_registry.md per project.
+#
+# To register a new ecosystem package:
+#   1. Add an entry below under the appropriate stack.
+#   2. Run verify_package_registry.sh in each consuming project.
+#
+# To promote a local package to ecosystem:
+#   See paced.core.package-first rule for criteria and procedure.
+
+vendor_prefix: belluga
+
+flutter:
+  - name: event_tracker_handler
+    description: Multi-provider event tracking (Firebase Analytics, Mixpanel, webhooks)
+    pub_dev: https://pub.dev/packages/event_tracker_handler
+    repository: null  # private or not yet public on GitHub
+
+  - name: stream_value
+    description: Lightweight state management wrapping StreamController/StreamBuilder
+    pub_dev: https://pub.dev/packages/stream_value
+    repository: https://github.com/belluga/stream_value
+
+  - name: value_object_pattern
+    description: Value Objects pattern implementation
+    pub_dev: https://pub.dev/packages/value_object_pattern
+    repository: null  # private or not yet public on GitHub
+
+  - name: push_handler
+    description: Firebase Messaging push UI handler with layouts and action routing
+    pub_dev: https://pub.dev/packages/push_handler
+    repository: https://github.com/belluga/push_handler
+
+  - name: belluga_admin_ui
+    description: Reusable admin UI primitives for Belluga apps
+    pub_dev: https://pub.dev/packages/belluga_admin_ui
+    repository: null  # private or not yet public on GitHub
+
+laravel:
+  # Add Laravel ecosystem packages here as they are published
+  # Example:
+  # - name: belluga/belluga-core
+  #   description: Core utilities for Belluga Laravel apps
+  #   packagist: null
+  #   repository: https://github.com/belluga/belluga-core

@@ -12,7 +12,7 @@ A implementação de qualquer funcionalidade significativa deve considerar delib
 - **Anti-Pattern (Premature Abstraction):** A abstração nunca deve ser forçada. Se for artificial ou imatura, mantenha a implementação local.
 
 ## Workflow Enforcement
-1. **Proprietary Package Scan:** Before implementing any feature, the agent must consult the auto-generated checklist at `foundation_documentation/package_registry.md` and read the README of relevant proprietary packages. See companion rule `paced.core.package-first`.
+1. **Proprietary Package Scan:** Before implementing any feature, the agent must consult the ecosystem & local package YAMLs at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and read the README of relevant proprietary packages. See companion rule `paced.core.package-first`.
 2. **Planning:** TODOs de planejamento de features devem incluir uma seção `Ecosystem Impact Analysis` e um `Package-First Assessment`.
 3. **Constitution:** O `project_constitution.md` deve listar os candidatos identificados para reuso.
 4. **Extraction:** A extração para pacotes deve ocorrer quando a estabilidade da abstração for comprovada em pelo menos um uso real.

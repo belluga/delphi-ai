@@ -65,7 +65,7 @@ Create or refactor a Flutter package or library so it follows the proprietary pa
    - Host app builds successfully with the new dependency.
 
 9. Consolidate in proprietary packages checklist.
-   - Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` to regenerate `foundation_documentation/package_registry.md`.
+   - Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` to regenerate `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml`.
    - Verify the new package appears as `[x]` (in use) in the checklist.
    - If this is an ecosystem-wide package (published for cross-project reuse), complete publication steps before this consolidation.
    - This step is mandatory for both local project packages and ecosystem packages.
@@ -80,7 +80,7 @@ Create or refactor a Flutter package or library so it follows the proprietary pa
 - `flutter analyze` passes for the package.
 - Package tests pass.
 - Host app builds successfully.
-- Package appears in `foundation_documentation/package_registry.md` checklist as `[x]`.
+- Package appears in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` checklist as `[x]`.
 
 ## Output
 - Flutter package with clear public API boundary.

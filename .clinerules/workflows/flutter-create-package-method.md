@@ -11,7 +11,7 @@ Ensure Flutter packages follow the proprietary package-first architecture with c
 ## Steps
 
 ### Step 0: Package-First Gate
-Read the proprietary packages checklist at `foundation_documentation/package_registry.md` and confirm no existing package already covers this capability. If one does, extend it instead. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+Read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and confirm no existing package already covers this capability. If one does, extend it instead. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 
 ### Step 1: Classify Package Category
 - `core`: Foundation utilities (networking, auth, storage, logging).
@@ -54,7 +54,7 @@ Read the proprietary packages checklist at `foundation_documentation/package_reg
 
 ### Step 9: Consolidate in Proprietary Packages Checklist
 - Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>`.
-- Verify the new package appears as `[x]` in `foundation_documentation/package_registry.md`.
+- Verify the new package appears as `[x]` in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml`.
 - If ecosystem-wide package, complete publication steps before consolidation.
 - This step is mandatory for both local and ecosystem packages.
 
@@ -67,4 +67,4 @@ Read the proprietary packages checklist at `foundation_documentation/package_reg
 - `flutter analyze` passes.
 - Package tests pass.
 - Host app builds successfully.
-- Package appears as `[x]` in `foundation_documentation/package_registry.md` checklist.
+- Package appears as `[x]` in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` checklist.

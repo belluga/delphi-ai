@@ -27,7 +27,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 - Use `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-laravel-path>` when exact-lookup or repository/controller lookup paths were changed.
 
 ## Procedure
-1. **Package-First gate** – read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Laravel package already provides the capability this endpoint needs. If a matching package exists, extend it instead of creating new host-level services. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+1. **Package-First gate** – read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and check whether an existing Laravel package already provides the capability this endpoint needs. If a matching package exists, extend it instead of creating new host-level services. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
 2. **Profile alignment** – select `Operational / Coder` with `laravel` scope, review the relevant `project_constitution.md` rules first, and note roadmap items only when strategic follow-up is in scope.
 3. **Define contract**
    - Document request/response schema in `foundation_documentation/domain_entities.md` and the relevant module docs before coding.

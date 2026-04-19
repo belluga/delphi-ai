@@ -54,16 +54,20 @@ When adding or revising realtime feed behavior (SSE streams, delta updates, or p
 
 When planning implementation of any new feature, endpoint, domain, screen, controller, service, repository, or utility:
 
-- Read the auto-generated checklist at `foundation_documentation/package_registry.md`.
-- Review **all three sections**: Ecosystem (Global), Local Laravel, Local Flutter.
-- `[x]` packages are in use — **use directly**. Read their README to understand the API.
-- `[ ]` packages are available but not in use — **recommend adoption**. Read their README to evaluate fit.
+- Read **two YAML files** to identify proprietary packages:
+  - `delphi-ai/config/ecosystem_packages.yaml` — Ecosystem (Global) packages.
+  - `foundation_documentation/local_packages.yaml` — Local (Project-Bound) packages.
+- If `local_packages.yaml` is missing, run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` first.
+- For ecosystem packages: check if already a dependency in the project manifest.
+- For local packages: `in_use: true` → **use directly**. `in_use: false` → **recommend adoption**.
+- **Read the README** of each relevant package to understand its API.
 - Apply **tier-appropriate autonomy**:
   - **Local** (in `packages/`, path dep): Treat as code. Modify freely, breaking changes OK — fix callers in same PR.
-  - **Ecosystem** (Belluga org repo, VCS dep): Can modify, but version and evaluate cross-project impact.
+  - **Ecosystem** (Belluga org, VCS/registry dep): Can modify, but version and evaluate cross-project impact.
   - **External** (pub.dev, Packagist, etc.): Do not modify. Wrap in adapter if behavior needs to change.
 - Record a Package-First Assessment in the TODO (include tier classification).
-- After creating a new package, run `bash delphi-ai/tools/verify_package_registry.sh` to update the checklist.
+- After creating a new package, run `bash delphi-ai/tools/verify_package_registry.sh` to update `local_packages.yaml`.
+- If ecosystem-level, add entry to `delphi-ai/config/ecosystem_packages.yaml`.
 - See canonical rule: `rules/core/package-first-model-decision.md`.
 
 ## Delphi Project Setup

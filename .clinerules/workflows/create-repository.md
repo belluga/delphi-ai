@@ -25,7 +25,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 
 
 ### Step 0: Package-First Gate
-Read the proprietary packages checklist at `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides the data access layer for this domain. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
+Read the proprietary packages checklist at `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` and check whether an existing Flutter library already provides the data access layer for this domain. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
 
 
 ### Step 1: Define Domain Contract
