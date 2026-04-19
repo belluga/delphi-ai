@@ -25,6 +25,10 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 
 ## Procedure
 
+### Step 0: Package-First Gate
+Read `foundation_documentation/package_registry.md` and check whether an existing Laravel package already owns this domain. If the domain belongs to a package, implement there. Record the Package-First Assessment. See `paced.core.package-first`.
+
+
 ### Step 1: Persona Alignment
 
 - Run Persona Selection (Laravel Engineer)

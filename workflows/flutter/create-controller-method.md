@@ -21,23 +21,24 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 - Treat the helper as a checklist generator only; controller ownership, state shape, and DI decisions remain in this workflow.
 
 ## Procedure
-1. **Document intent** – note the controller’s responsibilities in the module doc and Flutter roadmap if it affects API contracts or shared behaviour.
-2. **File location** – create the controller under `lib/presentation/.../screens/<screen>/controllers/` (or feature-level controllers folder if shared).
-3. **Class structure**
+1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides a controller, service, or utility that covers this functionality. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+2. **Document intent** – note the controller's responsibilities in the module doc and Flutter roadmap if it affects API contracts or shared behaviour.
+3. **File location** – create the controller under `lib/presentation/.../screens/<screen>/controllers/` (or feature-level controllers folder if shared).
+4. **Class structure**
    - Implement `Disposable` when using `StreamValue` or other resources.
    - Inject repositories/services via constructor; resolve with GetIt.
    - Controllers (and domain services they call) are the *only* presentation-layer actors allowed to talk to repositories or infrastructure adapters. Widgets, routes, and helper builders must depend on controller APIs instead of touching data sources.
-4. **State management**
+5. **State management**
    - Expose state via `StreamValue<T>` fields (with default values when appropriate).
    - Provide intent methods (e.g., `loadData`, `applyDecision`) that update these streams.
-5. **UI controllers** – if `TextEditingController`, `ScrollController`, etc. are needed, instantiate and dispose them inside the controller (`onDispose`). Widgets obtain them via getters.
-6. **BuildContext independence** – controllers must not receive `BuildContext`. Any navigation/dialog work happens in widgets via callbacks.
-7. **DI registration** – register the controller in the feature module (`GetIt.registerFactory` or `registerLazySingleton`) and ensure the ModuleScope provides it.
-8. **Realtime delta handling (when applicable)** – if the feature has SSE delta streams:
+6. **UI controllers** – if `TextEditingController`, `ScrollController`, etc. are needed, instantiate and dispose them inside the controller (`onDispose`). Widgets obtain them via getters.
+7. **BuildContext independence** – controllers must not receive `BuildContext`. Any navigation/dialog work happens in widgets via callbacks.
+8. **DI registration** – register the controller in the feature module (`GetIt.registerFactory` or `registerLazySingleton`) and ensure the ModuleScope provides it.
+9. **Realtime delta handling (when applicable)** – if the feature has SSE delta streams:
    - Maintain a paginated cache in the controller and apply delta updates by `id`.
    - On stream reconnect, re-fetch the first page to resync.
-9. **Tests/analyzer** – add controller tests if behaviour is complex; run `fvm flutter analyze`.
-10. **Race-condition validation (when applicable)** – if the controller owns async actions that can be retriggered or reordered in flight, pair the work with `frontend-race-condition-validation`.
+10. **Tests/analyzer** – add controller tests if behaviour is complex; run `fvm flutter analyze`.
+11. **Race-condition validation (when applicable)** – if the controller owns async actions that can be retriggered or reordered in flight, pair the work with `frontend-race-condition-validation`.
 
 ## Outputs
 - Controller file with documented responsibilities and StreamValue exposure.

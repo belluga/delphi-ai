@@ -19,15 +19,16 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 - Backend/API contracts for the new entity, if available.
 
 ## Procedure
-1. **Run Profile Selection** – confirm we’re acting as `Operational / Coder` with `flutter` scope.
-2. **Document first**
+1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Flutter library or core module already covers this domain or a closely related one. If a matching library exists, extend it. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+2. **Run Profile Selection** – confirm we're acting as `Operational / Coder` with `flutter` scope.
+3. **Document first**
    - Add/extend the domain entry in `foundation_documentation/domain_entities.md` (purpose, invariants, value objects).
    - Update the relevant module docs and `foundation_documentation/system_roadmap.md` entry.
    - Record any cross-stack impact in the shared roadmap entry instead of a stack-specific shadow roadmap.
-3. **Scaffold the domain directory**
+4. **Scaffold the domain directory**
    - Create `lib/domain/<domain_name>/` with `value_objects/`, `projections/`, and entity file(s).
    - Implement the aggregate using ValueObjects (per Section 4 & 5 of the architecture doc). Add TODOs for attributes pending backend support.
-4. **Define projections**
+5. **Define projections**
    - Place resumes/summaries in `lib/domain/<domain_name>/projections/`.
    - Ensure projections expose UI-ready primitives and enforce “projection diligence” (widgets/controllers never reformat data).
 5. **Repository contract**

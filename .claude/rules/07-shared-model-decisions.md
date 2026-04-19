@@ -50,6 +50,16 @@ When adding or revising realtime feed behavior (SSE streams, delta updates, or p
 - Document SSE routes, event types, and resync behavior in `foundation_documentation/endpoints_mvp_contracts.md`.
 - Block SSE additions that do not include a paginated list source of truth.
 
+## Package-First Verification
+
+When planning implementation of any new feature, endpoint, domain, screen, controller, service, repository, or utility:
+
+- Read `foundation_documentation/package_registry.md` and search for packages/libraries whose purpose overlaps with the planned work.
+- If a matching package exists, extend it instead of creating parallel implementations in the host app.
+- Record a Package-First Assessment in the TODO (registry consulted, matching packages, decision, rationale).
+- After creating a new package or library, register it in the registry immediately.
+- See canonical rule: `rules/core/package-first-model-decision.md`.
+
 ## Delphi Project Setup
 
 When setting up, re-initializing, or verifying the Delphi framework in a downstream project:

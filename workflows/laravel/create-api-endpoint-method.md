@@ -27,8 +27,9 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
 - Use `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-laravel-path>` when exact-lookup or repository/controller lookup paths were changed.
 
 ## Procedure
-1. **Profile alignment** – select `Operational / Coder` with `laravel` scope, review the relevant `project_constitution.md` rules first, and note roadmap items only when strategic follow-up is in scope.
-2. **Define contract**
+1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Laravel package already provides the capability this endpoint needs. If a matching package exists, extend it instead of creating new host-level services. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+2. **Profile alignment** – select `Operational / Coder` with `laravel` scope, review the relevant `project_constitution.md` rules first, and note roadmap items only when strategic follow-up is in scope.
+3. **Define contract**
    - Document request/response schema in `foundation_documentation/domain_entities.md` and the relevant module docs before coding.
   - If the endpoint changes project-level inter-module rules, ownership boundaries, or systemic invariants, record the constitutional impact in the TODO and hand off to `Strategic / CTO-Tech-Lead` for the actual `project_constitution.md` update.
    - For Cloudflare-fronted environments, define edge-vs-app responsibility explicitly:
@@ -54,7 +55,7 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - Classify the endpoint access pattern as `exact-lookup|bounded-list|search|aggregation|mutation`.
    - If the endpoint or client path needs exact lookup by `slug|id|uuid|code|handle|key`, require a direct indexed lookup or dedicated endpoint/contract; do not normalize page-walk or list-scan fallbacks.
    - Record expected index/constraint support and any max page-size / sort / filter invariants that materially affect query shape.
-3. **Route planning + domain matrix gate**
+4. **Route planning + domain matrix gate**
    - **Separate domain scope from auth scope (do not mix):**
      - Domain decides which route sets are reachable (main domain → landlord; tenant domain → tenant + account).
      - Auth/abilities decide who may access a reachable endpoint (landlord user vs account user).
@@ -74,13 +75,13 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
      - If tenant‑admin can create “on behalf of” an account/profile, ensure the owner is explicitly captured and that
        **account‑admin views only their own records** (no cross‑account bleed).
      - When public lists support account filtering, allow both account‑level and profile‑level filters if the domain uses 1:1 profiles.
-4. **Controller + service logic**
+5. **Controller + service logic**
    - Keep controllers lightweight (validation, request handling). Extract business rules into dedicated services/actions when logic grows.
    - Ensure validation rules enforce the documented bounds (P‑14).
-5. **Sanctum + policies**
+6. **Sanctum + policies**
    - Update abilities/policies if new permissions are required. Document them in the affected module docs.
    - **Ability catalog sync gate:** every newly introduced ability string must be registered in `config/abilities.php` when wildcard (`*`) permissions are expanded into explicit token abilities.
-6. **Tests**
+7. **Tests**
    - Add/extend feature tests covering happy paths, validation errors, and ability checks.
    - If public reads exist, add tests that private entities never leak into public routes.
    - If “create on behalf” is supported, add tests proving items appear only in the target account’s admin scope.
@@ -90,13 +91,13 @@ Add or modify Laravel API endpoints (controller + routes) while honoring the doc
    - For concurrency-sensitive writes, run `backend-concurrency-idempotency-validation`; prefer real concurrent probes such as `5`, `10`, and `20` requests instead of relying only on single-request tests.
    - For throttling/challenge behavior, add tests covering legitimate retry safety (avoid false-positive lockouts).
    - Add infrastructure/security tests (or deployment checks) validating direct-origin denial and spoofed client-IP header rejection when not from trusted proxies.
-7. **Documentation + roadmap sync**
+8. **Documentation + roadmap sync**
    - Update `foundation_documentation/system_roadmap.md` only when the endpoint change creates or changes strategic follow-up, sequencing, or cross-stack planning.
    - Record the durable contract, routing, controller, and permission changes in the affected module docs.
    - Record project-level inter-module or systemic rule changes as a strategic handoff for `project_constitution.md`; do not apply constitution edits directly from `Operational / Coder`.
    - If the touched module area is still marked `Partial`, migrate that touched legacy scope into the module as part of the same TODO.
    - If SSE was added, document event types + minimal payloads in `foundation_documentation/endpoints_mvp_contracts.md`.
-8. **Verification**
+9. **Verification**
    - Run `composer test` or targeted suites; optionally hit endpoints via Postman/cURL or contract tests.
    - Run architecture guardrails (`composer run architecture:guardrails`) as mandatory static compliance gate.
    - API-security lint gate (mandatory when hardening policy changes):

@@ -22,6 +22,11 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 
 ## Procedure
 
+
+### Step 0: Package-First Gate
+Read `foundation_documentation/package_registry.md` and check whether an existing Flutter library already provides a controller or service for this functionality. If a matching library exists, extend it. Record the Package-First Assessment. See `paced.core.package-first`.
+
+
 ### Step 1: Document Intent
 
 Note the controller's responsibilities in:

@@ -19,26 +19,27 @@ Introduce or extend a Laravel domain aggregate following the current MongoDB + S
 - Existing DocumentModels, migrations, factories/seeders related to the domain.
 
 ## Procedure
-1. **Profile alignment** – run Profile Selection as `Operational / Coder` with `laravel` scope and review roadmap entries only when strategic follow-up is part of the change.
-2. **Document first**
+1. **Package-First gate** – read `foundation_documentation/package_registry.md` and check whether an existing Laravel package already owns this domain or a closely related one. If the domain belongs to a package, implement there. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+2. **Profile alignment** – run Profile Selection as `Operational / Coder` with `laravel` scope and review roadmap entries only when strategic follow-up is part of the change.
+3. **Document first**
    - Add/expand the domain entry in `foundation_documentation/domain_entities.md` (fields, invariants, collections).
    - Update `foundation_documentation/system_roadmap.md` and any affected module docs with the planned work and cross-stack follow-up.
-3. **Plan schema + validations**
+4. **Plan schema + validations**
    - Determine collection name, embedded documents, indexes, and size constraints (per P‑14).
    - Draft migration/update scripts under `database/migrations/landlord|tenant` or package migration directories when the domain is package-owned.
    - For tenant-scoped domains, enforce Spatie tenant migration flow (`tenant_migration_paths` + tenant connection/context).
    - Do not create indexes in runtime request/query paths; indexes must be provisioned via migration/provisioning flow.
-4. **Implement DocumentModel**
+5. **Implement DocumentModel**
    - Create/extend `App\Models\Landlord|Tenants\...` using `DocumentModel`, `SoftDeletes`, and relevant traits (UsesTenantConnection, HasSlug, etc.).
    - Define `$fillable`, `$casts`, relationships, scopes, and helper methods consistent with existing models.
-5. **Seeders/factories** (if needed)
+6. **Seeders/factories** (if needed)
    - Update seeder classes to provision required documents for bootstrap flows.
-6. **Controllers / services**
+7. **Controllers / services**
    - Ensure existing controllers reference the new model; keep logic thin by extracting reusable actions into Services when possible.
-7. **Tests & validation**
+8. **Tests & validation**
    - Add/extend feature tests covering new endpoints or behaviors.
    - Re-run `composer test` or targeted suites as appropriate.
-8. **Documentation + roadmap sync**
+9. **Documentation + roadmap sync**
    - Record any pending backend work for Flutter in the roadmap (e.g., API blueprints that need client coordination).
    - Record schema/index and domain-behavior changes in the affected module docs.
    - If the touched module area is still marked `Partial`, migrate that touched legacy scope into the module as part of the same TODO.

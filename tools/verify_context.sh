@@ -124,4 +124,18 @@ if [ -d "$SCRIPT_ROOT/.claude" ]; then
   fi
 fi
 
+# Package Registry Verification
+if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/foundation_documentation" ]; then
+  if [ ! -f "$REPO_ROOT/foundation_documentation/package_registry.md" ]; then
+    echo "WARN: Package registry not found. Creating from template..."
+    if [ -f "$SCRIPT_ROOT/templates/package_registry_template.md" ]; then
+      cp "$SCRIPT_ROOT/templates/package_registry_template.md" "$REPO_ROOT/foundation_documentation/package_registry.md"
+      echo "Package registry created at foundation_documentation/package_registry.md"
+    else
+      echo "WARN: Template not found at $SCRIPT_ROOT/templates/package_registry_template.md"
+    fi
+  else
+    echo "Package registry: OK"
+  fi
+fi
 echo "Environment Verified: PACED-Ready."
