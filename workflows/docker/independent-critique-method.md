@@ -5,21 +5,15 @@ description: Define the canonical no-context auxiliary critique gate for higher-
 # Method: Independent No-Context Critique
 
 ## Purpose
-Provide a repeatable challenge lane for tactical TODOs whose complexity or blast radius is high enough that a fresh reviewer with no inherited thread context materially improves the quality of planning and critique.
+Provide the canonical planning-side challenge lane for a tactical TODO once `wf-docker-audit-escalation-method` has derived the critique floor.
 
 This method exists to expose weak assumptions, blind spots, and plan-review gaps before implementation starts. It is a challenge mechanism, not an authority transfer.
 It must also challenge whether the planned path is sound for performance, elegant, and structurally sound rather than reliant on brittle workarounds or structural shortcuts.
 
 ## When It Applies
-- Always `required` for tactical TODOs classified as `big`.
-- `Required` for `medium` tactical TODOs when any of the following are true:
-  - blast radius is `cross-module`;
-  - the TODO changes public contract/API/schema/route/auth/payment behavior;
-  - the TODO changes runtime/infra-sensitive paths such as queue/worker/realtime/ingress/runtime configuration;
-  - the TODO intentionally supersedes canonical module decisions;
-  - the Plan Review Gate contains any `high` severity issue card.
-- `Recommended` for other `medium` tactical TODOs.
-- `Not needed` only for low-risk `small` TODOs unless the user explicitly asks for an external challenge anyway.
+- Run this method whenever `wf-docker-audit-escalation-method` marks `critique` as `required|recommended`.
+- The deterministic floor currently makes critique the baseline planning challenge lane for tactical TODOs.
+- The audit-escalation guard decides whether the package depth stays `baseline` or becomes `expanded`.
 
 ## Inputs
 - Tactical TODO under `foundation_documentation/todos/active/`.
@@ -55,7 +49,8 @@ It must also challenge whether the planned path is sound for performance, elegan
   - `follow_up_task_id`
 
 ## Procedure
-1. Record the critique decision in the TODO as `required|recommended|not_needed` with rationale.
+1. Use the latest successful `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
+   - If implementation or planning changed any trigger materially, rerun the audit-escalation guard before trusting the old critique decision.
 2. Build the bounded critique package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 3. Run one fresh auxiliary critique with no inherited thread context.
@@ -83,6 +78,9 @@ It must also challenge whether the planned path is sound for performance, elegan
    - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
    - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind critique ...` when metrics are in scope.
 9. If the critique reveals contract changes, module supersedes, or approval-material plan changes, refresh the TODO and request renewed approval before implementation.
+10. Treat `audit-protocol-triple-review` as additive only.
+   - It may coexist with this critique lane.
+   - It does not silently replace this planning challenge gate.
 
 ## Outputs
 - A recorded critique decision (`required|recommended|not_needed`) with rationale.

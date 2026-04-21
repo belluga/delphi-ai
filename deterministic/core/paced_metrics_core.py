@@ -12,7 +12,7 @@ from typing import Iterable
 from jsonschema import Draft202012Validator
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = REPO_ROOT / "schemas"
 
 

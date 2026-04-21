@@ -111,6 +111,8 @@ def classify_artifact_state(todo_path: Path) -> str:
     normalized = str(todo_path).replace("\\", "/")
     if "/todos/active/" in normalized:
         return "active"
+    if "/todos/promotion_lane/" in normalized:
+        return "promotion_lane"
     if "/todos/completed/" in normalized:
         return "completed"
     if "/todos/ephemeral/" in normalized:

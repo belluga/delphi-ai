@@ -135,13 +135,11 @@ If the change restores previously documented or verifiably working behavior (inc
 - Include `Failure Modes & Edge Cases` and `Residual Unknowns / Risks`.
 - Challenge weak or low-confidence assumptions; either strengthen them with evidence, promote them to contract decisions, or block implementation.
 - `small` tasks can use a shortened version if risk is low and scope is local.
-- Run the **Independent No-Context Critique Gate** after the review package is coherent:
-  - `required` for `big`
-  - `required` for `medium` when the TODO has `cross-module` blast radius, public contract/schema/API/auth/payment/runtime-sensitive change, intentional module supersede, or any `high` severity issue card
-  - `recommended` for other `medium`
-  - `not_needed` only for low-risk `small`
+- Populate the TODO `Audit Trigger Matrix` and run `wf-docker-audit-escalation-method` before trusting critique/test/final-review decisions.
+- Treat the guard result as the minimum audit floor: manual escalation may be stricter, never weaker.
+- Use the derived `critique` decision to execute the Independent No-Context Critique Gate.
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- When the user or TODO explicitly requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), use `audit-protocol-triple-review` as the canonical orchestration surface instead of ad hoc reviewer sequencing.
+- When the derived floor marks `triple_review` as `required|recommended`, use `audit-protocol-triple-review` as the canonical additive orchestration surface instead of ad hoc reviewer sequencing.
 - Record the audit session path plus the decisive round summary (`clean`, `needs_resolution`, or `needs_adjudication`) in the TODO evidence whenever that protocol is used.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
 - Ask for findings first, ordered by severity, with no implementation.
@@ -192,7 +190,8 @@ If the change restores previously documented or verifiably working behavior (inc
   - a better alternative is proposed,
   and the TODO decisions/baseline are updated plus renewed **APROVADO** is obtained.
 - If any module decision is `Regression`, delivery is invalid until an intentional supersede is approved and reflected in module consolidation targets.
-- Run a dedicated Independent Test Quality Audit after implementation whenever tests changed or test confidence is material to delivery.
+- Use the latest successful audit-escalation guard output as the minimum decision authority for test-quality audit, final review, security review, performance/concurrency, and verification-debt lanes.
+- If implementation changed any audit trigger materially after planning, rerun the guard before trusting the earlier decision set.
 
 ### Gate O — Security Risk Assessment (mandatory before delivery)
 - Record risk level as `none|low|medium|high`.
@@ -355,4 +354,5 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 ## Notes
 - This rule is stack-agnostic and applies to Flutter/Laravel/Web as long as the implementation changes project artifacts.
 - Cline plans and recommendations are advisory by default; implementation authority remains the Delphi TODO + **APROVADO** + Decision Adherence Gate.
-- After completion, the TODO should be moved to `foundation_documentation/todos/completed/` (or marked canceled).
+- After implementation authority is closed locally but promotion/lane follow-through still remains, move the TODO to `foundation_documentation/todos/promotion_lane/`.
+- After the required promotion lane targets are complete, move the TODO to `foundation_documentation/todos/completed/` (or mark canceled).

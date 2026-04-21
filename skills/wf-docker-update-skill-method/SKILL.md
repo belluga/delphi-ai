@@ -27,25 +27,28 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
    - Link any existing canonical support and record the preferred support shape when no tool exists yet.
 3. Ensure frontmatter `name` exactly matches the folder name.
 4. If the skill is already exposed to Cline, or the change requires a new Cline mirror, sync it with `bash delphi-ai/tools/sync_cline_skill_mirrors.sh <skill-name>`.
-5. If the skill was created outside canonical surfaces (for example under `~/.codex/skills/**`), migrate it into `delphi-ai/skills/<skill-name>/SKILL.md`, sync any required Cline mirror with `bash delphi-ai/tools/sync_cline_skill_mirrors.sh <skill-name>`, and remove/deprecate the out-of-surface copy to avoid drift.
-6. If the skill introduces or changes operational behavior, update compatible rule/workflow files too:
+5. If the skill is tracked in the public Codex mirror set (`bash delphi-ai/tools/list_public_codex_skill_mirrors.sh`), or the change requires adding it there, sync it with `bash delphi-ai/tools/sync_codex_public_skill_mirrors.sh <skill-name>`.
+6. If the skill was created outside canonical surfaces (for example under `~/.codex/skills/**`), migrate it into `delphi-ai/skills/<skill-name>/SKILL.md`, sync any required Cline/public mirror, and remove/deprecate the out-of-surface copy to avoid drift.
+7. If the skill introduces or changes operational behavior, update compatible rule/workflow files too:
    - Canonical (Codex/Antigravity): `delphi-ai/rules/**`, `delphi-ai/workflows/**`, and affected `delphi-ai/skills/rule-*` or `delphi-ai/skills/wf-*`.
    - Cline-compatible: `delphi-ai/.clinerules/model-decision/**`, `delphi-ai/.clinerules/glob/**`, `delphi-ai/.clinerules/manual/**`, `delphi-ai/.clinerules/workflows/**`.
    - After changing any curated canonical rule/workflow that has a generated `.clinerules` counterpart, run `bash delphi-ai/tools/sync_clinerules_mirrors.sh`.
-7. If changed behavior defines/changes an API contract pattern (for example PATCH semantics), consolidate all contract surfaces:
+8. If changed behavior defines/changes an API contract pattern (for example PATCH semantics), consolidate all contract surfaces:
    - Update `foundation_documentation/endpoints_mvp_contracts.md` conventions.
    - Update active tactical TODO decisions/tasks/validation gates with explicit convergence work for legacy areas.
    - Update endpoint-related Laravel workflow/skills surfaces so the rule is enforceable for `Cline | Codex | Antigravity`.
-8. If a new canonical pattern impacts existing code, add a mandatory side-job in the active TODO to align non-conforming areas (or record explicit exceptions with rationale/owner/next action).
-9. If the changed skill is a workflow skill (`wf-*`), ensure a canonical workflow file exists under `delphi-ai/workflows/**` and a Cline workflow counterpart exists under `delphi-ai/.clinerules/workflows/**`.
-10. Validate sync and compatibility:
+9. If a new canonical pattern impacts existing code, add a mandatory side-job in the active TODO to align non-conforming areas (or record explicit exceptions with rationale/owner/next action).
+10. If the changed skill is a workflow skill (`wf-*`), ensure a canonical workflow file exists under `delphi-ai/workflows/**` and a Cline workflow counterpart exists under `delphi-ai/.clinerules/workflows/**`.
+11. Validate sync and compatibility:
    - Downstream environment path: `bash delphi-ai/verify_context.sh` (read-only; use `--repair` only for Delphi-managed links/artifacts, then rerun plain verification) and `bash delphi-ai/verify_adherence_sync.sh`
    - Delphi self-maintenance path: `bash self_check.sh` plus any explicit mirror/counterpart diff checks that matter for the touched surfaces
-   - Optional explicit diff: `diff -u delphi-ai/skills/<skill-name>/SKILL.md delphi-ai/.cline/skills/<skill-name>/SKILL.md`
-11. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
+   - Optional explicit diffs:
+     - `diff -u delphi-ai/skills/<skill-name>/SKILL.md delphi-ai/.cline/skills/<skill-name>/SKILL.md`
+     - `diff -u delphi-ai/skills/<skill-name>/SKILL.md ~/.codex/skills/public/<skill-name>/SKILL.md` when the skill is listed by `list_public_codex_skill_mirrors.sh`
+12. Report changed files and explicitly confirm consolidation for `Cline | Codex | Antigravity`.
 
 ## Outputs
-- Updated skill in canonical and Cline-compatible locations.
+- Updated skill in canonical and Cline/public-compatible locations as applicable.
 - Updated skill-tooling register entry when the skill was created, reclassified, or materially changed in deterministic support expectations.
 - Related rules/workflows synchronized when needed.
 - Contract conventions and active TODO obligations synchronized when behavioral standards change.
@@ -53,6 +56,7 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 
 ## Validation
 - No mismatch between `delphi-ai/skills/<skill-name>/SKILL.md` and `delphi-ai/.cline/skills/<skill-name>/SKILL.md`.
+- If the skill is tracked in the public Codex mirror list, no mismatch between `delphi-ai/skills/<skill-name>/SKILL.md` and `~/.codex/skills/public/<skill-name>/SKILL.md`.
 - Materially changed skills are classified in `delphi-ai/skills/deterministic-tooling-register.md` with current support notes.
 - Workflow-skill counterparts exist in both canonical and Cline workflow surfaces.
 - For downstream environment runs, read-only `verify_context.sh` and `verify_adherence_sync.sh` exit successfully.

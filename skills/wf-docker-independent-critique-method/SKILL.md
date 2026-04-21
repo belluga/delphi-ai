@@ -6,11 +6,10 @@ description: "Workflow: MUST use whenever a tactical TODO needs an independent n
 # Method: Independent No-Context Critique
 
 ## Purpose
-Run a fresh external critique for higher-complexity or higher-impact tactical TODOs without contaminating the reviewer with the main thread context.
+Run the canonical planning-side critique lane once `wf-docker-audit-escalation-method` has derived the critique floor.
 
 ## Triggers
-- A tactical TODO is `big`.
-- A `medium` tactical TODO has high-impact signals such as cross-module blast radius, public contract/runtime-sensitive changes, intentional module supersede, or a `high` severity plan-review issue.
+- `wf-docker-audit-escalation-method` marks `critique` as `required|recommended`.
 - The user explicitly asks for an independent or no-context critique.
 
 ## Inputs
@@ -19,7 +18,7 @@ Run a fresh external critique for higher-complexity or higher-impact tactical TO
 - A bounded critique package (`bounded-file-set` or `bounded-summary`).
 
 ## Procedure
-1. Decide whether the critique gate is `required|recommended|not_needed`.
+1. Use the latest successful audit-escalation guard output as the minimum decision authority for this gate.
 2. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen decisions, approved scope boundary, assumptions preview, execution plan summary, material issue cards, residual risks, and existing waivers/blockers.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
@@ -29,6 +28,7 @@ Run a fresh external critique for higher-complexity or higher-impact tactical TO
 6. If a required critique still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy the gate.
 7. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
    - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
+8. Treat `audit-protocol-triple-review` as additive only; it does not silently replace this planning critique gate.
 
 ## Outputs
 - Critique gate decision with rationale.

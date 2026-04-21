@@ -15,15 +15,9 @@ It is stricter than generic final review: it is specifically about whether the t
 Gate-satisfying evidence must cover the full applicable `test-quality-audit` workload for the scoped stack and risk profile, not just a short answer to a few review questions.
 
 ## When It Applies
-- `Required` when any test file, assertion, fixture, runner, helper, or audit-relevant test logic changed.
-- `Required` when test confidence is materially part of delivery confidence, including:
-  - bugfix or regression work;
-  - behavior-defining changes;
-  - shared contract/API/schema changes;
-  - compatibility claims;
-  - critical user journeys.
-- `Recommended` for other TODOs that touch production behavior with non-trivial validation risk.
-- `Not needed` only for low-risk non-behavioral work with no meaningful test impact.
+- Run this method whenever `wf-docker-audit-escalation-method` marks `test_quality_audit` as `required|recommended`.
+- The audit-escalation guard is the minimum decision authority for whether this lane is needed.
+- If implementation changed test or delivery-risk triggers materially, rerun the audit-escalation guard before trusting the old decision.
 
 ## Inputs
 - Tactical TODO under `foundation_documentation/todos/active/`.
@@ -87,7 +81,7 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
   - `follow_up_task_id`
 
 ## Procedure
-1. Record the audit decision in the TODO as `required|recommended|not_needed` with rationale.
+1. Use the latest successful `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
 2. Build the bounded test-audit package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind test_quality_audit ...`.
 3. Run one fresh auxiliary audit with no inherited thread context.

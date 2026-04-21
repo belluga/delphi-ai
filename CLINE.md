@@ -41,8 +41,10 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `flutter-smell-mounted-checks` | Detects `mounted`/`context.mounted` checks as smell |
 | `flutter-smell-build-side-effects` | Detects side effects in build methods |
 | `flutter-widget-local-state-heuristics` | Defines boundary between ephemeral and controller-owned state |
+| `wf-docker-audit-escalation-method` | Deterministic audit-floor workflow for critique, final review, and specialized assurance lanes |
 | `wf-docker-update-skill-method` | Keeps Codex/Cline/Antigravity skills and workflow artifacts synchronized |
 | `wf-docker-todo-driven-execution-method` | TODO-driven execution workflow with module-anchor and consolidation gates |
+| `rule-docker-shared-audit-escalation-model-decision` | Enforces deterministic audit-floor derivation from the TODO trigger matrix before audit gates are trusted |
 | `rule-docker-shared-todo-driven-execution-model-decision` | Enforces TODO/APROVADO/adherence/module-consolidation gates before delivery |
 | `wf-laravel-create-api-endpoint-method` | Laravel endpoint workflow with domain matrix, ability-catalog sync, and PATCH contract gates |
 | `rule-laravel-shared-tenant-access-guardrails-model-decision` | Enforces tenant route guardrails + route-matrix and domain-param checks |
@@ -69,6 +71,7 @@ This file serves as the entry point for Cline to load the Delphi AI Co-Engineer 
 | `create-repository-method` | Method-suffixed repository workflow counterpart with explicit DAO/decoder transport boundary gates |
 | `docker-todo-driven-execution` | Enforce TODO, APROVADO, and Decision Adherence gates |
 | `docker-todo-driven-execution-method` | Method-suffixed counterpart for TODO, APROVADO, and module-consolidation gates |
+| `docker-audit-escalation-method` | Derive the minimum deterministic audit floor and place each audit at the correct TODO gate |
 | `docker-update-skill-method` | Update skills with cross-surface sync controls |
 | `laravel-create-package-method` | Create/refactor Laravel packages with explicit boundaries |
 
@@ -97,6 +100,7 @@ Use the smell detection skills:
   - active tactical TODO,
   - explicit `APROVADO` before project-modifying actions,
   - Decision Adherence Gate evidence before delivery.
+- Project-local orchestration rule: when subagents/worktrees are used, the orchestrator reconciles on a dedicated `reconcile/*` branch in the principal checkout(s); only worker/subagent lanes use isolated worktrees. Docker-backed tests and any tunnel/browser evidence must target that principal-checkout reconcile state.
 - See `.clinerules/model-decision/shared-todo-driven-execution.md` and `.clinerules/workflows/docker-todo-driven-execution.md`.
 
 ## Verification

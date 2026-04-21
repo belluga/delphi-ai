@@ -56,7 +56,7 @@ Progressive determinism is the operating model underneath PACED. It ensures:
 
 ### Deterministic Guards (Phase 0)
 The following guards are now active in the `deterministic/core/` directory:
-- `todo_completion_guard.py`: Enforces Definition of Done (DoD), validation steps, and gate resolution before a TODO can be closed.
+- `todo_completion_guard.py`: Enforces Definition of Done (DoD), validation steps, and close-claim coherence for TODOs in `promotion_lane/`, `completed/`, or otherwise claiming `Production-Ready`.
 - `finding_impact_classifier.py`: Analyzes code diffs to classify findings (Logic vs. Cosmetic) and prevents risky promotions.
 - `session_lock_manager.py`: Manages session state and prevents concurrent agent conflicts.
 - `metrics_consolidation_trigger.py`: Automatically extracts formalizable findings and populates the rule-events ledger.

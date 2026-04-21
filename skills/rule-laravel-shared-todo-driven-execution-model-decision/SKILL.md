@@ -353,4 +353,5 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 ## Notes
 - This rule is stack-agnostic and applies to Flutter/Laravel/Web as long as the implementation changes project artifacts.
 - Cline plans and recommendations are advisory by default; implementation authority remains the Delphi TODO + **APROVADO** + Decision Adherence Gate.
-- After completion, the TODO should be moved to `foundation_documentation/todos/completed/` (or marked canceled).
+- After implementation authority is closed locally but promotion/lane follow-through still remains, move the TODO to `foundation_documentation/todos/promotion_lane/`.
+- After the required promotion lane targets are complete, move the TODO to `foundation_documentation/todos/completed/` (or mark canceled).

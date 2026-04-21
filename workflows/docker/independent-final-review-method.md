@@ -5,20 +5,14 @@ description: Define the canonical no-context external final-review gate for impl
 # Method: Independent No-Context Final Review
 
 ## Purpose
-Provide a repeatable external review lane for implemented tactical TODOs whose complexity or impact is high enough that a fresh reviewer with no inherited thread context materially improves confidence before closure.
+Provide the canonical delivery-side external review lane for an implemented tactical TODO once `wf-docker-audit-escalation-method` has derived the final-review floor.
 
 This method critiques the delivered implementation and its evidence. It is not a late-stage redesign gate unless the reviewer finds a material defect or approval-breaking divergence.
 
 ## When It Applies
-- Always `required` for tactical TODOs classified as `big`.
-- `Required` for `medium` tactical TODOs when any of the following are true:
-  - blast radius is `cross-module`;
-  - the TODO changes public contract/API/schema/route/auth/payment behavior;
-  - the TODO changes runtime/infra-sensitive paths such as queue/worker/realtime/ingress/runtime configuration;
-  - the TODO intentionally supersedes canonical module decisions;
-  - the Plan Review Gate contains any `high` severity issue card.
-- `Recommended` for other `medium` tactical TODOs.
-- `Not needed` only for low-risk `small` TODOs unless the user explicitly asks for an external final review anyway.
+- Run this method whenever `wf-docker-audit-escalation-method` marks `final_review` as `required|recommended`.
+- The deterministic floor currently makes final review the baseline delivery-side challenge lane for tactical TODOs.
+- The audit-escalation guard decides whether the review package stays `baseline` or becomes `expanded`.
 
 ## Review Focus
 - decision adherence vs frozen baseline
@@ -69,7 +63,8 @@ The reviewer should not reopen the whole architecture by default. Only a materia
   - `follow_up_task_id`
 
 ## Procedure
-1. Record the final-review decision in the TODO as `required|recommended|not_needed` with rationale.
+1. Use the latest successful `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
+   - If implementation changed any trigger materially, rerun the audit-escalation guard before trusting the old final-review decision.
 2. Build the bounded final-review package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
 3. Run one fresh auxiliary final review with no inherited thread context.
@@ -104,6 +99,9 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - an implementation defect within approved scope, fix it and refresh the affected evidence;
    - an adherence break, block closure until the decision package is corrected or renewed approval is obtained;
    - a true approval-material scope/design change, refresh the TODO and request renewed `APROVADO` before continuing.
+10. Treat `audit-protocol-triple-review` as additive only.
+   - It may coexist with this final-review lane.
+   - It does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
 
 ## Outputs
 - A recorded final-review decision (`required|recommended|not_needed`) with rationale.

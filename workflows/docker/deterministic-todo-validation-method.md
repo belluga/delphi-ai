@@ -14,7 +14,7 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
 ## Triggers
 - A tactical TODO is created or materially updated and the team wants deterministic validation over gate/blocker/waiver structure.
 - CI / pre-merge needs objective blockers for TODO completeness.
-- A completed or `Production-Ready` TODO should be checked before closure claims are trusted.
+- A TODO in `promotion_lane/`, `completed/`, or otherwise claiming `Production-Ready` should be checked before closure claims are trusted.
 
 ## Inputs
 - A tactical TODO markdown file under `foundation_documentation/todos/**`
@@ -25,14 +25,14 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
    - Run:
      ```bash
      python3 delphi-ai/tools/todo_validation_bundle_export.py \
-       --todo foundation_documentation/todos/active/<lane>/<slug>.md \
+       --todo foundation_documentation/todos/<active|promotion_lane|completed>/<lane>/<slug>.md \
        --output foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json
      ```
 2. **Run deterministic validator**
    - Run:
      ```bash
      python3 delphi-ai/tools/todo_deterministic_validator.py \
-       --todo foundation_documentation/todos/active/<lane>/<slug>.md \
+       --todo foundation_documentation/todos/<active|promotion_lane|completed>/<lane>/<slug>.md \
        --bundle-output foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json \
        --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json \
        --events-jsonl foundation_documentation/artifacts/metrics/events/rule-events.jsonl

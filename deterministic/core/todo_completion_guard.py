@@ -2,9 +2,10 @@
 """Deterministic completion guard for tactical TODOs (Level 0 Scrutiny Edition).
 
 Supports two modes:
-  --todo <path>         Validate a single TODO file.
-  --all-completed       Scan ``todos/active/`` and validate every TODO.
-                        Exits 0 only if ALL active TODOs pass.
+  --todo <path>         Validate a single TODO file that is claiming local/final closure.
+  --all-completed       Scan ``todos/promotion_lane/`` and ``todos/completed/``,
+                        plus any TODO that still claims ``Production-Ready`` in place.
+                        Exits 0 only if ALL close-claim TODOs pass.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ except ImportError:
 # Constants
 RULE_ID = "paced.todo.completion-guard"
 SATISFYING_GATE_STATUSES = {"no_material_findings", "findings_integrated", "waived"}
+PROMOTION_LANE_STAGES = {"Local-Implemented", "Lane-Promoted"}
 
 
 def _load_namespace_gates() -> dict:
@@ -125,14 +127,22 @@ def validate_completion(todo_path: Path) -> dict:
                 "resolution_instruction": "Run the steps or document why they are not applicable."
             })
 
-        # 3. Delivery Stage
+        # 3. Delivery Stage / closure bucket coherence
         stage = bundle["delivery_status"]["stage"]
-        if stage != "Production-Ready":
+        artifact_state = bundle.get("artifact_state", "unknown")
+        if artifact_state == "promotion_lane" and stage not in PROMOTION_LANE_STAGES:
+            violations.append({
+                "section": "Delivery Status",
+                "code": "STAGE-NOT-PROMOTION-LANE-READY",
+                "message": f"Stage is '{stage}', expected one of {sorted(PROMOTION_LANE_STAGES)} while the TODO is in `promotion_lane/`.",
+                "resolution_instruction": "Use `Local-Implemented` or `Lane-Promoted` while promotion follow-through remains, or move the TODO to `completed/` once it is truly `Production-Ready`."
+            })
+        elif artifact_state != "promotion_lane" and stage != "Production-Ready":
             violations.append({
                 "section": "Delivery Status",
                 "code": "STAGE-NOT-READY",
                 "message": f"Stage is '{stage}', expected 'Production-Ready'.",
-                "resolution_instruction": "Update stage after verification."
+                "resolution_instruction": "Update stage after verification, or move the TODO into `promotion_lane/` if only lane promotion follow-through remains."
             })
 
         # 4. Mandatory Gates per Namespace
@@ -198,21 +208,53 @@ def validate_completion(todo_path: Path) -> dict:
         }
 
 
-def discover_active_todos(start_path: Path) -> list[Path]:
+def collect_close_claim_todos(todos_root: Path) -> list[Path]:
+    """Return tactical TODOs that are already in close-claim buckets.
+
+    This includes everything under ``promotion_lane/`` and ``completed/``, plus any
+    tactical TODO elsewhere that still declares ``Production-Ready``.
+    """
+    try:
+        import todo_validation_bundle_export as exporter
+    except ImportError:
+        exporter = None
+
+    discovered: list[Path] = []
+    for path in sorted(todos_root.rglob("*.md")):
+        normalized = str(path).replace("\\", "/")
+        if "/todos/ephemeral/" in normalized:
+            continue
+        if "/todos/promotion_lane/" in normalized or "/todos/completed/" in normalized:
+            discovered.append(path)
+            continue
+        if exporter is None:
+            continue
+        try:
+            bundle = exporter.build_bundle(path)
+        except Exception:
+            continue
+        if bundle.get("artifact_type") != "tactical_execution_contract":
+            continue
+        if bundle.get("delivery_status", {}).get("stage") == "Production-Ready":
+            discovered.append(path)
+    return discovered
+
+
+def discover_close_claim_todos(start_path: Path) -> list[Path]:
     """Walk upward from start_path to find the project root (contains foundation_documentation/)
-    and return all .md files under todos/active/."""
+    and return all close-claim TODOs."""
     search = start_path.resolve()
     for _ in range(10):
-        candidate = search / "foundation_documentation" / "todos" / "active"
+        candidate = search / "foundation_documentation" / "todos"
         if candidate.is_dir():
-            return sorted(candidate.rglob("*.md"))
+            return collect_close_claim_todos(candidate)
         if search.parent == search:
             break
         search = search.parent
     # Also try relative to CWD
-    cwd_candidate = Path.cwd() / "foundation_documentation" / "todos" / "active"
+    cwd_candidate = Path.cwd() / "foundation_documentation" / "todos"
     if cwd_candidate.is_dir():
-        return sorted(cwd_candidate.rglob("*.md"))
+        return collect_close_claim_todos(cwd_candidate)
     return []
 
 
@@ -225,7 +267,7 @@ if __name__ == "__main__":
     group.add_argument(
         "--all-completed",
         action="store_true",
-        help="Scan todos/active/ and validate all TODOs. Exit 0 only if ALL pass.",
+        help="Scan close-claim TODOs in promotion_lane/completed (plus in-place Production-Ready TODOs). Exit 0 only if ALL pass.",
     )
     args = parser.parse_args()
 
@@ -240,9 +282,9 @@ if __name__ == "__main__":
 
     # --all-completed mode
     script_dir = Path(__file__).resolve().parent
-    todos = discover_active_todos(script_dir)
+    todos = discover_close_claim_todos(script_dir)
     if not todos:
-        print("PACED Guard: No active TODOs found. Nothing to validate.")
+        print("PACED Guard: No promotion-lane/completed TODOs found. Nothing to validate.")
         sys.exit(0)
 
     all_passed = True
@@ -256,7 +298,7 @@ if __name__ == "__main__":
         summary.append(entry)
 
     if all_passed:
-        print(f"GO: All {len(todos)} active TODO(s) passed validation.")
+        print(f"GO: All {len(todos)} close-claim TODO(s) passed validation.")
         sys.exit(0)
     else:
         failed = [s for s in summary if s["status"] == "blocked"]

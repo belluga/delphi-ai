@@ -21,6 +21,14 @@ class Mirror:
 
 MIRRORS: tuple[Mirror, ...] = (
     Mirror(
+        key="shared-audit-escalation",
+        kind="model_decision",
+        source="rules/core/audit-escalation-model-decision.md",
+        destination=".clinerules/model-decision/shared-audit-escalation.md",
+        title="Audit Escalation (Model Decision)",
+        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-audit-escalation-method.md`\n",
+    ),
+    Mirror(
         key="shared-initialization-readiness",
         kind="model_decision",
         source="rules/core/initialization-readiness-model-decision.md",
@@ -44,12 +52,28 @@ MIRRORS: tuple[Mirror, ...] = (
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-session-lifecycle.md`\n",
     ),
     Mirror(
+        key="shared-todo-driven-execution",
+        kind="model_decision",
+        source="rules/core/todo-driven-execution-model-decision.md",
+        destination=".clinerules/model-decision/shared-todo-driven-execution.md",
+        title="TODO-Driven Execution (Model Decision)",
+        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-todo-driven-execution-method.md`\n",
+    ),
+    Mirror(
         key="shared-delphi-project-setup",
         kind="model_decision",
         source="rules/core/delphi-project-setup-model-decision.md",
         destination=".clinerules/model-decision/shared-delphi-project-setup.md",
         title="Delphi Project Setup (Model Decision)",
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-delphi-project-setup.md`\n",
+    ),
+    Mirror(
+        key="docker-audit-escalation-method",
+        kind="workflow",
+        source="workflows/docker/audit-escalation-method.md",
+        destination=".clinerules/workflows/docker-audit-escalation-method.md",
+        title="Workflow: Audit Escalation",
+        workflow_name="docker-audit-escalation-method",
     ),
     Mirror(
         key="docker-documentation-migration",
@@ -156,6 +180,14 @@ MIRRORS: tuple[Mirror, ...] = (
         workflow_name="docker-subagent-orchestration-method",
     ),
     Mirror(
+        key="docker-subagent-worktree-reconciliation-method",
+        kind="workflow",
+        source="workflows/docker/subagent-worktree-reconciliation-method.md",
+        destination=".clinerules/workflows/docker-subagent-worktree-reconciliation-method.md",
+        title="Workflow: Subagent Worktree Reconciliation",
+        workflow_name="docker-subagent-worktree-reconciliation-method",
+    ),
+    Mirror(
         key="docker-profile-selection",
         kind="workflow",
         source="workflows/docker/profile-selection-method.md",
@@ -234,6 +266,22 @@ MIRRORS: tuple[Mirror, ...] = (
         destination=".clinerules/workflows/create-repository-method.md",
         title="Workflow: Create Repository (Flutter)",
         workflow_name="create-repository-method",
+    ),
+    Mirror(
+        key="create-package-method",
+        kind="workflow",
+        source="workflows/flutter/create-package-method.md",
+        destination=".clinerules/workflows/create-package-method.md",
+        title="Workflow: Create or Refactor Flutter Package/Library",
+        workflow_name="create-package-method",
+    ),
+    Mirror(
+        key="flutter-create-package-method",
+        kind="workflow",
+        source="workflows/flutter/create-package-method.md",
+        destination=".clinerules/workflows/flutter-create-package-method.md",
+        title="Workflow: Create or Refactor Flutter Package/Library",
+        workflow_name="flutter-create-package-method",
     ),
     Mirror(
         key="laravel-create-api-endpoint",

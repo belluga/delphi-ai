@@ -346,10 +346,10 @@ if [ -d "$FOUNDATION_ROOT" ]; then
     add_issue coverage material "module docs missing or empty: foundation_documentation/modules/"
   fi
 
-  if [ -d "$FOUNDATION_ROOT/todos/active" ] && [ -d "$FOUNDATION_ROOT/todos/completed" ]; then
-    PROJECT_SURFACES+=("TODO directories present: foundation_documentation/todos/{active,completed}")
+  if [ -d "$FOUNDATION_ROOT/todos/active" ] && [ -d "$FOUNDATION_ROOT/todos/promotion_lane" ] && [ -d "$FOUNDATION_ROOT/todos/completed" ]; then
+    PROJECT_SURFACES+=("TODO directories present: foundation_documentation/todos/{active,promotion_lane,completed}")
   else
-    add_issue governance minor "TODO directories missing: foundation_documentation/todos/{active,completed}"
+    add_issue governance minor "TODO directories missing: foundation_documentation/todos/{active,promotion_lane,completed}"
   fi
 
   if [ -f "$ARTIFACTS_DIR/dependency-readiness.md" ]; then

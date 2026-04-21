@@ -217,11 +217,13 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - When subagents are used, prefer deriving a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind architecture_opinion ...` and merge structured reviewer output with `python3 delphi-ai/tools/subagent_review_merge.py ...`.
    - Require each additional opinion to compare the viable options on correctness, performance, elegance (simplicity/coherence/minimal incidental complexity), structural soundness, and operational fit.
    - Record each additional opinion in the TODO as `Integrated|Challenged|Deferred with rationale` before requesting approval.
-   - Run the **Independent No-Context Critique Gate** after the review package is coherent:
-     - `required` for `big`;
-     - `required` for `medium` when the TODO has `cross-module` blast radius, changes public contract/schema/API/auth/payment/runtime-sensitive behavior, intentionally supersedes canonical module decisions, or includes any `high` severity issue card;
-     - `recommended` for other `medium`;
-     - `not_needed` only for low-risk `small`.
+   - Populate the TODO `Audit Trigger Matrix` and run `wf-docker-audit-escalation-method`:
+     - `python3 delphi-ai/tools/audit_escalation_guard.py --todo <todo-path>`
+     - require `Overall outcome: go` before trusting any audit decision.
+   - Treat the guard result as the minimum audit floor:
+     - stricter manual escalation is allowed;
+     - weaker execution is forbidden.
+   - Use the derived `critique` decision to execute `wf-docker-independent-critique-method`.
    - Build a bounded critique package:
      - `bounded-file-set` when a small set of files can express the real review package;
      - `bounded-summary` when the relevant contract/plan/risk package is better represented structurally.
@@ -229,12 +231,11 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Use one fresh auxiliary critique with no inherited thread context; do not hand over the whole thread transcript.
    - If a subagent is available in the execution environment, the critique must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
    - When subagents are used, prefer deriving `subagent-critique-dispatch.{json,md}` with `subagent_review_dispatch.py` and merging reviewer JSON with `subagent_review_merge.py`.
-   - When the user or TODO explicitly requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), use `audit-protocol-triple-review` as the canonical orchestration surface instead of ad hoc reviewer sequencing.
-   - For that protocol, record the audit session path plus the decisive round summary (`clean`, `needs_resolution`, or `needs_adjudication`) in the TODO evidence.
+   - When the derived floor marks `triple_review` as `required|recommended`, use `audit-protocol-triple-review` as the canonical additive external audit path and record the audit session path plus decisive round summary in the TODO evidence.
    - Ask for findings first, ordered by severity, and keep the task critique-only.
    - Every critique must state whether the recommended path is acceptable for performance, whether it is elegant relative to the available alternatives, and whether it preserves structural soundness rather than relying on brittle workarounds or structural shortcuts.
    - If the first attempt fails or times out, retry once with a tighter package.
-   - If a `required` no-context critique still cannot be obtained, record a blocker or explicit waiver before approval; local self-critique is not equivalent.
+   - If the derived floor makes critique `required` and a true no-context critique still cannot be obtained, record a blocker or explicit waiver before approval; local self-critique is not equivalent.
    - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate, with explicit waiver reason, approval reference, mitigation, and follow-up ownership.
    - Resolve each material finding in the TODO as `Integrated|Challenged|Deferred with rationale`.
    - Auxiliary critique remains advisory; authority stays with the TODO, explicit approval, and adherence gates.
@@ -330,11 +331,9 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Run the `validation_steps` from the TODO (or explicitly report what cannot be run and why).
    - If the TODO includes any large or architectural change, require unit + widget + integration evidence for the affected critical paths before delivery closure.
    - If that architectural change is compatibility-critical or backend-coupled, run `test-creation-standard` plus `test-orchestration-suite` and require the relevant real-backend integration platform matrix; `blocked` is not delivery-ready.
-27. **Independent Test Quality Audit (required when tests changed or test confidence is material)**
-   - Determine the audit decision:
-     - `required` when any test file/assertion/fixture/runner logic changed, or when the TODO is a `bugfix/regression`, `behavior-defining` change, `architectural` change, `shared contract/API/schema` change, `compatibility` claim, or `critical-user-journey`;
-     - `recommended` for other TODOs that touch production behavior with non-trivial validation risk;
-     - `not_needed` only for low-risk non-behavioral work with no meaningful test impact.
+27. **Independent Test Quality Audit (deterministic floor from audit escalation)**
+   - Use the latest `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
+   - If implementation changed any audit trigger materially after planning, rerun the guard before trusting the existing decision.
    - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
    - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the five explicit review questions below.
    - Build a bounded audit package containing:
@@ -365,7 +364,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - stale tactical notes that should already have been promoted or removed.
    - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
    - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
-29. **Independent No-Context Final Review (required for `big`; conditional for `medium/high-impact`)**
+29. **Independent No-Context Final Review (deterministic floor from audit escalation)**
    - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
       - implemented diff or bounded touched-surface set;
       - adherence tables;
@@ -374,11 +373,8 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
       - security/performance evidence;
       - verification-debt evidence;
       - residual risks and waivers.
-   - Final-review decision policy:
-     - `required` for `big`;
-     - `required` for `medium` when the TODO has `cross-module` blast radius, changes public contract/schema/API/auth/payment/runtime-sensitive behavior, intentionally supersedes canonical module decisions, or includes any `high` severity issue card;
-     - `recommended` for other `medium`;
-     - `not_needed` only for low-risk `small`.
+   - Use the latest `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
+   - If implementation changed any audit trigger materially after planning, rerun the guard before trusting the existing decision.
    - Build a bounded final-review package:
      - `bounded-file-set` when the implemented surfaces and evidence are small enough to inspect directly;
      - `bounded-summary` when the delivery packet is broader but can be represented structurally without losing concrete evidence.
@@ -386,7 +382,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Use one fresh auxiliary final review with no inherited thread context; do not hand over the whole thread transcript.
    - If a subagent is available in the execution environment, the final review must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
    - When subagents are used, prefer deriving `subagent-final-review-dispatch.{json,md}` with `subagent_review_dispatch.py` and merging reviewer JSON with `subagent_review_merge.py`.
-   - When the delivery requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
+   - When the derived floor marks `triple_review` as `required|recommended`, run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
    - Record the audit session path and the clean/latest round summary in the TODO before claiming the gate is satisfied.
    - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
    - If the first attempt fails or times out, retry once with a tighter package.
@@ -414,7 +410,11 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Update TODO/module cross-links if files moved from `active` to `completed`.
 32. **Close TODO**
    - Only mark delivery complete when all baseline decisions are `Adherent` or explicitly superseded via approved decision changes.
-   - Update the TODO with outcome notes and move it to `foundation_documentation/todos/completed/` (or mark canceled).
+   - Update the TODO with outcome notes.
+   - If implementation authority is closed locally but promotion/lane follow-through still remains, move the same governing TODO to `foundation_documentation/todos/promotion_lane/`.
+   - Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion and `github-main-promotion-orchestrator` only when the user explicitly requests `main`.
+   - Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active work item being designed, repaired, or changed.
+   - When the required promotion lane targets are complete, move it to `foundation_documentation/todos/completed/` (or mark canceled).
 
 ## Outputs
 - For the Profile-Scoped Capped TODO lane: a clear no-code ledger with active profile, purpose, non-authority statement, and next decision/review front.

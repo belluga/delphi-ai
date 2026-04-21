@@ -7,6 +7,7 @@ description: "Orchestrate Laravel/Flutter/Web test execution with explicit suite
 
 ## Purpose
 Provide a single, consistent workflow to execute and validate tests across Laravel, Flutter, and Web with explicit gates, fix-loop controls, and anti-false-positive safeguards.
+The execution target is promotion-grade confidence for the touched TODO/behavior set even when the user only asks for local delivery or dev/stage promotion. Do not treat partial confidence from one representative path as equivalent to delivery confidence.
 
 ## Scope Controls
 - This skill coordinates execution; it does not bypass TODO governance for code/doc changes.
@@ -27,14 +28,21 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 - `GF-04` Required promotion gates cannot pass with flaky outcomes (including retry-only success).
 - `GF-05` Artifact fallback directories that mask permission/ownership faults are forbidden.
 - `GF-06` Contract/payload parse failures in reference assertions are hard-fail conditions.
+- `GF-07` Preflight must resolve the canonical execution owner for each stage (for example safe Laravel runner vs host CLI vs compose service) before any command is launched.
+- `GF-08` Browser/public validation must resolve the canonical landlord/tenant targets from project-owned artifacts before execution; when multiple plausible tenants/domains exist and none is designated, the stage is `blocked`, not guessed.
+- `GF-09` Required browser/device journeys must come from project-owned execution evidence (active TODO, validation matrix, dependency-readiness artifact, or equivalent), not ad hoc memory.
+- `GF-10` Browser/device stages must run against the same reconciliation/build state the user will validate; if the chosen domain/tunnel/device target is not serving the current state, the stage is `blocked`.
+- `GF-10A` A reachable browser target serving stale build metadata is not an immediate final blocker. First run the project-owned web build/publish script documented by the active TODO, dependency-readiness register, README, or equivalent project artifact, then re-probe the target metadata. Classify the browser stage as `blocked` only if the build/publish script fails, the target cannot serve the rebuilt bundle, or the metadata remains stale after the rebuild/reprobe cycle.
+- `GF-11` Stateful mutation browser suites are allowed only on non-`main` lanes unless the project defines a stricter rule. Never mutate `main` for validation.
+- `GF-12` Delivery confidence is measured against the full set of materially distinct behaviors touched by the active TODO slice or reconcile wave. A green result on one representative flow does not close sibling behaviors that were also touched.
 
 ## Orchestration Flow (Baseline)
-1. Preflight environment gate (backend reachability, domain overrides, device/emulator availability, writable artifact/runtime directories, required secrets/vars).
+1. Preflight environment gate (backend reachability, domain overrides, canonical execution owner per stage, preferred public validation targets, device/emulator availability, writable artifact/runtime directories, required secrets/vars).
 2. Laravel contract/feature tests (local Mongo).
 3. Flutter unit + widget tests.
 4. Flutter integration tests on web (real backend when compatibility matters).
 5. Flutter integration tests on mobile (real backend when compatibility matters).
-6. Build web bundle.
+6. Build/publish web bundle through the project-owned script before browser validation. If a reachable browser target reports stale metadata, rerun that canonical script and re-probe before classifying the target as blocked.
 7. Web navigation tests from `tools/flutter/web_app_tests` via the dedicated runner (`tools/flutter/run_web_navigation_smoke.sh`), not from inside `web-app`.
 8. Compatibility gate: bundle metadata matches pinned Flutter commit.
 9. Final report with decision-adherence status.
@@ -51,6 +59,7 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 1. **Plan and freeze**
    - Record `D-RUN-*` decisions for required suites, sequence, fail-fast behavior, and acceptance criteria.
    - Record required platform matrix and required user journeys.
+   - Enumerate the materially distinct touched behavior families from the active TODO set or reconciliation wave. Representative sampling is invalid unless the baseline explicitly says those behaviors share the exact same risk surface and that reduction was approved.
 2. **Execute stages in order**
    - Stop on first failed gate.
 3. **Fix loop control**
@@ -88,6 +97,7 @@ Provide a single, consistent workflow to execute and validate tests across Larav
   - (equivalent canonical source: `delphi-ai/scripts/laravel/run_laravel_tests_safe.sh`)
 - Direct `docker compose exec ... php artisan test` is forbidden in orchestration flows unless the command explicitly overrides `APP_URL/APP_HOST/DB_URI/DB_URI_LANDLORD/DB_URI_TENANTS` to local-safe values.
 - If the safe runner blocks for non-local hosts/URIs, stop and fix environment inputs; do not bypass.
+- Do not start with host `php`, ad hoc Docker images, or version-guessing when the project already exposes a canonical Laravel runtime owner.
 
 ## Flutter Stage
 - Run unit + widget first.
@@ -105,7 +115,13 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 - Execute browser tests only through the dedicated runner `tools/flutter/run_web_navigation_smoke.sh`, which uses `tools/flutter/web_app_smoke_runner/` as the Playwright runtime.
 - `web-app` is the built bundle output only; do not treat it as the source location for navigation tests.
 - Browser runners must establish preflight readiness before execution (artifact directory writable, host reachable, required env present). If that readiness is not met, stop with `blocked`; do not treat the result as a product failure.
-- Validate home load, primary route, and one critical CTA flow.
+- Resolve landlord/tenant browser targets from project-owned evidence first: active TODO, `foundation_documentation/artifacts/dependency-readiness.md`, README, or explicit user direction. If the project validates against published local-public domains (for example cloudflared/ingress hosts), use those instead of internal container hostnames.
+- When Flutter web code changed and the browser target consumes a published bundle, run the canonical project web publish/build script for the current reconciliation branch before browser validation or Playwright reruns.
+- If a reachable browser target exposes an older bundle/commit/build SHA than the current execution state, the required fix-loop is: identify the project-owned publish script from the active TODO/readiness docs, run it for the current lane, re-probe local output and browser-facing targets for the expected metadata, and only then continue to Playwright. Do not mark browser validation as `blocked` merely because the first probe found stale metadata when the documented publish script has not been run yet.
+- Record the build/publish command and metadata reprobe result as explicit browser-stage evidence. Examples of acceptable evidence include a `window.__WEB_BUILD_SHA__`, manifest/build metadata, service-worker version, or another project-defined bundle identifier matching the current checkout.
+- Validate the full set of required journeys derived from the active TODO set or validation matrix. Do not stop at one generic CTA if multiple touched behaviors require evidence.
+- Treat each materially distinct touched behavior family as open until direct evidence or an explicit approved blocker exists. Shared plumbing proof can raise confidence, but it cannot close untouched families on its own.
+- Confirm the browser target is serving the current reconciliation/build state before reading failures as product failures.
 - Enforce metadata pin check before declaring success.
 
 ## Required Outputs
@@ -121,5 +137,6 @@ Provide a single, consistent workflow to execute and validate tests across Larav
 - Requested suites completed with expected gate behavior.
 - Compatibility gates satisfied when in scope.
 - No required stage remains `blocked` unless baseline explicitly excludes it.
+- Evidence supports promotion-grade confidence for all materially distinct behaviors touched by the active TODO slice, or the remaining gaps are recorded as explicit blockers/waivers rather than implied confidence.
 - Decision-adherence table fully resolved.
 - Any residual risk documented explicitly.

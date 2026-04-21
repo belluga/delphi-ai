@@ -13,19 +13,21 @@ This applies only to tactical TODOs from `templates/todo_template.md`, not to pr
 1. Export normalized bundle:
    ```bash
    python3 delphi-ai/tools/todo_validation_bundle_export.py \
-     --todo foundation_documentation/todos/active/<lane>/<slug>.md \
+     --todo foundation_documentation/todos/<active|promotion_lane|completed>/<lane>/<slug>.md \
      --output foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json
    ```
 2. Run deterministic validator:
    ```bash
    python3 delphi-ai/tools/todo_deterministic_validator.py \
-     --todo foundation_documentation/todos/active/<lane>/<slug>.md \
+     --todo foundation_documentation/todos/<active|promotion_lane|completed>/<lane>/<slug>.md \
      --bundle-output foundation_documentation/artifacts/tmp/<slug>-todo-validation-bundle.json \
      --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json \
      --events-jsonl foundation_documentation/artifacts/metrics/events/rule-events.jsonl
    ```
 3. Treat `FAIL` as objective structural blocker until the TODO fields are corrected.
 4. Keep the markdown canonical; never patch the derived bundle instead of the TODO.
+
+Use this workflow before trusting closure claims from `promotion_lane/`, `completed/`, or any TODO that already declares `Production-Ready`.
 
 ## Current Deterministic Coverage
 - `Delivery Status Canon` subset: current delivery stage, next exact step, and blocked-state support

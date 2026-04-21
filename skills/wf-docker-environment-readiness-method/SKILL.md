@@ -53,13 +53,27 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 5. **Symlinked scripts**
    - Verify helper scripts exist and resolve (`flutter-app/scripts` must symlink to `../delphi-ai/scripts/flutter`). If missing, recreate the link so Flutter uses the canonical build helpers.
 
-6. **README alignment**
+6. **Validation topology snapshot**
+   - When local validation, browser checks, or build/publish flows are in scope, explicitly resolve:
+     - the canonical runtime owner for Laravel/PHP/Composer/test commands (`host` vs safe runner vs compose service);
+     - the canonical build/publish wrapper and output target for Flutter/web;
+     - the canonical public validation URLs (for example landlord + tenant domains) and any preferred validation tenant/subdomain.
+   - Source priority:
+     - active TODO / validation notes;
+     - `foundation_documentation/artifacts/dependency-readiness.md`;
+     - README, compose files, `.env`, and project-owned safe runners/wrappers;
+     - direct user clarification when the repo still leaves multiple plausible targets.
+   - If multiple tenant/domain candidates remain and no project-owned artifact selects one, stop and ask instead of guessing.
+   - Prefer project-owned safe runners when they exist (for example `laravel-app/scripts/delphi/run_laravel_tests_safe.sh` for local Laravel tests, `flutter-app/scripts/build_web.sh` for web bundle publish).
+   - If these topology facts are stable and likely to matter across sessions, record or refresh them in `foundation_documentation/artifacts/dependency-readiness.md` before moving on.
+
+7. **README alignment**
    - If the user is in setup mode, walk through the relevant README sections (env variables, submodule init, Docker commands) and confirm each step is complete. Use the README as the canonical checklist for new environments.
 
-7. **Report status**
-   - Summarise any discrepancies (missing submodule, wrong remote, permission issue) and the remediation steps provided.
+8. **Report status**
+   - Summarise any discrepancies (missing submodule, wrong remote, permission issue, unresolved runtime owner, missing validation target) and the remediation steps provided.
    - Only proceed with further DevOps work (builds, deployments, CI tasks) after the environment is confirmed healthy.
 
 ## Outputs
-- Status summary of submodules, permissions, and scripts.
+- Status summary of submodules, permissions, scripts, and resolved validation topology.
 - Action items (if any) for the user to fix before running builds/deploys.

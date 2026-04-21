@@ -6,6 +6,7 @@
   "required": [
     "schema_version",
     "todo_path",
+    "namespace",
     "artifact_type",
     "artifact_state",
     "delivery_status",
@@ -15,9 +16,13 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "todo-validation-bundle-v1"
+      "const": "todo-validation-bundle-v2"
     },
     "todo_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "namespace": {
       "type": "string",
       "minLength": 1
     },
@@ -31,6 +36,7 @@
     "artifact_state": {
       "enum": [
         "active",
+        "promotion_lane",
         "completed",
         "ephemeral",
         "unknown"
@@ -141,23 +147,9 @@
     },
     "gates": {
       "type": "object",
-      "required": [
-        "critique",
-        "test_quality_audit",
-        "final_review"
-      ],
-      "properties": {
-        "critique": {
-          "$ref": "#/$defs/gate_record"
-        },
-        "test_quality_audit": {
-          "$ref": "#/$defs/gate_record"
-        },
-        "final_review": {
-          "$ref": "#/$defs/gate_record"
-        }
-      },
-      "additionalProperties": false
+      "additionalProperties": {
+        "$ref": "#/$defs/gate_record"
+      }
     }
   },
   "additionalProperties": false,
@@ -178,11 +170,8 @@
       ],
       "properties": {
         "gate_id": {
-          "enum": [
-            "critique",
-            "test_quality_audit",
-            "final_review"
-          ]
+          "type": "string",
+          "minLength": 1
         },
         "section_present": {
           "type": "boolean"

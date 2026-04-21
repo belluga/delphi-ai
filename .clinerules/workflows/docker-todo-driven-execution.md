@@ -51,8 +51,9 @@ Guarantee implementation follows approved TODO decisions and that delivery is bl
 
 7. **Validation and closure**
 - Run validation steps.
-- Promote stable conceptual outcomes/decisions into canonical module docs before closing TODO.
-- Close/move TODO only when all baseline decisions are adherent or superseded by approved decision changes.
+- Promote stable conceptual outcomes/decisions into canonical module docs before moving the TODO.
+- Move the TODO to `promotion_lane/` when implementation authority is closed locally but promotion follow-through still remains.
+- Move the TODO to `completed/` only when all baseline decisions are adherent or superseded by approved decision changes and the required promotion targets are complete.
 
 ## Outputs
 

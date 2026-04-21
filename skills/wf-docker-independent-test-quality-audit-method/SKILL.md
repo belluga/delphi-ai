@@ -9,8 +9,7 @@ description: "Workflow: MUST use whenever the delivery needs a dedicated no-cont
 Run a fresh external audit focused on whether the tests that justify delivery confidence are actually trustworthy.
 
 ## Triggers
-- Test files, assertions, fixtures, runners, or related test logic changed.
-- The TODO is a bugfix/regression, behavior-defining change, shared contract/API/schema change, compatibility claim, or critical user journey.
+- `wf-docker-audit-escalation-method` marks `test_quality_audit` as `required|recommended`.
 - The user explicitly asks for a heavy external audit of tests.
 
 ## Inputs
@@ -21,7 +20,7 @@ Run a fresh external audit focused on whether the tests that justify delivery co
 - Frozen expectations / Definition of Done.
 
 ## Procedure
-1. Decide whether the gate is `required|recommended|not_needed`.
+1. Use the latest successful audit-escalation guard output as the minimum decision authority for this gate.
 2. Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
 3. Build a bounded package; do not pass the whole session transcript.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind test_quality_audit ...`.

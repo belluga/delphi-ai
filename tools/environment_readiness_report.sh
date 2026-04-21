@@ -372,6 +372,47 @@ if [ -f "$REPO_ROOT/.env" ]; then
   fi
 fi
 
+validation_output=()
+validation_status="REVIEW"
+dependency_readiness_file="$REPO_ROOT/foundation_documentation/artifacts/dependency-readiness.md"
+if [ -f "$dependency_readiness_file" ]; then
+  validation_output+=("dependency-readiness artifact present: foundation_documentation/artifacts/dependency-readiness.md")
+  if have_cmd rg; then
+    while IFS= read -r line; do
+      validation_output+=("$line")
+    done < <(rg -n 'https?://|build_web\.sh|run_laravel_tests_safe\.sh|web-app|tenant|subdomain|cloudflare|cloudflared' "$dependency_readiness_file" || true)
+  else
+    while IFS= read -r line; do
+      validation_output+=("$line")
+    done < <(grep -En 'https?://|build_web\.sh|run_laravel_tests_safe\.sh|web-app|tenant|subdomain|cloudflare|cloudflared' "$dependency_readiness_file" || true)
+  fi
+else
+  validation_output+=("dependency-readiness artifact not present")
+fi
+
+if [ -e "$REPO_ROOT/laravel-app/scripts/delphi/run_laravel_tests_safe.sh" ] || [ -e "$DEL_ROOT/scripts/laravel/run_laravel_tests_safe.sh" ]; then
+  validation_output+=("Laravel local-safe runner available: ./laravel-app/scripts/delphi/run_laravel_tests_safe.sh")
+fi
+
+if [ -e "$REPO_ROOT/flutter-app/scripts/build_web.sh" ]; then
+  validation_output+=("Flutter publish wrapper available: ./flutter-app/scripts/build_web.sh")
+fi
+
+if [ -f "$REPO_ROOT/.env" ]; then
+  domain_hint="$(read_dotenv_value "DOMAIN" "$REPO_ROOT/.env" 2>/dev/null || true)"
+  if [ -n "$domain_hint" ]; then
+    validation_output+=("Landlord host hint from .env DOMAIN: https://$domain_hint")
+  fi
+  tunnel_hint="$(read_dotenv_value "CLOUDFLARE_TUNNEL_TOKEN" "$REPO_ROOT/.env" 2>/dev/null || true)"
+  if [ -n "$tunnel_hint" ]; then
+    validation_output+=("Cloudflare tunnel token configured in .env")
+  fi
+fi
+
+if [ "${#validation_output[@]}" -gt 0 ]; then
+  print_step "Validation topology hints" "$validation_status" "$(printf '%s\n' "${validation_output[@]}")"
+fi
+
 printf 'Warnings:\n'
 if [ "${#WARNINGS[@]}" -eq 0 ]; then
   printf '  - none\n'

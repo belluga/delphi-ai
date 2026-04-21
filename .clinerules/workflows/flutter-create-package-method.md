@@ -1,70 +1,92 @@
 ---
-name: flutter-create-package-method
-description: "Create/refactor Flutter packages under packages/ with canonical README, proper exports, and checklist consolidation."
+name: "flutter-create-package-method"
+description: "Create or refactor Flutter packages/libraries under packages/ with canonical README, proper exports, and checklist consolidation."
 ---
+
+<!-- Generated from `workflows/flutter/create-package-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
 
 # Workflow: Create or Refactor Flutter Package/Library
 
 ## Purpose
-Ensure Flutter packages follow the proprietary package-first architecture with clear API boundaries, canonical documentation, and checklist consolidation.
+Create or refactor a Flutter package or library so it follows the proprietary package-first architecture, has a canonical README, proper public API exports, and is consolidated in the proprietary packages checklist.
 
-## Steps
+## Triggers
+- New Flutter package under `packages/`.
+- Extraction of reusable logic from `lib/` into a new package.
+- Package-First Assessment decision: "Create new package."
+- Refactor of existing package to improve contracts or API surface.
 
-### Step 0: Package-First Gate
-Run `bash delphi-ai/tools/query_packages.sh --project-root <path> --search "<keyword>"` to query proprietary packages and confirm no existing package already covers this capability. If one does, extend it instead. Record the Package-First Assessment in the TODO. See `paced.core.package-first`.
+## Inputs
+- Target package path (`packages/<package_name>`).
+- Root `pubspec.yaml` for dependency declaration.
+- Canonical README template (`delphi-ai/templates/package_readme_template.md`).
 
-### Step 1: Classify Package Category
-- `core`: Foundation utilities (networking, auth, storage, logging).
-- `feature`: Feature-specific reusable logic extracted from screens/domains.
-- `shared`: Cross-feature contracts, models, and UI components.
-- `infra`: Infrastructure adapters (APIs, databases, device services).
+## Procedure
 
-### Step 2: Create Package Structure
-- Create `packages/<package_name>/` with standard Flutter package layout.
-- Add `pubspec.yaml` with name, description, and dependencies.
-- Create `lib/<package_name>.dart` as the barrel export file.
-- Use `src/` for internal implementation.
+1. Classify package category.
+   - `core`: Foundation utilities (networking, auth, storage, logging).
+   - `feature`: Feature-specific reusable logic extracted from screens/domains.
+   - `shared`: Cross-feature contracts, models, and UI components.
+   - `infra`: Infrastructure adapters (APIs, databases, device services).
 
-### Step 3: Define Public API
-- Export all public classes, functions, and types via the barrel file.
-- Do not export internal implementation details.
+2. Create package structure.
+   - Create `packages/<package_name>/` with standard Flutter package layout.
+   - Add `pubspec.yaml` with package name, description, and dependencies.
+   - Create `lib/<package_name>.dart` as the barrel export file.
 
-### Step 4: Implement Package Logic
-- Keep all logic within `packages/<package_name>/lib/`.
-- Do not reference host app code from within the package.
-- Use dependency injection for host-specific concerns.
+3. Define public API.
+   - All public classes, functions, and types must be exported via the barrel file.
+   - Internal implementation details must not be exported.
+   - Use `src/` for internal implementation, `lib/<package_name>.dart` for public API.
 
-### Step 5: Add Tests
-- Create `packages/<package_name>/test/` with unit tests for public API.
-- Tests must run independently of the host app.
+4. Implement package logic.
+   - Keep all logic within `packages/<package_name>/lib/`.
+   - Do not reference host app code (`lib/` of the root project) from within the package.
+   - Use dependency injection for host-specific concerns.
 
-### Step 6: Declare as Dependency
-- Add path dependency in root `pubspec.yaml`.
-- Run `flutter pub get` to validate resolution.
+5. Add tests.
+   - Create `packages/<package_name>/test/` with unit tests for public API.
+   - Ensure tests can run independently of the host app.
 
-### Step 7: Create Canonical README
-- Copy template from `delphi-ai/templates/package_readme_template.md`.
-- Fill all sections: Purpose, Public API, Usage, Extending, Dependencies.
-- README must be faithful to implemented code.
+6. Declare as dependency in root `pubspec.yaml`.
+   - Add path dependency:
+     ```yaml
+     dependencies:
+       <package_name>:
+         path: packages/<package_name>
+     ```
+   - Run `flutter pub get` to validate resolution.
 
-### Step 8: Run Validation
-- `flutter analyze` passes with no errors in the package.
-- Package tests pass.
-- Host app builds successfully with the new dependency.
+7. Create canonical README.
+   - Copy template from `delphi-ai/templates/package_readme_template.md`.
+   - Fill all sections: Purpose, Public API, Usage, Extending, Dependencies.
+   - README must be faithful to implemented code — no aspirational content.
 
-### Step 9: Consolidate in Proprietary Packages Checklist
-- Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>`.
-- Verify the new package appears as `[x]` in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml`.
-- If ecosystem-wide package, complete publication steps before consolidation.
-- This step is mandatory for both local and ecosystem packages.
+8. Run validation.
+   - `flutter analyze` passes with no errors in the package.
+   - Package tests pass.
+   - Host app builds successfully with the new dependency.
+
+9. Consolidate in proprietary packages checklist.
+   - Run `bash delphi-ai/tools/verify_package_registry.sh --project-root <path>` to regenerate `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml`.
+   - Verify the new package appears as `[x]` (in use) in the checklist.
+   - If this is an ecosystem-wide package (published for cross-project reuse), complete publication steps before this consolidation.
+   - This step is mandatory for both local project packages and ecosystem packages.
 
 ## Validation
 - Package exists under `packages/<package_name>/` with valid `pubspec.yaml`.
 - Barrel export file exists at `lib/<package_name>.dart`.
 - No references to host app `lib/` code from within the package.
-- Package declared as path dependency in root `pubspec.yaml`.
+- Package is declared as path dependency in root `pubspec.yaml`.
 - Package root contains `README.md` following canonical template.
-- `flutter analyze` passes.
+- README content matches implemented public API.
+- `flutter analyze` passes for the package.
 - Package tests pass.
 - Host app builds successfully.
-- Package appears as `[x]` in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` checklist.
+- Package appears in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` checklist as `[x]`.
+
+## Output
+- Flutter package with clear public API boundary.
+- Canonical README documenting purpose, API, usage, and extension points.
+- Package integrated as dependency in host app.
+- Proprietary packages checklist updated.

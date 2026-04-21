@@ -29,7 +29,7 @@ SATISFYING_GATE_STATUSES = {"no_material_findings", "findings_integrated", "waiv
 ALLOWED_GATE_DECISIONS = {"required", "recommended", "not_needed"}
 ALLOWED_GATE_STATUSES = {"not_run", "running", "no_material_findings", "findings_integrated", "blocked", "waived"}
 ALLOWED_DELIVERY_STAGES = {"Pending", "Local-Implemented", "Lane-Promoted", "Production-Ready"}
-SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schemas" / "todo_validation_bundle.schema.json"
+SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "todo_validation_bundle.schema.json"
 
 
 def is_missing(value: str) -> bool:

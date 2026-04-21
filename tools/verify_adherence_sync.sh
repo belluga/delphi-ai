@@ -175,15 +175,19 @@ verify_workflow_skill_counterparts() {
 verify_public_skill_mirrors() {
   local public_root="$HOME/.codex/skills/public"
   local canonical_root="$REPO_ROOT/delphi-ai/skills"
-  local mirrored_skills=(
-    "test-quality-audit"
-    "test-creation-standard"
-    "test-orchestration-suite"
-  )
+  local list_tool="$REPO_ROOT/delphi-ai/tools/list_public_codex_skill_mirrors.sh"
+  local mirrored_skills=()
 
   if [ ! -d "$public_root" ]; then
     return
   fi
+
+  if [ ! -x "$list_tool" ]; then
+    errors+=("Missing executable public mirror list tool: $list_tool")
+    return
+  fi
+
+  mapfile -t mirrored_skills < <("$list_tool")
 
   local skill
   for skill in "${mirrored_skills[@]}"; do

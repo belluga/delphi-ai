@@ -286,16 +286,20 @@ check_public_mirrors() {
   local status="PASS"
   local notes=()
   local public_root="$HOME/.codex/skills/public"
-  local mirrored=(
-    "test-quality-audit"
-    "test-creation-standard"
-    "test-orchestration-suite"
-  )
+  local list_tool="$DEL_ROOT/tools/list_public_codex_skill_mirrors.sh"
+  local mirrored=()
 
   if [ ! -d "$public_root" ]; then
     emit "| Canonical vs public Codex mirrors | SKIP | \$HOME/.codex/skills/public not present |"
     return 0
   fi
+
+  if [ ! -x "$list_tool" ]; then
+    emit "| Canonical vs public Codex mirrors | FAIL | missing executable ${list_tool#$REPO_ROOT/} |"
+    return 1
+  fi
+
+  mapfile -t mirrored < <("$list_tool")
 
   local skill
   for skill in "${mirrored[@]}"; do

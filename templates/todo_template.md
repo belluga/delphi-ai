@@ -238,8 +238,30 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 | --- | --- | --- | --- | --- | --- | --- |
 | `<reviewer/subagent>` | <recommended path> | <why> | <why> | <why it preserves or regresses structural soundness> | `<Integrated|Challenged|Deferred with rationale>` | <artifact/path/note> |
 
-## Independent No-Context Critique Gate (Required for `big`; conditional for `medium/high-impact`)
-- **Critique decision:** `<required|recommended|not_needed>`
+## Audit Trigger Matrix (Required Before Audit Decisions Are Trusted)
+Populate this matrix before critique or delivery-side audit decisions are treated as authoritative.
+Use exact trigger names and exact enum values only.
+
+- **Canonical method:** `wf-docker-audit-escalation-method`
+- **Guard command:** `python3 delphi-ai/tools/audit_escalation_guard.py --todo <todo-path> [--json-output <artifact-path>]`
+- **Latest TEACH evidence / artifact:** `<stdout summary or artifact path>`
+
+| Trigger | Value | Notes |
+| --- | --- | --- |
+| `complexity` | `<small|medium|big>` | Copy from the TODO Complexity section. |
+| `blast_radius` | `<local|cross-module|cross-stack>` | Choose the smallest truthful blast radius. |
+| `behavioral_change_or_bugfix` | `<yes|no>` | `yes` for bugfixes/regressions or behavior-defining changes. |
+| `changes_public_contract` | `<yes|no>` | `yes` for API/schema/route/auth-visible contract changes. |
+| `touches_auth_or_tenant` | `<yes|no>` | `yes` for auth, permission, tenant-access, or tenant-isolation scope. |
+| `touches_runtime_or_infra` | `<yes|no>` | `yes` for queue/worker/realtime/runtime/infra-sensitive scope. |
+| `touches_tests` | `<yes|no>` | `yes` when test logic/assertions/fixtures/runners changed. |
+| `critical_user_journey` | `<yes|no>` | `yes` when the TODO covers a launch-critical or business-critical user flow. |
+| `release_or_promotion_critical` | `<yes|no>` | `yes` when release/promotion confidence materially matters to this TODO. |
+| `high_severity_plan_review_issue` | `<yes|no>` | `yes` when any current Plan Review issue card is `high`. |
+| `explicit_three_lane_request` | `<yes|no>` | `yes` when the user or TODO explicitly requires the dedicated three-lane external audit. |
+
+## Independent No-Context Critique Gate (Deterministic Floor From Audit Escalation)
+- **Critique decision:** `<required|recommended|not_needed>` (minimum from `audit_escalation_guard.py`)
 - **Why this decision:** <complexity/impact rationale>
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
@@ -360,8 +382,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Evidence / audit artifact:** `<verification-debt-audit artifact, grep output, or rationale for not running a full audit>`
 - **Accepted residual debt:** <what remains and why it is accepted, or `none`>
 
-## Independent Test Quality Audit Gate (Required When Tests Changed Or Test Confidence Is Material)
-- **Audit decision:** `<required|recommended|not_needed>`
+## Independent Test Quality Audit Gate (Deterministic Floor From Audit Escalation)
+- **Audit decision:** `<required|recommended|not_needed>` (minimum from `audit_escalation_guard.py`)
 - **Why this decision:** <complexity/impact rationale>
 - **Trigger signals in scope:** `<changed test logic|bugfix/regression|behavior-defining change|architectural change|shared contract/api/schema|compatibility|critical-user-journey|non-trivial validation risk|none>`
 - **Required evidence matrix (when architectural):** `<unit|widget|integration|web real-backend|mobile real-backend|n/a>`
@@ -382,8 +404,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
-## Independent No-Context Final Review Gate (Required for `big`; conditional for `medium/high-impact`)
-- **Final review decision:** `<required|recommended|not_needed>`
+## Independent No-Context Final Review Gate (Deterministic Floor From Audit Escalation)
+- **Final review decision:** `<required|recommended|not_needed>` (minimum from `audit_escalation_guard.py`)
 - **Why this decision:** <complexity/impact rationale>
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
