@@ -83,6 +83,24 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Validation Steps
 - [ ] <Command, test flow, or manual validation step>
 
+## Completion Evidence Matrix (Required Before Delivery Claim)
+Every `Definition of Done` item and every `Validation Steps` item must have a concrete evidence row before the TODO can claim `Local-Implemented`, move to `promotion_lane/`, move to `completed/`, or claim `Production-Ready`.
+
+Evidence must be real and criterion-specific. Aggregate summaries such as "tests passed" are supporting notes only; they do not replace a row proving the exact criterion. If a criterion names a UI control, route, endpoint, schema, browser/device journey, integration test, migration, or runtime behavior, the evidence must name that same artifact or record an approved waiver/deviation.
+
+For any user-visible or interactive criterion (screen, admin/public surface, map, list/detail, form, field, button/FAB, tab, filter, search, chip/tag, selection state, scroll/sticky behavior, loading/empty/error state, or similar), the evidence row must name the integration/device test or navigation/browser test that exercises that exact item. In Flutter scope, `integration test` means device execution via ADB; web browser coverage is `navigation test` and is Playwright against the final browser-facing domain. Implementation code locations, analyzer output, screenshots, unit tests, or widget tests are valid implementation/supporting evidence and should be recorded, but they do not replace final visible acceptance evidence. If the item is structure-only and has no visible/runtime behavior, record an explicit approved waiver/deviation explaining why integration/device or navigation/browser coverage is not applicable.
+
+Platform parity rule: if Android and Web exercise the same visible behavior through the same contract, one final runtime lane is sufficient (`integration/device` via ADB or `navigation/browser` via Playwright). If Android and Web behavior differs materially for the criterion, record and pass both lanes before delivery. Subagent/worker-local evidence may stop at code, unit, widget, package, and targeted tests; the orchestrator may accept delivery only after the consolidated branch has the required final runtime lane(s).
+
+For browser/web-visible behavior, Playwright is the canonical browser navigation evidence whenever the downstream repository exposes a Playwright web suite. The evidence row must name the source-owned Playwright spec and the runner command, typically `tools/flutter/web_app_tests/**` executed through `tools/flutter/run_web_navigation_smoke.sh readonly|mutation`. For this Flutter ecosystem, browser evidence must first publish the current checkout with `scripts/build_web.sh ../web-app <lane>` (usually `dev` for local Store Release validation), confirm the browser-facing domain is serving that refreshed bundle, and then run Playwright against the real configured domain (`NAV_LANDLORD_URL` / `NAV_TENANT_URL`). For web CRUD/mutation, the Playwright `mutation` lane on an approved non-`main` target is required; a `readonly` web smoke is not enough.
+
+For any visible criterion that includes CRUD or mutation behavior (create, edit, update, save, delete, reorder, submit, persist, or equivalent), the integration/device or navigation/browser evidence must exercise the local mutation path against the approved non-main validation target. A read-only navigation or mocked local filter is not enough.
+
+| Criterion ID | Source Section | Criterion | Evidence Type | Evidence Artifact / Command | Runtime Target | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `DOD-01` | `Definition of Done` | `<exact checklist item>` | `<code|test|runtime|review|doc|migration|n/a>` | `<file:line, command, artifact, PR/check, screenshot/video, runtime URL, or explicit blocker/waiver>` | `<n/a|local|reconciliation|browser|device|backend|CI|runtime URL>` | `<planned|passed|blocked|waived>` | `<why this evidence proves the criterion>` |
+| `VAL-01` | `Validation Steps` | `<exact checklist item>` | `<test|runtime|review|manual|n/a>` | `<command/artifact/runtime evidence>` | `<n/a|local|browser|device|backend|CI|runtime URL>` | `<planned|passed|blocked|waived>` | `<notes>` |
+
 ## External Dependency Readiness (Required When External Systems Matter)
 - This section is non-blocking by default. Use it when the TODO depends on external systems whose health can change outside the repo (for example GitHub/`gh`, MCP servers, OAuth providers, third-party APIs/services, device lanes, or hosted infrastructure).
 - Record or update the persistent register at `foundation_documentation/artifacts/dependency-readiness.md`.
@@ -138,7 +156,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - [ ] <Question that changes implementation>
 
 ## Pattern References (Optional; Enforced When Cited)
-List any patterns or anti-patterns from the PACED library that this TODO implements, follows, or explicitly avoids. The `todo_completion_guard.py` validates that all cited IDs exist in the cascading authority chain (Core -> Stack -> Local).
+List any patterns or anti-patterns from the PACED library that this TODO implements, follows, or explicitly avoids. TODO validation tooling must validate that all cited IDs exist in the cascading authority chain (Core -> Stack -> Local).
 
 | Pattern/Anti-Pattern ID | Type | Why Referenced | Level |
 | --- | --- | --- | --- |

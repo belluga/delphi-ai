@@ -58,11 +58,14 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - Promote an assumption into contract if it changes scope, DoD, required validation semantics, public contract, or module coherence.
    - Record touched surfaces, ordered steps, test strategy, fail-first targets when required, and rollout/runtime notes.
    - Any large or architectural change must explicitly record the required unit + widget + integration evidence matrix for the affected critical paths.
+   - Every DoD/Validation item must have a planned evidence layer before delivery; every user-visible or interactive item must map to a navigation/integration/browser/device test for that exact item, or to an explicit non-applicability rationale if it is structure-only.
+   - Visible CRUD/mutation items must map to integration/navigation evidence that performs the local mutation path against the approved non-main validation target.
 8. Run planning gates before approval:
    - **Plan Review Gate** for `medium|big` (or abbreviated for low-risk `small`);
    - additional bounded no-context architectural opinions when the path remains materially unclear;
-   - independent no-context critique when required by complexity/impact.
-   - when the user or TODO explicitly requires the dedicated multi-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), use `audit-protocol-triple-review` as the canonical orchestration surface and record the audit session path plus clean/latest round evidence in the TODO.
+   - deterministic audit-floor derivation via `wf-docker-audit-escalation-method` before trusting critique/test/final-review decisions.
+   - independent no-context critique from the derived floor.
+   - when the derived floor marks `triple_review` as `required|recommended`, use `audit-protocol-triple-review` as the canonical additive orchestration surface and record the audit session path plus clean/latest round evidence in the TODO.
    - When subagents are used programmatically for those opinions/reviews, prefer derived dispatch/merge packets from `subagent_review_dispatch.py` and `subagent_review_merge.py`.
 9. Freeze the approved decisions under **Decision Baseline (Frozen)** before implementation.
 10. Ask for explicit `APROVADO`.
@@ -73,18 +76,24 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - TODOs are `bounded but elastic`: local blockers and small concretization work may stay inside the TODO while they remain within the same objective and approval conversation.
    - If execution reveals a new independently testable behavior, a new primary objective, or a new approval/risk conversation, update or split the TODO and obtain renewed approval.
 13. Before delivery, complete the required gates:
+   - **Completion Evidence Matrix**: one concrete evidence row for every `Definition of Done` item and every `Validation Steps` item;
    - **Decision Adherence**;
    - module decision consistency;
    - security risk assessment;
    - performance/concurrency assessment;
    - validation steps;
-   - independent test-quality audit when required;
+   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` with `Overall outcome: go` before `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claims;
+   - rerun `wf-docker-audit-escalation-method` if trigger fields changed materially during implementation;
+   - independent test-quality audit from the derived floor;
    - verification-debt audit when required;
-   - independent no-context final review when required.
+   - independent no-context final review from the derived floor.
    - large or architectural changes cannot close on analyzer or unit/widget evidence alone; required integration lanes must be resolved first.
-   - when the delivery gate uses the dedicated three-lane external audit loop, the governing evidence must come from `audit-protocol-triple-review` rather than ad hoc reviewer sequencing.
+   - aggregate summaries cannot satisfy individual criteria; if a TODO names a UI control, route, endpoint, schema, migration, browser/device journey, integration test, or runtime target, the evidence row must name the same artifact or carry an explicit approved waiver/deviation.
+   - visible/interactive criteria cannot close from code inspection, analyzer output, screenshots, widget-only tests, or aggregate suite results; they require item-specific navigation/integration evidence unless an approved structure-only waiver exists.
+   - visible CRUD/mutation criteria cannot close from read-only navigation; they require evidence that the test executed the local mutation path on the approved non-main target.
+   - when the derived floor uses the dedicated three-lane external audit loop, the governing evidence must come from `audit-protocol-triple-review` rather than ad hoc reviewer sequencing.
 14. If pausing blocked, set `Blocked` explicitly with blocker notes and next exact step.
-15. Before close, promote stable outcomes into canonical module docs and then move the TODO to completed/canceled.
+15. Before close, promote stable outcomes into canonical module docs; then move the same governing TODO to `promotion_lane/` when only lane follow-through remains. Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion and `github-main-promotion-orchestrator` only when the user explicitly requests `main`. Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active requested work. Move the TODO to `completed/`/canceled once the final required lane threshold is complete.
 
 ## Outputs
 - Updated TODO with clear contract, decision trace, plan, gates, and delivery evidence.

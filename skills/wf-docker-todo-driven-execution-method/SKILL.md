@@ -58,6 +58,12 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - Promote an assumption into contract if it changes scope, DoD, required validation semantics, public contract, or module coherence.
    - Record touched surfaces, ordered steps, test strategy, fail-first targets when required, and rollout/runtime notes.
    - Any large or architectural change must explicitly record the required unit + widget + integration evidence matrix for the affected critical paths.
+   - Every DoD/Validation item must have a planned evidence layer before delivery; every user-visible or interactive item must map to an integration/device test or navigation/browser test for that exact item, or to an explicit non-applicability rationale if it is structure-only.
+   - In Flutter scope, `integration test` means device execution via ADB; `navigation/browser test` means Playwright against the final browser-facing domain after the current web bundle is published.
+   - Classify visible Flutter behavior as `android-only`, `web-only`, `shared-android-web`, or `divergent-android-web`; shared behavior can close on either ADB integration or Playwright navigation, while divergent Android/Web behavior requires both lanes.
+   - Browser/web-visible items must map to source-owned Playwright spec + runner evidence when the repo exposes a Playwright suite; for Flutter web, record the `tools/flutter/web_app_tests/**` spec and `tools/flutter/run_web_navigation_smoke.sh readonly|mutation` runner after publishing the current checkout with `scripts/build_web.sh ../web-app <lane>` and confirming the real browser-facing domain serves the refreshed bundle.
+   - Visible CRUD/mutation items must map to integration/device or navigation/browser evidence that performs the local mutation path against the approved non-main validation target.
+   - Browser/web CRUD/mutation items must use the Playwright `mutation` lane on an approved non-`main` target; `readonly` Playwright is not mutation evidence.
 8. Run planning gates before approval:
    - **Plan Review Gate** for `medium|big` (or abbreviated for low-risk `small`);
    - additional bounded no-context architectural opinions when the path remains materially unclear;
@@ -74,16 +80,24 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - TODOs are `bounded but elastic`: local blockers and small concretization work may stay inside the TODO while they remain within the same objective and approval conversation.
    - If execution reveals a new independently testable behavior, a new primary objective, or a new approval/risk conversation, update or split the TODO and obtain renewed approval.
 13. Before delivery, complete the required gates:
+   - **Completion Evidence Matrix**: one concrete evidence row for every `Definition of Done` item and every `Validation Steps` item;
    - **Decision Adherence**;
    - module decision consistency;
    - security risk assessment;
    - performance/concurrency assessment;
    - validation steps;
+   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` with `Overall outcome: go` before `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claims;
    - rerun `wf-docker-audit-escalation-method` if trigger fields changed materially during implementation;
    - independent test-quality audit from the derived floor;
    - verification-debt audit when required;
    - independent no-context final review from the derived floor.
    - large or architectural changes cannot close on analyzer or unit/widget evidence alone; required integration lanes must be resolved first.
+   - aggregate summaries cannot satisfy individual criteria; if a TODO names a UI control, route, endpoint, schema, migration, browser/device journey, integration test, or runtime target, the evidence row must name the same artifact or carry an explicit approved waiver/deviation.
+   - code inspection, analyzer output, unit tests, widget tests, screenshots, and aggregate suite results are valid supporting implementation evidence, including for worker/subagent completion, but final orchestrator acceptance of visible/interactive criteria requires item-specific integration/device evidence or navigation/browser evidence unless an approved structure-only waiver exists.
+   - when Android and Web behavior is materially different, both ADB integration and Playwright navigation are required; when behavior is the same, either lane may satisfy final runtime acceptance.
+   - browser/web-visible criteria cannot close without item-specific Playwright evidence when a Playwright suite exists; evidence must name the spec, runner command, target URL/lane, `scripts/build_web.sh ../web-app <lane>` publish proof, and refreshed real-domain bundle provenance.
+   - visible CRUD/mutation criteria cannot close from read-only navigation; they require evidence that the test executed the local mutation path on the approved non-main target.
+   - browser/web CRUD/mutation criteria cannot close from `readonly` Playwright; they require the Playwright `mutation` lane on an approved non-`main` target.
    - when the derived floor uses the dedicated three-lane external audit loop, the governing evidence must come from `audit-protocol-triple-review` rather than ad hoc reviewer sequencing.
 14. If pausing blocked, set `Blocked` explicitly with blocker notes and next exact step.
 15. Before close, promote stable outcomes into canonical module docs; then move the same governing TODO to `promotion_lane/` when only lane follow-through remains. Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion and `github-main-promotion-orchestrator` only when the user explicitly requests `main`. Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active requested work. Move the TODO to `completed/`/canceled once the final required lane threshold is complete.
