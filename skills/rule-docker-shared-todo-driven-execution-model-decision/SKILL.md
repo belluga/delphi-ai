@@ -185,9 +185,10 @@ If the change restores previously documented or verifiably working behavior (inc
 - Before claiming `Local-Implemented`, moving the TODO to `promotion_lane/` or `completed/`, or claiming `Production-Ready`, fill the TODO `Completion Evidence Matrix`.
 - Every `Definition of Done` item and every `Validation Steps` item must have one concrete row with criterion-specific evidence.
 - Evidence must name the exact required artifact when the criterion names one: UI control, route, endpoint, schema, migration, browser/device journey, integration test, runtime target, or equivalent.
-- User-visible or interactive criteria must name the exact integration/navigation/browser/device test that exercises the item. Analyzer output, code inspection, screenshots, widget-only tests, or aggregate suite summaries cannot satisfy visible behavior by themselves.
-- Visible CRUD/mutation criteria must name integration/navigation evidence that performs the local mutation path on the approved non-main validation target.
-- If navigation/integration coverage is not applicable because the item is structure-only and has no visible/runtime behavior, record an explicit approved waiver/deviation with the reason.
+- User-visible, interactive, or user-flow-impacting criteria must name the exact integration/navigation/browser/device test that exercises the item. Analyzer output, code inspection, screenshots, widget-only tests, or aggregate suite summaries cannot satisfy flow behavior by themselves.
+- User-flow impact must be assessed case by case. CRUD/mutation is a strong signal, but field refactors, DTO/domain/payload changes, validation, projections, query/filter semantics, settings/capabilities, read models, and persisted state changes require flow assessment when they can feed a screen or user journey.
+- User-flow CRUD/mutation criteria must name integration/navigation evidence that performs the local mutation path on the approved non-main validation target.
+- If navigation/integration coverage is not applicable because the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation with the reason.
 - Aggregate validation summaries are supporting notes only. They do not replace row-level evidence for each DoD/validation criterion.
 - If a criterion cannot be validated, mark it `blocked` or record an explicit approved waiver; do not mark it passed from adjacent or representative evidence.
 - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` before any delivery-complete claim and require `Overall outcome: go`.
@@ -353,8 +354,9 @@ This prevents scope creep and "hub refactors" by forcing a written, reviewable c
 - If any `Definition of Done` or `Validation Steps` item lacks a criterion-specific evidence row, block delivery.
 - If any evidence row uses only aggregate/representative proof that does not prove the exact criterion, block delivery.
 - If any criterion names a UI control, route, endpoint, schema, migration, integration test, browser/device journey, or runtime target and the evidence does not name the same artifact or an approved waiver/deviation, block delivery.
-- If any user-visible or interactive criterion lacks item-specific navigation/integration/browser/device evidence and has no approved structure-only waiver/deviation, block delivery.
-- If any visible CRUD/mutation criterion lacks evidence that an integration/navigation test performed the local mutation path on the approved non-main target, block delivery.
+- If any user-visible, interactive, or user-flow-impacting criterion lacks item-specific navigation/integration/browser/device evidence and has no approved structure-only waiver/deviation, block delivery.
+- If any user-flow CRUD/mutation criterion lacks evidence that an integration/navigation test performed the local mutation path on the approved non-main target, block delivery.
+- If any refactor of fields, DTOs, payloads, projections, validation, query/filter semantics, settings, capabilities, or persisted state can feed user-visible behavior and lacks flow-impact assessment plus either runtime evidence or a non-applicability rationale, block delivery.
 - If `todo_completion_guard.py <todo-path>` does not return `Overall outcome: go`, block delivery.
 - If any baseline decision lacks adherence evidence, block delivery.
 - If any relevant module decision ends in `Regression`, block delivery.

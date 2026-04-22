@@ -110,6 +110,120 @@ VISIBLE_INTERACTIVE_TERMS = (
     "sheet",
 )
 
+USER_FLOW_CONTEXT_TERMS = (
+    "admin",
+    "public",
+    "publico",
+    "público",
+    "user",
+    "usuario",
+    "usuário",
+    "tenant",
+    "screen",
+    "tela",
+    "form",
+    "formulario",
+    "formulário",
+    "field",
+    "campo",
+    "list",
+    "lista",
+    "detail",
+    "detalhe",
+    "filter",
+    "filtro",
+    "search",
+    "pesquisa",
+    "route",
+    "rota",
+    "endpoint",
+    "api",
+    "request",
+    "response",
+    "payload",
+    "validation",
+    "validacao",
+    "validação",
+    "readback",
+    "read-back",
+    "projection",
+    "projecao",
+    "projeção",
+    "read model",
+    "read-model",
+    "query",
+    "settings",
+    "configuracao",
+    "configuração",
+    "capability",
+    "capabilities",
+    "taxonomy",
+    "taxonomia",
+    "persisted state",
+    "estado persistido",
+)
+
+USER_FLOW_DIRECT_TERMS = (
+    "user flow",
+    "fluxo de usuario",
+    "fluxo de usuário",
+    "journey",
+    "jornada",
+    "save flow",
+    "fluxo de salvamento",
+    "readback flow",
+    "fluxo de readback",
+    "422",
+    "validation error",
+    "erro de validacao",
+    "erro de validação",
+    "persisted selection",
+    "selecao persistida",
+    "seleção persistida",
+    "backend-filtered",
+    "real backend",
+    "real-backend",
+)
+
+USER_FLOW_REFACTOR_TERMS = (
+    "refactor",
+    "refatora",
+    "refatoracao",
+    "refatoração",
+    "field",
+    "campo",
+    "dto",
+    "domain",
+    "dominio",
+    "domínio",
+    "model",
+    "modelo",
+    "payload",
+    "schema",
+    "contract",
+    "contrato",
+    "projection",
+    "projecao",
+    "projeção",
+    "read model",
+    "read-model",
+    "request",
+    "response",
+    "validation",
+    "validacao",
+    "validação",
+    "query",
+    "filter",
+    "filtro",
+    "settings",
+    "configuracao",
+    "configuração",
+    "capability",
+    "capabilities",
+    "persisted state",
+    "estado persistido",
+)
+
 NAVIGATION_COVERAGE_TERMS = (
     "integration_test",
     "integration test",
@@ -473,12 +587,24 @@ def criterion_requires_navigation_coverage(section: str, criterion: str) -> bool
     normalized_section = normalize_text(section)
     if normalized_section not in {"definition of done", "validation steps"}:
         return False
+    flow_impacting = criterion_has_user_flow_impact(criterion)
     if normalized_section == "validation steps":
         structural_test_request = any(marker_present(criterion, (term,)) for term in STRUCTURAL_TEST_REQUEST_TERMS)
         runtime_validation_request = any(marker_present(criterion, (term,)) for term in RUNTIME_VALIDATION_REQUEST_TERMS)
-        if structural_test_request and not runtime_validation_request:
+        if structural_test_request and not runtime_validation_request and not flow_impacting:
             return False
-    return any(marker_present(criterion, (term,)) for term in VISIBLE_INTERACTIVE_TERMS)
+    return any(marker_present(criterion, (term,)) for term in VISIBLE_INTERACTIVE_TERMS) or flow_impacting
+
+
+def criterion_has_user_flow_impact(criterion: str) -> bool:
+    if any(marker_present(criterion, (term,)) for term in USER_FLOW_DIRECT_TERMS):
+        return True
+    has_context = any(marker_present(criterion, (term,)) for term in USER_FLOW_CONTEXT_TERMS)
+    has_mutation = any(marker_present(criterion, (term,)) for term in CRUD_MUTATION_TERMS)
+    if has_context and has_mutation:
+        return True
+    has_refactor = any(marker_present(criterion, (term,)) for term in USER_FLOW_REFACTOR_TERMS)
+    return has_context and has_refactor
 
 
 def row_has_navigation_coverage(row: list[str]) -> bool:
@@ -710,9 +836,9 @@ def validate_todo(
             if criterion_requires_navigation_coverage(requirement["section"], criterion) and not row_has_navigation_coverage(row):
                 violations.append(
                     build_violation(
-                        "VISIBLE-CRITERION-NAVIGATION-COVERAGE-MISSING",
-                        f"Visible/interactive criterion lacks item-specific integration/device or navigation/browser evidence: {criterion}",
-                        "Add the integration/device test or navigation/browser test that exercises this exact item, or record an explicit approved structure-only waiver/deviation. In Flutter scope, integration is ADB/device execution; browser navigation is Playwright against the final domain after build_web.sh publish.",
+                        "FLOW-CRITERION-NAVIGATION-COVERAGE-MISSING",
+                        f"User-visible/interactive/flow-impacting criterion lacks item-specific integration/device or navigation/browser evidence: {criterion}",
+                        "Add the integration/device test or navigation/browser test that exercises this exact item, or record an explicit approved structure-only waiver/deviation proving no user-observable flow can change. In Flutter scope, integration is ADB/device execution; browser navigation is Playwright against the final domain after build_web.sh publish.",
                         "Completion Evidence Matrix",
                     )
                 )
@@ -741,8 +867,8 @@ def validate_todo(
             if criterion_requires_mutation_coverage(requirement["section"], criterion) and not row_has_mutation_coverage(row):
                 violations.append(
                     build_violation(
-                        "VISIBLE-CRUD-MUTATION-EVIDENCE-MISSING",
-                        f"Visible CRUD/mutation criterion lacks local mutation evidence: {criterion}",
+                        "FLOW-CRUD-MUTATION-EVIDENCE-MISSING",
+                        f"User-flow CRUD/mutation criterion lacks local mutation evidence: {criterion}",
                         "Record integration/device or navigation/browser evidence that performs the local mutation path on the approved non-main validation target. For browser/web mutation, record Playwright mutation-lane evidence; readonly web smoke is insufficient.",
                         "Completion Evidence Matrix",
                     )

@@ -210,12 +210,13 @@ If the change restores previously documented or verifiably working behavior (inc
 - Before claiming `Local-Implemented`, moving the TODO to `promotion_lane/` or `completed/`, or claiming `Production-Ready`, fill the TODO `Completion Evidence Matrix`.
 - Every `Definition of Done` item and every `Validation Steps` item must have one concrete row with criterion-specific evidence.
 - Evidence must name the exact required artifact when the criterion names one: UI control, route, endpoint, schema, migration, browser/device journey, integration test, runtime target, or equivalent.
-- User-visible or interactive criteria must name the exact integration/device test or navigation/browser test that exercises the item. In Flutter scope, integration means ADB/device execution and navigation/browser means Playwright against the final browser-facing domain. Analyzer output, code inspection, screenshots, unit tests, widget tests, and aggregate suite summaries are valid supporting implementation evidence, but cannot satisfy final visible acceptance by themselves.
-- Flutter visible criteria must record platform parity. If Android and Web behavior is the same, either ADB integration or Playwright navigation may satisfy final runtime acceptance. If Android and Web behavior differs materially, both lanes must pass before delivery.
+- User-visible, interactive, or user-flow-impacting criteria must name the exact integration/device test or navigation/browser test that exercises the item. In Flutter scope, integration means ADB/device execution and navigation/browser means Playwright against the final browser-facing domain. Analyzer output, code inspection, screenshots, unit tests, widget tests, and aggregate suite summaries are valid supporting implementation evidence, but cannot satisfy final flow acceptance by themselves.
+- User-flow impact must be assessed case by case. CRUD/mutation is a strong signal, but field refactors, DTO/domain/payload changes, validation, projections, query/filter semantics, settings/capabilities, read models, and persisted state changes require flow assessment when they can feed a screen or user journey.
+- Flutter flow-impacting criteria must record platform parity. If Android and Web behavior is the same, either ADB integration or Playwright navigation may satisfy final runtime acceptance. If Android and Web behavior differs materially, both lanes must pass before delivery.
 - Browser/web-visible criteria must name source-owned Playwright spec + runner evidence when the repository exposes a Playwright suite. Flutter web evidence must name the `tools/flutter/web_app_tests/**` spec, `tools/flutter/run_web_navigation_smoke.sh readonly|mutation` runner, target URL/lane, `scripts/build_web.sh ../web-app <lane>` publish proof, and refreshed real-domain bundle provenance.
-- Visible CRUD/mutation criteria must name integration/device or navigation/browser evidence that performs the local mutation path on the approved non-main validation target.
+- User-flow CRUD/mutation criteria must name integration/device or navigation/browser evidence that performs the local mutation path on the approved non-main validation target.
 - Browser/web CRUD/mutation criteria must name the Playwright `mutation` lane on an approved non-`main` target. `readonly` Playwright, screenshots, and route-load smoke do not satisfy mutation evidence.
-- If integration/device or navigation/browser coverage is not applicable because the item is structure-only and has no visible/runtime behavior, record an explicit approved waiver/deviation with the reason.
+- If integration/device or navigation/browser coverage is not applicable because the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation with the reason.
 - Aggregate validation summaries are supporting notes only. They do not replace row-level evidence for each DoD/validation criterion.
 - If a criterion cannot be validated, mark it `blocked` or record an explicit approved waiver; do not mark it passed from adjacent or representative evidence.
 - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` before any delivery-complete claim and require `Overall outcome: go`.
@@ -380,11 +381,12 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If any `Definition of Done` or `Validation Steps` item lacks a criterion-specific evidence row, block delivery.
 - If any evidence row uses only aggregate/representative proof that does not prove the exact criterion, block delivery.
 - If any criterion names a UI control, route, endpoint, schema, migration, integration test, browser/device journey, or runtime target and the evidence does not name the same artifact or an approved waiver/deviation, block delivery.
-- If any user-visible or interactive criterion lacks item-specific integration/device or navigation/browser evidence and has no approved structure-only waiver/deviation, block delivery.
-- If any visible Flutter criterion has materially different Android and Web behavior and lacks either the ADB integration lane or Playwright navigation lane, block delivery.
+- If any user-visible, interactive, or user-flow-impacting criterion lacks item-specific integration/device or navigation/browser evidence and has no approved structure-only waiver/deviation, block delivery.
+- If any flow-impacting Flutter criterion has materially different Android and Web behavior and lacks either the ADB integration lane or Playwright navigation lane, block delivery.
 - If any browser/web-visible criterion lacks item-specific Playwright evidence while a Playwright suite exists, block delivery.
-- If any visible CRUD/mutation criterion lacks evidence that an integration/device or navigation/browser test performed the local mutation path on the approved non-main target, block delivery.
+- If any user-flow CRUD/mutation criterion lacks evidence that an integration/device or navigation/browser test performed the local mutation path on the approved non-main target, block delivery.
 - If any browser/web CRUD/mutation criterion lacks Playwright `mutation` lane evidence on an approved non-`main` target, block delivery.
+- If any refactor of fields, DTOs, payloads, projections, validation, query/filter semantics, settings, capabilities, or persisted state can feed user-visible behavior and lacks flow-impact assessment plus either runtime evidence or a non-applicability rationale, block delivery.
 - If `todo_completion_guard.py <todo-path>` does not return `Overall outcome: go`, block delivery.
 - If any baseline decision lacks adherence evidence, block delivery.
 - If any relevant module decision ends in `Regression`, block delivery.
