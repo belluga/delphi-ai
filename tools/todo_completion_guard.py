@@ -2,8 +2,8 @@
 """Deterministic completion guard for tactical TODO delivery claims.
 
 The guard is intentionally narrow: it validates whether a TODO that claims a
-delivery milestone has concrete, row-level evidence for every Definition of
-Done and Validation Steps criterion. It emits a TEACH runtime response and
+delivery milestone has concrete, row-level evidence for every release-relevant
+checklist criterion. It emits a TEACH runtime response and
 exits with:
 
   0  GO: no blocking completion-evidence issue was found.
@@ -23,7 +23,21 @@ from typing import Any
 
 
 RULE_ID = "paced.todo.completion-evidence"
-DELIVERY_STAGES = {"Local-Implemented", "Lane-Promoted", "Production-Ready"}
+DELIVERY_STAGE_MARKERS = (
+    "Local-Implemented",
+    "Local-Validated",
+    "Local-Complete",
+    "Lane-Promoted",
+    "Production-Ready",
+    "Completed",
+    "Complete",
+)
+REQUIREMENT_SECTIONS = (
+    ("Scope", "SCOPE"),
+    ("Acceptance Criteria", "AC"),
+    ("Definition of Done", "DOD"),
+    ("Validation Steps", "VAL"),
+)
 ALLOWED_ROW_STATUSES = {"planned", "passed", "blocked", "waived", "n/a"}
 DELIVERY_PASSING_STATUSES = {"passed"}
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
@@ -505,6 +519,13 @@ def is_na(value: str) -> bool:
     return normalize_text(value) in {"n/a", "na", "none", "not applicable", "nao aplicavel", "não aplicável"}
 
 
+def normalize_stage_label(value: str | None) -> str:
+    value = strip_markup(value or "")
+    value = re.sub(r"[^a-zA-Z0-9]+", "-", value)
+    value = re.sub(r"-+", "-", value)
+    return value.strip("-").lower()
+
+
 def row_text(row: list[str]) -> str:
     return " | ".join(row)
 
@@ -526,7 +547,18 @@ def extract_sections(lines: list[str]) -> dict[str, list[str]]:
 def find_section(sections: dict[str, list[str]], wanted: str) -> list[str]:
     wanted_normalized = normalize_text(wanted)
     for title, lines in sections.items():
+        if wanted_normalized == normalize_text(title):
+            return lines
+    for title, lines in sections.items():
         if wanted_normalized in normalize_text(title):
+            return lines
+    return []
+
+
+def find_exact_section(sections: dict[str, list[str]], wanted: str) -> list[str]:
+    wanted_normalized = normalize_text(wanted)
+    for title, lines in sections.items():
+        if wanted_normalized == normalize_text(title):
             return lines
     return []
 
@@ -558,15 +590,16 @@ def table_rows(lines: list[str]) -> list[list[str]]:
     return rows[1:]
 
 
-def extract_checklist_items(lines: list[str]) -> list[str]:
-    items: list[str] = []
+def extract_checklist_items(lines: list[str]) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
     for line in lines:
         match = re.match(r"^\s*[-*]\s+\[[ xX]\]\s+(.+?)\s*$", line)
         if not match:
             continue
         item = strip_markup(match.group(1))
         if item:
-            items.append(item)
+            checked = bool(re.match(r"^\s*[-*]\s+\[[xX]\]", line))
+            items.append({"text": item, "checked": checked})
     return items
 
 
@@ -576,7 +609,31 @@ def is_delivery_claim(todo_path: Path, stage: str | None, require_delivery: bool
     parts = {part.lower() for part in todo_path.resolve().parts}
     if "promotion_lane" in parts or "completed" in parts:
         return True
-    return stage in DELIVERY_STAGES
+    normalized_stage = normalize_stage_label(stage)
+    for marker in DELIVERY_STAGE_MARKERS:
+        normalized_marker = normalize_stage_label(marker)
+        if normalized_stage == normalized_marker or normalized_stage.startswith(normalized_marker + "-"):
+            return True
+    return False
+
+
+def build_requirements(sections: dict[str, list[str]]) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    requirements: list[dict[str, Any]] = []
+    counts: dict[str, int] = {}
+    for section_title, id_prefix in REQUIREMENT_SECTIONS:
+        items = extract_checklist_items(find_exact_section(sections, section_title))
+        context_key = normalize_text(section_title).replace(" ", "_") + "_count"
+        counts[context_key] = len(items)
+        for item in items:
+            requirements.append(
+                {
+                    "section": section_title,
+                    "id_prefix": id_prefix,
+                    "text": item["text"],
+                    "checked": item["checked"],
+                }
+            )
+    return requirements, counts
 
 
 def criterion_requires_runtime_evidence(criterion: str) -> bool:
@@ -685,6 +742,8 @@ def validate_todo(
         "todo_path": str(todo_path),
         "current_delivery_stage": "unknown",
         "delivery_claim": False,
+        "scope_count": 0,
+        "acceptance_criteria_count": 0,
         "dod_count": 0,
         "validation_count": 0,
         "evidence_row_count": 0,
@@ -713,35 +772,38 @@ def validate_todo(
     delivery_claim = is_delivery_claim(todo_path, stage, require_delivery)
     context["delivery_claim"] = delivery_claim
 
-    dod_items = extract_checklist_items(find_section(sections, "Definition of Done"))
-    validation_items = extract_checklist_items(find_section(sections, "Validation Steps"))
-    requirements = [
-        {"section": "Definition of Done", "id_prefix": "DOD", "text": item}
-        for item in dod_items
-    ] + [
-        {"section": "Validation Steps", "id_prefix": "VAL", "text": item}
-        for item in validation_items
-    ]
-    context["dod_count"] = len(dod_items)
-    context["validation_count"] = len(validation_items)
+    requirements, requirement_counts = build_requirements(sections)
+    context.update(requirement_counts)
+    context["dod_count"] = requirement_counts.get("definition_of_done_count", 0)
+    context["validation_count"] = requirement_counts.get("validation_steps_count", 0)
+
+    evidence_rows = table_rows(find_section(sections, "Completion Evidence Matrix"))
+    context["evidence_row_count"] = len(evidence_rows)
 
     if not delivery_claim:
         return {"blocked": False, "violations": [], "context": context}
 
-    evidence_rows = table_rows(find_section(sections, "Completion Evidence Matrix"))
-    context["evidence_row_count"] = len(evidence_rows)
     if not evidence_rows:
         violations.append(
             build_violation(
                 "COMPLETION-EVIDENCE-MATRIX-MISSING",
                 "The TODO claims delivery progress but has no Completion Evidence Matrix rows.",
-                "Add one concrete evidence row for every Definition of Done and Validation Steps item.",
+                "Add one concrete evidence row for every Scope, Acceptance Criteria, Definition of Done, and Validation Steps item.",
                 "Completion Evidence Matrix",
             )
         )
 
     for requirement in requirements:
         criterion = requirement["text"]
+        if not requirement["checked"]:
+            violations.append(
+                build_violation(
+                    "CRITERION-CHECKLIST-UNCHECKED",
+                    f"{requirement['section']} item is still unchecked under a delivery claim: {criterion}",
+                    "Check the TODO item only after the implementation and criterion-specific evidence are complete, or move the TODO back to a non-delivery stage.",
+                    requirement["section"],
+                )
+            )
         matching_rows = [
             row for row in evidence_rows if normalize_text(criterion) in normalize_text(row_text(row))
         ]
@@ -925,7 +987,7 @@ def render_text(result: dict[str, Any]) -> str:
             lines.append("  - The TODO has criterion-specific completion evidence for its current delivery claim.")
         else:
             lines.append("  - The TODO is not currently claiming a delivery milestone that requires completion evidence.")
-        lines.append("  - Rerun this guard before any Local-Implemented, promotion_lane, completed, or Production-Ready claim changes.")
+        lines.append("  - Rerun this guard before any Local-Implemented, Local-Validated, Local-Complete, promotion_lane, completed, or Production-Ready claim changes.")
     else:
         seen: set[str] = set()
         for violation in violations:
@@ -939,6 +1001,8 @@ def render_text(result: dict[str, Any]) -> str:
         "todo_path",
         "current_delivery_stage",
         "delivery_claim",
+        "scope_count",
+        "acceptance_criteria_count",
         "dod_count",
         "validation_count",
         "evidence_row_count",
