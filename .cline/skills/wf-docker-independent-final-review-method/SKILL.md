@@ -14,16 +14,16 @@ Run the canonical delivery-side final review once `wf-docker-audit-escalation-me
 
 ## Inputs
 - Tactical TODO under `foundation_documentation/todos/active/`.
-- Implemented change package and delivery evidence.
+- Implemented change package and delivery evidence, including Pipeline/Copilot P1/P2 Preflight and Rule-Spirit Anti-Pattern Hunt evidence when delivery is being claimed.
 - A bounded final-review package (`bounded-file-set` or `bounded-summary`).
 
 ## Procedure
 1. Use the latest successful audit-escalation guard output as the minimum decision authority for this gate.
 2. Build a bounded package; do not pass the whole session transcript.
-   - If using a `bounded-summary`, include at minimum: frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, existing waivers, and unresolved verification debt.
+   - If using a `bounded-summary`, include at minimum: frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, Pipeline/Copilot P1/P2 Preflight status, Rule-Spirit Anti-Pattern Hunt status, residual risks, existing waivers, and unresolved verification debt.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
 3. Use a fresh auxiliary reviewer with no inherited thread context.
-4. Ask for findings first, ordered by severity, focusing on regressions, adherence, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions, and residual risk rather than redesign.
+4. Ask for findings first, ordered by severity, focusing on regressions, adherence, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, pipeline/Copilot-style P1/P2 defects, rule-spirit anti-patterns, performance or elegance regressions, structural regressions, and residual risk rather than redesign.
 5. Retry once with a tighter package if the first attempt fails or times out.
 6. If a required final review still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy closure.
 7. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.

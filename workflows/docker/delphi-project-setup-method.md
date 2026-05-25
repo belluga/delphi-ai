@@ -17,7 +17,7 @@ Prepare or recalibrate a downstream project so it can operate under the current 
 - Downstream repository root and active bootloader surface (`AGENTS.md`, `CLINE.md`, `GEMINI.md`, or equivalent).
 - `.gitmodules`, Delphi-managed links/artifacts, and project README guidance.
 - `foundation_documentation/` core files and any populated module docs.
-- Current PACED baseline (`main_instructions.md`, core rules, workflows, templates, and setup/readiness scripts shipped through `delphi-ai/`).
+- Current PACED baseline (`main_instructions.md`, `ecosystem_template_configuration.md`, `config/stack_capabilities.yaml`, core rules, workflows, templates, and setup/readiness scripts shipped through `delphi-ai/`).
 
 ## Preferred Deterministic Helpers
 - Prefer the end-to-end recalibration helper when a full downstream pass is needed:
@@ -68,6 +68,7 @@ bash delphi-ai/tools/project_recalibration_doctor.sh \
    - Confirm bootloader/install surfaces are present and aligned (`AGENTS.md`, `.codex/skills/`, `.agents/rules/`, `.agents/workflows/`, `.agents/skills/`, `.clinerules/`, `.cline/skills/`, or the runtime-specific equivalents that apply).
    - Confirm Delphi-managed helper scripts and expected directories resolve correctly.
    - Confirm the project is operating against the current Delphi baseline rather than a stale local copy.
+   - Load `delphi-ai/config/stack_capabilities.yaml` and treat it as the registry of capabilities Delphi can support, not as proof that each capability is active in this project.
 
 4. **Inventory project-owned authority**
    - Load the project-specific authority surfaces that complement Delphi:
@@ -79,20 +80,21 @@ bash delphi-ai/tools/project_recalibration_doctor.sh \
      - `delphi-ai/profiles/` when the setup question is really about strategic vs operational vs assurance responsibility
      - relevant module docs under `foundation_documentation/modules/`
    - Distinguish what is inherited from Delphi versus what must remain project-owned.
+   - Resolve project-active stacks, environment owners, tenants/domains, validation targets, safe runners, and build/publish commands from project-owned sources. If these facts are missing or contradictory, classify that as project-owned documentation/canonical coverage drift rather than filling the gap inside Delphi.
 
 5. **Detect and classify drift**
    - Evaluate drift across four buckets:
      - `structural drift`: broken/missing Delphi-managed links, stale scripts, missing required folders, install mismatch.
      - `documentation drift`: missing or stale project authority docs that Delphi cannot infer safely.
-     - `canonical coverage drift`: roadmap/module surfaces are missing, stale, or still dependent on legacy pre-canonical knowledge for active scopes.
+     - `canonical coverage drift`: roadmap/module surfaces are missing, stale, or still dependent on legacy pre-canonical knowledge for active scopes, active-stack declarations, runtime owners, tenants/domains, or validation surfaces.
      - `governance drift`: the project is technically wired, but its active operating assumptions no longer match the current Delphi method.
    - Classify each bucket as `none|minor|material`.
    - Explicitly note which drift is Delphi-surface drift versus project-owned drift.
 
 6. **Map the operational surface**
    - Produce a concise calibration map with three sections:
-     - `Inherited from Delphi`: what is already governed by the current Delphi baseline.
-     - `Project-owned specialization`: what the project must define locally and remains authoritative locally.
+     - `Inherited from Delphi`: what is already governed by the current Delphi baseline, including available stack capabilities from `config/stack_capabilities.yaml`.
+     - `Project-owned specialization`: what the project must define locally and remains authoritative locally, including which available capabilities are actually active.
      - `Unsafe / unresolved`: areas where the AI should not proceed without remediation, clarification, or documentation.
    - The goal is to make explicit what the project can assume and what it still owes the method.
 

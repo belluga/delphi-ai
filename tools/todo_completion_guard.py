@@ -2,8 +2,9 @@
 """Deterministic completion guard for tactical TODO delivery claims.
 
 The guard is intentionally narrow: it validates whether a TODO that claims a
-delivery milestone has concrete, row-level evidence for every release-relevant
-checklist criterion. It emits a TEACH runtime response and
+delivery milestone has concrete, row-level evidence for release-relevant
+checklist criteria, local CI-equivalent execution, pipeline/Copilot preflight
+review, and rule-spirit anti-pattern hunting. It emits a TEACH runtime response and
 exits with:
 
   0  GO: no blocking completion-evidence issue was found.
@@ -42,6 +43,21 @@ ALLOWED_ROW_STATUSES = {"planned", "passed", "blocked", "waived", "n/a"}
 DELIVERY_PASSING_STATUSES = {"passed"}
 CI_EQ_ALLOWED_FINAL_STATUSES = {"passed", "waived", "n/a"}
 CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
+REVIEW_GATE_ALLOWED_FINAL_STATUSES = {"passed", "waived", "n/a"}
+PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
+RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
+REVIEW_GATE_SECTIONS = (
+    (
+        PIPELINE_PREFLIGHT_SECTION,
+        "PIPELINE-PREFLIGHT",
+        "Use columns: Reviewer Surface / Package, Review Focus, Status, Evidence Artifact / Command, Findings, Resolution / Notes.",
+    ),
+    (
+        RULE_SPIRIT_HUNT_SECTION,
+        "RULE-SPIRIT-HUNT",
+        "Use columns: Rule / Principle Surface, Bypass or Anti-Pattern Search Lens, Status, Evidence Artifact / Command, Findings, Resolution / Notes.",
+    ),
+)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 FIELD_RE_TEMPLATE = r"^\s*-\s+\*\*%s:\*\*\s*(.+?)\s*$"
 TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
@@ -817,12 +833,197 @@ def validate_ci_equivalent_suite_matrix(
     return violations
 
 
+def row_has_unresolved_p1_p2(row: list[str]) -> bool:
+    normalized = normalize_text(row_text(row))
+    findings = normalize_text(row[4]) if len(row) > 4 else ""
+    notes = normalize_text(row[5]) if len(row) > 5 else ""
+    has_high_priority = bool(re.search(r"(?<![a-z0-9])p[12](?![a-z0-9])", normalized)) or any(
+        phrase in normalized
+        for phrase in (
+            "severity critical",
+            "severity high",
+            "critical severity",
+            "high severity",
+        )
+    )
+    if not has_high_priority:
+        return False
+
+    unresolved_phrases = (
+        "unresolved",
+        "not resolved",
+        "not fixed",
+        "open p1",
+        "open p2",
+        "pending p1",
+        "pending p2",
+        "still open",
+        "deferred p1",
+        "deferred p2",
+        "blocker p1",
+        "blocker p2",
+    )
+    if any(phrase in normalized for phrase in unresolved_phrases):
+        return True
+
+    clean_phrases = (
+        "no p1",
+        "no p2",
+        "no p1 p2",
+        "no p1 or p2",
+        "no high severity",
+        "no critical severity",
+        "sem p1",
+        "sem p2",
+        "sem severidade alta",
+        "sem critico",
+        "sem crítico",
+        "nenhum p1",
+        "nenhum p2",
+        "zero p1",
+        "zero p2",
+        "0 p1",
+        "0 p2",
+        "none found",
+        "findings none",
+        "findings: none",
+        "no findings",
+        "sem achados",
+        "nenhum achado",
+        "clean",
+        "resolved",
+        "fixed",
+        "integrated",
+    )
+    clean_finding_values = {
+        "none",
+        "n/a",
+        "na",
+        "no findings",
+        "sem achados",
+        "nenhum achado",
+        "nenhum",
+    }
+    clean_finding = findings in clean_finding_values or any(phrase in findings for phrase in clean_phrases)
+    clean_notes = any(phrase in notes for phrase in ("clean", "resolved", "fixed", "integrated"))
+    if any(phrase in normalized for phrase in clean_phrases) or clean_finding or clean_notes:
+        return False
+
+    # A high-priority finding mention without an explicit clean/resolved marker
+    # is ambiguous enough to block a delivery claim. The row should say whether
+    # the finding was fixed, waived with approval, or absent.
+    return True
+
+
+def validate_review_gate_matrix(
+    sections: dict[str, list[str]],
+    section_name: str,
+    code_prefix: str,
+    row_resolution: str,
+    allow_waivers: bool,
+) -> list[dict[str, str]]:
+    violations: list[dict[str, str]] = []
+    rows = table_rows(find_section(sections, section_name))
+    if not rows:
+        violations.append(
+            build_violation(
+                f"{code_prefix}-MISSING",
+                f"The TODO claims delivery progress but has no {section_name} rows.",
+                f"Add a {section_name} row for the implemented delivery package, or add an explicit `n/a` row with rationale when the gate truly does not apply.",
+                section_name,
+            )
+        )
+        return violations
+
+    for row in rows:
+        if len(row) < 6:
+            violations.append(
+                build_violation(
+                    f"{code_prefix}-ROW-INCOMPLETE",
+                    f"{section_name} row has fewer than 6 cells: {row_text(row)}",
+                    row_resolution,
+                    section_name,
+                )
+            )
+            continue
+
+        surface, focus, status_raw, evidence, findings, notes = row[:6]
+        status = normalize_text(status_raw)
+        combined = " ".join((surface, focus, status_raw, evidence, findings, notes))
+
+        if any(is_placeholder(cell) for cell in (surface, focus, status_raw, evidence)):
+            violations.append(
+                build_violation(
+                    f"{code_prefix}-PLACEHOLDER",
+                    f"{section_name} row contains placeholder content: {row_text(row)}",
+                    f"Replace placeholders with the concrete review package/surface, review focus, status, and evidence. {row_resolution}",
+                    section_name,
+                )
+            )
+
+        if status not in REVIEW_GATE_ALLOWED_FINAL_STATUSES:
+            violations.append(
+                build_violation(
+                    f"{code_prefix}-STATUS-NOT-PASSED",
+                    f"{section_name} row status `{status_raw}` does not satisfy delivery: {surface}",
+                    f"Record `passed`, or use an explicit approved `waived`/`n/a` row with rationale. {row_resolution}",
+                    section_name,
+                )
+            )
+            continue
+
+        if status == "waived":
+            if not allow_waivers or ("approval" not in normalize_text(combined) and "aprovado" not in normalize_text(combined)):
+                violations.append(
+                    build_violation(
+                        f"{code_prefix}-WAIVER-APPROVAL-MISSING",
+                        f"{section_name} row is waived without explicit approval evidence: {surface}",
+                        f"Record the approval evidence for this waiver or run the gate. {row_resolution}",
+                        section_name,
+                    )
+                )
+
+        if status == "n/a" and len(normalize_text(" ".join((findings, notes)))) < 3:
+            violations.append(
+                build_violation(
+                    f"{code_prefix}-NA-RATIONALE-MISSING",
+                    f"{section_name} row is `n/a` without rationale: {surface}",
+                    f"Explain why this gate does not apply to the delivery claim. {row_resolution}",
+                    section_name,
+                )
+            )
+
+        lowered = normalize_text(combined)
+        if status == "passed" and any(term in lowered for term in ("not run", "nao executado", "não executado", "pending", "planned", "expected")):
+            violations.append(
+                build_violation(
+                    f"{code_prefix}-EVIDENCE-NOT-REAL",
+                    f"{section_name} row claims `passed` but the evidence is not real completed execution: {surface}",
+                    f"Replace planned/pending text with concrete completed review evidence. {row_resolution}",
+                    section_name,
+                )
+            )
+
+        if row_has_unresolved_p1_p2(row):
+            violations.append(
+                build_violation(
+                    f"{code_prefix}-UNRESOLVED-P1-P2",
+                    f"{section_name} row records an unresolved P1/P2 finding: {row_text(row)}",
+                    "Fix the P1/P2 issue, refresh the evidence, and rerun the gate before claiming delivery.",
+                    section_name,
+                )
+            )
+
+    return violations
+
+
 def validate_todo(
     todo_path: Path,
     require_delivery: bool,
     allow_waivers: bool,
 ) -> dict[str, Any]:
     context: dict[str, Any] = {
+        "mode": "single",
         "todo_path": str(todo_path),
         "current_delivery_stage": "unknown",
         "delivery_claim": False,
@@ -832,6 +1033,8 @@ def validate_todo(
         "validation_count": 0,
         "evidence_row_count": 0,
         "ci_equivalent_row_count": 0,
+        "pipeline_preflight_row_count": 0,
+        "rule_spirit_hunt_row_count": 0,
         "allow_waivers": allow_waivers,
     }
     violations: list[dict[str, str]] = []
@@ -866,11 +1069,23 @@ def validate_todo(
     context["evidence_row_count"] = len(evidence_rows)
     ci_equivalent_rows = table_rows(find_section(sections, CI_EQ_SECTION))
     context["ci_equivalent_row_count"] = len(ci_equivalent_rows)
+    context["pipeline_preflight_row_count"] = len(table_rows(find_section(sections, PIPELINE_PREFLIGHT_SECTION)))
+    context["rule_spirit_hunt_row_count"] = len(table_rows(find_section(sections, RULE_SPIRIT_HUNT_SECTION)))
 
     if not delivery_claim:
         return {"blocked": False, "violations": [], "context": context}
 
     violations.extend(validate_ci_equivalent_suite_matrix(sections, allow_waivers))
+    for section_name, code_prefix, row_resolution in REVIEW_GATE_SECTIONS:
+        violations.extend(
+            validate_review_gate_matrix(
+                sections,
+                section_name,
+                code_prefix,
+                row_resolution,
+                allow_waivers,
+            )
+        )
 
     if not evidence_rows:
         violations.append(
@@ -1072,7 +1287,13 @@ def render_text(result: dict[str, Any]) -> str:
             lines.append(f"  - [{violation['code']}] {violation['section']}: {violation['message']}")
     lines.append("resolution_prompt:")
     if not violations:
-        if context.get("delivery_claim"):
+        if context.get("mode") == "all_completed":
+            todo_count = context.get("todo_count", 0)
+            if todo_count:
+                lines.append(f"  - All {todo_count} close-claim TODO(s) passed completion validation.")
+            else:
+                lines.append("  - No close-claim TODOs were found under foundation_documentation/todos.")
+        elif context.get("delivery_claim"):
             lines.append("  - The TODO has criterion-specific completion evidence for its current delivery claim.")
         else:
             lines.append("  - The TODO is not currently claiming a delivery milestone that requires completion evidence.")
@@ -1087,7 +1308,10 @@ def render_text(result: dict[str, Any]) -> str:
             lines.append(f"  - {resolution}")
     lines.append("context:")
     for key in (
+        "mode",
         "todo_path",
+        "start_path",
+        "todo_count",
         "current_delivery_stage",
         "delivery_claim",
         "scope_count",
@@ -1095,6 +1319,9 @@ def render_text(result: dict[str, Any]) -> str:
         "dod_count",
         "validation_count",
         "evidence_row_count",
+        "ci_equivalent_row_count",
+        "pipeline_preflight_row_count",
+        "rule_spirit_hunt_row_count",
         "allow_waivers",
     ):
         lines.append(f"  {key}: {context.get(key)}")
@@ -1130,9 +1357,92 @@ def append_event(events_jsonl: str, result: dict[str, Any]) -> None:
         handle.write(json.dumps(payload, sort_keys=True) + "\n")
 
 
+def collect_close_claim_todos(todos_root: Path) -> list[Path]:
+    discovered: list[Path] = []
+    for path in sorted(todos_root.rglob("*.md")):
+        normalized = str(path).replace("\\", "/")
+        if "/todos/ephemeral/" in normalized:
+            continue
+        if "/todos/promotion_lane/" in normalized or "/todos/completed/" in normalized:
+            discovered.append(path)
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except UnicodeDecodeError:
+            continue
+        sections = extract_sections(lines)
+        stage = extract_field(find_section(sections, "Delivery Status Canon"), "Current delivery stage")
+        if is_delivery_claim(path, stage, require_delivery=False):
+            discovered.append(path)
+    return discovered
+
+
+def discover_close_claim_todos(start_path: Path) -> list[Path]:
+    search = start_path.resolve()
+    if search.is_file():
+        search = search.parent
+    for _ in range(12):
+        candidate = search / "foundation_documentation" / "todos"
+        if candidate.is_dir():
+            return collect_close_claim_todos(candidate)
+        if search.parent == search:
+            break
+        search = search.parent
+    cwd_candidate = Path.cwd() / "foundation_documentation" / "todos"
+    if cwd_candidate.is_dir():
+        return collect_close_claim_todos(cwd_candidate)
+    return []
+
+
+def validate_all_completed(
+    start_path: Path,
+    allow_waivers: bool,
+) -> dict[str, Any]:
+    todos = discover_close_claim_todos(start_path)
+    context = {
+        "mode": "all_completed",
+        "start_path": str(start_path),
+        "todo_count": len(todos),
+        "allow_waivers": allow_waivers,
+    }
+    violations: list[dict[str, str]] = []
+    todo_results: list[dict[str, Any]] = []
+
+    for todo_path in todos:
+        result = validate_todo(todo_path, require_delivery=True, allow_waivers=allow_waivers)
+        todo_results.append(
+            {
+                "todo_path": str(todo_path),
+                "blocked": result["blocked"],
+                "violation_codes": [violation["code"] for violation in result["violations"]],
+            }
+        )
+        for violation in result["violations"]:
+            violations.append(
+                build_violation(
+                    violation["code"],
+                    f"{todo_path}: {violation['message']}",
+                    violation["resolution"],
+                    violation["section"],
+                )
+            )
+
+    return {
+        "blocked": bool(violations),
+        "violations": violations,
+        "context": context,
+        "todo_results": todo_results,
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate tactical TODO completion evidence with TEACH output.")
-    parser.add_argument("todo", help="Path to a tactical TODO markdown file.")
+    parser.add_argument("todo", nargs="?", help="Path to a tactical TODO markdown file.")
+    parser.add_argument(
+        "--all-completed",
+        action="store_true",
+        help="Scan close-claim TODOs under foundation_documentation/todos and require all to pass.",
+    )
     parser.add_argument(
         "--require-delivery",
         action="store_true",
@@ -1150,6 +1460,24 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if not args.todo and not args.all_completed:
+        raise SystemExit("Pass a TODO path or --all-completed.")
+    if args.todo and args.all_completed:
+        raise SystemExit("Pass either a TODO path or --all-completed, not both.")
+
+    if args.all_completed:
+        result = validate_all_completed(
+            Path.cwd(),
+            allow_waivers=args.allow_waivers,
+        )
+        text = render_text(result)
+        print(text, end="")
+        if args.json_output:
+            Path(args.json_output).write_text(render_json(result), encoding="utf-8")
+        if args.events_jsonl:
+            append_event(args.events_jsonl, result)
+        return 2 if result["blocked"] else 0
+
     todo_path = Path(args.todo).resolve()
     result = validate_todo(
         todo_path,

@@ -88,10 +88,12 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - `Local CI-Equivalent Suite Matrix`: every in-scope repo-owned CI suite/job that will run for the touched slice must have a locally executed passed row (or an explicit approved `n/a`/waiver with rationale when no CI surface truly applies). Targeted subset reruns alone do not satisfy TODO delivery or promotion readiness.
    - **Decision Adherence**;
    - module decision consistency;
+   - `Pipeline/Copilot P1/P2 Preflight`: fresh no-context or bounded self-review of the implemented diff, local CI-equivalent evidence, and likely CI/Copilot `P1|P2` failure modes; unresolved `P1|P2` blocks delivery.
+   - `Rule-Spirit Anti-Pattern Hunt`: fresh architecture/rules pass against the spirit of the ingested rules, known patterns/anti-patterns, and disguised bypasses; unresolved `P1|P2` blocks delivery.
    - security risk assessment;
    - performance/concurrency assessment;
    - validation steps;
-   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` with `Overall outcome: go` before `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claims;
+   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` with `Overall outcome: go` after delivery-side gates are recorded and before `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claims;
    - rerun `wf-docker-audit-escalation-method` if trigger fields changed materially during implementation;
    - independent test-quality audit from the derived floor;
    - verification-debt audit when required;
@@ -105,6 +107,7 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - browser/web CRUD/mutation criteria cannot close from `readonly` Playwright; they require the Playwright `mutation` lane on an approved non-`main` target.
    - non-visual refactors that change fields, DTOs, payloads, projections, validations, queries, settings, capabilities, or persisted state cannot close without either runtime flow evidence for the affected user journey or a recorded rationale proving no user-observable flow can change.
    - producer surfaces recorded in the `Frontend / Consumer Matrix` cannot close from backend evidence alone. Each row must have the declared consumer implemented and evidenced, or an explicit approved backend-only/internal-only/external-only waiver with rationale, owner, and follow-up if any.
+   - final review packages must include Pipeline/Copilot P1/P2 Preflight evidence and Rule-Spirit Anti-Pattern Hunt evidence so pipeline-review and architecture-bypass defects are caught locally first.
    - when the derived floor uses the dedicated three-lane external audit loop, the governing evidence must come from `audit-protocol-triple-review` rather than ad hoc reviewer sequencing.
 14. If pausing blocked, set `Blocked` explicitly with blocker notes and next exact step.
 15. Before close, promote stable outcomes into canonical module docs; then move the same governing TODO to `promotion_lane/` when only lane follow-through remains. Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion and `github-main-promotion-orchestrator` only when the user explicitly requests `main`. Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active requested work. Move the TODO to `completed/`/canceled once the final required lane threshold is complete.

@@ -298,7 +298,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - If a criterion is intentionally not covered by integration/device or navigation/browser evidence because it is structure-only, record an explicit approved waiver/deviation with the reason. A silent `n/a` is not delivery evidence.
    - Aggregate validation summaries are supporting notes only. They do not replace row-level evidence for each DoD/validation criterion.
    - If a criterion cannot be validated, mark it `blocked` or record an explicit approved waiver; do not mark it passed from adjacent or representative evidence.
-   - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` before any delivery-complete claim and require `Overall outcome: go`.
+   - The final deterministic completion guard is run after the delivery-side review gates are recorded, not as a substitute for those gates.
    - Cross-check the `Frontend / Consumer Matrix` before delivery. Every producer row must either:
      - name the implemented consumer surface and evidence for discoverability/rendering plus request/readback/contract behavior where applicable; or
      - carry an explicit approved `backend-only`, `internal-only`, `external-only`, or `not-needed` waiver with rationale, owner, and any follow-up.
@@ -381,7 +381,23 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Cross-check every in-scope row in the `Local CI-Equivalent Suite Matrix` against an actually executed local pass of the same repo-owned CI suite/job. If only targeted reruns passed locally, delivery and promotion readiness are still invalid.
    - If the TODO includes any large or architectural change, require unit + widget + integration evidence for the affected critical paths before delivery closure.
    - If that architectural change is compatibility-critical or backend-coupled, run `test-creation-standard` plus `test-orchestration-suite` and require the relevant real-backend integration platform matrix; `blocked` is not delivery-ready.
-28. **Independent Test Quality Audit (deterministic floor from audit escalation)**
+28. **Pipeline/Copilot P1/P2 Preflight (mandatory before delivery claim)**
+   - Build a bounded review package from the implemented diff, touched-surface summary, frozen decisions, local CI-equivalent suite evidence, validation output, and any current PR/check context if it already exists.
+   - Ask a fresh reviewer with no inherited thread context to review the package as if it were GitHub Copilot plus CI triage before pipeline execution. The reviewer must look for defects that would reasonably appear as `P1` or `P2` in CI, static analysis, Copilot review, test execution, integration/browser/device lanes, missing evidence, or contract drift.
+   - If a subagent is available, delegate this pass to a no-context subagent; otherwise perform a bounded no-context self-review and clearly mark it as self-review support, not equivalent to a required external review when the audit floor demands one.
+   - Record a `Pipeline/Copilot P1/P2 Preflight` table with columns: `Reviewer Surface / Package`, `Review Focus`, `Status`, `Evidence Artifact / Command`, `Findings`, `Resolution / Notes`.
+   - `Status` must be `passed`, `waived`, or `n/a`. `n/a` is allowed only for non-code/non-pipeline slices with a rationale; `waived` requires explicit human approval evidence.
+   - Any unresolved `P1` or `P2` finding blocks delivery. Fix it, refresh the affected evidence, and rerun the preflight before claiming delivery.
+   - `P3` or lower findings may be deferred only with explicit rationale, owner, and follow-up path; do not bury them in aggregate notes.
+29. **Rule-Spirit Anti-Pattern Hunt (mandatory before delivery claim)**
+   - Build the search lens from the rules/workflows ingested after `APROVADO`, canonical architecture principles, known patterns/anti-patterns, and the changed diff.
+   - Search for both direct violations and bypass shapes: ad hoc shortcuts, structural patches over unresolved defects, duplicated ownership, fake compliance artifacts, "pass the guard" code, weakening tests to match implementation, hard-coded topology that belongs in `foundation_documentation` or env config, hidden coupling, direct access around approved abstractions, and local exceptions that should have been explicit decisions.
+   - Include both old anti-patterns and candidate new anti-patterns. A recurring or clearly reusable candidate should be recorded for promotion into the appropriate local/stack/core anti-pattern catalog; project-specific candidates stay in the downstream project, not in Delphi core.
+   - Record a `Rule-Spirit Anti-Pattern Hunt` table with columns: `Rule / Principle Surface`, `Bypass or Anti-Pattern Search Lens`, `Status`, `Evidence Artifact / Command`, `Findings`, `Resolution / Notes`.
+   - `Status` must be `passed`, `waived`, or `n/a`. `n/a` is allowed only when no code, test, architecture, or workflow surface changed and the rationale is explicit; `waived` requires explicit human approval evidence.
+   - Any unresolved `P1` or `P2` architecture/rule-spirit finding blocks delivery. Fix it, refresh evidence, and rerun the hunt before claiming delivery.
+   - If the hunt finds a valid but accepted exception, record the approval source, scope boundary, owner, and expiration/revisit trigger.
+30. **Independent Test Quality Audit (deterministic floor from audit escalation)**
    - Use the latest `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
    - If implementation changed any audit trigger materially after planning, rerun the guard before trusting the existing decision.
    - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
@@ -405,7 +421,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Record findings in the TODO as `Integrated|Challenged|Deferred with rationale`.
    - If the first attempt fails or times out, retry once with a tighter package.
    - If a `required` test audit still cannot be obtained, record a blocker or explicit waiver before `Completed` or `Production-Ready`; local self-review is not equivalent and cannot close the gate by itself.
-29. **Verification Debt Audit (required before close for `medium|big` or when debt signals exist)**
+31. **Verification Debt Audit (required before close for `medium|big` or when debt signals exist)**
    - Inspect the TODO, delivery evidence, and touched code for verification debt signals:
      - missing or weak evidence;
      - excessive waivers or unverifiable claims;
@@ -414,13 +430,15 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - stale tactical notes that should already have been promoted or removed.
    - Run `verification-debt-audit` when the scope is `medium|big`, when shared contracts were touched, or when debt signals are present.
    - If a full audit is not run, record explicit rationale plus the grep/evidence basis used to conclude residual debt is acceptable.
-30. **Independent No-Context Final Review (deterministic floor from audit escalation)**
+32. **Independent No-Context Final Review (deterministic floor from audit escalation)**
    - Run `wf-docker-independent-final-review-method` against the near-final delivery packet:
       - implemented diff or bounded touched-surface set;
       - adherence tables;
       - validation/test evidence;
       - test-quality-audit evidence produced by `wf-docker-independent-test-quality-audit-method`;
       - security/performance evidence;
+      - Pipeline/Copilot P1/P2 Preflight evidence;
+      - Rule-Spirit Anti-Pattern Hunt evidence;
       - verification-debt evidence;
       - residual risks and waivers.
    - Use the latest `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
@@ -441,7 +459,11 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Resolve each material finding in the TODO as `Integrated|Challenged|Deferred with rationale`.
    - If the review reveals an implementation defect within approved scope, fix it and refresh the affected evidence.
    - If the review reveals an adherence break or approval-material change, refresh the TODO and obtain renewed `APROVADO` before proceeding.
-31. **Blocked-state update (mandatory when pausing blocked)**
+33. **Final Deterministic Completion Guard (mandatory before delivery claim)**
+   - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` after validation, CI-equivalent evidence, Pipeline/Copilot P1/P2 Preflight, Rule-Spirit Anti-Pattern Hunt, and required audit/final-review gates are recorded.
+   - Require `Overall outcome: go` before any `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claim.
+   - If the guard returns `no-go`, treat its TEACH `resolution_prompt` as the exact next delivery blocker and update the TODO before retrying.
+34. **Blocked-state update (mandatory when pausing blocked)**
    - If work cannot currently proceed and the TODO will remain open, set `Qualifiers` to include `Blocked` before pausing.
    - When the active state is blocked, fill `Blocker Notes` with:
      - concrete blocker;
@@ -452,13 +474,13 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Always update `Next exact step` when the TODO becomes blocked.
    - Do not downgrade or clear the current delivery stage just because the TODO is blocked; `Blocked` is an overlay, not a promotion replacement.
    - Do not leave a paused TODO in an ambiguous state when the real next state is blocked.
-32. **Module Consolidation Gate (mandatory before close)**
+35. **Module Consolidation Gate (mandatory before close)**
    - Promote stable conceptual outcomes and finalized decisions from the TODO into canonical module docs.
    - Update module decision/promotion ledgers with traceability to this TODO.
    - If the TODO touched a module area previously covered only by legacy summary-era context, update `Canonical Coverage Status`, `Last Canonicalization Review`, and `Remaining Migration Scope` accordingly.
    - Remove/replace superseded tactical notes that conflict with canonical module docs.
    - Update TODO/module cross-links if files moved from `active` to `completed`.
-33. **Close TODO**
+36. **Close TODO**
    - Only mark delivery complete when all baseline decisions are `Adherent` or explicitly superseded via approved decision changes.
    - Update the TODO with outcome notes.
    - If implementation authority is closed locally but promotion/lane follow-through still remains, move the same governing TODO to `foundation_documentation/todos/promotion_lane/`.
@@ -490,6 +512,8 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - Completion Evidence Matrix rows for every DoD and Validation Steps criterion, with criterion-specific implementation/test/runtime evidence before delivery claims.
 - Flow Evidence Planning Matrix for any user-visible, interactive, or potentially user-flow-impacting touched surface before approval, including non-visual refactors that can affect user-observable behavior.
 - Frontend / Consumer Matrix for any backend endpoint, job, settings namespace, payload, schema, projection, capability, read model, webhook, or integration contract that could feed app/web/admin/operator behavior.
+- Pipeline/Copilot P1/P2 Preflight table with explicit reviewer package, findings, and resolution before delivery claims.
+- Rule-Spirit Anti-Pattern Hunt table with explicit rule/principle surfaces, bypass lenses, findings, and resolution before delivery claims.
 - Decision baseline and decision-adherence validation table with evidence.
 - Module coherence matrix per decision (`Aligned|Conflict|Supersede` + `Preserve|Supersede`) with evidence.
 - Module decision baseline snapshot + 1-1 consistency matrices (planned and delivered) with evidence.
@@ -532,6 +556,10 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - No refactor of fields, DTOs, payloads, projections, validation, query/filter semantics, settings, capabilities, or persisted state may skip flow-impact assessment when those surfaces can feed user-visible behavior.
 - No backend endpoint, job, settings namespace, payload, schema, projection, capability, read model, webhook, or integration contract may be treated as delivery-complete without either an explicit implemented consumer with evidence or an explicit approved no-consumer waiver.
 - No review package for a cross-stack or producer-surface TODO may omit the Frontend / Consumer Matrix; omission must be treated as a package-preparation gap before external review.
+- No delivery claim is valid without a `Pipeline/Copilot P1/P2 Preflight` row showing a completed preflight package, or an explicit approved `n/a`/waiver rationale for non-code/non-pipeline work.
+- No delivery claim is valid while the Pipeline/Copilot preflight records an unresolved `P1` or `P2` finding.
+- No delivery claim is valid without a `Rule-Spirit Anti-Pattern Hunt` row showing a completed architecture/rules search lens, or an explicit approved `n/a`/waiver rationale for work that touched no code, test, architecture, or workflow surface.
+- No delivery claim is valid while the Rule-Spirit Anti-Pattern Hunt records an unresolved `P1` or `P2` anti-pattern/rule-spirit finding.
 - `todo_completion_guard.py` must return `Overall outcome: go` before claiming `Local-Implemented`, moving to `promotion_lane/` or `completed/`, or claiming `Production-Ready`.
 - No delivery is considered complete without an explicit security risk assessment and attack simulation decision.
 - No TODO that classifies attack simulation as `required` can be closed without the corresponding review evidence (or an explicit approved exception path).

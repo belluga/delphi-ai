@@ -1,0 +1,95 @@
+# Delphi Stack Capability Registry
+# Authority: paced.core.stack-capabilities
+#
+# This registry describes stack capabilities that Delphi can support globally.
+# It does not activate any stack in a downstream project by itself.
+#
+# Activation contract:
+# - Active project stacks are declared by foundation_documentation, repo
+#   structure, .gitmodules, project-owned config/env, or an explicit TODO.
+# - Delphi scripts/rules/skills may exist for an inactive capability and must
+#   remain additive until the project declares that surface active.
+# - Environment, tenant, domain, runtime-owner, and validation-target facts
+#   belong in project-owned contracts, not in this global registry.
+
+schema_version: 1
+ecosystem: belluga
+
+activation_contract:
+  authority_order:
+    - active_todo
+    - foundation_documentation
+    - dependency_readiness
+    - project_readme
+    - gitmodules
+    - project_owned_config_env
+    - user_clarification
+  project_contract_surfaces:
+    - foundation_documentation/project_constitution.md
+    - foundation_documentation/modules/
+    - foundation_documentation/artifacts/dependency-readiness.md
+    - foundation_documentation/policies/scope_subscope_governance.md
+    - .gitmodules
+    - README.md
+    - .env.example
+    - compose files and project-owned safe runners
+  non_activation_signals:
+    - capability listed in this registry
+    - Delphi skill present under delphi-ai/skills
+    - Delphi workflow present under delphi-ai/workflows
+    - Delphi helper script present under delphi-ai/scripts or delphi-ai/tools
+    - stack pattern/rule present under delphi-ai/rules or delphi-ai/patterns
+
+capabilities:
+  docker:
+    lifecycle: available
+    purpose: Runtime orchestration, environment readiness, ingress, CI/promotion coordination.
+    default_surfaces:
+      - workflows/docker/
+      - rules/stacks/docker/
+      - tools/runtime_ingress_surface_audit.sh
+      - scripts/docker/verify_environment.sh
+    activation_markers:
+      - root Dockerfile or compose files
+      - Docker/runtime module docs
+      - project README runtime instructions
+    execution_policy: Execute only against project-declared compose profiles, safe runners, and environment contracts.
+
+  flutter:
+    lifecycle: available
+    purpose: Client application, Flutter web publication, device/browser flow validation, reusable Flutter packages.
+    default_surfaces:
+      - workflows/flutter/
+      - rules/stacks/flutter/
+      - skills/flutter-*
+      - tools/flutter_workflow_scaffold.sh
+    activation_markers:
+      - Flutter app submodule or package manifest
+      - Flutter module docs
+      - project-owned Flutter build/test wrappers
+    execution_policy: Keep Flutter helpers available in Delphi; run or wire them only when the downstream project declares a Flutter surface active.
+
+  laravel:
+    lifecycle: available
+    purpose: Laravel backend/API/domain workflows, package extraction, tenant access and domain-resolution guardrails.
+    default_surfaces:
+      - workflows/laravel/
+      - rules/stacks/laravel/
+      - tools/laravel_workflow_scaffold.sh
+      - tools/laravel_tenant_access_guardrails_audit.sh
+      - tools/laravel_domain_resolution_test_audit.sh
+    activation_markers:
+      - Laravel app submodule or composer manifest
+      - Laravel/backend module docs
+      - project-owned Laravel safe runners
+    execution_policy: Prefer project-owned safe runners and foundation_documentation runtime contracts; do not assume Laravel remains the only backend for future projects.
+
+  go:
+    lifecycle: future
+    purpose: Future backend/service capability for projects that migrate or introduce Go services.
+    default_surfaces: []
+    activation_markers:
+      - Go module files
+      - Go service module docs
+      - project-owned Go build/test/run wrappers
+    execution_policy: Reserved capability. Adding Go scripts/rules later must remain additive and must not disable existing Laravel/Flutter/Docker support.

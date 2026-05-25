@@ -147,10 +147,71 @@ cat > "$TMP_DIR/complete-evidence.md" <<'TODO'
 | AC-01 | Acceptance Criteria | The guard blocks incomplete delivery claims. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 | DOD-01 | Definition of Done | All guard regressions pass. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 | VAL-01 | Validation Steps | Unit test: completion guard regression script passes. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
+
+## Local CI-Equivalent Suite Matrix
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+
+## Pipeline/Copilot P1/P2 Preflight
+| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| bounded diff + guard evidence | CI/Copilot P1/P2 defects | passed | `bash tools/tests/todo_completion_guard_test.sh` | none | review complete |
+
+## Rule-Spirit Anti-Pattern Hunt
+| Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| todo completion rule | guard bypass and fake evidence checks | passed | `bash tools/tests/todo_completion_guard_test.sh` | no P1 or P2 anti-pattern findings | clean |
 TODO
 
 assert_go "$TMP_DIR/complete-evidence.md"
 grep -q "scope_count: 1" "$OUTPUT_FILE"
 grep -q "acceptance_criteria_count: 1" "$OUTPUT_FILE"
+
+mkdir -p "$TMP_DIR/project/foundation_documentation/todos/completed"
+cp "$TMP_DIR/complete-evidence.md" "$TMP_DIR/project/foundation_documentation/todos/completed/complete-evidence.md"
+(cd "$TMP_DIR/project" && python3 "$GUARD" --all-completed > "$OUTPUT_FILE" 2>&1)
+grep -q "Overall outcome: go" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/unresolved-pipeline-p1.md" <<'TODO'
+# TODO: Unresolved Pipeline P1
+
+## Delivery Status Canon
+- **Current delivery stage:** `Local-Implemented`
+
+## Scope
+- [x] Implement deterministic repository guard.
+
+## Definition of Done
+- [x] All guard regressions pass.
+
+## Validation Steps
+- [x] Unit test: completion guard regression script passes.
+
+## Completion Evidence Matrix
+| Criterion ID | Source Section | Criterion | Evidence Type | Evidence Artifact / Command | Runtime Target | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| SCOPE-01 | Scope | Implement deterministic repository guard. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
+| DOD-01 | Definition of Done | All guard regressions pass. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
+| VAL-01 | Validation Steps | Unit test: completion guard regression script passes. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
+
+## Local CI-Equivalent Suite Matrix
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+
+## Pipeline/Copilot P1/P2 Preflight
+| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| bounded diff + guard evidence | CI/Copilot P1/P2 defects | passed | `bash tools/tests/todo_completion_guard_test.sh` | P1 unresolved: missing blocker | still open |
+
+## Rule-Spirit Anti-Pattern Hunt
+| Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| todo completion rule | guard bypass and fake evidence checks | passed | `bash tools/tests/todo_completion_guard_test.sh` | no P1 or P2 anti-pattern findings | clean |
+TODO
+
+assert_no_go "$TMP_DIR/unresolved-pipeline-p1.md"
+grep -q "PIPELINE-PREFLIGHT-UNRESOLVED-P1-P2" "$OUTPUT_FILE"
 
 printf 'todo_completion_guard_test: OK\n'

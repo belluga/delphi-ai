@@ -11,6 +11,7 @@ When defining or editing a workflow:
 - Keep counterparts coherent:
   - if a workflow skill (`skills/wf-*`) exists, a canonical workflow file under `delphi-ai/workflows/**` must exist;
   - if a Cline workflow skill (`delphi-ai/.cline/skills/wf-*`) exists, a Cline workflow counterpart under `delphi-ai/.clinerules/workflows/**` must exist.
+- Keep one canonical source for durable behavior. Workflow files carry detailed method semantics; workflow skills should usually be concise entrypoints that reference the canonical workflow instead of copying the full body.
 - For workflows that can lead to implementation, explicitly encode governance gates or reference the TODO-driven execution rule/workflow:
   - complexity classification (`small|medium|big`);
   - Plan Review Gate for `medium|big`;
@@ -27,6 +28,7 @@ Workflows are only effective when triggered by rules. This rule keeps procedures
 ## Enforcement
 - Block additions/edits that lack a matching rule or deviate from the template.
 - Block workflow additions that lack required skill/workflow counterparts across canonical and Cline surfaces.
+- Block mirror-only behavior changes that are not represented in the canonical rule/workflow/skill source.
 - Block implementation-capable workflows that omit baseline governance gates (directly or by explicit reference).
 - For downstream environment work, require `bash delphi-ai/verify_context.sh` and `bash delphi-ai/verify_adherence_sync.sh` before completion.
 - For Delphi self-maintenance, require manual agnosticism review plus applicable local checks (for example `bash self_check.sh`) before completion.

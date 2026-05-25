@@ -71,6 +71,7 @@ DEL_ROOT="$REPO_ROOT/delphi-ai"
 
 declare -a WARNINGS=()
 declare -a FAILURES=()
+[ -f "$DEL_ROOT/config/stack_capabilities.yaml" ] || WARNINGS+=("delphi-ai/config/stack_capabilities.yaml missing; available stack capabilities cannot be inventoried")
 READINESS_COMPOSE_CONFIG_PROFILES="${READINESS_COMPOSE_CONFIG_PROFILES:-local-db}"
 READINESS_DERIVED_ARTIFACT_SUBMODULES="${READINESS_DERIVED_ARTIFACT_SUBMODULES:-web-app}"
 READINESS_LOCAL_DB_ENV_FILE="${READINESS_LOCAL_DB_ENV_FILE:-laravel-app/.env}"
@@ -387,6 +388,10 @@ fi
 validation_output=()
 validation_status="REVIEW"
 dependency_readiness_file="$REPO_ROOT/foundation_documentation/artifacts/dependency-readiness.md"
+if [ -f "$DEL_ROOT/config/stack_capabilities.yaml" ]; then
+  validation_output+=("Delphi stack capability registry present: delphi-ai/config/stack_capabilities.yaml")
+  validation_output+=("Capability presence is not project activation; resolve active stacks from foundation_documentation, repo shape, and project-owned config/env.")
+fi
 if [ -f "$dependency_readiness_file" ]; then
   validation_output+=("dependency-readiness artifact present: foundation_documentation/artifacts/dependency-readiness.md")
   if have_cmd rg; then
@@ -417,7 +422,7 @@ done
 if [ -f "$REPO_ROOT/.env" ]; then
   domain_hint="$(read_dotenv_value "DOMAIN" "$REPO_ROOT/.env" 2>/dev/null || true)"
   if [ -n "$domain_hint" ]; then
-    validation_output+=("Landlord host hint from .env DOMAIN: https://$domain_hint")
+    validation_output+=("Project public host hint from .env DOMAIN: https://$domain_hint")
   fi
   tunnel_hint="$(read_dotenv_value "CLOUDFLARE_TUNNEL_TOKEN" "$REPO_ROOT/.env" 2>/dev/null || true)"
   if [ -n "$tunnel_hint" ]; then

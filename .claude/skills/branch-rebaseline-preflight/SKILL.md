@@ -14,9 +14,9 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 - Remote branch deletion is never automatic here. The skill only reports merged remote cleanup candidates.
 - This skill must not manually edit, stage, or rewrite Docker submodule gitlinks as part of "getting the workspace ready". Gitlink creation, adjustment, or reconciliation belongs only to the promotion-lane workflow.
 - In multi-repository ecosystems, restrict the default rebaseline scope to the implementation repositories that the user is actively preparing for the next coding cycle. Do not automatically widen the audit to adjacent generated repos, deployment mirrors, documentation mirrors, or artifact-only repositories unless the user explicitly asks.
-- Belluga ecosystem default:
-  - include: `belluga_now_docker`, `flutter-app`, `laravel-app`
-  - exclude by default: `web-app`, `foundation_documentation`
+- PACED Docker ecosystem default:
+  - include: the Docker/orchestration root repository and implementation source repositories named by the project (commonly `flutter-app` and `laravel-app`).
+  - exclude by default: derived artifact repositories and documentation authority repositories (commonly `web-app` and `foundation_documentation`).
   - if those excluded surfaces need cleanup or rebaseline, require explicit user instruction for that broader scope.
 - Do not treat ancestry-only mismatch as a blocker until you verify whether the branch content is already present in `origin/dev` through cherry-pick/replay or equivalent patch uptake.
 - If a branch is not merged by ancestry but its non-merge commit set is patch-equivalent to content already in `origin/dev`, classify it as a `patch-equivalent false positive`, not as a real blocker.

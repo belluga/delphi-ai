@@ -4,6 +4,10 @@
 # This file is the single source of truth for ecosystem-level (global)
 # proprietary packages published by the organization.
 #
+# Stack capability availability is tracked separately in
+# config/stack_capabilities.yaml. Listing a package here does not activate a
+# stack in a downstream project.
+#
 # The verify_package_registry.sh script reads this file to identify
 # ecosystem packages in project manifests (pubspec.yaml / composer.json).
 #
@@ -53,3 +57,9 @@ laravel:
   #   description: Core utilities for Belluga Laravel apps
   #   packagist: null
   #   repository: https://github.com/belluga/belluga-core
+
+docker:
+  # Add Docker/runtime ecosystem packages or reusable images here as they are published
+
+go:
+  # Reserved for future Go ecosystem packages

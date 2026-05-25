@@ -14,6 +14,7 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
 - Confirm if the change is skill-only or also affects rule/workflow behavior.
 - Canonical project skills must live inside this repository under `delphi-ai/skills/` (never as the primary source in `~/.codex/skills/**`).
 - Review `delphi-ai/skills/deterministic-tooling-register.md` when the skill already exists, or be prepared to classify the skill there when creating a new one.
+- Prefer a concise skill that points to canonical rules/workflows/config when the durable behavior already lives elsewhere. Do not duplicate large rule/workflow bodies into skills unless the skill is itself the canonical source.
 
 ## Steps
 1. Edit the canonical skill in `delphi-ai/skills/<skill-name>/SKILL.md`.
@@ -32,6 +33,7 @@ Update or create skills with one canonical process that keeps Cline, Codex, and 
    - Canonical (Codex/Antigravity): `delphi-ai/rules/**`, `delphi-ai/workflows/**`, and affected `delphi-ai/skills/rule-*` or `delphi-ai/skills/wf-*`.
    - Cline-compatible: `delphi-ai/.clinerules/model-decision/**`, `delphi-ai/.clinerules/glob/**`, `delphi-ai/.clinerules/manual/**`, `delphi-ai/.clinerules/workflows/**`.
    - After changing any curated canonical rule/workflow that has a generated `.clinerules` counterpart, run `bash delphi-ai/tools/sync_clinerules_mirrors.sh`.
+   - If a mirror or skill contains a full copied body that can be replaced by a pointer to the canonical source, prefer the pointer and record that drift-reduction choice in the register.
 8. If changed behavior defines/changes an API contract pattern (for example PATCH semantics), consolidate all contract surfaces:
    - Update `foundation_documentation/endpoints_mvp_contracts.md` conventions.
    - Update active tactical TODO decisions/tasks/validation gates with explicit convergence work for legacy areas.

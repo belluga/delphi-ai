@@ -86,7 +86,7 @@ For any blocking PR/review finding, perform this gate before deciding to patch:
 
 ### Docker Finalization
 - Only after every pertinent application repo is green on `main`, and the required `web-app` path is green when Flutter participated:
-  1. Open PR `stage -> main` in `belluga_now_docker`.
+  1. Open PR `stage -> main` in the Docker/orchestration root repository.
   2. Wait for all PR checks.
   3. Review Copilot comments.
   4. Merge only on full green.

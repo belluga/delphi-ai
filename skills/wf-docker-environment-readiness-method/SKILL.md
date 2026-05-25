@@ -1,80 +1,35 @@
 ---
 name: wf-docker-environment-readiness-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before DevOps/CI work proceeds."
+description: "Workflow: MUST use whenever the scope matches this purpose: Ensure the working copy is correctly wired before DevOps/CI work proceeds."
 ---
 
 # Method: DevOps Environment Readiness
 
+Use this skill as the operational entrypoint for the canonical workflow in `workflows/docker/environment-readiness-method.md`.
+The workflow file is the normative source for readiness sequencing and topology-resolution details.
+
 ## Purpose
-Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before executing DevOps or CI/CD tasks. Prefer deterministic script checks over manual spot-checks to prevent drift (for example derived web bundle wiring or broken runtime storage routing).
+Verify that a downstream working copy is wired well enough for DevOps, CI, build, publish, or validation work without guessing stack activation or runtime topology.
 
-## Triggers
-- User explicitly requests DevOps/setup help.
-- Session starts in a repository that might not be the canonical boilerplate.
-- Before running scripts that depend on submodules (for example backend source, client source, or derived web bundle).
-
-## Inputs
-- Root repository (`<project>_docker` or downstream clone).
-- `.gitmodules` and current submodule working trees.
-- Project README instructions.
- - `foundation_documentation` submodule (expected for all projects; add if missing).
-
-## Preferred Deterministic Helper
-- Default read-only readiness report:
-  - `bash delphi-ai/tools/environment_readiness_report.sh`
-- Include adherence-sync verification when the environment is expected to be fully wired:
-  - `bash delphi-ai/tools/environment_readiness_report.sh --include-adherence-sync`
-- For zero-state Genesis bootstrap, treat this helper as supporting evidence only. A `zero-state-ready` outcome means the install preflight passed; it does not replace Genesis canonicalization work.
-- For mature downstream environments, use the report first, then follow the method for any required repair path (`verify_context.sh --repair`, project-owned fixes, or deeper environment normalization).
+## Canonical Sources
+- `workflows/docker/environment-readiness-method.md`
+- `config/stack_capabilities.yaml`
+- `ecosystem_template_configuration.md`
+- `rules/core/initialization-readiness-model-decision.md`
 
 ## Procedure
-1. **Confirm repository context**
-   - Identify whether we are in the canonical boilerplate repo or a downstream project.
-   - If downstream, note the expected remotes from `.gitmodules`, project README, or `foundation_documentation`.
+1. Confirm repository context and whether the project is zero-state.
+2. Treat `config/stack_capabilities.yaml` as available-capability context only.
+3. Resolve active stacks and runtime topology from project-owned sources: active TODO, `foundation_documentation`, dependency-readiness, `.gitmodules`, README, compose/env examples, and safe runners.
+4. Run `bash delphi-ai/verify_context.sh` read-only; use `--repair` only for Delphi-managed link/artifact issues.
+5. Run the project readiness verifier when the downstream topology exists.
+6. Validate submodules, filesystem ownership, declared script links, and validation topology before build/deploy/CI work proceeds.
 
-2. **Run canonical readiness scripts (preferred)**
-   - Run Delphi context checks (symlinks, required folders):
-     - `bash delphi-ai/verify_context.sh`
-     - Treat this as read-only verification. If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification. If it fails on a path conflict with project-owned files/directories, stop and report it for manual remediation.
-   - Run the project readiness verifier (compose config + critical drift checks):
-     - `bash scripts/verify_environment.sh`
-     - This helper is topology-configurable. Belluga Docker defaults cover `flutter-app`, `laravel-app`, and `web-app`; future Belluga stack capabilities such as Go should add their own Delphi scripts/rules while projects select active wiring through variables such as `DELPHI_SCRIPT_LINK_SPECS`, `DELPHI_DERIVED_ARTIFACT_SUBMODULES`, `DELPHI_COMPOSE_CONFIG_PROFILES`, and `DELPHI_LOCAL_DB_ENV_FILE`.
-   - If either script fails, fix the reported issue before proceeding.
+## Preferred Deterministic Helper
+- `bash delphi-ai/tools/environment_readiness_report.sh`
+- `bash delphi-ai/tools/environment_readiness_report.sh --include-adherence-sync` when full downstream sync validation is required.
 
-3. **Validate submodules (only if needed)**
-   - Run `git submodule status --recursive` and ensure each submodule is checked out; no entry should start with `-` (uninitialized) or `U` (merge conflict on gitlink state).
-   - Treat entries starting with `+` as local workspace drift (tracking mode) rather than immediate failure.
-   - If the task requires CI/deploy parity, normalize to pinned mode before proceeding: prefer `tools/submodules/pin_to_superproject.sh` when available, otherwise run `git submodule sync --recursive && git submodule update --init --recursive`, then confirm no `+` remains.
-   - Ensure `foundation_documentation` is present as a submodule; if missing, add it using the canonical docs repo before proceeding.
-   - For each entry in `.gitmodules`, confirm the URL points to the project’s own repo, not a boilerplate/template source. If any still reference boilerplate sources, guide the user to `git submodule set-url` the correct fork before proceeding.
-
-4. **Filesystem ownership**
-   - Spot-check key environment files, source submodules, and derived bundle directories named by `.gitmodules` or project docs, and ensure they are writable by the host/WSL user. If ownership reflects container/root users, instruct the user to `chown` the directories before continuing.
-
-5. **Symlinked scripts**
-   - Verify project-declared helper script links exist and resolve. Flutter helpers remain available in Delphi even when a project does not use Flutter. Belluga Flutter defaults use `flutter-app/scripts -> ../delphi-ai/scripts/flutter`; additional stack helpers should be added to Delphi and wired only when the project declares them through `DELPHI_SCRIPT_LINK_SPECS` or project docs.
-
-6. **Validation topology snapshot**
-   - When local validation, browser checks, or build/publish flows are in scope, explicitly resolve:
-     - the canonical runtime owner for backend/service/test commands (`host` vs safe runner vs compose service);
-     - the canonical build/publish wrapper and output target for client/web artifacts;
-     - the canonical public validation URLs (for example landlord + tenant domains) and any preferred validation tenant/subdomain.
-   - Source priority:
-     - active TODO / validation notes;
-     - `foundation_documentation/artifacts/dependency-readiness.md`;
-     - README, compose files, `.env`, and project-owned safe runners/wrappers;
-     - direct user clarification when the repo still leaves multiple plausible targets.
-   - If multiple tenant/domain candidates remain and no project-owned artifact selects one, stop and ask instead of guessing.
-   - Prefer project-owned safe runners when they exist. Belluga defaults include `laravel-app/scripts/delphi/run_laravel_tests_safe.sh` for local Laravel tests and `flutter-app/scripts/build_web.sh` for web bundle publish; future stack capabilities such as Go should document equivalent backend/client commands in `foundation_documentation` and configure readiness helpers instead of bypassing them.
-   - If these topology facts are stable and likely to matter across sessions, record or refresh them in `foundation_documentation/artifacts/dependency-readiness.md` before moving on.
-
-7. **README alignment**
-   - If the user is in setup mode, walk through the relevant README sections (env variables, submodule init, Docker commands) and confirm each step is complete. Use the README as the canonical checklist for new environments.
-
-8. **Report status**
-   - Summarise any discrepancies (missing submodule, wrong remote, permission issue, unresolved runtime owner, missing validation target) and the remediation steps provided.
-   - Only proceed with further DevOps work (builds, deployments, CI tasks) after the environment is confirmed healthy.
-
-## Outputs
-- Status summary of submodules, permissions, scripts, and resolved validation topology.
-- Action items (if any) for the user to fix before running builds/deploys.
+## Non-Negotiables
+- Do not infer active Flutter, Laravel, Docker, or Go usage from Delphi files alone.
+- Do not guess tenant/domain/runtime targets. If project-owned artifacts leave multiple plausible choices, ask.
+- Stable environment facts belong in `foundation_documentation` or project-owned config/env, not in Delphi.
