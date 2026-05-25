@@ -29,6 +29,7 @@ Decide the correct tracking lane before implementation work begins. This phase p
    - DoD and validation steps;
    - blocker state when applicable.
 4. If the lane is `Operational Micro-Fix`, validate immediately with objective checks and do not invent a TODO.
+   - Typo-only edits qualify only when they are non-authoritative operational notes and do not change meaning, rules, contracts, workflows, validation expectations, or project-specific `foundation_documentation`.
 5. If the lane is `Maintenance/Regression Fix`, use `foundation_documentation/todos/ephemeral/` and request `APROVADO` before edits.
 
 ## Outputs

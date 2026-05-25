@@ -176,6 +176,14 @@ case "${TARGET_BRANCH:-${BRANCH_NAME:-${HEAD_BRANCH:-}}}" in
     ;;
 esac
 
+if [ "$ACTION" = "pr-create" ] || [ "$ACTION" = "pr-merge" ]; then
+  repo_name="${REPO_SLUG##*/}"
+  if [ "$repo_name" = "web-app" ]; then
+    teach_add_violation "Generated 'web-app' repositories are derived artifact surfaces and cannot be manually promoted or mutated through this stage promotion guard."
+    teach_add_resolution "Fix the authoritative source repository that produced the web artifact, then replay the source lane. Treat the web-app PR only as derived evidence."
+  fi
+fi
+
 if [ "$is_bot_branch" = true ]; then
   case "$PROMOTION_CONTRACT_BOT_NEXT_VERSION_POLICY" in
     forbidden)
@@ -185,6 +193,14 @@ if [ "$is_bot_branch" = true ]; then
     pipeline-owned-only)
       case "$ACTION" in
         pr-create|pr-merge)
+          if [ "$HEAD_BRANCH" = "bot/next-version" ] && [ "$BASE_BRANCH" != "dev" ]; then
+            teach_add_violation "'bot/next-version' PR movement is allowed only as 'bot/next-version -> dev'."
+            teach_add_resolution "Do not open or merge 'bot/next-version' directly to '$BASE_BRANCH'. Merge it to 'dev' first, then use the normal 'dev -> stage' lane-to-lane promotion."
+          fi
+          if [ "$BASE_BRANCH" = "bot/next-version" ]; then
+            teach_add_violation "'bot/next-version' cannot be used as a promotion PR base branch."
+            teach_add_resolution "Use 'bot/next-version' only as the head branch for the lane-owned submodule PR into 'dev'."
+          fi
           ;;
         *)
           teach_add_violation "The contract treats 'bot/next-version' commits and pushes as pipeline-owned only."

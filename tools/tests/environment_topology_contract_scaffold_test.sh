@@ -11,6 +11,7 @@ REPO="$TMP_DIR/project"
 OUTPUT="$REPO/foundation_documentation/artifacts/environment-topology.md"
 
 mkdir -p "$REPO/flutter-app" "$REPO/laravel-app/scripts/delphi" "$REPO/foundation_documentation"
+mkdir -p "$REPO/tools/php-package" "$REPO/node_modules/pkg/tools/flutter" "$REPO/vendor/pkg/scripts/delphi" "$REPO/build/scripts/delphi"
 
 cat > "$REPO/.gitmodules" <<'EOF'
 [submodule "flutter-app"]
@@ -39,14 +40,33 @@ name: fixture_app
 EOF
 
 cat > "$REPO/laravel-app/composer.json" <<'EOF'
-{"name":"fixture/app"}
+{"name":"fixture/app","require":{"laravel/framework":"^11.0"}}
 EOF
 
 touch "$REPO/laravel-app/artisan"
 
+cat > "$REPO/tools/php-package/composer.json" <<'EOF'
+{"name":"fixture/generic-php-package"}
+EOF
+
 cat > "$REPO/laravel-app/scripts/delphi/run_laravel_tests_safe.sh" <<'EOF'
 #!/usr/bin/env bash
 exit 0
+EOF
+
+cat > "$REPO/node_modules/pkg/tools/flutter/run_bad.sh" <<'EOF'
+#!/usr/bin/env bash
+echo bad
+EOF
+
+cat > "$REPO/vendor/pkg/scripts/delphi/run_bad.sh" <<'EOF'
+#!/usr/bin/env bash
+echo bad
+EOF
+
+cat > "$REPO/build/scripts/delphi/run_bad.sh" <<'EOF'
+#!/usr/bin/env bash
+echo bad
 EOF
 
 python3 "$TOOL" --repo "$REPO" --output "$OUTPUT"
@@ -62,6 +82,13 @@ grep -q "<redacted>" "$OUTPUT"
 grep -q "docker" "$OUTPUT"
 grep -q "flutter" "$OUTPUT"
 grep -q "laravel" "$OUTPUT"
+grep -q "Activation Evidence State" "$OUTPUT"
+grep -q "candidate" "$OUTPUT"
+grep -q "laravel-app/artisan" "$OUTPUT"
+! grep -q "tools/php-package/composer.json" "$OUTPUT"
+! grep -q "node_modules/pkg/tools/flutter/run_bad.sh" "$OUTPUT"
+! grep -q "vendor/pkg/scripts/delphi/run_bad.sh" "$OUTPUT"
+! grep -q "build/scripts/delphi/run_bad.sh" "$OUTPUT"
 grep -q "User Validation Checklist" "$OUTPUT"
 
 printf 'environment_topology_contract_scaffold_test: OK\n'

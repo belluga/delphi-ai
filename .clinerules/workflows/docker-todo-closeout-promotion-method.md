@@ -19,9 +19,10 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
 1. If pausing blocked, set `Blocked` explicitly with blocker notes and next exact step.
 2. Promote stable outcomes into canonical project/module docs before close.
 3. Decide the closeout lane:
-   - move to `promotion_lane/` when only lane follow-through remains;
-   - move to `completed/` only when the final required lane threshold is complete;
-   - keep active when evidence or decisions remain open.
+   - keep in `active/` while implementation evidence, decisions, canonicalization, or promotion preparation remain open;
+   - move to `promotion_lane/` when local implementation is complete and only authorized lane follow-through remains;
+   - move to `completed/` only when the final required lane threshold for the TODO is complete;
+   - for local-only Delphi self-maintenance where remote promotion is intentionally out of scope, move to `completed/` only after local validation, commit/push, and canonical docs are complete.
 4. Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion.
 5. Use `github-main-promotion-orchestrator` only when the user explicitly requests `main`.
 6. Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active requested work.

@@ -35,6 +35,9 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 10. Run:
     - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
     - require `Overall outcome: go`.
+11. Treat the completion guard as necessary but not sufficient:
+    - it validates objective close-claim evidence tables;
+    - it does not replace explicit `APROVADO`, touched-surface rule ingestion, security/performance judgment, audit-floor execution, or canonical module consolidation.
 
 ## Outputs
 - Completed delivery evidence sections.
@@ -47,3 +50,4 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 - CRUD/mutation criteria require mutation-path evidence on the approved non-main target.
 - Backend producer surfaces cannot close on backend evidence alone when the `Frontend / Consumer Matrix` declares a consumer.
 - No delivery claim is valid while `todo_completion_guard.py` returns anything other than `Overall outcome: go`.
+- No `Overall outcome: go` result may be used to bypass approval, rule ingestion, or required review/audit lanes.

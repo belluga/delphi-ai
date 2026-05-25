@@ -60,7 +60,7 @@ class EnvValue:
 @dataclass(frozen=True)
 class StackEvidence:
     stack: str
-    active: str
+    evidence_state: str
     evidence: str
     confidence: str
     validation: str
@@ -108,6 +108,25 @@ def discover_files(root: Path, names: set[str] | tuple[str, ...], max_depth: int
             candidate_rel = rel(candidate, root)
             if file_name in names or candidate_rel in names:
                 found.append(candidate)
+    return sorted(found)
+
+
+def iter_project_files(root: Path, pattern: str, max_depth: int = 5) -> list[Path]:
+    found: list[Path] = []
+    for base, dirs, files in os.walk(root):
+        base_path = Path(base)
+        depth = len(base_path.relative_to(root).parts)
+        if depth > max_depth:
+            dirs[:] = []
+            continue
+        dirs[:] = [
+            d
+            for d in dirs
+            if d not in {".git", "node_modules", "vendor", "build", ".dart_tool", "coverage", "dist"}
+        ]
+        for file_name in files:
+            if Path(file_name).match(pattern):
+                found.append(base_path / file_name)
     return sorted(found)
 
 
@@ -173,34 +192,55 @@ def parse_env_files(root: Path) -> list[EnvValue]:
     return rows
 
 
+def is_laravel_composer(path: Path) -> bool:
+    text = read_text(path)
+    return bool(re.search(r'"laravel/(framework|lumen-framework|sanctum|tinker)"', text))
+
+
 def detect_stack_evidence(root: Path) -> list[StackEvidence]:
     checks = {
         "docker": ["docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml", "Dockerfile"],
         "flutter": ["pubspec.yaml", "flutter-app/pubspec.yaml"],
-        "laravel": ["artisan", "composer.json", "laravel-app/artisan", "laravel-app/composer.json"],
         "go": ["go.mod"],
     }
     rows: list[StackEvidence] = []
     for stack, markers in checks.items():
         evidence = [marker for marker in markers if (root / marker).exists()]
-        if not evidence and stack in {"flutter", "laravel", "go"}:
-            glob_name = {"flutter": "pubspec.yaml", "laravel": "composer.json", "go": "go.mod"}[stack]
+        if not evidence and stack in {"flutter", "go"}:
+            glob_name = {"flutter": "pubspec.yaml", "go": "go.mod"}[stack]
             evidence = [rel(path, root) for path in root.glob(f"*/{glob_name}") if path.is_file()]
         rows.append(
             StackEvidence(
                 stack=stack,
-                active="yes" if evidence else "unknown",
+                evidence_state="candidate" if evidence else "unknown",
                 evidence=", ".join(evidence) if evidence else "No direct marker found",
                 confidence="high" if evidence else "low",
                 validation="user_validation_required" if evidence else "n/a",
             )
         )
+    laravel_evidence: list[str] = []
+    for artisan in iter_project_files(root, "artisan", max_depth=3):
+        laravel_evidence.append(rel(artisan, root))
+    for composer in iter_project_files(root, "composer.json", max_depth=3):
+        if is_laravel_composer(composer) or (composer.parent / "artisan").exists():
+            laravel_evidence.append(rel(composer, root))
+    laravel_evidence = sorted(set(laravel_evidence))
+    rows.insert(
+        2,
+        StackEvidence(
+            stack="laravel",
+            evidence_state="candidate" if laravel_evidence else "unknown",
+            evidence=", ".join(laravel_evidence) if laravel_evidence else "No Laravel-specific marker found",
+            confidence="high" if laravel_evidence else "low",
+            validation="user_validation_required" if laravel_evidence else "n/a",
+        ),
+    )
     return rows
 
 
 def detect_safe_runners(root: Path) -> list[tuple[str, str, str, str, str]]:
     rows: list[tuple[str, str, str, str, str]] = []
-    for path in sorted(root.rglob("*.sh")):
+    for path in iter_project_files(root, "*.sh", max_depth=6):
         path_rel = rel(path, root)
         if any(pattern in path_rel for pattern in KNOWN_RUNNER_PATTERNS):
             surface = "web publish" if "build_web" in path.name else "safe runner"
@@ -240,6 +280,32 @@ def readme_hints(root: Path) -> list[str]:
     return hints
 
 
+def foundation_documentation_hints(root: Path) -> list[str]:
+    hints: list[str] = []
+    foundation = root / "foundation_documentation"
+    if not foundation.is_dir():
+        return hints
+    candidate_files = [
+        foundation / "artifacts" / "dependency-readiness.md",
+        foundation / "artifacts" / "environment-topology.md",
+        foundation / "project_constitution.md",
+    ]
+    active_todos = sorted((foundation / "todos" / "active").glob("*.md")) if (foundation / "todos" / "active").is_dir() else []
+    pattern = re.compile(
+        r"(DOMAIN|TENANT|SUBDOMAIN|COMPOSE_PROFILES|NAV_|APP_URL|PUBLIC_URL|WEB_URL|runtime|topology|safe runner|active stack)",
+        re.I,
+    )
+    for doc in [*candidate_files, *active_todos]:
+        if not doc.is_file():
+            continue
+        for idx, line in enumerate(read_text(doc).splitlines(), start=1):
+            if pattern.search(line):
+                hints.append(f"{rel(doc, root)}:{idx}: {line.strip()[:180]}")
+            if len(hints) >= 20:
+                return hints
+    return hints
+
+
 def submodule_role(path: str) -> str:
     lowered = path.lower()
     if "foundation" in lowered or "doc" in lowered:
@@ -266,6 +332,7 @@ def render_contract(root: Path) -> str:
     compose_rows = detect_compose(root)
     submodules = parse_gitmodules(root)
     hints = readme_hints(root)
+    doc_hints = foundation_documentation_hints(root)
 
     lines: list[str] = []
     lines.extend(
@@ -282,20 +349,20 @@ def render_contract(root: Path) -> str:
             "- **Validation summary:** `Generated from available repository evidence; rows marked user_validation_required need confirmation before use as hard targets.`",
             "",
             "## Source Priority",
-            "1. Active TODO and existing validation notes.",
-            "2. `foundation_documentation` contracts and dependency-readiness artifacts.",
+            "1. User/project-owner validation.",
+            "2. Existing `foundation_documentation` contracts, dependency-readiness artifacts, active TODOs, and validation notes when present.",
             "3. `.gitmodules`, README files, compose files, `.env.example`, redacted `.env` values, and project-owned safe runners.",
             "4. Direct user validation for any inferred or ambiguous value.",
             "",
-            "Do not promote inferred domains, tenants, runtime owners, or stack activation into hard validation targets until the user or project owner confirms them.",
+            "This scaffold can surface repository evidence and documentation hints, but it does not mark a stack as active by itself. Do not promote inferred domains, tenants, runtime owners, or stack activation into hard validation targets until the user or project owner confirms them.",
             "",
             "## Active Stack Topology",
-            table_row(["Stack", "Active?", "Evidence", "Confidence", "User Validation"]),
+            table_row(["Stack", "Activation Evidence State", "Evidence", "Confidence", "User Validation"]),
             table_row(["---", "---", "---", "---", "---"]),
         ]
     )
     for row in stack_rows:
-        lines.append(table_row([row.stack, row.active, row.evidence, row.confidence, row.validation]))
+        lines.append(table_row([row.stack, row.evidence_state, row.evidence, row.confidence, row.validation]))
 
     lines.extend(
         [
@@ -352,8 +419,9 @@ def render_contract(root: Path) -> str:
         lines.append(table_row(["n/a", "n/a", "No .gitmodules entries found", "n/a"]))
 
     lines.extend(["", "## README / Documentation Hints"])
-    if hints:
-        lines.extend(f"- `{hint}`" for hint in hints)
+    combined_hints = [*doc_hints, *hints]
+    if combined_hints:
+        lines.extend(f"- `{hint}`" for hint in combined_hints)
     else:
         lines.append("- No topology hints found in README surfaces.")
 

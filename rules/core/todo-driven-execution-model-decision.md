@@ -29,6 +29,7 @@ If the work is a minimal operational fix that does not touch production/test art
 - No production or test files may be modified.
 - No project-specific documentation under `foundation_documentation/**` may be modified, except `artifacts/tmp/**` or `todos/**`.
 - Scope must stay limited to local operational surfaces such as symlinks, bootloaders, permissions, `.git/config`, local environment wiring, Delphi readiness/setup scripts, or equivalent non-product scaffolding.
+- Typo-only edits in non-authoritative, non-project-specific operational notes may qualify only when they do not change meaning, rules, contracts, workflows, or validation expectations.
 - No API/contract/schema/route/UI/business-behavior changes and no production runtime/deploy logic changes are allowed.
 - Validation must be immediate and objective (`verify_context.sh`, `self_check.sh`, `bash -n`, `git status`, symlink/permission inspection, or equivalent).
 - Delphi must still state the intent, why the work qualifies, and the validation/results in the response.
