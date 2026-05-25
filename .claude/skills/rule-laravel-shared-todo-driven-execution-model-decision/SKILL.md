@@ -9,7 +9,8 @@ This skill is the Laravel trigger surface for TODO-driven execution. Do not dupl
 
 ## Canonical Sources
 - Global rule: `rules/core/todo-driven-execution-model-decision.md`
-- Workflow: `workflows/docker/todo-driven-execution-method.md`
+- Workflow umbrella: `workflows/docker/todo-driven-execution-method.md`
+- Phase workflows: `workflows/docker/todo-*-method.md`
 - Laravel adjunct rule, when present in downstream stacks: `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md`
 - Deterministic close guard: `tools/todo_completion_guard.py`
 

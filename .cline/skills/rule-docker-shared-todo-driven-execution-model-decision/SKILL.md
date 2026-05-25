@@ -9,7 +9,8 @@ This skill is the trigger surface for the canonical TODO-driven execution rule. 
 
 ## Canonical Sources
 - Rule: `rules/core/todo-driven-execution-model-decision.md`
-- Workflow: `workflows/docker/todo-driven-execution-method.md`
+- Workflow umbrella: `workflows/docker/todo-driven-execution-method.md`
+- Phase workflows: `workflows/docker/todo-*-method.md`
 - Deterministic close guard: `tools/todo_completion_guard.py`
 
 When this skill triggers, load the canonical rule first and follow it as the source of truth. Use the workflow when execution, planning, approval, or delivery sequencing is in scope.

@@ -1,0 +1,49 @@
+---
+name: "docker-todo-delivery-gates-method"
+description: "Complete evidence, CI-equivalent validation, P1/P2 preflight, rule-spirit hunt, audits, and deterministic guard before any TODO delivery claim."
+---
+
+<!-- Generated from `workflows/docker/todo-delivery-gates-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
+
+# Workflow: TODO Delivery Gates
+
+## Purpose
+Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claim.
+
+## Inputs
+- Implemented diff.
+- Governing TODO with DoD, validation steps, matrices, decisions, and audit-floor output.
+- Local CI-equivalent commands and runtime/topology evidence.
+
+## Procedure
+1. Fill the `Completion Evidence Matrix`.
+   - Add one concrete row for every `Definition of Done` and `Validation Steps` criterion.
+   - Evidence must be criterion-specific, not aggregate or representative.
+2. Execute every in-scope row in the `Local CI-Equivalent Suite Matrix` locally and mark it `passed`, or record an explicit approved `n/a`/waiver.
+3. Validate decision adherence and module decision consistency.
+4. Run security risk assessment.
+5. Run performance/concurrency assessment.
+6. Execute validation steps and map results back to the evidence matrix.
+7. Run `Pipeline/Copilot P1/P2 Preflight`.
+   - Review implemented diff, CI-equivalent evidence, and likely CI/Copilot failure modes.
+   - Unresolved `P1|P2` blocks delivery.
+8. Run `Rule-Spirit Anti-Pattern Hunt`.
+   - Search direct violations and disguised bypasses against ingested rules and architecture principles.
+   - Use `bash delphi-ai/tools/rule_spirit_anti_pattern_scan.sh --repo <repo-root> --stack <stack>` when applicable.
+   - Unresolved `P1|P2` blocks delivery.
+9. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
+10. Run:
+    - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
+    - require `Overall outcome: go`.
+
+## Outputs
+- Completed delivery evidence sections.
+- Audit/review evidence required by the derived floor.
+- Deterministic completion guard result.
+
+## Non-Negotiables
+- Visible, interactive, or user-flow-impacting criteria require item-specific integration/device or navigation/browser evidence unless an approved structure-only rationale exists.
+- Browser/web-visible criteria require source-owned Playwright evidence when the repo exposes a Playwright suite.
+- CRUD/mutation criteria require mutation-path evidence on the approved non-main target.
+- Backend producer surfaces cannot close on backend evidence alone when the `Frontend / Consumer Matrix` declares a consumer.
+- No delivery claim is valid while `todo_completion_guard.py` returns anything other than `Overall outcome: go`.

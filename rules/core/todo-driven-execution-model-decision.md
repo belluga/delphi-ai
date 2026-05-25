@@ -9,6 +9,17 @@ Before starting any implementation work that changes project code, submodule cod
 
 For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
 
+### Phase-State Routing
+The canonical operational workflow is `workflows/docker/todo-driven-execution-method.md`. It is an umbrella state machine and must route phase details to:
+- `todo-lane-framing-method`
+- `todo-contract-refinement-method`
+- `todo-approval-gates-method`
+- `todo-execution-boundary-method`
+- `todo-delivery-gates-method`
+- `todo-closeout-promotion-method`
+
+The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, and `todo_completion_guard.py` remain delivery-blocking obligations.
+
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
 - Edits limited to `foundation_documentation/todos/**` (creating/updating TODOs themselves).
