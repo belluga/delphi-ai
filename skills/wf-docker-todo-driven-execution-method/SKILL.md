@@ -66,6 +66,8 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - User-flow CRUD/mutation items must map to integration/device or navigation/browser evidence that performs the local mutation path against the approved non-main validation target.
    - Browser/web CRUD/mutation items must use the Playwright `mutation` lane on an approved non-`main` target; `readonly` Playwright is not mutation evidence.
    - Add a `Flow Evidence Planning Matrix` before `APROVADO` whenever touched surfaces could affect user flows; record the criterion, flow-impact reason, platform parity, required runtime lane, mutation requirement, real-backend requirement, planned evidence, and non-applicability rationale.
+   - Add a `Local CI-Equivalent Suite Matrix` before `APROVADO` whenever the touched repositories have CI jobs/suites that will run for the slice. Record the exact repo-owned CI surface/job name, why it is in scope, the exact local command that mirrors it, and whether it must pass before local delivery or promotion. A TODO is not ready for `Local-Implemented`, `promotion_lane/`, or “promotable” claims until every in-scope row has been executed locally and passed. Targeted reruns are diagnostic only and do not replace this matrix.
+   - Add a `Frontend / Consumer Matrix` before `APROVADO` whenever the TODO creates or changes backend endpoints, jobs, settings namespaces, payloads, schemas, projections, capabilities, read models, or other producer surfaces that could feed app/web/admin/operator behavior. For each producer, record the expected consumer (`Flutter`, `Web`, `Admin`, external integration, internal-only, or none), route/hub/visible action when applicable, DTO/repository/encoder/decoder path when applicable, planned render/discoverability evidence, planned request/readback evidence, and explicit waiver if no frontend consumer is required.
 8. Run planning gates before approval:
    - **Plan Review Gate** for `medium|big` (or abbreviated for low-risk `small`);
    - additional bounded no-context architectural opinions when the path remains materially unclear;
@@ -83,6 +85,7 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - If execution reveals a new independently testable behavior, a new primary objective, or a new approval/risk conversation, update or split the TODO and obtain renewed approval.
 13. Before delivery, complete the required gates:
    - **Completion Evidence Matrix**: one concrete evidence row for every `Definition of Done` item and every `Validation Steps` item;
+   - `Local CI-Equivalent Suite Matrix`: every in-scope repo-owned CI suite/job that will run for the touched slice must have a locally executed passed row (or an explicit approved `n/a`/waiver with rationale when no CI surface truly applies). Targeted subset reruns alone do not satisfy TODO delivery or promotion readiness.
    - **Decision Adherence**;
    - module decision consistency;
    - security risk assessment;
@@ -101,6 +104,7 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - user-flow CRUD/mutation criteria cannot close from read-only navigation; they require evidence that the test executed the local mutation path on the approved non-main target.
    - browser/web CRUD/mutation criteria cannot close from `readonly` Playwright; they require the Playwright `mutation` lane on an approved non-`main` target.
    - non-visual refactors that change fields, DTOs, payloads, projections, validations, queries, settings, capabilities, or persisted state cannot close without either runtime flow evidence for the affected user journey or a recorded rationale proving no user-observable flow can change.
+   - producer surfaces recorded in the `Frontend / Consumer Matrix` cannot close from backend evidence alone. Each row must have the declared consumer implemented and evidenced, or an explicit approved backend-only/internal-only/external-only waiver with rationale, owner, and follow-up if any.
    - when the derived floor uses the dedicated three-lane external audit loop, the governing evidence must come from `audit-protocol-triple-review` rather than ad hoc reviewer sequencing.
 14. If pausing blocked, set `Blocked` explicitly with blocker notes and next exact step.
 15. Before close, promote stable outcomes into canonical module docs; then move the same governing TODO to `promotion_lane/` when only lane follow-through remains. Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion and `github-main-promotion-orchestrator` only when the user explicitly requests `main`. Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active requested work. Move the TODO to `completed/`/canceled once the final required lane threshold is complete.

@@ -183,8 +183,14 @@ if [ "$is_bot_branch" = true ]; then
       teach_add_resolution "Do not use 'bot/next-version' in this promotion scope. Continue only with the explicitly allowed non-gitlink lane actions."
       ;;
     pipeline-owned-only)
-      teach_add_violation "The contract treats 'bot/next-version' as pipeline-owned only."
-      teach_add_resolution "Do not create, push, or merge 'bot/next-version' manually. Wait for the pipeline-owned branch to exist in the authorized stage flow."
+      case "$ACTION" in
+        pr-create|pr-merge)
+          ;;
+        *)
+          teach_add_violation "The contract treats 'bot/next-version' commits and pushes as pipeline-owned only."
+          teach_add_resolution "Do not commit or push 'bot/next-version' manually. Wait for the pipeline-owned branch to exist in the authorized stage flow, then move it only through PR create/merge."
+          ;;
+      esac
       ;;
   esac
 fi

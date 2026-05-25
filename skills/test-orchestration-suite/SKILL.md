@@ -35,6 +35,7 @@ The execution target is promotion-grade confidence for the touched TODO/behavior
 - `GF-10A` A reachable browser target serving stale build metadata is not an immediate final blocker. First run the project-owned web build/publish script documented by the active TODO, dependency-readiness register, README, or equivalent project artifact, then re-probe the target metadata. Classify the browser stage as `blocked` only if the build/publish script fails, the target cannot serve the rebuilt bundle, or the metadata remains stale after the rebuild/reprobe cycle.
 - `GF-11` Stateful mutation browser suites are allowed only on non-`main` lanes unless the project defines a stricter rule. Never mutate `main` for validation.
 - `GF-12` Delivery confidence is measured against the full set of materially distinct behaviors touched by the active TODO slice or reconcile wave. A green result on one representative flow does not close sibling behaviors that were also touched.
+- `GF-13` A TODO is not delivered or promotable until the same repo-owned suites/jobs that CI will execute for the touched repositories have been run locally and passed. Targeted reruns are diagnostic only; they do not replace the local CI-equivalent suite matrix.
 
 ## Orchestration Flow (Baseline)
 1. Preflight environment gate (backend reachability, domain overrides, canonical execution owner per stage, preferred public validation targets, device/emulator availability, writable artifact/runtime directories, required secrets/vars).
@@ -59,12 +60,14 @@ The execution target is promotion-grade confidence for the touched TODO/behavior
 1. **Plan and freeze**
    - Record `D-RUN-*` decisions for required suites, sequence, fail-fast behavior, and acceptance criteria.
    - Record required platform matrix and required user journeys.
+   - Freeze the `CI-equivalent local suite matrix`: list the exact CI workflows/jobs the touched repositories will run, the exact local commands that mirror them, and whether each row is required for local delivery, promotion readiness, or both.
    - Enumerate the materially distinct touched behavior families from the active TODO set or reconciliation wave. Representative sampling is invalid unless the baseline explicitly says those behaviors share the exact same risk surface and that reduction was approved.
 2. **Execute stages in order**
    - Stop on first failed gate.
 3. **Fix loop control**
    - If a fix is needed, apply TODO discipline (ephemeral or tactical lane as eligible), get approvals, then rerun failed stage.
    - Fixes must target root cause; relaxing assertions, adding fallback/mocks, or skipping stages to turn red into green is invalid.
+   - A green targeted rerun after a fix does not restore delivery or promotion confidence by itself. Re-run and pass the in-scope CI-equivalent local suite rows before declaring the TODO delivered or promotable.
 4. **Execution status policy**
    - Mark each required stage as `passed`, `failed`, or `blocked`.
    - `blocked` (for example no mobile device/emulator) is not `passed` and blocks compatibility closure unless baseline explicitly excludes it.

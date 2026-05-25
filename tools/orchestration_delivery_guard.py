@@ -60,6 +60,7 @@ TRACEABILITY_RUNTIME_NA = {"n/a", "na", "none", "not applicable", "não aplicáv
 DIVERGENT_PLATFORM_TERMS = ("divergent-android-web", "android/web divergent", "android and web differ", "android e web diferem")
 ANDROID_RUNTIME_TERMS = ("android", "adb", "device", "dispositivo", "emulator", "simulator")
 WEB_RUNTIME_TERMS = ("web", "browser", "navegador", "playwright", "run_web_navigation_smoke")
+CI_EQ_ALLOWED_FINAL_STATUSES = {"passed", "waived", "n/a"}
 
 
 def normalize_area(value: str) -> str:
@@ -135,6 +136,7 @@ def validate_delivery(
         "allow_waivers": allow_waivers,
         "validation_row_count": 0,
         "delivery_evidence_row_count": 0,
+        "ci_equivalent_row_count": 0,
         "traceability_row_count": 0,
         "runtime_freshness_required": False,
         "missing_delivery_areas": [],
@@ -277,8 +279,10 @@ def validate_delivery(
 
     validation_rows = table_rows(sections.get("Consolidated Validation Matrix", []))
     delivery_rows = table_rows(sections.get("Consolidated Delivery Evidence", []))
+    ci_equivalent_rows = table_rows(sections.get("CI-Equivalent Local Suite Matrix", []))
     context["validation_row_count"] = len(validation_rows)
     context["delivery_evidence_row_count"] = len(delivery_rows)
+    context["ci_equivalent_row_count"] = len(ci_equivalent_rows)
 
     if not delivery_rows:
         violations.append(
@@ -342,6 +346,77 @@ def validate_delivery(
                     f"Delivery evidence status is `{row[2]}` for area `{row[0]}`.",
                     "Run the required validation and record `passed`, or rerun with `--allow-waivers` only after an explicit user-approved waiver is recorded.",
                     "Consolidated Delivery Evidence",
+                )
+            )
+
+    if not ci_equivalent_rows:
+        violations.append(
+            build_violation(
+                "CI-EQUIVALENT-MATRIX-MISSING",
+                "No CI-equivalent local suite rows were found.",
+                "Add one row for every repo-owned CI suite/job that will run for the touched repositories, or add an explicit `n/a` row with rationale when no CI surface truly applies.",
+                "CI-Equivalent Local Suite Matrix",
+            )
+        )
+    for row in ci_equivalent_rows:
+        if len(row) < 7:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-ROW-INCOMPLETE",
+                    f"CI-equivalent local suite row has fewer than 7 cells: {row_text(row)}",
+                    "Use columns: Repository / CI Surface, Why In Scope, Local CI-Equivalent Command, Applies To, Status, Evidence Artifact / Command, Owner.",
+                    "CI-Equivalent Local Suite Matrix",
+                )
+            )
+            continue
+        repo_surface, _why, local_command, _applies, status_raw, evidence, owner = row[:7]
+        status = status_raw.strip().lower()
+        combined = " ".join((repo_surface, local_command, evidence, owner))
+        if any(is_placeholder(cell) for cell in (repo_surface, local_command, status_raw, evidence)):
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-PLACEHOLDER",
+                    f"CI-equivalent local suite row contains placeholder content: {row_text(row)}",
+                    "Replace placeholders with the exact repo-owned CI suite/job, the local command that mirrors it, and the concrete local execution evidence.",
+                    "CI-Equivalent Local Suite Matrix",
+                )
+            )
+        if status not in CI_EQ_ALLOWED_FINAL_STATUSES:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-NOT-PASSED",
+                    f"CI-equivalent local suite status is `{status_raw}` for `{repo_surface}`.",
+                    "Run and pass the same local suite/job that CI will execute, or record an explicit approved waiver/`n/a` rationale when no CI surface truly applies.",
+                    "CI-Equivalent Local Suite Matrix",
+                )
+            )
+            continue
+        if status == WAIVED_STATUS and allow_waivers:
+            if "approval" not in combined.lower() and "aprovado" not in combined.lower():
+                violations.append(
+                    build_violation(
+                        "CI-EQUIVALENT-WAIVER-APPROVAL-MISSING",
+                        f"CI-equivalent local suite row is waived without explicit approval evidence: {repo_surface}",
+                        "Record explicit approval evidence for this waiver or run the local CI-equivalent suite.",
+                        "CI-Equivalent Local Suite Matrix",
+                    )
+                )
+        if status == "n/a" and len(repo_surface.strip()) == 0:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-NA-RATIONALE-MISSING",
+                    "CI-equivalent local suite row is `n/a` without a concrete surface/rationale.",
+                    "Name the repo-owned CI surface that is not applicable and explain why, or run the local CI-equivalent suite.",
+                    "CI-Equivalent Local Suite Matrix",
+                )
+            )
+        if status == PASSED_STATUS and any(term in combined.lower() for term in ("not run", "pending", "planned", "expected")):
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-EVIDENCE-NOT-REAL",
+                    f"CI-equivalent local suite row claims `passed` but the evidence is not real completed execution: {repo_surface}",
+                    "Replace planned/pending text with concrete local execution evidence for the exact CI-equivalent suite/job.",
+                    "CI-Equivalent Local Suite Matrix",
                 )
             )
 

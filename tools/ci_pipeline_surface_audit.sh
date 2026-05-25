@@ -51,6 +51,39 @@ if [ -z "$REPO_ROOT" ]; then
 fi
 [ -n "$REPO_ROOT" ] || die "unable to resolve repository root from: $REPO_INPUT"
 
+extract_referenced_local_scripts() {
+  local workflow_file="$1"
+  python3 - "$REPO_ROOT" "$workflow_file" <<'PY'
+import os
+import re
+import sys
+
+repo_root = os.path.realpath(sys.argv[1])
+workflow_file = sys.argv[2]
+pattern = re.compile(r'\b(?:bash|sh|node|python|python3|ruby)\s+([./A-Za-z0-9_-]+)')
+seen = set()
+
+with open(workflow_file, "r", encoding="utf-8") as fh:
+    for line in fh:
+        for raw_path in pattern.findall(line):
+            candidate = raw_path.strip()
+            if not candidate:
+                continue
+            if os.path.isabs(candidate):
+                resolved = os.path.realpath(candidate)
+            else:
+                resolved = os.path.realpath(os.path.join(repo_root, candidate))
+            if not resolved.startswith(repo_root + os.sep):
+                continue
+            if not os.path.isfile(resolved):
+                continue
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            print(resolved)
+PY
+}
+
 declare -a PIPELINE_FILES=()
 while IFS= read -r file; do
   PIPELINE_FILES+=("$file")
@@ -72,22 +105,28 @@ declare -a FILE_SUMMARY_LINES=()
 for file in "${PIPELINE_FILES[@]}"; do
   rel="${file#$REPO_ROOT/}"
   file_output=()
+  scan_targets=("$file")
 
-  if rg -n '\b(fvm\s+)?flutter\s+analyze\b|\b(fvm\s+)?flutter\s+test\b|\bdart\s+test\b|\bflutter\s+drive\b' "$file" >/dev/null 2>&1; then
+  while IFS= read -r referenced_script; do
+    [[ -n "$referenced_script" ]] || continue
+    scan_targets+=("$referenced_script")
+  done < <(extract_referenced_local_scripts "$file")
+
+  if rg -n '\b(fvm\s+)?flutter\s+analyze\b|\b(fvm\s+)?flutter\s+test\b|\bdart\s+test\b|\bflutter\s+drive\b|\bflutter-app\b|tools/flutter/|web_app_tests|run_web_navigation_smoke\.sh' "${scan_targets[@]}" >/dev/null 2>&1; then
     flutter_global=true
     file_output+=("flutter hints: yes")
   else
     file_output+=("flutter hints: no")
   fi
 
-  if rg -n '\bphp artisan test\b|\bcomposer test\b|\bpest\b|run_laravel_tests_safe\.sh' "$file" >/dev/null 2>&1; then
+  if rg -n '\bphp artisan test\b|\bcomposer test\b|\bpest\b|run_laravel_tests_safe\.sh|\blaravel-app\b' "${scan_targets[@]}" >/dev/null 2>&1; then
     laravel_global=true
     file_output+=("laravel hints: yes")
   else
     file_output+=("laravel hints: no")
   fi
 
-  if rg -n '\bdocker (compose )?build\b|\bdocker buildx\b|\bdocker push\b|\bdocker compose up\b' "$file" >/dev/null 2>&1; then
+  if rg -n '\bdocker (compose )?build\b|\bdocker buildx\b|\bdocker push\b|\bdocker compose up\b|\bdocker compose\b' "${scan_targets[@]}" >/dev/null 2>&1; then
     docker_global=true
     file_output+=("docker hints: yes")
   else

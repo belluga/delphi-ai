@@ -205,6 +205,17 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
      - browser/web CRUD/mutation items must map to the Playwright `mutation` lane on an approved non-`main` target; a `readonly` Playwright run is not mutation evidence;
      - if an item is structure-only and has no visible/runtime behavior, record the non-applicability rationale explicitly before execution.
    - Add a `Flow Evidence Planning Matrix` to the TODO before `APROVADO` whenever any touched surface could affect a user flow. The matrix must record the criterion/flow, why it is or is not flow-impacting, platform parity, required runtime lane, mutation requirement, real-backend requirement, planned evidence, and non-applicability rationale.
+   - Add a `Local CI-Equivalent Suite Matrix` to the TODO before `APROVADO` whenever the touched repositories have CI suites/jobs that will run for the slice. Each row must name the exact repo-owned CI surface/job, why it is in scope, the exact local command that mirrors it, and whether it must pass before local delivery or promotion. A TODO is not ready for `Local-Implemented`, `promotion_lane/`, or any “promotable” claim until every in-scope row has been executed locally and passed. Targeted reruns are diagnostic only and do not replace this matrix.
+   - Add a `Frontend / Consumer Matrix` before `APROVADO` whenever the TODO creates or changes a producer surface that could feed app, web, admin, operator, or integration behavior. Producer surfaces include backend endpoints, jobs, settings namespaces, payloads, schemas, projections, capabilities, read models, exports, webhooks, and deferred/deep-link attribution contracts.
+   - For each producer surface, record:
+     - producer artifact (`endpoint|job|settings namespace|payload|schema|projection|capability|read model|integration contract`);
+     - expected consumer (`Flutter app`, `Flutter web`, `tenant/admin UI`, `web app`, `external integration`, `internal-only`, or `none`);
+     - visible route/hub/section/action when a user/operator must configure, trigger, or inspect it;
+     - DTO/repository/backend-adapter/encoder/decoder/controller path when a client must read or write it;
+     - planned render/discoverability evidence when there is a visible consumer;
+     - planned request/readback or contract evidence when there is a client or integration mutation/read path;
+     - explicit waiver when no frontend/client consumer is required, including rationale, owner, and follow-up if the absence is temporary.
+   - Do not treat backend implementation, schema registration, queue dispatch, or settings namespace registration as complete consumer evidence by itself. The valid close states are `consumer implemented + evidenced` or `consumer intentionally absent + approved waiver`.
    - Default to `test-first` when behavior is verifiable.
    - For bugfix/regression or behavior-defining contract/UI changes, define the fail-first test target(s) before implementation or record explicit rationale for non-applicability.
    - The execution plan may resolve implementation-local details autonomously, but it must not silently change the TODO contract.
@@ -285,6 +296,10 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Aggregate validation summaries are supporting notes only. They do not replace row-level evidence for each DoD/validation criterion.
    - If a criterion cannot be validated, mark it `blocked` or record an explicit approved waiver; do not mark it passed from adjacent or representative evidence.
    - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` before any delivery-complete claim and require `Overall outcome: go`.
+   - Cross-check the `Frontend / Consumer Matrix` before delivery. Every producer row must either:
+     - name the implemented consumer surface and evidence for discoverability/rendering plus request/readback/contract behavior where applicable; or
+     - carry an explicit approved `backend-only`, `internal-only`, `external-only`, or `not-needed` waiver with rationale, owner, and any follow-up.
+   - If a producer surface was added during implementation and is absent from the matrix, update the TODO and evidence before delivery. Do not rely on reviewers to infer missing frontend/admin consumers from code diffs.
 23. **Decision Adherence Gate (mandatory before delivery)**
    - Build a `Decision Adherence Validation` table for every baseline decision ID.
    - For each decision, record: `status` (`Adherent` or `Exception`), evidence (`file:line`, test, or doc contract), and notes.
@@ -359,6 +374,8 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
    - Cross-check every browser/web-visible TODO item against the actual executed Playwright evidence when a Playwright suite exists. Missing or stale Playwright evidence blocks delivery; run `scripts/build_web.sh ../web-app <lane>`, confirm the real browser-facing domain serves the refreshed bundle, then run the Playwright suite against that domain.
    - Cross-check every user-flow CRUD/mutation TODO item against the executed mutation evidence. If the test only opens the screen or uses local mocked filtering without saving through the real mutation path, delivery is invalid.
    - Cross-check every browser/web CRUD/mutation TODO item against the Playwright `mutation` lane on a non-`main` target. If only `readonly` Playwright passed, delivery is invalid for mutation behavior.
+   - Cross-check every backend/settings/payload/projection/capability producer against the `Frontend / Consumer Matrix`. Backend-only evidence is insufficient when the matrix declares a Flutter/Web/Admin/operator consumer, and a missing matrix row is itself a delivery gap.
+   - Cross-check every in-scope row in the `Local CI-Equivalent Suite Matrix` against an actually executed local pass of the same repo-owned CI suite/job. If only targeted reruns passed locally, delivery and promotion readiness are still invalid.
    - If the TODO includes any large or architectural change, require unit + widget + integration evidence for the affected critical paths before delivery closure.
    - If that architectural change is compatibility-critical or backend-coupled, run `test-creation-standard` plus `test-orchestration-suite` and require the relevant real-backend integration platform matrix; `blocked` is not delivery-ready.
 28. **Independent Test Quality Audit (deterministic floor from audit escalation)**
@@ -469,6 +486,7 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - Independent no-context final-review record for any TODO whose final-review decision is `required|recommended`.
 - Completion Evidence Matrix rows for every DoD and Validation Steps criterion, with criterion-specific implementation/test/runtime evidence before delivery claims.
 - Flow Evidence Planning Matrix for any user-visible, interactive, or potentially user-flow-impacting touched surface before approval, including non-visual refactors that can affect user-observable behavior.
+- Frontend / Consumer Matrix for any backend endpoint, job, settings namespace, payload, schema, projection, capability, read model, webhook, or integration contract that could feed app/web/admin/operator behavior.
 - Decision baseline and decision-adherence validation table with evidence.
 - Module coherence matrix per decision (`Aligned|Conflict|Supersede` + `Preserve|Supersede`) with evidence.
 - Module decision baseline snapshot + 1-1 consistency matrices (planned and delivered) with evidence.
@@ -509,6 +527,8 @@ For no-code `Genesis / Product-Bootstrap` and no-code `Strategic / CTO-Tech-Lead
 - No row in the `Completion Evidence Matrix` may claim `passed` from aggregate/representative evidence that does not prove the exact criterion.
 - No UI, route, endpoint, schema, migration, integration, browser/device, runtime, or user-flow-impacting criterion may close without evidence naming the same required artifact or an explicit approved waiver/deviation.
 - No refactor of fields, DTOs, payloads, projections, validation, query/filter semantics, settings, capabilities, or persisted state may skip flow-impact assessment when those surfaces can feed user-visible behavior.
+- No backend endpoint, job, settings namespace, payload, schema, projection, capability, read model, webhook, or integration contract may be treated as delivery-complete without either an explicit implemented consumer with evidence or an explicit approved no-consumer waiver.
+- No review package for a cross-stack or producer-surface TODO may omit the Frontend / Consumer Matrix; omission must be treated as a package-preparation gap before external review.
 - `todo_completion_guard.py` must return `Overall outcome: go` before claiming `Local-Implemented`, moving to `promotion_lane/` or `completed/`, or claiming `Production-Ready`.
 - No delivery is considered complete without an explicit security risk assessment and attack simulation decision.
 - No TODO that classifies attack simulation as `required` can be closed without the corresponding review evidence (or an explicit approved exception path).

@@ -14,6 +14,8 @@ Provide a portable orchestration layer for PACED review subagents using derived 
 
 ## Procedure
 1. Freeze a bounded review package.
+   - For cross-stack or producer-surface work, include the TODO's `Frontend / Consumer Matrix` in the package. Producer surfaces include backend endpoints, jobs, settings namespaces, payloads, schemas, projections, capabilities, read models, webhooks, and integration contracts.
+   - If the matrix is missing for a triggered package, stop package dispatch and return to TODO preparation. The valid package states are `consumer implemented + evidenced` or `consumer intentionally absent + approved waiver`; reviewers should not be expected to infer absent frontend/admin consumers from a code diff.
 2. Generate the dispatch packet for the chosen review kind.
 3. Require reviewer outputs in JSON compatible with `schemas/subagent_review_result.schema.json`.
 4. Merge the results and fold the authoritative resolution back into the governing TODO/gate.

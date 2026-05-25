@@ -246,13 +246,26 @@ run_list_query() {
   local jq_expr="$3"
   local output=""
 
-  if output="$(gh run list \
-    -R "$repo" \
-    --branch "$branch" \
-    --event push \
-    --limit 100 \
-    --json databaseId,headSha,status,conclusion,url,workflowName,displayTitle,createdAt \
-    --jq "$jq_expr" 2>/dev/null)"; then
+  # `gh run list --branch <branch> --event push` has returned false-empty
+  # results for valid push runs in some CLI/API combinations. Query Actions
+  # runs directly and keep the branch/event filtering in jq so the main
+  # preflight still requires green stage push-run evidence.
+  if output="$(gh api "repos/$repo/actions/runs?per_page=100" \
+    --jq ".workflow_runs
+      | map(
+          select(.event == \"push\" and .head_branch == \"$branch\")
+          | {
+              databaseId: .id,
+              headSha: .head_sha,
+              status: .status,
+              conclusion: .conclusion,
+              url: .html_url,
+              workflowName: .name,
+              displayTitle: .display_title,
+              createdAt: .created_at
+            }
+        )
+      | $jq_expr" 2>/dev/null)"; then
     printf '%s' "$output"
   fi
 }

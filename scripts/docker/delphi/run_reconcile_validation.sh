@@ -178,6 +178,10 @@ fi
 
 cd "$ROOT_DIR"
 
+if ! require_reconcile_branch "$ROOT_DIR" "Environment root"; then
+  exit 1
+fi
+
 cleanup() {
   if [[ "$NEEDS_LARAVEL_RUNTIME_NORMALIZE" -eq 1 ]]; then
     normalize_laravel_runtime_permissions >/dev/null 2>&1 || true

@@ -43,6 +43,9 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
 1. **Bound the review package**
    - Freeze the files/summary the reviewer may use.
    - Do not leak thread context into the subagent request.
+   - For cross-stack or producer-surface work, include the TODO's `Frontend / Consumer Matrix` in the package. Producer surfaces include backend endpoints, jobs, settings namespaces, payloads, schemas, projections, capabilities, read models, webhooks, and integration contracts.
+   - If that matrix is triggered but missing, stop dispatch and return to TODO preparation. The review package must make one of these states explicit for every producer surface: `consumer implemented + evidenced` or `consumer intentionally absent + approved waiver`.
+   - Ask reviewers to flag any backend/settings/payload/projection/capability producer whose declared frontend/admin/operator consumer is missing, untested, or replaced by backend-only evidence.
 2. **Build dispatch**
    - Generate the dispatch packet and give the markdown form to the orchestration harness or operator.
 3. **Collect structured reviewer results**

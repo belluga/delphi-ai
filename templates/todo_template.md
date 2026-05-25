@@ -198,6 +198,13 @@ Map every user-visible, interactive, or user-flow-impacting criterion to the fin
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `<criterion>` | `<visible UI|CRUD/mutation|field/DTO/domain refactor|save/readback|payload consumed by UI|filter/query|settings/capability|structure-only>` | `<classification>` | `<ADB integration|Playwright readonly|Playwright mutation|both|n/a>` | `<yes|no>` | `<yes|no>` | `<test/spec/runner planned>` | `<reason or n/a>` |
 
+### Local CI-Equivalent Suite Matrix (Required Before `APROVADO` and Before Delivery Claim)
+A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
+
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before (`APROVADO|Local-Implemented|promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<flutter-app / Validate and Build Web>` | `<why this CI surface will run for the touched scope>` | `<exact local command that mirrors the CI suite/job>` | `<milestone>` | `<planned>` | `<command output artifact / report / n/a>` | `<scope or waiver rationale>` |
+
 ### Runtime / Rollout Notes
 - `<migrations, feature flags, infra/runtime concerns, or n/a>`
 

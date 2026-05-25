@@ -171,18 +171,35 @@ if [ "${#CHANGED_PATHS[@]}" -gt 0 ]; then
 fi
 
 if [ "${#GITLINK_PATHS[@]}" -gt 0 ]; then
-  teach_add_violation "Gitlink changes are present in the inspected diff."
-  case "$PROMOTION_CONTRACT_GITLINK_POLICY" in
-    forbidden)
-      teach_add_resolution "Remove the gitlink changes from this diff. Gitlinks are forbidden in the current promotion contract."
-      ;;
-    pipeline-only)
-      teach_add_resolution "Remove the manual gitlink changes from this diff. Gitlinks are pipeline-owned only and are not allowed in local/manual promotion actions."
-      ;;
-  esac
   local_gitlinks="$(printf '%s, ' "${GITLINK_PATHS[@]}")"
   local_gitlinks="${local_gitlinks%, }"
   teach_add_context "gitlink_paths: $local_gitlinks"
+
+  gitlinks_allowed=false
+  if [ "$PROMOTION_CONTRACT_GITLINK_POLICY" = "pipeline-only" ] && [ "$MODE" = "range" ]; then
+    normalized_source_ref="${SOURCE_REF#refs/heads/}"
+    normalized_source_ref="${normalized_source_ref#origin/}"
+    normalized_base_ref="${BASE_REF#refs/heads/}"
+    normalized_base_ref="${normalized_base_ref#origin/}"
+    if [ "$normalized_source_ref" = "bot/next-version" ]; then
+      gitlinks_allowed=true
+    fi
+    if [ "$normalized_source_ref" = "dev" ] && [ "$normalized_base_ref" = "stage" ]; then
+      gitlinks_allowed=true
+    fi
+  fi
+
+  if [ "$gitlinks_allowed" = false ]; then
+    teach_add_violation "Gitlink changes are present in the inspected diff."
+    case "$PROMOTION_CONTRACT_GITLINK_POLICY" in
+      forbidden)
+        teach_add_resolution "Remove the gitlink changes from this diff. Gitlinks are forbidden in the current promotion contract."
+        ;;
+      pipeline-only)
+        teach_add_resolution "Remove the manual gitlink changes from this diff. Gitlinks are pipeline-owned only and are allowed only when inspecting the pipeline-owned bot/next-version range."
+        ;;
+    esac
+  fi
 fi
 
 if [ "${#CI_SURFACE_PATHS[@]}" -gt 0 ] && [ "$PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED" != "true" ]; then

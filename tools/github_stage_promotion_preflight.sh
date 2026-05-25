@@ -175,8 +175,30 @@ if ! repo_git merge-base --is-ancestor "$BASE_SHA" "$SOURCE_SHA"; then
 fi
 
 SOURCE_HAS_DIFF=true
-if repo_git diff --quiet "$BASE_SHA..$SOURCE_SHA" --; then
+if repo_git diff --quiet --ignore-submodules=none "$BASE_SHA..$SOURCE_SHA" --; then
   SOURCE_HAS_DIFF=false
+fi
+
+normalize_lane_ref() {
+  local ref="$1"
+  ref="${ref#refs/heads/}"
+  ref="${ref#origin/}"
+  printf '%s' "$ref"
+}
+
+TOPOLOGY_ONLY_RECONCILIATION_READY=false
+TOPOLOGY_ONLY_RECONCILIATION_REASON=""
+NORMALIZED_BASE_REF="$(normalize_lane_ref "$BASE_REF")"
+NORMALIZED_SOURCE_REF="$(normalize_lane_ref "$SOURCE_SHORT")"
+if [ "$SOURCE_HAS_DIFF" = false ] && [ "$NORMALIZED_BASE_REF" = "dev" ]; then
+  STAGE_SHA="$(resolve_commit "origin/stage")"
+  if [ -n "$STAGE_SHA" ] \
+    && [ "$SOURCE_ONLY_COUNT" -gt 0 ] \
+    && repo_git merge-base --is-ancestor "$STAGE_SHA" "$SOURCE_SHA" \
+    && [[ "$NORMALIZED_SOURCE_REF" == reconcile/dev-contains-stage-* ]]; then
+    TOPOLOGY_ONLY_RECONCILIATION_READY=true
+    TOPOLOGY_ONLY_RECONCILIATION_REASON="source contains origin/stage tip on an explicit reconcile/dev-contains-stage-* branch and differs from base by ancestry only"
+  fi
 fi
 
 DIFF_SHAPE_READY=true
@@ -193,7 +215,7 @@ if [ "$REQUIRE_DIFF_SHAPE" = "submodule-only" ] && [ "$SOURCE_HAS_DIFF" = true ]
 
     DIFF_SHAPE_READY=false
     DIFF_SHAPE_BLOCKERS+=("$path")
-  done < <(repo_git diff --name-only "$BASE_SHA..$SOURCE_SHA" --)
+  done < <(repo_git diff --name-only --ignore-submodules=none "$BASE_SHA..$SOURCE_SHA" --)
 fi
 
 WORKTREE_READY=true
@@ -202,7 +224,7 @@ if [ "$CURRENT_BRANCH" = "$SOURCE_SHORT" ] && [ "$WORKTREE_DIRTY" = true ]; then
 fi
 
 OVERALL_GO=true
-if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || [ "$SOURCE_HAS_DIFF" = false ] || [ "$DIFF_SHAPE_READY" = false ]; then
+if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ]; then
   OVERALL_GO=false
 fi
 
@@ -222,7 +244,7 @@ if [ "$LINEAGE_READY" = false ]; then
   RESOLUTION_PROMPTS+=("Fallback when rebase is not desirable: create a fresh branch from '$BASE_REF' and cherry-pick only the source-only commits listed in context.")
 fi
 
-if [ "$SOURCE_HAS_DIFF" = false ]; then
+if [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
   VIOLATIONS+=("Source '$SOURCE_REF' has no promotable diff beyond '$BASE_REF'.")
   RESOLUTION_PROMPTS+=("Do not open a promotion PR from '$SOURCE_REF' until it contains a real diff beyond '$BASE_REF'.")
 fi
@@ -246,6 +268,7 @@ printf 'Preflight summary\n'
 printf '  - worktree clean for source branch: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 printf '  - source contains base tip: %s\n' "$([ "$LINEAGE_READY" = true ] && printf yes || printf no)"
 printf '  - source has promotable diff beyond base: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
+printf '  - topology-only reconciliation accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  - diff shape requirement (%s): %s\n' "$REQUIRE_DIFF_SHAPE" "$([ "$DIFF_SHAPE_READY" = true ] && printf pass || printf fail)"
 printf '  - base-only commits missing from source: %s\n' "$BASE_ONLY_COUNT"
 printf '  - source-only commits beyond base: %s\n' "$SOURCE_ONLY_COUNT"
@@ -270,10 +293,14 @@ if [ "$OVERALL_GO" = true ]; then
   printf '  base_sha: %s\n' "$BASE_SHA"
   printf '  merge_base: %s\n' "$MERGE_BASE_SHA"
   printf '  source_contains_base_tip: yes\n'
-  printf '  source_has_promotable_diff: yes\n'
+  printf '  source_has_promotable_diff: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
+  printf '  topology_only_reconciliation_accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
   printf '  diff_shape_requirement: %s\n' "$REQUIRE_DIFF_SHAPE"
   printf '  diff_shape_ready: yes\n'
   printf '  worktree_clean_for_source: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
+  if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then
+    printf '  topology_only_reconciliation_reason: %s\n' "$TOPOLOGY_ONLY_RECONCILIATION_REASON"
+  fi
   printf '\nOverall outcome: go\n'
   exit 0
 fi
@@ -296,11 +323,15 @@ printf '  base_sha: %s\n' "$BASE_SHA"
 printf '  merge_base: %s\n' "$MERGE_BASE_SHA"
 printf '  source_contains_base_tip: %s\n' "$([ "$LINEAGE_READY" = true ] && printf yes || printf no)"
 printf '  source_has_promotable_diff: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
+printf '  topology_only_reconciliation_accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  diff_shape_requirement: %s\n' "$REQUIRE_DIFF_SHAPE"
 printf '  diff_shape_ready: %s\n' "$([ "$DIFF_SHAPE_READY" = true ] && printf yes || printf no)"
 printf '  worktree_clean_for_source: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 printf '  base_only_commits_missing_from_source_count: %s\n' "$BASE_ONLY_COUNT"
 printf '  source_only_commits_beyond_base_count: %s\n' "$SOURCE_ONLY_COUNT"
+if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then
+  printf '  topology_only_reconciliation_reason: %s\n' "$TOPOLOGY_ONLY_RECONCILIATION_REASON"
+fi
 printf '  base_only_commits_missing_from_source:\n'
 print_context_commit_list '    ' "$SOURCE_SHA..$BASE_SHA" 20
 printf '  source_only_commits_beyond_base:\n'

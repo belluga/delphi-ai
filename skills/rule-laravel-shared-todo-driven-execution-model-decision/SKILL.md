@@ -268,6 +268,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - `not_needed` only for low-risk non-behavioral work with no meaningful test impact
 - Large or architectural changes must carry unit + widget + integration evidence for the affected critical paths before delivery closure.
 - If the architectural change is compatibility-critical or backend-coupled, require `test-creation-standard` plus `test-orchestration-suite` and the relevant real-backend integration platform matrix; `blocked` is not a passing substitute.
+- A TODO cannot be considered delivered, moved to `promotion_lane/`, or treated as promotable until every in-scope repo-owned CI suite/job has been executed locally and passed via the same local CI-equivalent commands. Targeted reruns alone are supporting diagnostics, not closure evidence.
 - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
 - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions.
 - Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.

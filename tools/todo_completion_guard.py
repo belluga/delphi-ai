@@ -40,6 +40,8 @@ REQUIREMENT_SECTIONS = (
 )
 ALLOWED_ROW_STATUSES = {"planned", "passed", "blocked", "waived", "n/a"}
 DELIVERY_PASSING_STATUSES = {"passed"}
+CI_EQ_ALLOWED_FINAL_STATUSES = {"passed", "waived", "n/a"}
+CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 FIELD_RE_TEMPLATE = r"^\s*-\s+\*\*%s:\*\*\s*(.+?)\s*$"
 TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
@@ -733,6 +735,88 @@ def build_violation(code: str, message: str, resolution: str, section: str) -> d
     }
 
 
+def validate_ci_equivalent_suite_matrix(
+    sections: dict[str, list[str]],
+    allow_waivers: bool,
+) -> list[dict[str, str]]:
+    violations: list[dict[str, str]] = []
+    rows = table_rows(find_section(sections, CI_EQ_SECTION))
+    if not rows:
+        violations.append(
+            build_violation(
+                "CI-EQUIVALENT-MATRIX-MISSING",
+                "The TODO claims delivery progress but has no Local CI-Equivalent Suite Matrix rows.",
+                "Add one row for every repo-owned CI suite/job that will run for the touched repositories, or add an explicit `n/a` row with rationale when no CI surface truly applies.",
+                CI_EQ_SECTION,
+            )
+        )
+        return violations
+
+    for row in rows:
+        if len(row) < 7:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-ROW-INCOMPLETE",
+                    f"CI-equivalent suite row has fewer than 7 cells: {row_text(row)}",
+                    "Use columns: Repository / CI Surface, Why In Scope, Local CI-Equivalent Command, Required Before, Status, Evidence Artifact / Command, Notes.",
+                    CI_EQ_SECTION,
+                )
+            )
+            continue
+        repo_surface, why_in_scope, local_command, _required_before, status_raw, evidence, notes = row[:7]
+        status = normalize_text(status_raw)
+        combined = " ".join((repo_surface, why_in_scope, local_command, evidence, notes))
+        if any(is_placeholder(cell) for cell in (repo_surface, why_in_scope, local_command, status_raw, evidence)):
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-PLACEHOLDER",
+                    f"CI-equivalent suite row contains placeholder content: {row_text(row)}",
+                    "Replace placeholders with the exact repo-owned CI suite/job, the local equivalent command, and concrete execution evidence.",
+                    CI_EQ_SECTION,
+                )
+            )
+        if status not in CI_EQ_ALLOWED_FINAL_STATUSES:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-STATUS-NOT-PASSED",
+                    f"CI-equivalent suite row status `{status_raw}` does not satisfy delivery: {repo_surface}",
+                    "Run and pass the same local suite/job that CI will execute, or record an explicit approved waiver/`n/a` rationale when no CI surface truly applies.",
+                    CI_EQ_SECTION,
+                )
+            )
+            continue
+        if status == "waived":
+            if not allow_waivers or ("approval" not in normalize_text(combined) and "aprovado" not in normalize_text(combined)):
+                violations.append(
+                    build_violation(
+                        "CI-EQUIVALENT-WAIVER-APPROVAL-MISSING",
+                        f"CI-equivalent suite row is waived without explicit approval evidence: {repo_surface}",
+                        "Record the approval evidence for this waiver or run the local CI-equivalent suite.",
+                        CI_EQ_SECTION,
+                    )
+                )
+        if status == "n/a" and len(normalize_text(notes)) < 3:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-NA-RATIONALE-MISSING",
+                    f"CI-equivalent suite row is `n/a` without rationale: {repo_surface}",
+                    "Explain why no repo-owned CI suite/job applies to this slice.",
+                    CI_EQ_SECTION,
+                )
+            )
+        lowered = normalize_text(combined)
+        if status == "passed" and any(term in lowered for term in ("not run", "nao executado", "não executado", "pending", "planned", "expected")):
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-EVIDENCE-NOT-REAL",
+                    f"CI-equivalent suite row claims `passed` but the evidence is not real completed execution: {repo_surface}",
+                    "Replace planned/pending text with concrete local execution evidence for the exact CI-equivalent suite/job.",
+                    CI_EQ_SECTION,
+                )
+            )
+    return violations
+
+
 def validate_todo(
     todo_path: Path,
     require_delivery: bool,
@@ -747,6 +831,7 @@ def validate_todo(
         "dod_count": 0,
         "validation_count": 0,
         "evidence_row_count": 0,
+        "ci_equivalent_row_count": 0,
         "allow_waivers": allow_waivers,
     }
     violations: list[dict[str, str]] = []
@@ -779,9 +864,13 @@ def validate_todo(
 
     evidence_rows = table_rows(find_section(sections, "Completion Evidence Matrix"))
     context["evidence_row_count"] = len(evidence_rows)
+    ci_equivalent_rows = table_rows(find_section(sections, CI_EQ_SECTION))
+    context["ci_equivalent_row_count"] = len(ci_equivalent_rows)
 
     if not delivery_claim:
         return {"blocked": False, "violations": [], "context": context}
+
+    violations.extend(validate_ci_equivalent_suite_matrix(sections, allow_waivers))
 
     if not evidence_rows:
         violations.append(

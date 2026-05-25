@@ -36,12 +36,14 @@ REQUIRED_SECTIONS = (
     "Execution Ownership Ledger",
     "Execution Waves",
     "Consolidated Validation Matrix",
+    "CI-Equivalent Local Suite Matrix",
     "Risk / Conflict Controls",
     "Approval Request",
 )
 
 TRACEABILITY_COLUMNS = 8
 TRACEABILITY_ALLOWED_STATUSES = {"planned", "passed", "blocked", "waived"}
+CI_EQ_ALLOWED_STATUSES = {"planned", "passed", "blocked", "waived", "n/a"}
 SPEC_DEVIATION_ALLOWED_STATUSES = {"approved", "n/a"}
 TODO_REQUIREMENT_SECTIONS = ("Definition of Done", "Validation Steps")
 DECISION_SECTIONS = ("Decisions", "Decision Baseline")
@@ -383,6 +385,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
         "workstream_count": 0,
         "wave_count": 0,
         "validation_row_count": 0,
+        "ci_equivalent_row_count": 0,
         "mode": "execution-ready" if require_approved else "approval-ready",
     }
 
@@ -767,6 +770,48 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                     f"Validation row contains placeholder content: {' | '.join(row)}",
                     "Replace placeholders with concrete required evidence, runtime target, and owner.",
                     "Consolidated Validation Matrix",
+                )
+            )
+
+    ci_equivalent_rows = table_rows(sections.get("CI-Equivalent Local Suite Matrix", []))
+    context["ci_equivalent_row_count"] = len(ci_equivalent_rows)
+    if not ci_equivalent_rows:
+        violations.append(
+            build_violation(
+                "CI-EQUIVALENT-MATRIX-MISSING",
+                "No CI-equivalent local suite rows were found.",
+                "Add one row for every repo-owned CI suite/job that will run for the touched repositories, or add an explicit `n/a` row with rationale when no CI surface truly applies.",
+                "CI-Equivalent Local Suite Matrix",
+            )
+        )
+    for row in ci_equivalent_rows:
+        if len(row) < 7:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-ROW-INCOMPLETE",
+                    f"CI-equivalent local suite row has fewer than 7 cells: {row_text(row)}",
+                    "Use columns: Repository / CI Surface, Why In Scope, Local CI-Equivalent Command, Applies To, Status, Evidence Artifact / Command, Owner.",
+                    "CI-Equivalent Local Suite Matrix",
+                )
+            )
+            continue
+        if any(is_placeholder(cell) for cell in row):
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-ROW-PLACEHOLDER",
+                    f"CI-equivalent local suite row contains placeholder content: {row_text(row)}",
+                    "Replace placeholders with the exact repo-owned CI suite/job, the local equivalent command, ownership, and planned evidence.",
+                    "CI-Equivalent Local Suite Matrix",
+                )
+            )
+        status = row[4].strip().lower()
+        if status not in CI_EQ_ALLOWED_STATUSES:
+            violations.append(
+                build_violation(
+                    "CI-EQUIVALENT-STATUS-INVALID",
+                    f"CI-equivalent local suite row status is `{row[4]}`; expected one of {sorted(CI_EQ_ALLOWED_STATUSES)}.",
+                    "Set CI-equivalent suite rows to `planned` before execution, or `passed|blocked|waived|n/a` after execution.",
+                    "CI-Equivalent Local Suite Matrix",
                 )
             )
 

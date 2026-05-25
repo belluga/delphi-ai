@@ -50,7 +50,9 @@ Use this only when the implementation intentionally diverges from a governing TO
 - **Base branch / commit:** `<origin/dev|commit sha>`
 - **Orchestrator reconciliation branch:** `<orchestrator/<slug>|n/a until approved>`
 - **Principal checkout policy:** `<principal checkout stays on reconciliation branch when runtime/browser/device validation depends on it>`
+- **Runtime-facing source checkouts:** `<root + mounted source repos/submodules that must be on reconcile/* before authoritative local validation>`
 - **Worker branches / worktrees:** `<worker branch names or creation policy>`
+- **Derived artifact repos:** `<web-app or equivalent derived bundle repos that are not branch-authority sources>`
 
 ## Checkpoint / Branch Accumulation Control
 - **Checkpoint manifest path:** `foundation_documentation/artifacts/checkpoints/<short-slug>-<YYYY-MM-DD>.md`
@@ -92,6 +94,13 @@ Every row must be traceable to one or more Acceptance Traceability Matrix rows. 
 | --- | --- | --- | --- |
 | `<area>` | `<test/build/navigation evidence>` | `<worker|reconciliation|device|browser>` | `<worker|orchestrator>` |
 
+## CI-Equivalent Local Suite Matrix
+Every repo-owned CI suite/job that the touched repositories will execute for this wave must be represented here before approval. The orchestrator may run targeted reruns diagnostically, but local delivery and promotion readiness are blocked until every in-scope row has been executed locally and passed on the reconciliation state. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat this matrix as the minimum floor and add the broader local suites that are cheaper to fail here than later in CI or promotion.
+
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Applies To (`worker-local|reconciliation|pre-promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<flutter-app / Validate and Build Web>` | `<why this CI surface is in scope>` | `<exact local command that mirrors the CI job>` | `<reconciliation>` | `<planned>` | `<planned output path / report / n/a>` | `<worker|orchestrator>` |
+
 ## Consolidated Delivery Evidence
 Fill this section only after execution, before claiming local implementation or delivery completion.
 
@@ -111,6 +120,14 @@ Fill this after the checkpoint commits/pushes are created.
 Required when any validation row involves web, browser, device, runtime, navigation, or build evidence.
 
 Record concrete branch, commit, build artifact, served target, and freshness proof after execution. Leave this section without placeholder rows before execution.
+
+## Runtime Surface Preflight
+Fill this when browser/device/runtime validation is in scope.
+
+- **Principal runtime target already in use:** `<belluga.space|local device|tunnel|container target>`
+- **Bind-mount / served-source proof:** `<docker inspect / compose proof that target resolves to the principal checkout>`
+- **Navigation env source:** `<already-exported shell vars|.env.local.navigation|other approved source>`
+- **Auxiliary runtime required?:** `<no if principal target already serves reconcile state; otherwise blocker + reason>`
 
 ## Risk / Conflict Controls
 - <Known merge, contract, migration, runtime, or validation risks>

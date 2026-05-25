@@ -5,14 +5,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DETERMINISTIC_CORE_ROOT = REPO_ROOT / "deterministic" / "core"
+if str(DETERMINISTIC_CORE_ROOT) not in sys.path:
+    sys.path.insert(0, str(DETERMINISTIC_CORE_ROOT))
+
 from paced_metrics_core import combine_candidate_rule_levels, combine_formalizable_hints, normalize_text, short_hash
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 DISPATCH_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
 RESULT_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_result.schema.json"
 MERGE_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_merge.schema.json"

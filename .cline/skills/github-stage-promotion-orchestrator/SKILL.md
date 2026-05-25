@@ -12,6 +12,14 @@ Use this skill only when the user explicitly requests promotion to `dev` only or
 - `github-main-promotion-orchestrator` may depend on this skill's lane model, evidence standards, and blocker recovery patterns as an upstream prerequisite.
 - This skill never authorizes `stage -> main` actions. It defines the state that a later main-promotion workflow may rely on, but approval for `main` must still be obtained independently in that later workflow.
 
+## Derived Web-App Boundary
+- `web-app` is a derived/compiled artifact surface, not a promotion-lane source repository.
+- Never classify `web-app` as a promotion scenario and never promote `web-app` manually through this skill.
+- Do not create, merge, close, rebase, or otherwise mutate generated `web-app` PRs as a manual lane step. If pipeline automation creates or updates a `web-app` PR, treat it as derived artifact evidence only.
+- Reviews, comments, or checks on generated `web-app` artifacts can still reveal real source defects. If a generated artifact finding is pertinent, fix the authoritative source repo for the lane (normally `flutter-app`, or source-owned build/publish tooling) and replay the source lane. Do not patch generated `web-app` output directly.
+- If a generated `web-app` finding is stale or non-actionable, record the technical rationale on the source/lane evidence path when needed, but do not treat the `web-app` PR itself as a promotable unit.
+- Completion reports must not list `web-app` as a promoted repo. Mention it only as derived artifact/check evidence when it materially affected a source-lane decision.
+
 ## Hard Rules
 - Manual-only. Do not use unless explicitly requested by the user.
 - Promote only up to `stage`. Never continue to `main`.
@@ -27,8 +35,10 @@ Use this skill only when the user explicitly requests promotion to `dev` only or
 - Keep commits scoped by repository. Do not mix unrelated repositories or concerns.
 - Shared-lane validation must rely on canonical product APIs/surfaces; test-only backend endpoints are forbidden.
 - CI behavior changes and promotion-lane tooling behavior changes require explicit user authorization before they are included in the diff or the local promotion contract.
+- `web-app` is derived; never use this skill to manually promote or mutate generated `web-app` PRs.
 - Never push directly to `dev`, `stage`, or `main`. Lane movement is PR-only.
-- Standard local/manual promotion flow must treat gitlinks as forbidden. The normal exception is Docker Scenario 2's lane-owned remote `bot/next-version` path; do not smuggle gitlink deltas through feature/dev-only flow.
+- Feature/fix/source-branch promotion into `dev` must treat gitlinks as forbidden. The only acceptable path that introduces Docker submodule gitlink changes into `dev` is the lane-owned remote `bot/next-version -> dev` flow in Scenario 2.
+- After gitlinks have reached `dev` through the lane-owned path, `dev -> stage` and later `stage -> main` are normal lane promotions that carry those gitlinks forward. Do not strip, rewrite, or manually edit gitlinks during those lane-to-lane promotions.
 - Docker submodule gitlinks are owned by this promotion lane. If gitlink movement or `bot/next-version` recovery is required, do it here, not in generic rebaseline/cleanup workflows.
 
 ## Classification
@@ -38,12 +48,16 @@ Classify the promotion request before acting:
 3. Docker has both non-submodule changes and submodule changes.
 4. Flutter or Laravel lane promotion only.
 
+`web-app` is never a classification option. It is a derived artifact surface owned by the source/pipeline flow, not a manual promotion target.
+
 ## Common Preconditions
 - Confirm target repo(s), source branch, and destination lane.
 - Resolve the exact authoritative source branch/ref before running any lane steps. Do not treat the currently checked-out branch as implied authority.
 - When local commit/push/PR work is required, create a local promotion contract under `delphi-ai/artifacts/tmp/` before the first mutating action:
-  - `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope <dev-only|through-stage>`
-  - Keep the default conservative contract unless the user explicitly authorizes otherwise: gitlinks forbidden, `bot/next-version` forbidden for `dev-only`, `ci_behavior_change_authorized=false`, and `promotion_behavior_change_authorized=false`.
+  - For `dev-only`, use the conservative contract: `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope dev-only`
+  - For `through-stage`, use the lane gitlink contract: `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope through-stage --gitlink-policy pipeline-only`
+  - Keep `ci_behavior_change_authorized=false` and `promotion_behavior_change_authorized=false` unless the user explicitly authorizes CI or promotion-tooling behavior changes.
+  - `pipeline-only` does not allow arbitrary gitlinks in feature/fix/source branches; it only permits lane-owned `bot/next-version` gitlink PRs and lane-to-lane `dev -> stage` propagation.
 - Run `git status --short` in each touched repo.
 - Run the deterministic source-branch preflight before opening the first PR in the lane:
   - Flutter/Laravel feature promotion and Docker normal branch promotion:
@@ -56,7 +70,7 @@ Classify the promotion request before acting:
 - Monitor PR checks and post-merge runs; do not assume merge success means the lane is healthy.
 
 ## Preferred Deterministic Helpers
-- Use `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope <dev-only|through-stage>` to make lane scope and authorization explicit before any local/manual promotion mutation. This contract is local-only guard state; it does not authorize CI or remote behavior changes by itself.
+- Use `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope <dev-only|through-stage> [--gitlink-policy pipeline-only]` to make lane scope and authorization explicit before any local/manual promotion mutation. For `through-stage`, include `--gitlink-policy pipeline-only` so the guard permits only the approved gitlink path: `bot/next-version -> dev`, then lane-to-lane propagation such as `dev -> stage`. This contract is local-only guard state; it does not authorize CI or remote behavior changes by itself.
 - Use the guarded wrappers instead of raw `git commit`, `git push`, `gh pr create`, or `gh pr merge` whenever a local/manual promotion action mutates git or GitHub state:
   - `bash delphi-ai/tools/guarded_git_commit.sh --contract delphi-ai/artifacts/tmp/promotion-contract.json --repo-kind <docker|flutter|laravel|docs|other> -- <git commit args...>`
   - `bash delphi-ai/tools/guarded_git_push.sh --contract delphi-ai/artifacts/tmp/promotion-contract.json --repo-kind <docker|flutter|laravel|docs|other> --base-ref <origin/dev|origin/stage> -- <git push args...>`
@@ -77,6 +91,7 @@ For any blocking PR/review finding, perform this gate before deciding to patch:
 4. Record the resolution as `integrate | challenge with rationale | defer/block as upstream`.
 5. If implementation is required, return to the authoritative source branch for that lane before replaying promotion:
    - Flutter/Laravel: fix on the originating feature branch, then replay `feature -> dev -> stage`.
+   - Generated `web-app` artifact findings: fix the source-owned Flutter/build/publish surface that produced the artifact, then replay the source lane; never edit or promote generated `web-app` output directly.
    - Docker normal changes: fix on the working source branch, then replay `branch -> dev -> stage`.
    - Docker submodule-only lane: keep the fix inside the lane-owned `bot/next-version` recovery/promotion path defined in Scenario 2.
 6. Never patch directly on `dev` or `stage` just because the finding appeared there, unless that lane is itself the authoritative source branch for the scenario.
@@ -92,7 +107,7 @@ Steps:
 5. Merge only when all checks are green and comments are resolved.
 6. Wait for post-merge `dev` runs to finish green.
 7. If the destination lane is `dev`, stop here and report `dev` completion.
-8. Open PR `dev -> stage`.
+8. Open PR `dev -> stage`. This lane-to-lane PR may carry gitlinks already present on `dev`; that is expected when those gitlinks reached `dev` via `bot/next-version`.
 9. Wait for all checks, review comments, merge only on full green.
 10. Wait for post-merge `stage` runs, including deploy/smoke jobs.
 
@@ -106,14 +121,19 @@ Rules:
 - The branch must contain only submodule gitlink changes.
 - It must be based on the latest `origin/dev`.
 - If it diverges from `origin/dev` with regular file changes or stale commits, treat it as invalid.
+- This is the only acceptable way to introduce Docker submodule gitlink changes into `dev`; never introduce those gitlinks through feature/fix/source PRs.
+- After this branch is merged into `dev`, downstream lane-to-lane PRs (`dev -> stage`, later `stage -> main`) should carry the resulting gitlinks forward rather than treating them as new manual gitlink edits.
 - The repository-dispatch flow may prepare/update the remote `bot/next-version`, but PR creation is manual by policy. Do not expect or restore automatic PR creation for this branch.
 - A local `bot/next-version` checkout is not part of the normal workflow baseline. Treat local copies as stale/anomalous unless the user is explicitly doing remote branch recovery.
 - Manual gitlink edits are allowed only inside this scenario's recovery/promotion work, and only to restore the canonical `origin/dev`-based submodule-only branch shape.
 
 Recovery path when invalid:
 1. Re-dispatch the promotion callbacks from `flutter-app stage` and/or `laravel-app stage` so the remote branch is regenerated cleanly from the latest `origin/dev`.
-2. If the remote branch remains invalid, recreate/reset the remote `bot/next-version` from the latest `origin/dev` through the promotion-lane maintenance path.
-3. Re-check that the remote diff from `origin/dev` contains only submodule gitlinks.
+2. Re-run the preflight after the dispatch. If the dispatch reports no changes or skips pushing because `bot/next-version` already contains the target pins, but preflight still says the branch does not contain `origin/dev`, treat the branch as still invalid.
+3. If the branch is stale specifically because it already has the desired gitlinks but is based on an older `origin/dev`, do not try to hand-edit the gitlinks or force the same dispatch over the stale branch. With explicit operator approval, delete or reset the remote `bot/next-version` so the dispatcher can recreate it from the current `origin/dev`.
+4. Re-dispatch the required `flutter-app stage` and/or `laravel-app stage` callbacks after the stale branch has been removed/reset. The dispatcher, not a manual gitlink edit, must repopulate the branch with the target app pins.
+5. If the remote branch remains invalid for any other reason, recreate/reset the remote `bot/next-version` from the latest `origin/dev` through the promotion-lane maintenance path, then re-dispatch the required submodule pins. Destructive remote branch reset/deletion requires explicit operator approval unless the approved automation path performs it.
+6. Re-check that the remote branch contains `origin/dev` and that the remote diff from `origin/dev` contains only submodule gitlinks.
 
 Promotion steps:
 1. Open PR `bot/next-version -> dev` through the guarded PR wrapper and only after the contract explicitly allows the lane scope involved.
@@ -122,7 +142,7 @@ Promotion steps:
 4. Merge only on full green.
 5. Wait for post-merge `dev` runs to finish green.
 6. If the destination lane is `dev`, stop here and report `dev` completion.
-7. Open PR `dev -> stage`.
+7. Open PR `dev -> stage`; at this point the gitlinks are expected to be part of `dev` because they entered through `bot/next-version`.
 8. Wait for all checks and deploy-related runs.
 9. Merge only on full green.
 10. Wait for post-merge `stage` runs to finish green.
@@ -134,6 +154,7 @@ Phase A:
 - Execute Scenario 1 first for the non-submodule Docker changes.
 - Merge to `dev` and wait for post-merge `dev` green.
 - If the destination lane is `dev`, stop here and report `dev` completion.
+- If `dev` already contains lane-owned gitlinks from a previous `bot/next-version -> dev` merge, do not remove or manually rewrite them during `dev -> stage`; they travel with the lane.
 
 Phase B:
 - Execute Scenario 2 after Phase A is green.
@@ -150,6 +171,7 @@ Steps:
 1. Promote the feature branch to `dev` with the guarded wrappers and the active promotion contract.
 2. Wait for checks and Copilot review resolution.
 3. Merge and wait for post-merge `dev` runs.
+   - If Flutter publishing creates or updates a `web-app` PR, review it only as derived artifact evidence. Do not merge or otherwise mutate that PR manually through this skill.
 4. If the destination lane is `dev`, stop here and report `dev` completion.
 5. Promote `dev -> stage`.
 6. Wait for checks and comments.
@@ -196,5 +218,6 @@ When the promotion finishes, report:
 - final SHAs in the reached destination lane(s)
 - post-merge run IDs
 - whether Docker Scenario 2 was regenerated cleanly
+- any generated `web-app` artifact evidence that influenced source-lane decisions, explicitly labeled as derived and not promoted
 - completion-guard outcome and the exact command used
 - any residual blocker requiring user action
