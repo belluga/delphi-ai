@@ -23,19 +23,22 @@ Load the phase skill that matches the current TODO state:
 1. Classify lane and framing.
 2. Refine the TODO contract.
 3. Run approval gates and obtain explicit `APROVADO`.
-4. Execute only inside the approved boundary.
-5. Complete delivery gates and deterministic guard.
-6. Close, block, or promote through the same governing TODO.
+4. Record approval/rule-ingestion evidence and require `todo_authority_guard.py <todo-path>` to return `Overall outcome: go`.
+5. Execute only inside the approved boundary.
+6. Complete delivery gates and deterministic guards.
+7. Close, block, or promote through the same governing TODO.
 
 ## Gates That Must Stay Visible
 - No tactical implementation before `APROVADO`.
 - `Decision Baseline (Frozen)` before implementation.
 - Complexity policy (`small|medium|big`) and `Plan Review Gate` before approval when required.
+- `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` before implementation after approval/rule ingestion.
 - `Completion Evidence Matrix` before delivery claims.
 - `Local CI-Equivalent Suite Matrix` executed locally for in-scope CI jobs.
 - `Decision Adherence` before delivery.
 - `Pipeline/Copilot P1/P2 Preflight` before delivery claims.
 - `Rule-Spirit Anti-Pattern Hunt` before delivery claims.
+- `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` must return `Overall outcome: go` before any close/delivery claim.
 - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any close/delivery claim.
 
 ## Non-Negotiables

@@ -14,6 +14,10 @@ Use whenever CI, Copilot, checks, deploy/smoke jobs, or local reproduction produ
 4. If local reproduction is blocked by harness/environment limitations, mark that attempt invalid evidence instead of treating it as product proof.
 5. If classification or fix is ambiguous, architectural, cross-module, or high-blast-radius, run `wf-docker-independent-critique-method` with a bounded package.
 6. Fix root cause on the authoritative source branch for the scenario, then replay the lane.
+7. Record promotion routing in the governing TODO when findings exist:
+   - same-scope remediation stays in the same TODO/lane;
+   - scope/risk/architecture/tooling changes require TODO update, renewed approval, or split;
+   - unresolved P1/P2 findings remain delivery and promotion blockers.
 
 ## Copilot Priority
 1. Security / auth / tenant isolation.
@@ -24,5 +28,6 @@ Use whenever CI, Copilot, checks, deploy/smoke jobs, or local reproduction produ
 
 ## Non-Negotiables
 - Green checks do not override pertinent P1/P2 comments.
+- A P1/P2 finding blocks promotion completion, but does not automatically create a new TODO when the fix preserves the same approved objective and scenario.
 - Do not patch generated `web-app` output directly.
 - Do not patch `dev` or `stage` just because the finding appeared there unless that lane is the authoritative source for the scenario.

@@ -1,0 +1,49 @@
+# Delphi Phase Surface Registry
+# Authority: paced.core.phase-surfaces
+#
+# Declarative source for phase-split skill groups that must stay coherent.
+# The validator reads this file; do not add new phase groups directly in
+# tools/validate_phase_surfaces.py.
+
+schema_version: 1
+
+phase_groups:
+  - name: todo-driven
+    umbrella_skill: wf-docker-todo-driven-execution-method
+    require_register: true
+    phases:
+      - wf-docker-todo-lane-framing-method
+      - wf-docker-todo-contract-refinement-method
+      - wf-docker-todo-approval-gates-method
+      - wf-docker-todo-execution-boundary-method
+      - wf-docker-todo-delivery-gates-method
+      - wf-docker-todo-closeout-promotion-method
+    workflows:
+      - workflows/docker/todo-lane-framing-method.md
+      - workflows/docker/todo-contract-refinement-method.md
+      - workflows/docker/todo-approval-gates-method.md
+      - workflows/docker/todo-execution-boundary-method.md
+      - workflows/docker/todo-delivery-gates-method.md
+      - workflows/docker/todo-closeout-promotion-method.md
+    clinerules:
+      - .clinerules/workflows/docker-todo-lane-framing-method.md
+      - .clinerules/workflows/docker-todo-contract-refinement-method.md
+      - .clinerules/workflows/docker-todo-approval-gates-method.md
+      - .clinerules/workflows/docker-todo-execution-boundary-method.md
+      - .clinerules/workflows/docker-todo-delivery-gates-method.md
+      - .clinerules/workflows/docker-todo-closeout-promotion-method.md
+
+  - name: github-stage-promotion
+    umbrella_skill: github-stage-promotion-orchestrator
+    require_register: true
+    phases:
+      - github-stage-promotion-intake-classification
+      - github-stage-promotion-contract-preflight
+      - github-stage-promotion-source-to-dev
+      - github-stage-promotion-bot-next-version-recovery
+      - github-stage-promotion-dev-to-stage
+      - github-stage-promotion-docker-finalization
+      - github-stage-promotion-failure-review
+      - github-stage-promotion-closeout-report
+    workflows: []
+    clinerules: []

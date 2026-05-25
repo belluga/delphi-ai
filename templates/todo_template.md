@@ -312,6 +312,14 @@ Use exact trigger names and exact enum values only.
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
+## Approval
+Record the approval evidence after the user approves the bounded execution plan. This section is intentionally small: it documents the approval that already happened; it does not create a second approval ceremony.
+
+- **Approved by:** `<user/persona + date + approval phrase or reference containing APROVADO/approved>`
+- **Approval scope:** `<exact implementation boundary authorized by approval>`
+- **Execution not authorized by approval:** `<explicit exclusions or n/a>`
+- **Renewed approval required when:** `<scope, validation, architecture, risk, or exception changes that would alter the approved contract>`
+
 ## Rules Acknowledgement / Ingestion (Required After `APROVADO` and Before Execution)
 Complete this after the execution plan is approved and the touched surfaces are known.
 
@@ -341,6 +349,23 @@ Complete this after the execution plan is approved and the touched surfaces are 
 - If any module decision is `Regression`, delivery is blocked until:
   - an intentional supersede decision is approved, and
   - canonical module consolidation targets are updated accordingly.
+
+## Pipeline/Copilot P1/P2 Preflight
+| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| `<bounded implemented diff + evidence packet>` | `<CI/Copilot-style P1/P2 failure modes>` | `<planned|passed|waived|n/a>` | `<command/artifact/reviewer evidence>` | `<none|P1/P2 finding summary>` | `<fix/adjudication/waiver rationale>` |
+
+## Rule-Spirit Anti-Pattern Hunt
+| Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| `<ingested rule/workflow/principle>` | `<direct violation or disguised bypass lens>` | `<planned|passed|waived|n/a>` | `<command/artifact/reviewer evidence>` | `<none|P1/P2 finding summary>` | `<fix/adjudication/waiver rationale>` |
+
+## Promotion Finding Routing Ledger (Required When Promotion Finds Blockers)
+Use this only when promotion/CI/Copilot/check evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
+
+| Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<PR/check/comment id>` | `<P1|P2|P3|P4|n/a>` | `<confirmed defect|by-design intent|upstream-lane drift|non-actionable>` | `<same-todo-remediation|same-todo-evidence-refresh|split-required|renewed-approval-required|defer-follow-up|non-actionable>` | `<why same TODO is still valid, or why split/renewal is required>` | `<open|fixed|re-evidenced|accepted|deferred|blocked>` | `<approval reference, split TODO, follow-up owner/path, or n/a>` |
 
 ## Security Risk Assessment (Mandatory Before Delivery)
 - **Risk level:** `<none|low|medium|high>`

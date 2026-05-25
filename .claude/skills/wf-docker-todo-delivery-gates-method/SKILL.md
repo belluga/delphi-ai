@@ -11,8 +11,9 @@ Use when implementation is ready for local delivery, promotion readiness, or clo
 - Fill criterion-specific `Completion Evidence Matrix`.
 - Execute and record in-scope `Local CI-Equivalent Suite Matrix`.
 - Run decision adherence, security/performance assessment, validation steps, P1/P2 preflight, Rule-Spirit hunt, required audits, and final review.
+- Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`.
 - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`.
-- Treat `Overall outcome: go` as necessary evidence, not a replacement for `APROVADO`, touched-surface rule ingestion, required audits, or canonical module consolidation.
+- Treat deterministic `Overall outcome: go` results as necessary evidence, not a replacement for required audits, security/performance judgment, or canonical module consolidation.
 
 ## Outputs
 - Delivery-ready TODO evidence with guard result.
@@ -20,5 +21,5 @@ Use when implementation is ready for local delivery, promotion readiness, or clo
 ## Non-Negotiables
 - No aggregate evidence in place of criterion-specific rows.
 - No unresolved `P1|P2`.
-- No delivery claim unless completion guard returns `Overall outcome: go`.
-- No completion-guard pass may be used to bypass approval, rule ingestion, or required review/audit lanes.
+- No delivery claim unless both authority guard and completion guard return `Overall outcome: go`.
+- No guard pass may be used to bypass required review/audit lanes.

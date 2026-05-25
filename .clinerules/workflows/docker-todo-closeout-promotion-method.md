@@ -26,7 +26,7 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
 4. Use `github-stage-promotion-orchestrator` for `dev-only|through-stage` promotion.
 5. Use `github-main-promotion-orchestrator` only when the user explicitly requests `main`.
 6. Do not create a new tactical TODO solely for operational promotion follow-through unless the promotion process itself is the active requested work.
-7. Rerun `todo_completion_guard.py` before any close-claim path/status change.
+7. Rerun `todo_authority_guard.py <todo-path> --require-delivery-gates` and `todo_completion_guard.py` before any close-claim path/status change.
 
 ## Outputs
 - Updated TODO stage/path.
@@ -36,4 +36,5 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
 ## Non-Negotiables
 - Same governing TODO remains authoritative through promotion follow-through.
 - No `Production-Ready` claim before the final required lane threshold is complete.
+- No close-claim path/status change while either deterministic guard returns anything other than `Overall outcome: go`.
 - No durable truth left only in tactical notes after close.

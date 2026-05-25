@@ -11,6 +11,7 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 - Freeze or refresh `Decision Baseline (Frozen)`.
 - Run module coherence, plan review, audit escalation, and required critique/triple-review lanes.
 - Ask for explicit `APROVADO`.
+- Record compact `Approval` evidence in the TODO after approval: approver/reference, authorized scope, exclusions, and renewal trigger.
 
 ## Outputs
 - Approval-ready TODO with review/audit evidence.
@@ -18,4 +19,5 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 
 ## Non-Negotiables
 - No tactical implementation before `APROVADO`.
+- Do not rely on chat memory alone after approval; the TODO must carry the approval evidence.
 - Approval-material changes require renewed approval.

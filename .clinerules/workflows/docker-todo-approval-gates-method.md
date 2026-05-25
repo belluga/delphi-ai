@@ -30,6 +30,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - require `Overall outcome: go` before trusting audit decisions.
 6. Run the derived critique/triple-review lanes when required or recommended by the audit floor.
 7. Ask the user to reply with **`APROVADO`** for tactical and ephemeral TODO lanes.
+8. After approval, record the compact `Approval` evidence section in the TODO: approver/reference, exact approved scope, exclusions, and renewed-approval trigger.
 
 ## Outputs
 - Plan Review Gate evidence.
@@ -39,5 +40,6 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 
 ## Non-Negotiables
 - No implementation before `APROVADO`.
+- Approval evidence must be recorded in the TODO; do not rely on chat memory alone after the gate has passed.
 - If approval-material scope, decision, validation, or architecture facts change, refresh the TODO and request renewed `APROVADO`.
 - Do not substitute ad hoc reviewer sequencing for the dedicated triple-review workflow when the derived floor requires or recommends it.

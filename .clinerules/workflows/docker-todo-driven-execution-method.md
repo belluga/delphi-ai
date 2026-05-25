@@ -34,6 +34,8 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 ## Non-Negotiable Gates Visible At The Umbrella
 - **No implementation before `APROVADO`** for tactical and ephemeral TODO lanes.
 - **Decision Baseline (Frozen)** must exist before implementation and must be refreshed with renewed approval if approval-material facts change.
+- **Approval and rule-ingestion evidence** must be recorded in the TODO after `APROVADO` and before implementation:
+  - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`
 - **Complexity policy (`small|medium|big`)** must be recorded during contract refinement.
 - **Plan Review Gate** must run according to the recorded complexity and risk.
 - **Completion Evidence Matrix** must contain criterion-specific evidence for every `Definition of Done` and `Validation Steps` item before delivery claims.
@@ -41,7 +43,8 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Decision Adherence** must be validated before delivery.
 - **Pipeline/Copilot P1/P2 Preflight** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Rule-Spirit Anti-Pattern Hunt** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
-- **Final Deterministic Completion Guard** must return `Overall outcome: go`:
+- **Final Deterministic Guards** must return `Overall outcome: go`:
+  - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
 - **Same governing TODO** stays authoritative through local implementation and `promotion_lane/`; do not create a new tactical TODO solely for operational promotion follow-through.
 
@@ -59,5 +62,5 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 ## Validation
 - The TODO records which phase workflow governed each major transition.
 - No phase-specific requirements are left only in chat.
-- Delivery claims are blocked unless `todo_completion_guard.py` returns `Overall outcome: go`.
+- Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
 - Any waived or `n/a` gate has explicit rationale and approval evidence where required.

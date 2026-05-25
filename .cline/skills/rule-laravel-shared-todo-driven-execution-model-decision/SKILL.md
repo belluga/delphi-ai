@@ -12,6 +12,7 @@ This skill is the Laravel trigger surface for TODO-driven execution. Do not dupl
 - Workflow umbrella: `workflows/docker/todo-driven-execution-method.md`
 - Phase workflows: `workflows/docker/todo-*-method.md`
 - Laravel adjunct rule, when present in downstream stacks: `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md`
+- Deterministic authority/process guard: `tools/todo_authority_guard.py`
 - Deterministic close guard: `tools/todo_completion_guard.py`
 
 When this skill triggers, load the global rule first. For Laravel implementation, also load the relevant Laravel workflow/rules for touched endpoints, domains, tenant access, domain resolution, package boundaries, and foundation-doc sync.
@@ -32,7 +33,7 @@ When this skill triggers, load the global rule first. For Laravel implementation
    - Plan Review Gate when required;
    - Decision Baseline freeze and module-coherence check.
 3. Do not modify Laravel code, tests, routes, schemas, jobs, config, project docs, or cross-stack contracts before explicit `APROVADO`, unless the canonical rule's exemption/micro-fix lane applies.
-4. After `APROVADO`, ingest the governing Laravel and shared rules/workflows for the touched surfaces before execution.
+4. After `APROVADO`, record compact approval evidence in the TODO, ingest the governing Laravel and shared rules/workflows for the touched surfaces, and run `tools/todo_authority_guard.py <todo-path>` before execution.
 5. Before delivery, require evidence for:
    - Completion Evidence Matrix;
    - Local CI-Equivalent Suite Matrix;
@@ -40,12 +41,14 @@ When this skill triggers, load the global rule first. For Laravel implementation
    - Pipeline/Copilot P1/P2 Preflight;
    - Rule-Spirit Anti-Pattern Hunt;
    - security, performance/concurrency, verification debt, test-quality audit, and final review according to the canonical rule and audit floor.
+   - `tools/todo_authority_guard.py <todo-path> --require-delivery-gates` and `tools/todo_completion_guard.py <todo-path>` must both return `Overall outcome: go`.
 
 ## Delivery Blockers
 - Unresolved `P1` or `P2` findings in the Pipeline/Copilot preflight block delivery.
 - Unresolved `P1` or `P2` findings in the Rule-Spirit Anti-Pattern Hunt block delivery.
+- Missing approval evidence or rule-ingestion evidence blocks implementation.
 - Missing, aggregate-only, placeholder, or non-criterion-specific evidence blocks delivery.
-- `tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claim.
+- `tools/todo_authority_guard.py <todo-path> --require-delivery-gates` and `tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claim.
 
 ## Drift Control
 - If this skill and the canonical rule disagree, the canonical rule wins and this skill should be updated.

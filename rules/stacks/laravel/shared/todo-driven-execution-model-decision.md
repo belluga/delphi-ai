@@ -183,6 +183,7 @@ If the change restores previously documented or verifiably working behavior (inc
 ### Gate K — Explicit approval token (mandatory)
 - After Gates 0-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
+- After approval, record a compact `Approval` section in the TODO with the approval evidence, exact approved scope, explicit exclusions, and renewed-approval trigger.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
   - call `apply_patch`,
   - run write commands that change project files,
@@ -201,10 +202,12 @@ If the change restores previously documented or verifiably working behavior (inc
 - The scope check validates touched surfaces only; it does not infer authorship or whether the mixed diff is justified by a valid handoff.
 - `Operational / Coder` may rely on `project_constitution.md` as read authority, but any required constitution edit must be routed through a TODO handoff to `Strategic / CTO-Tech-Lead`.
 - If rule ingestion reveals a material conflict with the approved plan, stop execution, update the plan/TODO, and request renewed **APROVADO** before continuing.
+- After recording approval and rule ingestion, run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` and require `Overall outcome: go` before implementation proceeds.
 
 ### Gate L1 — Bounded But Elastic execution boundary
 - During implementation, Delphi may absorb local discoveries inside the same TODO only when they are already implied by the current objective and remain inside the same approval/review/promotion conversation.
 - If a discovery introduces a new independently testable behavior, a new primary objective, or a new approval/risk conversation, stop, update or split the TODO, and obtain renewed approval before continuing.
+- During promotion follow-through, confirmed P1/P2 findings block merge/closeout claims but do not automatically require a new TODO. Fix/adjudicate them inside the same governing TODO when they preserve the same approved objective, scenario, and risk conversation; split or renew approval only when the finding changes scope, architecture, validation semantics, or accepted risk.
 
 ### Gate M — Decision Adherence Gate (mandatory before delivery)
 - Before delivery, build a `Decision Adherence Validation` table for every baseline decision ID.
@@ -361,7 +364,9 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If the TODO requires an independent no-context critique and that critique is absent without blocker/waiver handling, block approval and implementation.
 - If the execution plan does not contain a recorded test strategy, block implementation.
 - If bugfix/regression or behavior-defining work does not contain fail-first targets (or explicit rationale for non-applicability), block implementation.
+- If explicit approval evidence is missing from the TODO after approval, block implementation.
 - If relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`, block implementation.
+- If `todo_authority_guard.py <todo-path>` does not return `Overall outcome: go` after approval/rule ingestion, block implementation.
 - If execution crosses profile boundaries without a TODO handoff entry, block implementation/delivery until the trace is recorded.
 - If implementation absorbs a new independently testable behavior, a new primary objective, or a new approval/risk conversation without TODO update/split + renewed approval, block delivery.
 - If `Qualifiers` includes `Provisional` and `Provisional Notes` are missing, block implementation/delivery until TODO status is coherent.

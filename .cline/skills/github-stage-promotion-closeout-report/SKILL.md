@@ -41,4 +41,5 @@ Keep the same governing TODO authoritative:
 - move to `promotion_lane/` when local implementation is complete and only authorized lane follow-through remains;
 - move to `completed/` only after the final required lane threshold for that TODO is complete.
 
+Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` before any path/status close-claim change when the TODO is available locally.
 Rerun `todo_completion_guard.py` before any path/status close-claim change.

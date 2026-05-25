@@ -10,6 +10,7 @@ Use after `APROVADO` and before or during implementation. Canonical details live
 ## Responsibilities
 - Re-read the approved TODO.
 - Ingest touched-surface rules/workflows.
+- Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` after approval/rule ingestion.
 - Execute only inside the approved objective.
 - Stop for renewed approval when execution reveals a new objective, behavior, or risk conversation.
 
@@ -19,3 +20,4 @@ Use after `APROVADO` and before or during implementation. Canonical details live
 ## Non-Negotiables
 - No hidden scope expansion.
 - No implementation against stale rules.
+- No implementation after approval/rule ingestion unless `todo_authority_guard.py` returns `Overall outcome: go`.

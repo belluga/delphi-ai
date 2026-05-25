@@ -81,6 +81,13 @@ Before patching any blocking PR/check/Copilot finding:
 3. If ambiguous, architectural, cross-module, or high-blast-radius, run `wf-docker-independent-critique-method` with a bounded package.
 4. If a fix is needed, patch the authoritative source branch for that scenario, then replay the lane.
 
+## Promotion Finding Routing
+Do not turn every promotion finding into a new TODO or a lane restart. Route findings this way:
+- `P1`/`P2` findings block merge, lane completion, and closeout claims until fixed, re-evidenced, or explicitly waived by the current approval authority.
+- Same-scope remediation stays in the governing TODO and promotion lane when it preserves the approved objective, scenario, source branch, and risk conversation. Patch the authoritative source branch and replay only the affected lane evidence.
+- Renew approval or split only when the finding changes the approved scope, introduces a new independently testable behavior, changes promotion/tooling policy, requires an architectural decision, or asks to accept/waive a blocking risk.
+- Record the routing in the TODO `Promotion Finding Routing Ledger` when findings exist, and run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` before delivery or promotion-readiness claims.
+
 ## Closeout
 - `dev-only`: report source repo(s), PR(s), target SHA(s), check evidence, Copilot disposition, and any follow-up such as Docker finalization that was intentionally out of scope.
 - `through-stage`: report source and lane PRs, post-merge run IDs, Docker finalization state, generated `web-app` evidence if relevant, and completion-guard outcome.
