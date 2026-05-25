@@ -53,7 +53,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/runtime_session_index.py` | python | Generate a derived runtime/session continuity index from active TODOs, blocked fronts, handoff traces, and bounded session-memory carry-over. |
 | `tools/runtime_ingress_surface_audit.sh` | shell | Audit Dockerfiles, compose files, ingress/runtime configs, and basic compose readiness before runtime or ingress changes. |
 | `tools/rule_event_record.py` | python | Record explicit false positives, escapes, lifecycle changes, and `gate-escape` events for Pipeline/Copilot P1/P2 or Rule-Spirit escapes into the append-only PACED rule events ledger. |
-| `tools/rule_spirit_anti_pattern_scan.sh` | shell | Heuristically scan changed or selected repo surfaces for rule-spirit bypass shapes across shared, Flutter, Laravel, Docker, and future Go lanes. |
+| `tools/rule_spirit_anti_pattern_scan.sh` | shell | Heuristically scan changed or selected repo surfaces for rule-spirit bypass shapes across shared, Flutter, Laravel, Docker, and future Go lanes, with severity triage, temporary allowlists, and optional JSON output. |
 | `tools/seed_rule_catalog.py` | python | Seed a project-local PACED rule catalog with canonical teaching-rule metadata and lifecycle labels. |
 | `tools/subagent_review_dispatch.py` | python | Build a derived no-context subagent dispatch packet for architecture opinions, critique, test-quality audit, or final review. |
 | `tools/subagent_review_merge.py` | python | Merge structured no-context subagent review results into a derived summary packet for TODO/gate resolution. |

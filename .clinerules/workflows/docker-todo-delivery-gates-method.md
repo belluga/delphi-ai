@@ -30,6 +30,8 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 8. Run `Rule-Spirit Anti-Pattern Hunt`.
    - Search direct violations and disguised bypasses against ingested rules and architecture principles.
    - Use `bash delphi-ai/tools/rule_spirit_anti_pattern_scan.sh --repo <repo-root> --stack <stack>` when applicable.
+   - For non-trivial diffs, prefer `--json-output <artifact>` so severity, finding keys, and allowlist status are reviewable.
+   - Allowlists are temporary exceptions only: each entry needs an owner, expiration date, and reason; expired entries remain active findings.
    - Unresolved `P1|P2` blocks delivery.
 9. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
 10. Run:

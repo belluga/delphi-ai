@@ -11,6 +11,7 @@ Use when implementation is ready for local delivery, promotion readiness, or clo
 - Fill criterion-specific `Completion Evidence Matrix`.
 - Execute and record in-scope `Local CI-Equivalent Suite Matrix`.
 - Run decision adherence, security/performance assessment, validation steps, P1/P2 preflight, Rule-Spirit hunt, required audits, and final review.
+- When using `rule_spirit_anti_pattern_scan.sh`, prefer JSON evidence for non-trivial diffs; any scanner allowlist must be owner-bound, reasoned, and expiration-bound.
 - Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`.
 - Run `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`.
 - Treat deterministic `Overall outcome: go` results as necessary evidence, not a replacement for required audits, security/performance judgment, or canonical module consolidation.

@@ -360,6 +360,8 @@ Complete this after the execution plan is approved and the touched surfaces are 
 | --- | --- | --- | --- | --- | --- |
 | `<ingested rule/workflow/principle>` | `<direct violation or disguised bypass lens>` | `<planned|passed|waived|n/a>` | `<command/artifact/reviewer evidence>` | `<none|P1/P2 finding summary>` | `<fix/adjudication/waiver rationale>` |
 
+When the heuristic scanner is in scope, prefer JSON evidence for non-trivial diffs. Scanner allowlists must be temporary and include owner, expiration, and reason; expired entries count as active findings.
+
 ## Promotion Finding Routing Ledger (Required When Promotion Finds Blockers)
 Use this only when promotion/CI/Copilot/check evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
 
