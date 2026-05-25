@@ -23,6 +23,7 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
 - Project README instructions.
 - `foundation_documentation` submodule (expected for all projects; add if missing).
 - Delphi stack capability registry (`delphi-ai/config/stack_capabilities.yaml`) for available-capability context only.
+- Environment topology contract (`foundation_documentation/artifacts/environment-topology.md`) when present, or enough repo evidence to scaffold it.
 
 ## Procedure
 1. **Confirm repository context**
@@ -67,6 +68,10 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
    - If multiple tenant/domain candidates remain and no project-owned artifact selects one, stop and ask instead of guessing. Do not promote a guessed domain, tenant slug, or host into Delphi.
    - Prefer project-owned safe runners when they exist. Belluga defaults include `laravel-app/scripts/delphi/run_laravel_tests_safe.sh` for local Laravel tests and `flutter-app/scripts/build_web.sh` for web bundle publish; future stack capabilities such as Go should document equivalent backend/client commands in `foundation_documentation` and configure readiness helpers instead of bypassing them.
    - If these topology facts are stable and likely to matter across sessions, record or refresh them in `foundation_documentation/artifacts/dependency-readiness.md` before moving on.
+   - If no durable topology artifact exists, or the current artifact is stale/ambiguous, run the Environment Topology Contract Method:
+     - `python3 delphi-ai/tools/environment_topology_contract_scaffold.py --repo <repo-root> --output foundation_documentation/artifacts/environment-topology.md`
+     - The scaffold should prefill available repo/env/config evidence, redact secrets, and mark inferred rows as `user_validation_required`.
+     - Review the generated draft with the user before treating any inferred domain, tenant, runtime owner, compose profile, safe runner, or active stack as authoritative.
 
 7. **README alignment**
    - If the user is in setup mode, walk through the relevant README sections (env variables, submodule init, Docker commands) and confirm each step is complete. Use the README as the canonical checklist for new environments.

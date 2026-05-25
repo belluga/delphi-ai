@@ -51,7 +51,15 @@ It does not maintain central manual counters. It records rule/gate events, extra
        --report-json foundation_documentation/artifacts/tmp/<slug>-todo-validation-report.json \
        --events-jsonl foundation_documentation/artifacts/metrics/events/rule-events.jsonl
      ```
-   - Use `python3 delphi-ai/tools/rule_event_record.py ...` only when inference is not enough (for example false positives, escapes, or lifecycle changes).
+   - Use `python3 delphi-ai/tools/rule_event_record.py ...` only when inference is not enough (for example false positives, escapes, or lifecycle changes). For CI/Copilot P1/P2 or Rule-Spirit escapes, prefer:
+     ```bash
+     python3 delphi-ai/tools/rule_event_record.py \
+       --events-jsonl foundation_documentation/artifacts/metrics/events/rule-events.jsonl \
+       gate-escape \
+       --gate pipeline-p1-p2 \
+       --todo-path foundation_documentation/todos/active/<slug>.md \
+       --summary "<escaped condition>"
+     ```
 3. **Capture no-context gate findings**
    - Merge structured reviewer output:
      ```bash

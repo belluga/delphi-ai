@@ -244,6 +244,7 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate O2 — Rule-Spirit Anti-Pattern Hunt (mandatory before delivery)
 - Before delivery, build the search lens from the rules/workflows ingested after `APROVADO`, canonical architecture principles, known patterns/anti-patterns, and the changed diff.
+- Use `bash delphi-ai/tools/rule_spirit_anti_pattern_scan.sh --repo <repo-root> --stack <stack>` when the touched surface fits its heuristic coverage, and treat its output as evidence input for the hunt rather than as the whole review.
 - Search for direct violations and disguised bypasses: ad hoc shortcuts, structural patches over unresolved defects, duplicated ownership, fake compliance artifacts, "pass the guard" code, weakened tests, hard-coded topology that belongs in `foundation_documentation` or env config, hidden coupling, direct access around approved abstractions, and local exceptions that should have been explicit decisions.
 - Include both old anti-patterns and candidate new anti-patterns. Reusable candidates belong in the appropriate local/stack/core anti-pattern catalog; project-specific candidates stay in the downstream project, not Delphi core.
 - Record a `Rule-Spirit Anti-Pattern Hunt` table with columns: `Rule / Principle Surface`, `Bypass or Anti-Pattern Search Lens`, `Status`, `Evidence Artifact / Command`, `Findings`, `Resolution / Notes`.

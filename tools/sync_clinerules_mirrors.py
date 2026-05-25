@@ -37,6 +37,14 @@ MIRRORS: tuple[Mirror, ...] = (
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-environment-readiness.md`\n",
     ),
     Mirror(
+        key="shared-environment-topology-contract",
+        kind="model_decision",
+        source="rules/core/environment-topology-contract-model-decision.md",
+        destination=".clinerules/model-decision/shared-environment-topology-contract.md",
+        title="Environment Topology Contract (Model Decision)",
+        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-environment-topology-contract-method.md`\n",
+    ),
+    Mirror(
         key="shared-workflow-definition",
         kind="model_decision",
         source="rules/core/workflow-definition-model-decision.md",
@@ -98,6 +106,14 @@ MIRRORS: tuple[Mirror, ...] = (
         destination=".clinerules/workflows/docker-environment-readiness.md",
         title="Workflow: DevOps Environment Readiness",
         workflow_name="docker-environment-readiness",
+    ),
+    Mirror(
+        key="docker-environment-topology-contract-method",
+        kind="workflow",
+        source="workflows/docker/environment-topology-contract-method.md",
+        destination=".clinerules/workflows/docker-environment-topology-contract-method.md",
+        title="Workflow: Environment Topology Contract",
+        workflow_name="docker-environment-topology-contract-method",
     ),
     Mirror(
         key="docker-independent-critique-method",

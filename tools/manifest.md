@@ -18,6 +18,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/ci_pipeline_surface_audit.sh` | shell | Audit CI workflow files plus directly referenced local scripts for Flutter/Laravel/Docker coverage hints, cache hints, and permission/secret surfaces. |
 | `tools/delphi_project_setup_report.sh` | shell | Produce a read-only downstream setup/recalibration inventory covering lane classification, readiness preflight, surface inventory, drift buckets, and an optional derived JSON snapshot. |
 | `tools/endpoint_performance_review_scaffold.sh` | shell | Generate a markdown review scaffold for endpoint/query performance scrutiny. |
+| `tools/environment_topology_contract_scaffold.py` | python | Generate a redacted downstream `foundation_documentation/artifacts/environment-topology.md` draft from repo evidence, env/config hints, compose files, safe runners, and submodules while marking inferred facts for user validation. |
 | `tools/environment_readiness_report.sh` | shell | Produce a read-only downstream readiness report by combining Genesis zero-state install preflight, Delphi readiness checks, non-mutating project environment checks, and validation-topology hints. |
 | `tools/exact_lookup_anti_pattern_audit.sh` | shell | Heuristically scan Flutter/Laravel code for broad-fetch, page-walk, and in-memory exact-lookup anti-patterns. |
 | `tools/frontend_race_probe.sh` | shell | Orchestrate real repeated frontend race probes by burst level and capture deterministic pass/fail evidence for stack-native test runners. |
@@ -50,7 +51,8 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/profile_scope_check.py` | python | Validate touched surfaces against the active Delphi profile scope rules. |
 | `tools/runtime_session_index.py` | python | Generate a derived runtime/session continuity index from active TODOs, blocked fronts, handoff traces, and bounded session-memory carry-over. |
 | `tools/runtime_ingress_surface_audit.sh` | shell | Audit Dockerfiles, compose files, ingress/runtime configs, and basic compose readiness before runtime or ingress changes. |
-| `tools/rule_event_record.py` | python | Record explicit false positives, escapes, and lifecycle changes into the append-only PACED rule events ledger. |
+| `tools/rule_event_record.py` | python | Record explicit false positives, escapes, lifecycle changes, and `gate-escape` events for Pipeline/Copilot P1/P2 or Rule-Spirit escapes into the append-only PACED rule events ledger. |
+| `tools/rule_spirit_anti_pattern_scan.sh` | shell | Heuristically scan changed or selected repo surfaces for rule-spirit bypass shapes across shared, Flutter, Laravel, Docker, and future Go lanes. |
 | `tools/seed_rule_catalog.py` | python | Seed a project-local PACED rule catalog with canonical teaching-rule metadata and lifecycle labels. |
 | `tools/subagent_review_dispatch.py` | python | Build a derived no-context subagent dispatch packet for architecture opinions, critique, test-quality audit, or final review. |
 | `tools/subagent_review_merge.py` | python | Merge structured no-context subagent review results into a derived summary packet for TODO/gate resolution. |
@@ -58,10 +60,12 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/todo_deterministic_validator.py` | python | Run deterministic structural validation over tactical TODO gate/blocker/waiver fields and emit diagnostic blockers. |
 | `tools/todo_validation_bundle_export.py` | python | Export a machine-checkable validation bundle from a tactical TODO markdown file. |
 | `tools/todo_validation_rules.py` | python | Canonical PACED rule metadata for deterministic TODO validator issue codes and rule-catalog seeding. |
+| `tools/validate_stack_capabilities.py` | python | Validate `config/stack_capabilities.yaml` structure, required stack capability blocks, lifecycle values, and absence of project-activation flags. |
 | `tools/runtime_load_probe.sh` | shell | Run deterministic staged HTTP load/stress probes with objective thresholds for latency, error rate, and throughput. |
 | `tools/runtime_load_validation_scaffold.sh` | shell | Generate a markdown scaffold for runtime load/stress/spike/soak validation evidence. |
 | `tools/self_check.sh` | shell | Run Delphi self-maintenance validation for instruction baselines and mirrors. |
 | `tools/sync_agent_rules.sh` | shell | Sync linked agent-rule surfaces for supported agent bootloaders. |
+| `tools/sync_claude_skill_mirrors.sh` | shell | Sync canonical skills into curated Claude-compatible skill mirrors under `.claude/skills`. |
 | `tools/sync_cline_skill_mirrors.sh` | shell | Sync canonical skills into curated Cline-compatible skill mirrors. |
 | `tools/sync_codex_public_skill_mirrors.sh` | shell | Sync tracked canonical skills into curated public Codex mirrors under `~/.codex/skills/public`. |
 | `tools/sync_clinerules_mirrors.py` | python | Generate curated `.clinerules` mirror content from canonical Delphi rules/workflows. |

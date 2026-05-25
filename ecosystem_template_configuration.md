@@ -39,6 +39,8 @@ Environment, tenants, domains, validation tenants/subdomains, runtime owners, co
 
 Delphi may ship Belluga defaults for convenience and backward compatibility, but defaults must remain configurable. Existing Flutter/Laravel/Docker helpers should stay available; projects execute only the helpers their topology declares active.
 
+When available downstream evidence can be collected safely, Delphi should scaffold `foundation_documentation/artifacts/environment-topology.md` with `tools/environment_topology_contract_scaffold.py`. The scaffold fills known public topology hints and redacts private env values; generated rows stay pending user validation until confirmed.
+
 ## 5. Package Registry Boundary
 
 Ecosystem package ownership is tracked separately in [`config/ecosystem_packages.yaml`](config/ecosystem_packages.yaml). Package availability is not stack activation either: a global package can exist before a project consumes it, and a project-local package belongs in the project-local package registry until promoted.

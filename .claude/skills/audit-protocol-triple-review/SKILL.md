@@ -95,7 +95,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
        --status <resolved|accepted-debt|blocked> \
        --input <filled_resolution_markdown>
      ```
-   - If the round is `needs_adjudication`, summarize the contradiction, run the follow-up no-context challenge manually if needed, and record Delphi's adjudication in the resolution artifact.
+   - If the round is `needs_adjudication`, summarize the contradiction, run the follow-up no-context challenge manually if needed, and record Delphi’s adjudication in the resolution artifact.
    - `next-round` is intentionally blocked until the current non-clean round has a recorded resolution with status `resolved` or `accepted-debt`.
    - If the resolution status is `blocked`, do not open a new audit round. Fix the blocker or explicitly accept the remaining risk as debt first.
    - If all remaining findings are non-blocking under the gate calibration, record `accepted-debt` instead of implementing marginal refactors to chase zero findings.

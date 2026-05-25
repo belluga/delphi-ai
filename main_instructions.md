@@ -113,6 +113,8 @@ Active project topology must be resolved from project-owned contracts: active TO
 
 Environment, tenants, domains, validation tenants/subdomains, runtime owners, compose profiles, build/publish targets, and safe-runner commands are project-specific runtime contracts. Store them in `foundation_documentation`, dependency-readiness artifacts, README/config, or project-owned env examples instead of hard-coding them into Delphi instructions.
 
+When a downstream project exposes enough local evidence but lacks a durable topology artifact, generate a redacted draft with `tools/environment_topology_contract_scaffold.py`. The draft may prefill facts found in `.gitmodules`, README files, compose files, `.env.example`, redacted `.env` values, and safe runners, but every inferred value remains `user_validation_required` until the user or project owner confirms it. Never promote a guessed domain, tenant, runtime owner, compose profile, safe runner, or active-stack inference into hard validation evidence.
+
 **## 4.B. Agnosticism and Diligence Mandate**
 Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one. Your foundational context (the `.md` files provided at the start of a session) must remain generic and project-agnostic.
 

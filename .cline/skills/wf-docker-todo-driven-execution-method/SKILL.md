@@ -89,7 +89,7 @@ Assumptions, execution planning, and gates define `HOW` the work will be deliver
    - **Decision Adherence**;
    - module decision consistency;
    - `Pipeline/Copilot P1/P2 Preflight`: fresh no-context or bounded self-review of the implemented diff, local CI-equivalent evidence, and likely CI/Copilot `P1|P2` failure modes; unresolved `P1|P2` blocks delivery.
-   - `Rule-Spirit Anti-Pattern Hunt`: fresh architecture/rules pass against the spirit of the ingested rules, known patterns/anti-patterns, and disguised bypasses; unresolved `P1|P2` blocks delivery.
+   - `Rule-Spirit Anti-Pattern Hunt`: fresh architecture/rules pass against the spirit of the ingested rules, known patterns/anti-patterns, and disguised bypasses, using `rule_spirit_anti_pattern_scan.sh` as support when applicable; unresolved `P1|P2` blocks delivery.
    - security risk assessment;
    - performance/concurrency assessment;
    - validation steps;
