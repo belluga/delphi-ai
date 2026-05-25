@@ -23,24 +23,39 @@ capabilities:
     purpose: Runtime orchestration.
     activation_markers:
       - compose files
+    detection_markers:
+      root_files:
+        - docker-compose.yml
     execution_policy: Use project-declared topology.
   flutter:
     lifecycle: available
     purpose: Client app.
     activation_markers:
       - pubspec.yaml
+    detection_markers:
+      nested_files:
+        - pubspec.yaml
     execution_policy: Use only when project declares Flutter active.
   laravel:
     lifecycle: available
     purpose: Backend/API.
     activation_markers:
       - composer.json
+    detection_markers:
+      nested_files:
+        - artisan
+        - composer.json
+      composer_requires:
+        - laravel/framework
     execution_policy: Use project-owned safe runners.
   go:
     lifecycle: future
     purpose: Future backend/service capability.
     activation_markers:
       - go.mod
+    detection_markers:
+      nested_files:
+        - go.mod
     execution_policy: Reserved until project declares Go active.
 EOF
 

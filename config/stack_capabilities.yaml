@@ -53,6 +53,14 @@ capabilities:
       - root Dockerfile or compose files
       - Docker/runtime module docs
       - project README runtime instructions
+    detection_markers:
+      root_files:
+        - Dockerfile
+        - docker-compose.yml
+        - docker-compose.yaml
+        - compose.yml
+        - compose.yaml
+      nested_files: []
     execution_policy: Execute only against project-declared compose profiles, safe runners, and environment contracts.
 
   flutter:
@@ -67,6 +75,11 @@ capabilities:
       - Flutter app submodule or package manifest
       - Flutter module docs
       - project-owned Flutter build/test wrappers
+    detection_markers:
+      root_files:
+        - pubspec.yaml
+      nested_files:
+        - pubspec.yaml
     execution_policy: Keep Flutter helpers available in Delphi; run or wire them only when the downstream project declares a Flutter surface active.
 
   laravel:
@@ -82,6 +95,19 @@ capabilities:
       - Laravel app submodule or composer manifest
       - Laravel/backend module docs
       - project-owned Laravel safe runners
+    detection_markers:
+      root_files:
+        - artisan
+      nested_files:
+        - artisan
+        - composer.json
+      composer_requires:
+        - laravel/framework
+        - laravel/lumen-framework
+        - laravel/sanctum
+        - laravel/tinker
+      companion_files:
+        - artisan
     execution_policy: Prefer project-owned safe runners and foundation_documentation runtime contracts; do not assume Laravel remains the only backend for future projects.
 
   go:
@@ -92,4 +118,9 @@ capabilities:
       - Go module files
       - Go service module docs
       - project-owned Go build/test/run wrappers
+    detection_markers:
+      root_files:
+        - go.mod
+      nested_files:
+        - go.mod
     execution_policy: Reserved capability. Adding Go scripts/rules later must remain additive and must not disable existing Laravel/Flutter/Docker support.

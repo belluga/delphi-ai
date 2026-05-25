@@ -10,7 +10,8 @@ Use after `github-stage-promotion-orchestrator` is explicitly triggered and befo
 ## Responsibilities
 - Confirm the user explicitly authorized `dev-only` or `through-stage`.
 - Confirm target repo(s), authoritative source branch/ref, and destination lane.
-- Classify one scenario: `docker-normal`, `docker-bot-next-version`, `docker-mixed`, `flutter-only`, `laravel-only`, or `flutter-laravel`.
+- Run `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence.
+- Classify one scenario from tool evidence plus explicit user authorization: `docker-normal`, `docker-bot-next-version`, `docker-mixed`, `flutter-only`, `laravel-only`, or `flutter-laravel`.
 - Treat `web-app` only as derived artifact evidence; never classify or promote it.
 - Decide whether the request is blocked by missing source ref, unclear repo ownership, or ambiguous lane scope.
 
@@ -22,7 +23,7 @@ For `through-stage`, app source promotion is not complete until Docker gitlink f
 
 ## Outputs
 - Authorized scope: `dev-only|through-stage`.
-- Scenario classification and repo/source-ref map.
+- Scenario classification, classifier outcome, and repo/source-ref map.
 - Explicit `web-app` handling note when generated artifact evidence appears.
 - Blocker or next phase: `github-stage-promotion-contract-preflight`.
 

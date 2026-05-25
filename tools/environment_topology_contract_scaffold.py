@@ -66,6 +66,15 @@ class StackEvidence:
     validation: str
 
 
+@dataclass(frozen=True)
+class StackDetection:
+    stack: str
+    root_files: tuple[str, ...]
+    nested_files: tuple[str, ...]
+    composer_requires: tuple[str, ...]
+    companion_files: tuple[str, ...]
+
+
 def run_git_root(path: Path) -> Path:
     try:
         result = subprocess.run(
@@ -92,6 +101,20 @@ def read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return ""
+
+
+def strip_yaml_comment(line: str) -> str:
+    quote: str | None = None
+    for idx, char in enumerate(line):
+        if char in {"'", '"'}:
+            quote = None if quote == char else char
+        elif char == "#" and quote is None:
+            return line[:idx]
+    return line
+
+
+def clean_yaml_scalar(value: str) -> str:
+    return value.strip().strip('"').strip("'")
 
 
 def discover_files(root: Path, names: set[str] | tuple[str, ...], max_depth: int = 3) -> list[Path]:
@@ -192,49 +215,133 @@ def parse_env_files(root: Path) -> list[EnvValue]:
     return rows
 
 
-def is_laravel_composer(path: Path) -> bool:
+def is_composer_for_stack(path: Path, composer_requires: tuple[str, ...], companion_files: tuple[str, ...]) -> bool:
     text = read_text(path)
-    return bool(re.search(r'"laravel/(framework|lumen-framework|sanctum|tinker)"', text))
+    if any(re.search(rf'"{re.escape(package)}"', text) for package in composer_requires):
+        return True
+    return any((path.parent / companion).exists() for companion in companion_files)
 
 
-def detect_stack_evidence(root: Path) -> list[StackEvidence]:
-    checks = {
-        "docker": ["docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml", "Dockerfile"],
-        "flutter": ["pubspec.yaml", "flutter-app/pubspec.yaml"],
-        "go": ["go.mod"],
-    }
-    rows: list[StackEvidence] = []
-    for stack, markers in checks.items():
-        evidence = [marker for marker in markers if (root / marker).exists()]
-        if not evidence and stack in {"flutter", "go"}:
-            glob_name = {"flutter": "pubspec.yaml", "go": "go.mod"}[stack]
-            evidence = [rel(path, root) for path in root.glob(f"*/{glob_name}") if path.is_file()]
-        rows.append(
-            StackEvidence(
+def default_stack_capability_registry() -> Path:
+    return Path(__file__).resolve().parents[1] / "config" / "stack_capabilities.yaml"
+
+
+def load_stack_detections(registry_path: Path) -> list[StackDetection]:
+    if not registry_path.is_file():
+        return []
+
+    raw: dict[str, dict[str, list[str]]] = {}
+    in_capabilities = False
+    current_stack: str | None = None
+    in_detection_markers = False
+    current_marker: str | None = None
+
+    for raw_line in registry_path.read_text(encoding="utf-8").splitlines():
+        line = strip_yaml_comment(raw_line).rstrip()
+        if not line.strip():
+            continue
+
+        if re.match(r"^capabilities:\s*$", line):
+            in_capabilities = True
+            current_stack = None
+            in_detection_markers = False
+            current_marker = None
+            continue
+
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:", line):
+            if not re.match(r"^capabilities:\s*$", line):
+                in_capabilities = False
+            current_stack = None
+            in_detection_markers = False
+            current_marker = None
+            continue
+
+        if not in_capabilities:
+            continue
+
+        stack_match = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line)
+        if stack_match:
+            current_stack = stack_match.group(1)
+            raw.setdefault(current_stack, {})
+            in_detection_markers = False
+            current_marker = None
+            continue
+
+        if not current_stack:
+            continue
+
+        field_match = re.match(r"^    ([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$", line)
+        if field_match:
+            field, value = field_match.groups()
+            in_detection_markers = field == "detection_markers"
+            current_marker = None
+            if in_detection_markers and value and clean_yaml_scalar(value) not in {"", "[]"}:
+                raw.setdefault(current_stack, {}).setdefault("_inline", []).append(clean_yaml_scalar(value))
+            continue
+
+        if not in_detection_markers:
+            continue
+
+        marker_match = re.match(r"^      ([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$", line)
+        if marker_match:
+            current_marker, value = marker_match.groups()
+            raw.setdefault(current_stack, {}).setdefault(current_marker, [])
+            if value and clean_yaml_scalar(value) not in {"", "[]"}:
+                raw[current_stack][current_marker].append(clean_yaml_scalar(value))
+            continue
+
+        item_match = re.match(r"^        -\s+(.+?)\s*$", line)
+        if item_match and current_marker:
+            raw.setdefault(current_stack, {}).setdefault(current_marker, []).append(clean_yaml_scalar(item_match.group(1)))
+
+    detections: list[StackDetection] = []
+    for stack, markers in raw.items():
+        detections.append(
+            StackDetection(
                 stack=stack,
-                evidence_state="candidate" if evidence else "unknown",
-                evidence=", ".join(evidence) if evidence else "No direct marker found",
-                confidence="high" if evidence else "low",
-                validation="user_validation_required" if evidence else "n/a",
+                root_files=tuple(markers.get("root_files", [])),
+                nested_files=tuple(markers.get("nested_files", [])),
+                composer_requires=tuple(markers.get("composer_requires", [])),
+                companion_files=tuple(markers.get("companion_files", [])),
             )
         )
-    laravel_evidence: list[str] = []
-    for artisan in iter_project_files(root, "artisan", max_depth=3):
-        laravel_evidence.append(rel(artisan, root))
-    for composer in iter_project_files(root, "composer.json", max_depth=3):
-        if is_laravel_composer(composer) or (composer.parent / "artisan").exists():
-            laravel_evidence.append(rel(composer, root))
-    laravel_evidence = sorted(set(laravel_evidence))
-    rows.insert(
-        2,
-        StackEvidence(
-            stack="laravel",
-            evidence_state="candidate" if laravel_evidence else "unknown",
-            evidence=", ".join(laravel_evidence) if laravel_evidence else "No Laravel-specific marker found",
-            confidence="high" if laravel_evidence else "low",
-            validation="user_validation_required" if laravel_evidence else "n/a",
-        ),
-    )
+    return detections
+
+
+def marker_applies(path: Path, detection: StackDetection) -> bool:
+    if path.name == "composer.json" and (detection.composer_requires or detection.companion_files):
+        return is_composer_for_stack(path, detection.composer_requires, detection.companion_files)
+    return True
+
+
+def detect_stack_evidence(root: Path, registry_path: Path) -> list[StackEvidence]:
+    rows: list[StackEvidence] = []
+    detections = load_stack_detections(registry_path)
+
+    for detection in detections:
+        evidence: set[str] = set()
+
+        for marker in detection.root_files:
+            candidate = root / marker
+            if candidate.is_file() and marker_applies(candidate, detection):
+                evidence.add(marker)
+
+        for marker in detection.nested_files:
+            for candidate in iter_project_files(root, marker, max_depth=3):
+                if candidate.is_file() and marker_applies(candidate, detection):
+                    evidence.add(rel(candidate, root))
+
+        sorted_evidence = sorted(evidence)
+        rows.append(
+            StackEvidence(
+                stack=detection.stack,
+                evidence_state="candidate" if sorted_evidence else "unknown",
+                evidence=", ".join(sorted_evidence) if sorted_evidence else f"No {detection.stack} registry marker found",
+                confidence="high" if sorted_evidence else "low",
+                validation="user_validation_required" if sorted_evidence else "n/a",
+            )
+        )
+
     return rows
 
 
@@ -324,9 +431,9 @@ def table_row(values: list[str]) -> str:
     return "| " + " | ".join(escaped) + " |"
 
 
-def render_contract(root: Path) -> str:
+def render_contract(root: Path, registry_path: Path) -> str:
     now = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M %Z")
-    stack_rows = detect_stack_evidence(root)
+    stack_rows = detect_stack_evidence(root, registry_path)
     env_rows = parse_env_files(root)
     runner_rows = detect_safe_runners(root)
     compose_rows = detect_compose(root)
@@ -455,13 +562,19 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--stdout", action="store_true", help="Print the generated contract instead of writing it.")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing output file.")
+    parser.add_argument(
+        "--registry",
+        default=str(default_stack_capability_registry()),
+        help="Stack capability registry path. Defaults to delphi-ai/config/stack_capabilities.yaml.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     root = run_git_root(Path(args.repo))
-    content = render_contract(root)
+    registry_path = Path(args.registry).resolve()
+    content = render_contract(root, registry_path)
     if args.stdout:
         print(content, end="")
         return 0

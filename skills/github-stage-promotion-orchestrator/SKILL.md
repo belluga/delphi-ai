@@ -34,7 +34,7 @@ Load the phase skill that matches the current lane state:
 8. **Closeout report**: run completion evidence and update the governing TODO/promotion status.
 
 ## Classification
-The intake phase must classify exactly one scenario before mutation:
+The intake phase must classify exactly one scenario before mutation. Use `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence, then record the human-authorized scenario:
 - `docker-normal`: Docker repo has normal file changes and no intended gitlinks.
 - `docker-bot-next-version`: Docker submodule gitlink promotion only.
 - `docker-mixed`: Docker has both normal changes and submodule gitlink changes; split normal changes first, bot lane second.
@@ -60,6 +60,8 @@ The intake phase must classify exactly one scenario before mutation:
 - Create a contract before mutating:
   - `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope dev-only`
   - `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope through-stage --gitlink-policy pipeline-only`
+- Classify the scenario before mutating:
+  - `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>`
 - Use guarded wrappers for mutating local/manual actions:
   - `guarded_git_commit.sh`
   - `guarded_git_push.sh`

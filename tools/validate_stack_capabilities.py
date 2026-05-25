@@ -11,7 +11,13 @@ from pathlib import Path
 
 REQUIRED_TOP_LEVEL = {"schema_version", "ecosystem", "activation_contract", "capabilities"}
 REQUIRED_CAPABILITIES = {"docker", "flutter", "laravel", "go"}
-REQUIRED_CAPABILITY_FIELDS = {"lifecycle", "purpose", "activation_markers", "execution_policy"}
+REQUIRED_CAPABILITY_FIELDS = {
+    "lifecycle",
+    "purpose",
+    "activation_markers",
+    "detection_markers",
+    "execution_policy",
+}
 ALLOWED_LIFECYCLES = {"available", "future", "deprecated", "experimental"}
 FORBIDDEN_ACTIVATION_RE = re.compile(
     r"^\s*(active|enabled|activated|project_active|is_active)\s*:\s*(true|yes|1)\s*(#.*)?$",

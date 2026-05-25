@@ -18,9 +18,9 @@ The model-upgrade branch now uses phase skills for TODO-driven execution. The ne
 - If independent-agent feedback reveals a larger architecture rewrite, record it as follow-up instead of expanding this TODO beyond skill routing, promotion closeout, and validation support.
 
 ## Delivery Status Canon (Required)
-- **Current delivery stage:** `Local-Implemented`
+- **Current delivery stage:** `Production-Ready`
 - **Qualifiers:** `none`
-- **Next exact step:** Review the local diff, then commit/push if approved for this package.
+- **Next exact step:** Closed; follow-up candidates are tracked in `foundation_documentation/todos/active/delphi-model-upgrade-follow-up-validation.md`.
 
 ## Scope
 - [x] Run a no-context independent-agent test drive for TODO-driven routing, stage-promotion routing, and stack-capability/topology interpretation.

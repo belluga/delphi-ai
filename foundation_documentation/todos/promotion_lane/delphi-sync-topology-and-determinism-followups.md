@@ -18,9 +18,9 @@ The model-upgrade branch now has stronger delivery gates and stack portability r
 - The work is bounded to Delphi self-maintenance under `delphi-ai/` plus its local self-maintenance TODO.
 
 ## Delivery Status Canon (Required)
-- **Current delivery stage:** `Local-Implemented`
+- **Current delivery stage:** `Lane-Promoted`
 - **Qualifiers:** `none`
-- **Next exact step:** Commit and push the implemented follow-up package on `model-upgrade/delphi-instruction-modernization`.
+- **Next exact step:** Await explicit user request for `main` promotion; the model-upgrade branch package is closed for this TODO.
 
 ## Scope
 - [x] Make `.claude` skill mirror synchronization and auditing first-class in Delphi self-check.
@@ -60,7 +60,7 @@ The model-upgrade branch now has stronger delivery gates and stack portability r
 ## Promotion Evidence
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| Delphi sync/topology/determinism follow-ups | `model-upgrade/delphi-instruction-modernization@local-implemented` | `pending commit/push` | `n/a` | `pending explicit main promotion` | `local implemented` |
+| Delphi sync/topology/determinism follow-ups | `model-upgrade/delphi-instruction-modernization@d56fb4d` | `model-upgrade branch pushed` | `n/a` | `pending explicit main promotion` | `lane-promoted` |
 
 ## Out of Scope
 - [ ] Change downstream project code or downstream project-specific documentation.

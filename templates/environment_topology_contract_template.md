@@ -2,7 +2,7 @@
 
 Use this file as a persistent, project-owned topology contract, typically at `foundation_documentation/artifacts/environment-topology.md`.
 
-This artifact answers: which stack surfaces are active in this project, who owns local/runtime execution, which safe runners should be used, which public domains/tenant targets are valid for validation, and which values still require user confirmation.
+This artifact answers: which stack surfaces have activation evidence in this project, which active/inactive stack decisions were confirmed, who owns local/runtime execution, which safe runners should be used, which public domains/tenant targets are valid for validation, and which values still require user confirmation.
 
 Generate a first draft when possible:
 
@@ -22,12 +22,12 @@ The scaffold may infer from `.gitmodules`, README files, compose files, `.env.ex
 - **Validation summary:** `<what was confirmed, what remains uncertain>`
 
 ## Active Stack Topology
-| Stack | Active? (`yes|no|unknown`) | Evidence | Confidence (`high|medium|low`) | User Validation |
+| Stack | Activation Evidence State (`candidate|confirmed-active|confirmed-inactive|unknown`) | Evidence | Confidence (`high|medium|low`) | User Validation |
 | --- | --- | --- | --- | --- |
-| `docker` | `<yes|no|unknown>` | `<compose/readme/module evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
-| `flutter` | `<yes|no|unknown>` | `<pubspec/submodule/module evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
-| `laravel` | `<yes|no|unknown>` | `<composer/artisan/submodule/module evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
-| `go` | `<yes|no|unknown>` | `<go.mod/service docs evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
+| `docker` | `<candidate|confirmed-active|confirmed-inactive|unknown>` | `<compose/readme/module evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
+| `flutter` | `<candidate|confirmed-active|confirmed-inactive|unknown>` | `<pubspec/submodule/module evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
+| `laravel` | `<candidate|confirmed-active|confirmed-inactive|unknown>` | `<composer/artisan/submodule evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
+| `go` | `<candidate|confirmed-active|confirmed-inactive|unknown>` | `<go.mod/service docs evidence>` | `<confidence>` | `<validated|user_validation_required|n/a>` |
 
 ## Runtime Owners and Safe Runners
 | Surface | Owner (`host|compose service|safe runner|CI|unknown`) | Command / Path | Evidence | User Validation |
@@ -51,7 +51,7 @@ The scaffold may infer from `.gitmodules`, README files, compose files, `.env.ex
 | `<path>` | `<url>` | `<source app|backend|docs|derived artifact|unknown>` | `<validated|user_validation_required|n/a>` |
 
 ## User Validation Checklist
-- [ ] Confirm active stacks and inactive available capabilities.
+- [ ] Confirm candidate stacks, active stacks, inactive stacks, and inactive available capabilities.
 - [ ] Confirm canonical backend/runtime owner and safe runner.
 - [ ] Confirm canonical client/web build and publish wrapper.
 - [ ] Confirm public validation domains and any preferred tenant/subdomain.

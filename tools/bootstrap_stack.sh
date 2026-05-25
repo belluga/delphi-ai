@@ -193,6 +193,9 @@ if [ -f "$CAPABILITY_REGISTRY_PATH" ]; then
       - Project-owned module docs
       - Project-owned manifests/config
       - Project-owned build/test/run wrappers
+    detection_markers:
+      root_files: []
+      nested_files: []
     execution_policy: Execute only when the downstream project declares this stack active.
 EOF
     echo "Registered '$STACK_KEY' capability in config/stack_capabilities.yaml"

@@ -18,9 +18,9 @@ Delphi's instruction layer needs to stay portable while the Belluga ecosystem ke
 - This TODO is bounded but elastic for local instruction/mirror adjustments required by the same portability and drift-reduction objective.
 
 ## Delivery Status Canon (Required)
-- **Current delivery stage:** `Local-Implemented`
+- **Current delivery stage:** `Lane-Promoted`
 - **Qualifiers:** `none`
-- **Next exact step:** Review final diff and decide whether to commit/push this model-upgrade branch.
+- **Next exact step:** Await explicit user request for `main` promotion; the model-upgrade branch package is closed for this TODO.
 
 ## Scope
 - [x] Reduce weight and duplication in older instruction surfaces where the same operational truth is copied instead of referenced.
@@ -58,7 +58,7 @@ Delphi's instruction layer needs to stay portable while the Belluga ecosystem ke
 ## Promotion Evidence
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| Delphi capability portability and drift reduction | `model-upgrade/delphi-instruction-modernization@pending` | `pending` | `n/a` | `pending explicit main promotion` | `pending` |
+| Delphi capability portability and drift reduction | `model-upgrade/delphi-instruction-modernization@d56fb4d` | `model-upgrade branch pushed` | `n/a` | `pending explicit main promotion` | `lane-promoted` |
 
 ## Out of Scope
 - [ ] Make post-session feedback and heavy audits more opt-in or risk-triggered; the user explicitly chose to keep that point as-is for now.
