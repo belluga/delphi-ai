@@ -97,7 +97,7 @@ For any blocking PR/review finding, perform this gate before deciding to patch:
 6. Never patch directly on `dev` or `stage` just because the finding appeared there, unless that lane is itself the authoritative source branch for the scenario.
 
 ## Scenario 1: Docker Changes That Are Not Submodules
-Use when `belluga_now_docker` has changes in normal files and no submodule gitlink updates are intended.
+Use when the Docker/orchestration root repository has changes in normal files and no submodule gitlink updates are intended.
 
 Steps:
 1. Commit and push the Docker branch with the guarded wrappers and the active promotion contract.

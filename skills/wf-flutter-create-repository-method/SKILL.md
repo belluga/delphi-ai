@@ -47,7 +47,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
    - Update `foundation_documentation/system_roadmap.md` with the new capability or technical debt payoff when it affects planned work.
 9. **Verification**
    - Run `fvm flutter analyze`; add/re-run unit tests covering the repository/user of it.
-   - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash tool/belluga_analysis_plugin/bin/check_branch_delta_raw_payload_map.sh`).
+   - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash ${PACED_GLOBAL_ANALYZER_PLUGIN_DIR:-tool/belluga_analysis_plugin}/bin/check_branch_delta_raw_payload_map.sh`).
    - When exact-lookup paths were touched, run `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-path>` and classify every finding before delivery.
 
 ## Outputs

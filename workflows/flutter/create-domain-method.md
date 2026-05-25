@@ -5,7 +5,7 @@ description: Introduce a new Flutter domain aggregate with full architectural ri
 # Method: Create Domain (Flutter)
 
 ## Purpose
-Introduce a new Flutter domain aggregate with full architectural rigor—docs, value objects, projections, repository contracts, and DI wiring—aligned with the "Belluga Now Flutter Architecture Overview" principles (backend-driven UI, DTO→Domain→Projection flow, feature-first structure).
+Introduce a new Flutter domain aggregate with full architectural rigor—docs, value objects, projections, repository contracts, and DI wiring—aligned with the canonical Flutter architecture principles (backend-driven UI, DTO→Domain→Projection flow, feature-first structure).
 
 ## Triggers
 - A Flutter feature needs business logic/data not covered by an existing domain.

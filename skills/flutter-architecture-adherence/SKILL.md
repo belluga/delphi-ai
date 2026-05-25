@@ -17,9 +17,15 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 
 ## Canonical Sources (Single Source Policy)
 - Canonical architecture contract: `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1 Presentation DI Matrix (Canonical)`).
-- Executable lint contract and treatments: `flutter-app/tool/belluga_analysis_plugin/docs/rules.md`.
+- Executable lint contract and treatments: the PACED ecosystem-global analyzer plugin, normally available from the Flutter workspace as `tool/belluga_analysis_plugin/docs/rules.md`.
 - Tactical delivery/debt status: `foundation_documentation/todos/active/mvp_slices/TODO-v1-flutter-architecture-rules-consolidation-and-custom-lint.md`.
 - If wording differs across files, prefer these sources in this exact precedence order.
+
+## Analyzer Plugin Topology
+- `tool/belluga_analysis_plugin` is the PACED ecosystem-global analyzer plugin default. It evolves for reusable architecture and quality rules that should help multiple projects.
+- Project-local analyzer plugins are allowed only for project-specific rules. They must be declared in `foundation_documentation` and in the project's analyzer configuration before use.
+- Do not promote a project-local rule into the global plugin without evidence of reuse across projects or an explicit architecture decision.
+- The official gate remains `fvm dart analyze --format machine`; plugin fixture validation proves rule activation only.
 
 ## Analyzer Plugin Enforcement Contract
 - Mandatory command for architecture checks (run at `flutter-app` root): `fvm dart analyze --format machine`.
@@ -28,7 +34,7 @@ Use this skill as the entrypoint for any Flutter change that can impact architec
 - Treat mismatched editor SDK selection as analyzer drift: `dart.sdkPath` must resolve inside the active `dart.flutterSdkPath` / FVM version for the workspace.
 - If VS Code Remote `extensionHost` or the Dart language server stays hot after the cleanup cycle, close duplicate remote windows/tabs and restart the distro (`wsl --shutdown`) before beginning another Flutter validation cycle.
 - Do not use directory-target mode as architecture gate (for example: `fvm dart analyze lib`), because it can report false-clean in this workspace.
-- Rule matrix validation command (plugin regression only): `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh`.
+- Rule matrix validation command (plugin regression only): `bash ${PACED_GLOBAL_ANALYZER_PLUGIN_DIR:-tool/belluga_analysis_plugin}/bin/validate_rule_matrix.sh`.
 - `tool/belluga_analysis_plugin/bin/run_project_analyze.sh` was removed from the workflow; do not reintroduce file-list wrappers as architecture gate.
 - `SEM EXCEÇÃO`: do not bypass architecture findings with per-file ignores/allowlists.
 - If a finding is wrong, calibrate the lint rule; do not suppress it.

@@ -124,7 +124,7 @@ Record concrete branch, commit, build artifact, served target, and freshness pro
 ## Runtime Surface Preflight
 Fill this when browser/device/runtime validation is in scope.
 
-- **Principal runtime target already in use:** `<belluga.space|local device|tunnel|container target>`
+- **Principal runtime target already in use:** `<public domain|local device|tunnel|container target>`
 - **Bind-mount / served-source proof:** `<docker inspect / compose proof that target resolves to the principal checkout>`
 - **Navigation env source:** `<already-exported shell vars|.env.local.navigation|other approved source>`
 - **Auxiliary runtime required?:** `<no if principal target already serves reconcile state; otherwise blocker + reason>`

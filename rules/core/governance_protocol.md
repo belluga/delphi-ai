@@ -38,8 +38,10 @@ Após o veredito, siga o protocolo de acordo com a stack:
 3.  **Link:** Declarar a regra no `foundation_documentation/deterministic/laravel.json`.
 
 ### Para Flutter:
-1.  **Local:** Criar/Editar `tool/paced_local_plugin/` (se for regra de lint exclusiva).
-2.  **Global:** Evoluir o `tool/paced_global_plugin/` e consolidar no `delphi-ai`.
+1.  **Global (padrão PACED):** Evoluir `tool/belluga_analysis_plugin/` quando a regra for reutilizável no ecossistema e consolidar a decisão no `delphi-ai`.
+2.  **Local (projeto):** Criar/Editar um plugin local declarado pelo projeto (por exemplo `tool/<project>_analysis_plugin/`) somente para regra de lint exclusiva do projeto.
+3.  **Configuração:** Declarar plugins locais em `foundation_documentation` e na configuração do analyzer antes de uso.
+4.  **Promoção:** Não mover regra local para o plugin global sem evidência de reutilização entre projetos ou decisão arquitetural explícita.
 
 ## 5. Fechamento de Ciclo
 Sempre rodar `bash delphi-ai/verify_context.sh --repair` após a extração para validar que a nova regra está ativa e o ambiente está íntegro.

@@ -7,7 +7,7 @@ description: "Rule: MUST use whenever the scope matches this purpose: Enforce Fl
 Apply these Flutter architectural tenets on every task:
 - Keep widgets pure UI; controllers own all state (`StreamValue`), UI controllers, side effects, and orchestration; widgets never touch repositories/infrastructure.
 - Controllers are the only allowed data ingress gate for screens/widgets; no repository/service/state-holder bypasses are allowed in presentation non-controller files.
-- Apply DI/ownership boundaries from the canonical contract in `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1`) and enforce rule IDs/treatments from `flutter-app/tool/belluga_analysis_plugin/docs/rules.md`.
+- Apply DI/ownership boundaries from the canonical contract in `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1`) and enforce rule IDs/treatments from the PACED ecosystem-global analyzer plugin, normally available from the Flutter workspace as `tool/belluga_analysis_plugin/docs/rules.md`.
 - `StreamValue` in controllers is allowed for local screen/stage state and for pure delegation of repository-owned canonical streams.
 - Canonical shared state (cross-controller/module lifespan, cache-backed, persistence-aligned) must be owned by repository contracts/implementations.
 - Services/DAL are technical adapters only; they must not own canonical shared state via `StreamValue`, `StreamController`, `ValueNotifier`, `ChangeNotifier`, or custom `*State/*Store/*Manager` holders.
@@ -23,6 +23,12 @@ Apply these Flutter architectural tenets on every task:
 - Compatibility-critical or backend-coupled architectural changes must additionally prove real-backend integration on the required platform matrix; analyzer or widget-only confidence is insufficient.
 - Analyzer/tests are mandatory: `fvm flutter analyze` must be clean; add targeted unit/widget tests when behaviour changes and do not treat them as a substitute for required integration evidence on architectural scope.
 - For device integration tests, run with `--dds-port=0` to avoid DDS port conflicts.
+
+## Analyzer Plugin Topology
+- `tool/belluga_analysis_plugin` is the PACED ecosystem-global analyzer plugin default. It evolves for reusable architecture and quality rules that should help multiple projects.
+- Project-local analyzer plugins are allowed only for project-specific rules. They must be declared in `foundation_documentation` and in the project's analyzer configuration before use.
+- Do not promote a project-local rule into the global plugin without evidence of reuse across projects or an explicit architecture decision.
+- The official analyzer gate remains the project analyzer command; global plugin fixture validation is regression coverage for rule activation.
 
 ## Rationale
 These tenets keep the Flutter client aligned with backend contracts, maintain purity of presentation, and prevent coupling DTOs to UI. AutoRoute governance and analyzer discipline guard navigation integrity and code quality.

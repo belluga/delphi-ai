@@ -133,12 +133,12 @@ If a project has a unique business rule that must be enforced:
 
 ## 🏗️ Cascading CI/CD (GitHub Actions)
 
-O PACED centraliza a inteligência do CI/CD no `delphi-ai`. Os projetos (ex: `belluga_now_backend`) apenas "assinam" o contrato de CI global, garantindo que os **Deterministic Guards** rodem em todos os commits.
+O PACED centraliza a inteligência do CI/CD no `delphi-ai`. Os projetos downstream apenas "assinam" o contrato de CI global, garantindo que os **Deterministic Guards** rodem em todos os commits.
 
-#### Exemplo: Assinatura do Belluga Now (`.github/workflows/ci.yml`)
+#### Exemplo: Assinatura de Projeto (`.github/workflows/ci.yml`)
 
 ```yaml
-name: "CI: Belluga Now Backend"
+name: "CI: Project Backend"
 
 on:
   push:
@@ -150,7 +150,7 @@ jobs:
   paced-ci:
     uses: belluga/delphi-ai/.github/workflows/shared/laravel-app-engine.yml@main
     with:
-      namespace: "belluga-now"
+      namespace: "project-namespace"
       php_version: "8.2"
       node_version: "18"
       lint_command: "composer lint:strict"

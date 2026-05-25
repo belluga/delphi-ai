@@ -32,5 +32,6 @@
 * If VS Code Remote `extensionHost` or the Dart language server stays hot after the cleanup cycle, close duplicate remote windows/tabs and restart the distro (`wsl --shutdown`) before beginning another Flutter validation cycle.
 * After any analyzer-state reset, treat the next analyzer run as a cold warmup: allow a long silent window before intervening. In this workspace, do not classify the post-reset run as hung until it has had at least 10 minutes to rebuild or the process has clearly exited.
 * Do not use directory-target mode (`fvm dart analyze lib`) as architecture source of truth in this workspace.
-* Keep `bash tool/belluga_analysis_plugin/bin/validate_rule_matrix.sh` as fixture coverage validation for rule activation.
+* Treat `tool/belluga_analysis_plugin` as the PACED ecosystem-global analyzer plugin default. Project-local analyzer plugins must be declared in `foundation_documentation` and analyzer config before use.
+* Keep `bash ${PACED_GLOBAL_ANALYZER_PLUGIN_DIR:-tool/belluga_analysis_plugin}/bin/validate_rule_matrix.sh` as fixture coverage validation for global rule activation.
 * Do not use `fvm dart run custom_lint` as architecture source of truth in this workspace.

@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  ./script/run_lane.sh [lane] [flutter run args...]
+  ./scripts/run_lane.sh [lane] [flutter run args...]
 
 Args:
   lane      Optional. dev|stage|main. When omitted, resolves from current branch:
@@ -13,9 +13,9 @@ Args:
             - any other branch -> dev
 
 Examples:
-  ./script/run_lane.sh --flavor guarappari
-  ./script/run_lane.sh stage --debug --flavor guarappari
-  ./script/run_lane.sh main --release --flavor guarappari -d emulator-5554
+  ./scripts/run_lane.sh --flavor <flavor>
+  ./scripts/run_lane.sh stage --debug --flavor <flavor>
+  ./scripts/run_lane.sh main --release --flavor <flavor> -d <device-id>
 
 Notes:
   - config/defines/local.override.json is applied only when the resolved lane is dev.

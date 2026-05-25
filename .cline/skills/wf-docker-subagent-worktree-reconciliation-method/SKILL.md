@@ -22,7 +22,7 @@ Worker/subagent closure requires the owned slice to be architecture-clean and co
 5. Use the project's native test/build commands from the active validation plan inside both worker and reconciliation worktrees.
 6. When browser validation depends on a published Flutter web bundle, use the repository-approved publish/build entrypoint for the reconciliation branch before rerunning Playwright.
 7. When pushing an orchestrator checkpoint, create a persistent manifest from `delphi-ai/templates/orchestration_checkpoint_manifest_template.md` under `foundation_documentation/artifacts/checkpoints/`.
-8. When browser validation depends on a local Docker/browser-facing domain, use `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` from the downstream environment root so branch discipline, runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts.
+8. When browser validation depends on a local Docker/browser-facing domain, use `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` from the downstream environment root so branch discipline, configured runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts.
 
 ## Procedure
 1. Bound the execution slice and confirm the user explicitly wants subagents or parallel implementation.

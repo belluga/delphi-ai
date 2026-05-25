@@ -8,7 +8,7 @@ description: "Ensure the working copy is correctly wired (symlinks, scripts, sub
 # Workflow: DevOps Environment Readiness
 
 ## Purpose
-Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before executing DevOps or CI/CD tasks. Prefer deterministic script checks over manual spot-checks to prevent drift (e.g., `web-app` not being a submodule, broken `/storage` routing).
+Ensure the working copy is correctly wired (symlinks, scripts, submodules, permissions, README steps) before executing DevOps or CI/CD tasks. Prefer deterministic script checks over manual spot-checks to prevent drift (for example derived web bundle wiring or broken runtime storage routing).
 
 ## Triggers
 - User explicitly requests DevOps/setup help.
@@ -18,7 +18,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 Do not use this method as the profile-selection gate for a zero-state `Genesis / Product-Bootstrap` session. In that scenario, readiness checks are supporting evidence only and must not block Genesis from instantiating the first canonical package.
 
 ## Inputs
-- Root repository (`festou_docker` or downstream clone).
+- Root repository (`<project>_docker` or downstream clone).
 - `.gitmodules` and current submodule working trees.
 - Project README instructions.
  - `foundation_documentation` submodule (expected for all projects; add if missing).
@@ -26,7 +26,7 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
 ## Procedure
 1. **Confirm repository context**
    - Identify whether we are in the canonical boilerplate repo or a downstream project.
-   - If downstream, note the expected remotes (e.g., `belluga/festou_api`, `belluga/festou_app`, `belluga/festou_web`).
+   - If downstream, note the expected remotes from `.gitmodules`, project README, or `foundation_documentation`.
    - If the repo is still zero-state (for example no `foundation_documentation/` yet and the request is to initialize/bootstrap the project), stop this method here, record that full downstream readiness is premature, and hand control back to `Genesis / Product-Bootstrap`.
 
 2. **Run canonical readiness scripts (preferred)**
@@ -43,10 +43,10 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
    - Treat entries starting with `+` as local workspace drift (tracking mode) rather than immediate failure.
    - If the task requires CI/deploy parity, normalize to pinned mode before proceeding: prefer `tools/submodules/pin_to_superproject.sh` when available, otherwise run `git submodule sync --recursive && git submodule update --init --recursive`, then confirm no `+` remains.
    - Ensure `foundation_documentation` is present as a submodule; if missing, add it using the canonical docs repo before proceeding.
-   - For each entry in `.gitmodules`, confirm the URL points to the project’s own repo, not `belluga/boilerplate_*`. If any still reference boilerplate sources, guide the user to `git submodule set-url` the correct fork before proceeding.
+   - For each entry in `.gitmodules`, confirm the URL points to the project’s own repo, not a boilerplate/template source. If any still reference boilerplate sources, guide the user to `git submodule set-url` the correct fork before proceeding.
 
 4. **Filesystem ownership**
-   - Spot-check key files (`laravel-app/.env`, `flutter-app`, `web-app`) and ensure they are writable by the host/WSL user. If ownership reflects container/root users, instruct the user to `chown` the directories before continuing.
+   - Spot-check key environment files, source submodules, and derived bundle directories named by `.gitmodules` or project docs, and ensure they are writable by the host/WSL user. If ownership reflects container/root users, instruct the user to `chown` the directories before continuing.
 
 5. **Symlinked scripts**
    - Verify helper scripts exist and resolve (`flutter-app/scripts` must symlink to `../delphi-ai/scripts/flutter`). If missing, recreate the link so Flutter uses the canonical build helpers.

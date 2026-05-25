@@ -979,7 +979,7 @@ def validate_todo(
                     build_violation(
                         "RUNTIME-EVIDENCE-MISSING",
                         f"Runtime/browser/device/integration criterion lacks a concrete runtime target: {criterion}",
-                        "Record the real runtime target, device, browser, integration environment, build artifact, or CI target used for this criterion. For browser/web criteria, name the Playwright spec, runner command, target URL/lane, scripts/build_web.sh ../web-app <lane> publish proof, and refreshed real-domain bundle provenance.",
+                        "Record the real runtime target, device, browser, integration environment, build artifact, or CI target used for this criterion. For browser/web criteria, name the Playwright spec, runner command, target URL/lane, project-defined build/publish proof, and refreshed real-domain bundle provenance.",
                         "Completion Evidence Matrix",
                     )
                 )
@@ -989,7 +989,7 @@ def validate_todo(
                     build_violation(
                         "FLOW-CRITERION-NAVIGATION-COVERAGE-MISSING",
                         f"User-visible/interactive/flow-impacting criterion lacks item-specific integration/device or navigation/browser evidence: {criterion}",
-                        "Add the integration/device test or navigation/browser test that exercises this exact item, or record an explicit approved structure-only waiver/deviation proving no user-observable flow can change. In Flutter scope, integration is ADB/device execution; browser navigation is Playwright against the final domain after build_web.sh publish.",
+                        "Add the integration/device test or navigation/browser test that exercises this exact item, or record an explicit approved structure-only waiver/deviation proving no user-observable flow can change. In Flutter scope, integration is ADB/device execution; browser navigation is Playwright against the final domain after the project-defined web build/publish step.",
                         "Completion Evidence Matrix",
                     )
                 )
@@ -1000,7 +1000,7 @@ def validate_todo(
                     build_violation(
                         "BROWSER-WEB-PLAYWRIGHT-EVIDENCE-MISSING",
                         f"Browser/web-visible criterion lacks source-owned Playwright spec and runner evidence: {criterion}",
-                        "Record the source-owned Playwright spec under tools/flutter/web_app_tests/** and the canonical runner command tools/flutter/run_web_navigation_smoke.sh readonly|mutation, plus target URL/lane, scripts/build_web.sh ../web-app <lane> publish proof, and refreshed real-domain bundle provenance.",
+                        "Record the source-owned Playwright spec under tools/flutter/web_app_tests/** and the project-owned navigation runner command, plus target URL/lane, project-defined build/publish proof, and refreshed real-domain bundle provenance.",
                         "Completion Evidence Matrix",
                     )
                 )
@@ -1010,7 +1010,7 @@ def validate_todo(
                     build_violation(
                         "BROWSER-WEB-BUILD-PROVENANCE-MISSING",
                         f"Browser/web-visible criterion lacks current web build/publish provenance: {criterion}",
-                        "Record the build/publish proof before Playwright, typically scripts/build_web.sh ../web-app <lane>, and evidence that the real browser-facing domain served the refreshed bundle such as __WEB_BUILD_SHA__.",
+                        "Record the build/publish proof before Playwright using the project-defined publish command and output target, plus evidence that the real browser-facing domain served the refreshed bundle such as __WEB_BUILD_SHA__.",
                         "Completion Evidence Matrix",
                     )
                 )

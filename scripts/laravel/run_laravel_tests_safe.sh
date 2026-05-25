@@ -34,9 +34,9 @@ APP_CONTAINER="${APP_CONTAINER:-app}"
 
 LOCAL_APP_URL="${LOCAL_APP_URL:-http://nginx}"
 LOCAL_APP_HOST="${LOCAL_APP_HOST:-nginx}"
-LOCAL_DB_URI="${LOCAL_DB_URI:-mongodb://mongo:27017/belluga_tests}"
-LOCAL_DB_URI_LANDLORD="${LOCAL_DB_URI_LANDLORD:-mongodb://mongo:27017/belluga_tests_landlord}"
-LOCAL_DB_URI_TENANTS="${LOCAL_DB_URI_TENANTS:-mongodb://mongo:27017/belluga_tests_tenant}"
+LOCAL_DB_URI="${LOCAL_DB_URI:-mongodb://mongo:27017/paced_tests}"
+LOCAL_DB_URI_LANDLORD="${LOCAL_DB_URI_LANDLORD:-mongodb://mongo:27017/paced_tests_landlord}"
+LOCAL_DB_URI_TENANTS="${LOCAL_DB_URI_TENANTS:-mongodb://mongo:27017/paced_tests_tenant}"
 
 ALLOWED_HTTP_HOSTS=("nginx" "localhost" "127.0.0.1" "::1")
 ALLOWED_MONGO_HOSTS=("mongo" "localhost" "127.0.0.1" "::1")

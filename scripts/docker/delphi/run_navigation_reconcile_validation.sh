@@ -9,6 +9,15 @@ Usage:
 Runs the canonical local web navigation runner only after reconcile-branch,
 runtime bind-mount, and navigation-env preflight succeeds on the principal
 checkout.
+
+Project topology is configuration-owned. Defaults match the current PACED
+Docker shape, but downstream projects may override:
+  NAV_RECONCILE_SOURCE_REPOS="laravel-app flutter-app"
+  NAV_RECONCILE_MOUNT_CHECKS="app:laravel-app:/var/www;nginx:web-app:/var/www/flutter"
+  NAV_RECONCILE_READONLY_REQUIRED_ENV="NAV_LANDLORD_URL NAV_TENANT_URL"
+  NAV_RECONCILE_MUTATION_REQUIRED_ENV="NAV_ADMIN_EMAIL NAV_ADMIN_PASSWORD"
+  NAV_RUNNER="tools/flutter/run_web_navigation_smoke.sh"
+  NAV_LOCAL_ENV_FILE=".env.local.navigation"
 EOF
 }
 
@@ -17,7 +26,7 @@ find_environment_root() {
   local current="$start"
 
   for _ in 1 2 3 4 5 6 7; do
-    if [[ -f "$current/docker-compose.yml" && -d "$current/laravel-app" && -d "$current/flutter-app" && -d "$current/delphi-ai" ]]; then
+    if [[ -f "$current/docker-compose.yml" && -d "$current/delphi-ai" ]]; then
       printf '%s\n' "$current"
       return 0
     fi
@@ -60,6 +69,28 @@ require_compose_service_container() {
   printf '%s\n' "$container_id"
 }
 
+append_words() {
+  local raw="$1"
+  local -n target_ref="$2"
+  local item
+
+  # shellcheck disable=SC2206
+  local parts=($raw)
+  for item in "${parts[@]}"; do
+    [[ -n "$item" ]] || continue
+    target_ref+=("$item")
+  done
+}
+
+resolve_root_path() {
+  local raw_path="$1"
+  if [[ "$raw_path" == /* ]]; then
+    printf '%s\n' "$raw_path"
+  else
+    printf '%s\n' "$ROOT_DIR/$raw_path"
+  fi
+}
+
 require_mount_source() {
   local container_id="$1"
   local label="$2"
@@ -92,8 +123,13 @@ require_mount_source() {
 }
 
 source_navigation_env_if_needed() {
-  local env_file="$ROOT_DIR/.env.local.navigation"
+  local env_file="${NAV_LOCAL_ENV_FILE:-$ROOT_DIR/.env.local.navigation}"
   local needs_env=0
+
+  if [[ "$env_file" != /* ]]; then
+    env_file="$ROOT_DIR/$env_file"
+  fi
+  NAV_RESOLVED_ENV_FILE="$env_file"
 
   for var_name in "${REQUIRED_ENV_VARS[@]}"; do
     if [[ -z "${!var_name:-}" ]]; then
@@ -117,6 +153,7 @@ source_navigation_env_if_needed() {
   fi
 
   NAV_ENV_SOURCE="missing"
+  NAV_RESOLVED_ENV_FILE="$env_file"
   return 0
 }
 
@@ -132,7 +169,8 @@ verify_required_env() {
 
   if [[ "${#missing[@]}" -gt 0 ]]; then
     echo "ERROR: missing required navigation env: ${missing[*]}" >&2
-    echo "Resolution: export them in the current shell or provide $ROOT_DIR/.env.local.navigation before rerunning." >&2
+    echo "Resolution: export them in the current shell or provide ${NAV_RESOLVED_ENV_FILE:-$ROOT_DIR/.env.local.navigation} before rerunning." >&2
+    echo "Project topology should be documented in foundation_documentation and mapped into NAV_* configuration for this runner." >&2
     return 1
   fi
 }
@@ -152,38 +190,77 @@ case "$SUITE" in
     ;;
 esac
 
-declare -a REQUIRED_ENV_VARS=("NAV_LANDLORD_URL" "NAV_TENANT_URL")
+declare -a READONLY_ENV_VARS=()
+declare -a MUTATION_ENV_VARS=()
+append_words "${NAV_RECONCILE_READONLY_REQUIRED_ENV:-${NAV_REQUIRED_READONLY_ENV:-NAV_LANDLORD_URL NAV_TENANT_URL}}" READONLY_ENV_VARS
+append_words "${NAV_RECONCILE_MUTATION_REQUIRED_ENV:-${NAV_REQUIRED_MUTATION_ENV:-NAV_ADMIN_EMAIL NAV_ADMIN_PASSWORD}}" MUTATION_ENV_VARS
+
+REQUIRED_ENV_VARS=("${READONLY_ENV_VARS[@]}")
 if [[ "$SUITE" == "mutation" ]]; then
-  REQUIRED_ENV_VARS+=("NAV_ADMIN_EMAIL" "NAV_ADMIN_PASSWORD")
+  REQUIRED_ENV_VARS+=("${MUTATION_ENV_VARS[@]}")
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(find_environment_root "$SCRIPT_DIR" || true)"
 
 if [[ -z "$ROOT_DIR" ]]; then
-  echo "ERROR: could not resolve environment root containing docker-compose.yml, laravel-app, flutter-app, and delphi-ai." >&2
+  echo "ERROR: could not resolve environment root containing docker-compose.yml and delphi-ai." >&2
   exit 1
 fi
 
 cd "$ROOT_DIR"
 
 require_reconcile_branch "$ROOT_DIR" "Environment root"
-require_reconcile_branch "$ROOT_DIR/laravel-app" "Laravel"
-require_reconcile_branch "$ROOT_DIR/flutter-app" "Flutter"
 
-RUNNER="$ROOT_DIR/tools/flutter/run_web_navigation_smoke.sh"
+declare -a SOURCE_REPOS=()
+append_words "${NAV_RECONCILE_SOURCE_REPOS:-laravel-app flutter-app}" SOURCE_REPOS
+for source_repo in "${SOURCE_REPOS[@]}"; do
+  source_repo_path="$(resolve_root_path "$source_repo")"
+  if [[ ! -d "$source_repo_path" ]]; then
+    echo "ERROR: configured runtime-facing source checkout is missing: $source_repo" >&2
+    echo "Resolution: update NAV_RECONCILE_SOURCE_REPOS or the project foundation documentation/runtime topology." >&2
+    exit 1
+  fi
+  require_reconcile_branch "$source_repo_path" "$source_repo"
+done
+
+RUNNER="${NAV_RUNNER:-$ROOT_DIR/tools/flutter/run_web_navigation_smoke.sh}"
+if [[ "$RUNNER" != /* ]]; then
+  RUNNER="$ROOT_DIR/$RUNNER"
+fi
 if [[ ! -x "$RUNNER" ]]; then
   echo "ERROR: canonical web navigation runner is missing or not executable: $RUNNER" >&2
+  echo "Resolution: set NAV_RUNNER or document the project-owned browser runner in foundation_documentation." >&2
   exit 1
 fi
 
-APP_CONTAINER_ID="$(require_compose_service_container app)"
-NGINX_CONTAINER_ID="$(require_compose_service_container nginx)"
+if [[ -z "${NAV_RECONCILE_MOUNT_CHECKS:-}" ]]; then
+  NAV_RECONCILE_MOUNT_CHECKS=""
+  if [[ -d "$ROOT_DIR/laravel-app" && -d "$ROOT_DIR/web-app" ]]; then
+    NAV_RECONCILE_MOUNT_CHECKS="app:laravel-app:/var/www;app:web-app:/opt/flutter-web-shell;nginx:laravel-app:/var/www;nginx:web-app:/var/www/flutter"
+  fi
+fi
 
-require_mount_source "$APP_CONTAINER_ID" "app service" "$ROOT_DIR/laravel-app" "/var/www" "$ROOT_DIR"
-require_mount_source "$APP_CONTAINER_ID" "app service" "$ROOT_DIR/web-app" "/opt/flutter-web-shell" "$ROOT_DIR"
-require_mount_source "$NGINX_CONTAINER_ID" "nginx service" "$ROOT_DIR/laravel-app" "/var/www" "$ROOT_DIR"
-require_mount_source "$NGINX_CONTAINER_ID" "nginx service" "$ROOT_DIR/web-app" "/var/www/flutter" "$ROOT_DIR"
+declare -A CONTAINER_BY_SERVICE=()
+IFS=';' read -ra MOUNT_CHECK_ROWS <<< "$NAV_RECONCILE_MOUNT_CHECKS"
+for mount_row in "${MOUNT_CHECK_ROWS[@]}"; do
+  [[ -n "$mount_row" ]] || continue
+  IFS=':' read -r service_name host_source container_target extra <<< "$mount_row"
+  if [[ -z "${service_name:-}" || -z "${host_source:-}" || -z "${container_target:-}" || -n "${extra:-}" ]]; then
+    echo "ERROR: invalid NAV_RECONCILE_MOUNT_CHECKS row: $mount_row" >&2
+    echo "Expected format: service:host-relative-or-absolute-path:container-target-path;..." >&2
+    exit 1
+  fi
+  if [[ -z "${CONTAINER_BY_SERVICE[$service_name]:-}" ]]; then
+    CONTAINER_BY_SERVICE[$service_name]="$(require_compose_service_container "$service_name")"
+  fi
+  require_mount_source \
+    "${CONTAINER_BY_SERVICE[$service_name]}" \
+    "$service_name service" \
+    "$(resolve_root_path "$host_source")" \
+    "$container_target" \
+    "$ROOT_DIR"
+done
 
 NAV_ENV_SOURCE=""
 source_navigation_env_if_needed
@@ -191,7 +268,11 @@ verify_required_env
 
 echo "INFO: authoritative navigation validation -> suite=$SUITE"
 echo "INFO: navigation env source -> $NAV_ENV_SOURCE"
-echo "INFO: runtime bind mounts -> principal checkout confirmed for app/nginx"
+if [[ -n "$NAV_RECONCILE_MOUNT_CHECKS" ]]; then
+  echo "INFO: runtime bind mounts -> principal checkout confirmed from NAV_RECONCILE_MOUNT_CHECKS"
+else
+  echo "INFO: runtime bind mounts -> no mount checks configured; branch/env preflight only"
+fi
 
 export NAV_DEPLOY_LANE="${NAV_DEPLOY_LANE:-local}"
 "$RUNNER" "$SUITE"

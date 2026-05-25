@@ -41,7 +41,7 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
 2. Merge or cherry-pick accepted worker checkpoints into the orchestrator lane with non-interactive git commands.
 3. Run the project's native test/build commands from the worker and reconciliation worktrees, including repo-provided wrappers when they are the canonical entrypoint.
 4. When web/browser validation depends on a published bundle, use the repository-approved publish/build command from the reconciliation branch before Playwright reruns.
-5. When browser validation depends on a local Docker/browser-facing domain, use `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` from the downstream environment root so branch discipline, runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts.
+5. When browser validation depends on a local Docker/browser-facing domain, use `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` from the downstream environment root so branch discipline, configured runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts.
 
 ## Procedure
 1. **Confirm authorization and bound the slice**
