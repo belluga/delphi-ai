@@ -11,7 +11,7 @@ The report:
 - detects zero-state Genesis environments and uses `delphi-ai/init.sh --check` instead of full downstream readiness;
 - runs `delphi-ai/verify_context.sh` in read-only mode for mature downstream environments;
 - optionally runs `delphi-ai/verify_adherence_sync.sh` after readiness passes;
-- performs non-mutating project checks for compose config, submodule state, web-app gitlink invariants, and env hygiene.
+- performs non-mutating project checks for compose config, submodule state, configured derived artifact gitlink invariants, and env hygiene.
 
 Options:
   --repo <path>              Repository/environment root. Defaults to current directory.
@@ -71,6 +71,14 @@ DEL_ROOT="$REPO_ROOT/delphi-ai"
 
 declare -a WARNINGS=()
 declare -a FAILURES=()
+READINESS_COMPOSE_CONFIG_PROFILES="${READINESS_COMPOSE_CONFIG_PROFILES:-local-db}"
+READINESS_DERIVED_ARTIFACT_SUBMODULES="${READINESS_DERIVED_ARTIFACT_SUBMODULES:-web-app}"
+READINESS_LOCAL_DB_ENV_FILE="${READINESS_LOCAL_DB_ENV_FILE:-laravel-app/.env}"
+READINESS_LOCAL_DB_HOST_PATTERN="${READINESS_LOCAL_DB_HOST_PATTERN:-mongo:27017}"
+READINESS_DEPENDENCY_HINT_PATTERN="${READINESS_DEPENDENCY_HINT_PATTERN:-https?://|build_web\\.sh|run_laravel_tests_safe\\.sh|web-app|tenant|subdomain|cloudflare|cloudflared}"
+READINESS_LOCAL_SAFE_RUNNER_PATHS="${READINESS_LOCAL_SAFE_RUNNER_PATHS:-laravel-app/scripts/delphi/run_laravel_tests_safe.sh delphi-ai/scripts/laravel/run_laravel_tests_safe.sh}"
+READINESS_PUBLISH_WRAPPER_PATHS="${READINESS_PUBLISH_WRAPPER_PATHS:-flutter-app/scripts/build_web.sh}"
+READINESS_NGINX_STORAGE_REQUIRED_PATTERN="${READINESS_NGINX_STORAGE_REQUIRED_PATTERN:-alias[[:space:]]+/var/www/storage/app/public/;}"
 
 CURRENT_STEP_OUTPUT=""
 
@@ -213,18 +221,20 @@ if [ "$COMPOSE_FILE_PRESENT" = true ] && have_cmd docker && docker compose versi
     FAILURES+=("docker compose config failed")
   fi
 
-  compose_local_db_status="PASS"
-  compose_local_db_output=""
-  if run_and_capture bash -lc "cd \"$REPO_ROOT\" && docker compose --profile local-db config"; then
-    compose_local_db_output="docker compose --profile local-db config: ok"
-  else
-    compose_local_db_status="FAIL"
-    compose_local_db_output="$CURRENT_STEP_OUTPUT"
-    FAILURES+=("docker compose --profile local-db config failed")
-  fi
-
   print_step "Compose config (default)" "$compose_default_status" "$compose_default_output"
-  print_step "Compose config (local-db)" "$compose_local_db_status" "$compose_local_db_output"
+  for compose_profile in $READINESS_COMPOSE_CONFIG_PROFILES; do
+    compose_profile_status="PASS"
+    compose_profile_output=""
+    if run_and_capture bash -lc "cd \"$REPO_ROOT\" && docker compose --profile \"$compose_profile\" config"; then
+      compose_profile_output="docker compose --profile ${compose_profile} config: ok"
+    else
+      compose_profile_status="FAIL"
+      compose_profile_output="$CURRENT_STEP_OUTPUT"
+      FAILURES+=("docker compose --profile ${compose_profile} config failed")
+    fi
+
+    print_step "Compose config (${compose_profile})" "$compose_profile_status" "$compose_profile_output"
+  done
 else
   print_step "Compose config" "SKIP" "docker compose file not present or docker compose unavailable"
 fi
@@ -251,38 +261,40 @@ if [ -f "$REPO_ROOT/.gitmodules" ]; then
     print_step "Submodule remotes" "PASS" "no boilerplate references detected in .gitmodules"
   fi
 
-  expected_web_url="$(git -C "$REPO_ROOT" config -f .gitmodules --get submodule.web-app.url 2>/dev/null || true)"
-  if [ -n "$expected_web_url" ]; then
-    web_invariant_output=()
-    web_invariant_status="PASS"
-    actual_web_url="$(git -C "$REPO_ROOT" config --local --get submodule.web-app.url 2>/dev/null || true)"
-    if [ -n "$actual_web_url" ] && [ "$actual_web_url" != "$expected_web_url" ]; then
-      web_invariant_status="FAIL"
-      FAILURES+=("web-app submodule URL mismatch")
-      web_invariant_output+=("URL mismatch: expected $expected_web_url got $actual_web_url")
+  for artifact_path in $READINESS_DERIVED_ARTIFACT_SUBMODULES; do
+    expected_artifact_url="$(git -C "$REPO_ROOT" config -f .gitmodules --get "submodule.${artifact_path}.url" 2>/dev/null || true)"
+    [ -n "$expected_artifact_url" ] || continue
+
+    artifact_invariant_output=()
+    artifact_invariant_status="PASS"
+    actual_artifact_url="$(git -C "$REPO_ROOT" config --local --get "submodule.${artifact_path}.url" 2>/dev/null || true)"
+    if [ -n "$actual_artifact_url" ] && [ "$actual_artifact_url" != "$expected_artifact_url" ]; then
+      artifact_invariant_status="FAIL"
+      FAILURES+=("${artifact_path} submodule URL mismatch")
+      artifact_invariant_output+=("URL mismatch: expected $expected_artifact_url got $actual_artifact_url")
     else
-      web_invariant_output+=("URL matches .gitmodules")
+      artifact_invariant_output+=("URL matches .gitmodules")
     fi
 
-    web_mode="$(git -C "$REPO_ROOT" ls-files --stage web-app 2>/dev/null | awk '{print $1}' || true)"
-    if [ "$web_mode" != "160000" ]; then
-      web_invariant_status="FAIL"
-      FAILURES+=("web-app is not tracked as a gitlink submodule")
-      web_invariant_output+=("git mode is ${web_mode:-<missing>} (expected 160000)")
+    artifact_mode="$(git -C "$REPO_ROOT" ls-files --stage "$artifact_path" 2>/dev/null | awk '{print $1}' || true)"
+    if [ "$artifact_mode" != "160000" ]; then
+      artifact_invariant_status="FAIL"
+      FAILURES+=("${artifact_path} is not tracked as a gitlink submodule")
+      artifact_invariant_output+=("git mode is ${artifact_mode:-<missing>} (expected 160000)")
     else
-      web_invariant_output+=("gitlink mode is 160000")
+      artifact_invariant_output+=("gitlink mode is 160000")
     fi
 
-    if [ ! -d "$REPO_ROOT/web-app" ] || { [ ! -f "$REPO_ROOT/web-app/.git" ] && [ ! -d "$REPO_ROOT/web-app/.git" ]; }; then
-      web_invariant_status="FAIL"
-      FAILURES+=("web-app is missing or uninitialized")
-      web_invariant_output+=("web-app directory or .git is missing")
+    if [ ! -d "$REPO_ROOT/$artifact_path" ] || { [ ! -f "$REPO_ROOT/$artifact_path/.git" ] && [ ! -d "$REPO_ROOT/$artifact_path/.git" ]; }; then
+      artifact_invariant_status="FAIL"
+      FAILURES+=("${artifact_path} is missing or uninitialized")
+      artifact_invariant_output+=("${artifact_path} directory or .git is missing")
     else
-      web_invariant_output+=("web-app directory initialized")
+      artifact_invariant_output+=("${artifact_path} directory initialized")
     fi
 
-    print_step "web-app submodule invariants" "$web_invariant_status" "$(printf '%s\n' "${web_invariant_output[@]}")"
-  fi
+    print_step "${artifact_path} derived artifact submodule invariants" "$artifact_invariant_status" "$(printf '%s\n' "${artifact_invariant_output[@]}")"
+  done
 else
   print_step "Submodule status" "SKIP" ".gitmodules not present"
 fi
@@ -297,12 +309,12 @@ nginx_checked=false
 for tmpl in "${nginx_templates[@]}"; do
   if [ -f "$tmpl" ]; then
     nginx_checked=true
-    if file_has 'try_files \$request_filename =404;' "$tmpl"; then
+    if [ -z "$READINESS_NGINX_STORAGE_REQUIRED_PATTERN" ] || file_has "$READINESS_NGINX_STORAGE_REQUIRED_PATTERN" "$tmpl"; then
       nginx_output+=("$(basename "$tmpl"): ok")
     else
       nginx_status="FAIL"
       FAILURES+=("missing storage alias invariant in $(basename "$tmpl")")
-      nginx_output+=("$(basename "$tmpl"): missing try_files \$request_filename =404;")
+      nginx_output+=("$(basename "$tmpl"): missing configured storage invariant pattern: $READINESS_NGINX_STORAGE_REQUIRED_PATTERN")
     fi
   fi
 done
@@ -360,9 +372,9 @@ if [ -f "$REPO_ROOT/.env" ]; then
     [ -n "$certbot_val" ] || WARNINGS+=("production profile active but CERTBOT_EMAIL is missing")
     profile_output+=("production profile detected")
   fi
-  if [[ "$compose_profiles_effective" == *"local-db"* ]] && [ -f "$REPO_ROOT/laravel-app/.env" ]; then
-    if ! file_has 'mongo:27017' "$REPO_ROOT/laravel-app/.env"; then
-      WARNINGS+=("local-db profile active but laravel-app/.env does not reference mongo:27017")
+  if [[ "$compose_profiles_effective" == *"local-db"* ]] && [ -f "$REPO_ROOT/$READINESS_LOCAL_DB_ENV_FILE" ]; then
+    if ! file_has "$READINESS_LOCAL_DB_HOST_PATTERN" "$REPO_ROOT/$READINESS_LOCAL_DB_ENV_FILE"; then
+      WARNINGS+=("local-db profile active but ${READINESS_LOCAL_DB_ENV_FILE} does not match ${READINESS_LOCAL_DB_HOST_PATTERN}")
     fi
     profile_output+=("local-db profile detected")
   fi
@@ -380,23 +392,27 @@ if [ -f "$dependency_readiness_file" ]; then
   if have_cmd rg; then
     while IFS= read -r line; do
       validation_output+=("$line")
-    done < <(rg -n 'https?://|build_web\.sh|run_laravel_tests_safe\.sh|web-app|tenant|subdomain|cloudflare|cloudflared' "$dependency_readiness_file" || true)
+    done < <(rg -n "$READINESS_DEPENDENCY_HINT_PATTERN" "$dependency_readiness_file" || true)
   else
     while IFS= read -r line; do
       validation_output+=("$line")
-    done < <(grep -En 'https?://|build_web\.sh|run_laravel_tests_safe\.sh|web-app|tenant|subdomain|cloudflare|cloudflared' "$dependency_readiness_file" || true)
+    done < <(grep -En "$READINESS_DEPENDENCY_HINT_PATTERN" "$dependency_readiness_file" || true)
   fi
 else
   validation_output+=("dependency-readiness artifact not present")
 fi
 
-if [ -e "$REPO_ROOT/laravel-app/scripts/delphi/run_laravel_tests_safe.sh" ] || [ -e "$DEL_ROOT/scripts/laravel/run_laravel_tests_safe.sh" ]; then
-  validation_output+=("Laravel local-safe runner available: ./laravel-app/scripts/delphi/run_laravel_tests_safe.sh")
-fi
+for runner_path in $READINESS_LOCAL_SAFE_RUNNER_PATHS; do
+  if [ -e "$REPO_ROOT/$runner_path" ]; then
+    validation_output+=("Local-safe runner available: ./${runner_path}")
+  fi
+done
 
-if [ -e "$REPO_ROOT/flutter-app/scripts/build_web.sh" ]; then
-  validation_output+=("Flutter publish wrapper available: ./flutter-app/scripts/build_web.sh")
-fi
+for publish_wrapper_path in $READINESS_PUBLISH_WRAPPER_PATHS; do
+  if [ -e "$REPO_ROOT/$publish_wrapper_path" ]; then
+    validation_output+=("Publish wrapper available: ./${publish_wrapper_path}")
+  fi
+done
 
 if [ -f "$REPO_ROOT/.env" ]; then
   domain_hint="$(read_dotenv_value "DOMAIN" "$REPO_ROOT/.env" 2>/dev/null || true)"

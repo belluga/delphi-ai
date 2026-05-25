@@ -41,6 +41,23 @@ COMPOSE_PROFILES_EFFECTIVE="${COMPOSE_PROFILES:-}"
 if [[ -z "$COMPOSE_PROFILES_EFFECTIVE" ]]; then
   COMPOSE_PROFILES_EFFECTIVE="$(read_dotenv_value "COMPOSE_PROFILES" ".env" 2>/dev/null || true)"
 fi
+DELPHI_COMPOSE_CONFIG_PROFILES="${DELPHI_COMPOSE_CONFIG_PROFILES:-local-db}"
+DELPHI_DERIVED_ARTIFACT_SUBMODULES="${DELPHI_DERIVED_ARTIFACT_SUBMODULES:-web-app}"
+DELPHI_SCRIPT_LINK_SPECS="${DELPHI_SCRIPT_LINK_SPECS:-flutter-app/scripts:../delphi-ai/scripts/flutter}"
+DELPHI_LOCAL_DB_ENV_FILE="${DELPHI_LOCAL_DB_ENV_FILE:-laravel-app/.env}"
+DELPHI_LOCAL_DB_REQUIRED_PATTERN="${DELPHI_LOCAL_DB_REQUIRED_PATTERN:-^(DB_URI|DB_URI_LANDLORD|DB_URI_TENANTS)=}"
+DELPHI_LOCAL_DB_HOST_PATTERN="${DELPHI_LOCAL_DB_HOST_PATTERN:-mongo:27017}"
+DELPHI_NGINX_STORAGE_REQUIRED_PATTERN="${DELPHI_NGINX_STORAGE_REQUIRED_PATTERN:-alias[[:space:]]+/var/www/storage/app/public/;}"
+
+is_configured_item() {
+  local needle="$1"
+  local item
+  shift
+  for item in "$@"; do
+    [[ "$needle" == "$item" ]] && return 0
+  done
+  return 1
+}
 
 echo "== basic tooling =="
 have_cmd git || die "git not found"
@@ -52,9 +69,13 @@ echo "== docker compose config (default) =="
 docker compose config >/dev/null
 echo "OK"
 
-echo "== docker compose config (--profile local-db) =="
-docker compose --profile local-db config >/dev/null
-echo "OK"
+if [[ -n "$DELPHI_COMPOSE_CONFIG_PROFILES" ]]; then
+  for compose_profile in $DELPHI_COMPOSE_CONFIG_PROFILES; do
+    echo "== docker compose config (--profile ${compose_profile}) =="
+    docker compose --profile "$compose_profile" config >/dev/null
+    echo "OK"
+  done
+fi
 
 echo "== submodule status =="
 submodule_status="$(git submodule status --recursive || true)"
@@ -76,13 +97,14 @@ fi
 
 echo "== shared doc symlinks =="
 submodule_paths="$(git config --file .gitmodules --get-regexp path | awk '{print $2}' || true)"
+read -r -a derived_artifact_submodules <<< "$DELPHI_DERIVED_ARTIFACT_SUBMODULES"
 for submodule_path in $submodule_paths; do
   if [[ ! -d "$submodule_path" ]]; then
     warn "Submodule path missing on disk: ${submodule_path}"
     continue
   fi
 
-  if [[ "$submodule_path" == "web-app" ]] || [[ "$submodule_path" == "foundation_documentation" ]]; then
+  if [[ "$submodule_path" == "foundation_documentation" ]] || is_configured_item "$submodule_path" "${derived_artifact_submodules[@]}"; then
     continue
   fi
 
@@ -101,16 +123,28 @@ for submodule_path in $submodule_paths; do
   fi
 done
 
-echo "== flutter scripts symlink =="
-if [[ ! -L "flutter-app/scripts" ]]; then
-  ln -s ../delphi-ai/scripts/flutter flutter-app/scripts
-  echo "FIXED: flutter-app/scripts symlink created."
-else
-  scripts_target="$(readlink "flutter-app/scripts" || true)"
-  if [[ "$scripts_target" != "../delphi-ai/scripts/flutter" ]]; then
-    warn "flutter-app/scripts points to '${scripts_target}', expected ../delphi-ai/scripts/flutter."
+echo "== script symlinks =="
+for link_spec in $DELPHI_SCRIPT_LINK_SPECS; do
+  IFS=':' read -r script_link expected_target extra <<< "$link_spec"
+  if [[ -z "${script_link:-}" || -z "${expected_target:-}" || -n "${extra:-}" ]]; then
+    warn "Invalid DELPHI_SCRIPT_LINK_SPECS entry: ${link_spec}"
+    continue
   fi
-fi
+  script_parent="$(dirname "$script_link")"
+  if [[ ! -d "$script_parent" ]]; then
+    warn "Script link parent missing; skipped: ${script_parent}"
+    continue
+  fi
+  if [[ ! -L "$script_link" ]]; then
+    ln -s "$expected_target" "$script_link"
+    echo "FIXED: ${script_link} symlink created."
+  else
+    scripts_target="$(readlink "$script_link" || true)"
+    if [[ "$scripts_target" != "$expected_target" ]]; then
+      warn "${script_link} points to '${scripts_target}', expected ${expected_target}."
+    fi
+  fi
+done
 
 echo "== compose profile sanity =="
 if [[ -z "${COMPOSE_PROFILES_EFFECTIVE:-}" ]]; then
@@ -126,27 +160,51 @@ else
   warn ".gitmodules not found; submodule remotes not checked."
 fi
 
-echo "== submodule invariants (web-app) =="
-expected_web_url="$(git config -f .gitmodules --get submodule.web-app.url 2>/dev/null || true)"
-[[ -n "$expected_web_url" ]] || die "web-app submodule URL missing in .gitmodules"
-actual_web_url="$(git config --local --get submodule.web-app.url 2>/dev/null || true)"
-[[ -z "$actual_web_url" || "$actual_web_url" == "$expected_web_url" ]] || die "web-app submodule URL mismatch (expected: $expected_web_url, got: ${actual_web_url:-<missing>})"
+echo "== derived artifact submodule invariants =="
+derived_checked=0
+for artifact_path in $DELPHI_DERIVED_ARTIFACT_SUBMODULES; do
+  expected_artifact_url="$(git config -f .gitmodules --get "submodule.${artifact_path}.url" 2>/dev/null || true)"
+  if [[ -z "$expected_artifact_url" ]]; then
+    warn "${artifact_path} submodule URL missing in .gitmodules; skipping derived artifact invariant."
+    continue
+  fi
+  derived_checked=1
+  actual_artifact_url="$(git config --local --get "submodule.${artifact_path}.url" 2>/dev/null || true)"
+  [[ -z "$actual_artifact_url" || "$actual_artifact_url" == "$expected_artifact_url" ]] || die "${artifact_path} submodule URL mismatch (expected: $expected_artifact_url, got: ${actual_artifact_url:-<missing>})"
 
-web_mode="$(git ls-files --stage web-app 2>/dev/null | awk '{print $1}' || true)"
-[[ "$web_mode" == "160000" ]] || die "web-app is not tracked as a gitlink submodule (expected mode 160000)"
+  artifact_mode="$(git ls-files --stage "$artifact_path" 2>/dev/null | awk '{print $1}' || true)"
+  [[ "$artifact_mode" == "160000" ]] || die "${artifact_path} is not tracked as a gitlink submodule (expected mode 160000)"
 
-[[ -d "web-app" ]] || die "web-app directory missing (run: git submodule update --init web-app)"
-[[ -f "web-app/.git" || -d "web-app/.git" ]] || die "web-app is not initialized (missing web-app/.git); run: git submodule update --init web-app"
-echo "OK"
+  [[ -d "$artifact_path" ]] || die "${artifact_path} directory missing (run: git submodule update --init ${artifact_path})"
+  [[ -f "${artifact_path}/.git" || -d "${artifact_path}/.git" ]] || die "${artifact_path} is not initialized (missing ${artifact_path}/.git); run: git submodule update --init ${artifact_path}"
+done
+if [[ "$derived_checked" -eq 1 ]]; then
+  echo "OK"
+else
+  warn "No configured derived artifact submodule invariants were checked."
+fi
 
 echo "== nginx storage alias invariants =="
-for tmpl in docker/nginx/local.conf.template docker/nginx/prod.conf.template; do
+if [[ -n "${DELPHI_NGINX_STORAGE_TEMPLATE_PATHS+x}" ]]; then
+  nginx_storage_template_paths="$DELPHI_NGINX_STORAGE_TEMPLATE_PATHS"
+elif [[ -d docker/nginx ]]; then
+  nginx_storage_template_paths="docker/nginx/local.conf.template docker/nginx/prod.conf.template"
+else
+  nginx_storage_template_paths=""
+fi
+nginx_storage_checked=0
+for tmpl in $nginx_storage_template_paths; do
   [[ -f "$tmpl" ]] || die "missing $tmpl"
-  if ! file_has 'try_files \$request_filename =404;' "$tmpl"; then
-    die "$tmpl missing 'try_files \\$request_filename =404;' (required for /storage alias correctness)"
+  nginx_storage_checked=1
+  if [[ -n "$DELPHI_NGINX_STORAGE_REQUIRED_PATTERN" ]] && ! file_has "$DELPHI_NGINX_STORAGE_REQUIRED_PATTERN" "$tmpl"; then
+    die "$tmpl missing configured storage invariant pattern: $DELPHI_NGINX_STORAGE_REQUIRED_PATTERN"
   fi
 done
-echo "OK"
+if [[ "$nginx_storage_checked" -eq 1 ]]; then
+  echo "OK"
+else
+  warn "No nginx storage template paths configured; skipping storage alias invariant."
+fi
 
 echo "== env hygiene =="
 if git ls-files --error-unmatch .env >/dev/null 2>&1; then
@@ -188,17 +246,17 @@ fi
 
 if [[ "${COMPOSE_PROFILES_EFFECTIVE:-}" == *"local-db"* ]]; then
   echo "== local-db profile checks =="
-  if [[ ! -f "laravel-app/.env" ]]; then
-    warn "laravel-app/.env not found; configure DB_URI/DB_URI_LANDLORD/DB_URI_TENANTS for local Mongo."
+  if [[ ! -f "$DELPHI_LOCAL_DB_ENV_FILE" ]]; then
+    warn "${DELPHI_LOCAL_DB_ENV_FILE} not found; configure the project local DB env file for local Mongo."
     exit 0
   fi
 
-  if ! file_has '^(DB_URI|DB_URI_LANDLORD|DB_URI_TENANTS)=' laravel-app/.env; then
-    warn "laravel-app/.env missing DB_URI* variables; local Mongo may not connect."
+  if ! file_has "$DELPHI_LOCAL_DB_REQUIRED_PATTERN" "$DELPHI_LOCAL_DB_ENV_FILE"; then
+    warn "${DELPHI_LOCAL_DB_ENV_FILE} missing configured local DB variables; local Mongo may not connect."
     exit 0
   fi
 
-  if ! file_has 'mongo:27017' laravel-app/.env; then
-    warn "laravel-app/.env DB_URI* do not reference mongo:27017; local-db profile may not be used."
+  if ! file_has "$DELPHI_LOCAL_DB_HOST_PATTERN" "$DELPHI_LOCAL_DB_ENV_FILE"; then
+    warn "${DELPHI_LOCAL_DB_ENV_FILE} local DB variables do not match ${DELPHI_LOCAL_DB_HOST_PATTERN}; local-db profile may not be used."
   fi
 fi

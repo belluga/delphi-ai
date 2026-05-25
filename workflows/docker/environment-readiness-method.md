@@ -10,7 +10,7 @@ Ensure the working copy is correctly wired (symlinks, scripts, submodules, permi
 ## Triggers
 - User explicitly requests DevOps/setup help.
 - Session starts in a repository that might not be the canonical boilerplate.
-- Before running scripts that depend on submodules (Laravel, Flutter, web bundle).
+- Before running scripts that depend on submodules (for example backend source, client source, or derived web bundle).
 
 Do not use this method as the profile-selection gate for a zero-state `Genesis / Product-Bootstrap` session. In that scenario, readiness checks are supporting evidence only and must not block Genesis from instantiating the first canonical package.
 
@@ -32,6 +32,7 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
      - Treat this as read-only verification. If it fails only on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`, then rerun plain verification. If it fails on a path conflict with project-owned files/directories, stop and report it for manual remediation.
    - Run the project readiness verifier (compose config + critical drift checks):
      - `bash scripts/verify_environment.sh`
+     - This helper is topology-configurable. Belluga Docker defaults cover `flutter-app`, `laravel-app`, and `web-app`; future Belluga stack capabilities such as Go should add their own Delphi scripts/rules while projects select active wiring through variables such as `DELPHI_SCRIPT_LINK_SPECS`, `DELPHI_DERIVED_ARTIFACT_SUBMODULES`, `DELPHI_COMPOSE_CONFIG_PROFILES`, and `DELPHI_LOCAL_DB_ENV_FILE`.
    - If either script fails, fix the reported issue before proceeding.
    - For zero-state Genesis bootstrap, replace this step with `bash delphi-ai/init.sh --check` and, when appropriate, `bash delphi-ai/init.sh`; do not require `verify_context.sh` or `scripts/verify_environment.sh` until the downstream shape exists.
 
@@ -46,12 +47,12 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
    - Spot-check key environment files, source submodules, and derived bundle directories named by `.gitmodules` or project docs, and ensure they are writable by the host/WSL user. If ownership reflects container/root users, instruct the user to `chown` the directories before continuing.
 
 5. **Symlinked scripts**
-   - Verify helper scripts exist and resolve (`flutter-app/scripts` must symlink to `../delphi-ai/scripts/flutter`). If missing, recreate the link so Flutter uses the canonical build helpers.
+   - Verify project-declared helper script links exist and resolve. Flutter helpers remain available in Delphi even when a project does not use Flutter. Belluga Flutter defaults use `flutter-app/scripts -> ../delphi-ai/scripts/flutter`; additional stack helpers should be added to Delphi and wired only when the project declares them through `DELPHI_SCRIPT_LINK_SPECS` or project docs.
 
 6. **Validation topology snapshot**
    - When local validation, browser checks, or build/publish flows are in scope, explicitly resolve:
-     - the canonical runtime owner for Laravel/PHP/Composer/test commands (`host` vs safe runner vs compose service);
-     - the canonical build/publish wrapper and output target for Flutter/web;
+     - the canonical runtime owner for backend/service/test commands (`host` vs safe runner vs compose service);
+     - the canonical build/publish wrapper and output target for client/web artifacts;
      - the canonical public validation URLs (for example landlord + tenant domains) and any preferred validation tenant/subdomain.
    - Source priority:
      - active TODO / validation notes;
@@ -59,7 +60,7 @@ Do not use this method as the profile-selection gate for a zero-state `Genesis /
      - README, compose files, `.env`, and project-owned safe runners/wrappers;
      - direct user clarification when the repo still leaves multiple plausible targets.
    - If multiple tenant/domain candidates remain and no project-owned artifact selects one, stop and ask instead of guessing.
-   - Prefer project-owned safe runners when they exist (for example `laravel-app/scripts/delphi/run_laravel_tests_safe.sh` for local Laravel tests, `flutter-app/scripts/build_web.sh` for web bundle publish).
+   - Prefer project-owned safe runners when they exist. Belluga defaults include `laravel-app/scripts/delphi/run_laravel_tests_safe.sh` for local Laravel tests and `flutter-app/scripts/build_web.sh` for web bundle publish; future stack capabilities such as Go should document equivalent backend/client commands in `foundation_documentation` and configure readiness helpers instead of bypassing them.
    - If these topology facts are stable and likely to matter across sessions, record or refresh them in `foundation_documentation/artifacts/dependency-readiness.md` before moving on.
 
 7. **README alignment**

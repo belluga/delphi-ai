@@ -20,6 +20,7 @@ Worker/subagent closure requires the owned slice to be architecture-clean and co
 3. Before claiming local implementation or delivery completion, run `python3 delphi-ai/tools/orchestration_delivery_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md --require-approved` and require `Overall outcome: go`.
 4. Use `git worktree` plus non-interactive git commands to create one worker worktree per delegated slice and one reconciliation worktree for the orchestrator.
 5. Use the project's native test/build commands from the active validation plan inside both worker and reconciliation worktrees.
+   - For non-Laravel/Flutter stacks, `./scripts/delphi/run_reconcile_validation.sh --repo-command <stage> <repo-path> <command>` can enforce reconcile-branch discipline around project-native commands such as `go test ./...`.
 6. When browser validation depends on a published Flutter web bundle, use the repository-approved publish/build entrypoint for the reconciliation branch before rerunning Playwright.
 7. When pushing an orchestrator checkpoint, create a persistent manifest from `delphi-ai/templates/orchestration_checkpoint_manifest_template.md` under `foundation_documentation/artifacts/checkpoints/`.
 8. When browser validation depends on a local Docker/browser-facing domain, use `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` from the downstream environment root so branch discipline, configured runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts.
