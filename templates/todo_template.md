@@ -369,6 +369,12 @@ Use this only when promotion/CI/Copilot/check evidence creates findings. Same-sc
 | --- | --- | --- | --- | --- | --- | --- |
 | `<PR/check/comment id>` | `<P1|P2|P3|P4|n/a>` | `<confirmed defect|by-design intent|upstream-lane drift|non-actionable>` | `<same-todo-remediation|same-todo-evidence-refresh|split-required|renewed-approval-required|defer-follow-up|non-actionable>` | `<why same TODO is still valid, or why split/renewal is required>` | `<open|fixed|re-evidenced|accepted|deferred|blocked>` | `<approval reference, split TODO, follow-up owner/path, or n/a>` |
 
+## TODO Closeout Disposition
+- **Disposition:** `<keep-active|move-promotion-lane|move-completed|blocked>`
+- **Disposition reason:** <why this TODO should remain active, move to promotion_lane, move to completed, or pause blocked>
+- **Post-commit/push status:** `<pending|complete|n/a>`
+- **Next path/status action:** <exact file move or status action, or the real remaining active step>
+
 ## Security Risk Assessment (Mandatory Before Delivery)
 - **Risk level:** `<none|low|medium|high>`
 - **Why this risk level:** <short rationale tied to touched surfaces and behavior>

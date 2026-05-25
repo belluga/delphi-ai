@@ -72,6 +72,7 @@ If the change restores previously documented or verifiably working behavior (inc
   - `Current delivery stage`
   - `Qualifiers`
   - `Next exact step`
+  - `TODO Closeout Disposition` before pausing after any delivery claim
   - conditional `Provisional Notes` / `Blocker Notes` when qualifiers require them
 
 ### Gate C — TODO refinement (no code)
@@ -429,6 +430,7 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If the `Rule-Spirit Anti-Pattern Hunt` section is missing, unexecuted, or records unresolved `P1`/`P2` rule-spirit or anti-pattern findings, block delivery and promotion readiness.
 - If `todo_authority_guard.py <todo-path> --require-delivery-gates` does not return `Overall outcome: go`, block delivery and promotion readiness.
 - If `todo_completion_guard.py <todo-path>` does not return `Overall outcome: go`, block delivery.
+- If a delivered TODO remains in `active/` without a valid `TODO Closeout Disposition`, or if `todo_closeout_guard.py <todo-path>` returns anything other than `Overall outcome: go`, block pausing, closeout, and promotion-readiness handoff until the TODO is moved, blocked, or given a real active next step.
 - If any baseline decision lacks adherence evidence, block delivery.
 - If any relevant module decision ends in `Regression`, block delivery.
 - If no explicit security risk assessment and attack simulation decision exist, block delivery.

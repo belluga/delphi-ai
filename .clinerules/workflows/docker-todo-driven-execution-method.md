@@ -46,6 +46,8 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Final Deterministic Guards** must return `Overall outcome: go`:
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
+- **Closeout Disposition** must be explicit before pausing after a delivery claim:
+  - `python3 delphi-ai/tools/todo_closeout_guard.py <todo-path>`
 - **Same governing TODO** stays authoritative through local implementation and `promotion_lane/`; do not create a new tactical TODO solely for operational promotion follow-through.
 
 ## Inputs
@@ -63,4 +65,5 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - The TODO records which phase workflow governed each major transition.
 - No phase-specific requirements are left only in chat.
 - Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
+- Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.
 - Any waived or `n/a` gate has explicit rationale and approval evidence where required.

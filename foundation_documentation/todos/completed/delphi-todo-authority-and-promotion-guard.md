@@ -18,9 +18,9 @@ The model-upgrade follow-up validation approved `C-04`: add objective guard supp
 - A new TODO or renewed approval is required only when a finding changes approved scope, introduces a new independently testable behavior, creates a new approval/risk conversation, or asks for a waiver/exception to a blocking P1/P2.
 
 ## Delivery Status Canon
-- **Current delivery stage:** `Local-Implemented`
+- **Current delivery stage:** `Completed`
 - **Qualifiers:** `none`
-- **Next exact step:** Present the next pending model-upgrade validation point (`C-05`) to the user.
+- **Next exact step:** `n/a - local-only Delphi self-maintenance slice completed and moved to completed/ by C-07 closeout cleanup.`
 
 ## Scope
 - [x] Add a companion deterministic TODO authority guard for approval, rule-ingestion, delivery-gate, and promotion-finding routing evidence.

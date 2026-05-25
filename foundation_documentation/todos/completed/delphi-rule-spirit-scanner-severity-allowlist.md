@@ -18,9 +18,9 @@ The model-upgrade follow-up validation approved `C-06`: improve `rule_spirit_ant
 - JSON output is in scope as the first machine-readable contract. SARIF is intentionally out of scope until the JSON schema proves useful.
 
 ## Delivery Status Canon
-- **Current delivery stage:** `Local-Implemented`
+- **Current delivery stage:** `Completed`
 - **Qualifiers:** `none`
-- **Next exact step:** Present the next pending model-upgrade validation point (`C-07`) to the user after validation.
+- **Next exact step:** `n/a - local-only Delphi self-maintenance slice completed and moved to completed/ by C-07 closeout cleanup.`
 
 ## Scope
 - [x] Add severity taxonomy and max-active severity reporting to the scanner while preserving default nonblocking text output.

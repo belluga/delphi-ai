@@ -40,8 +40,10 @@ Load the phase skill that matches the current TODO state:
 - `Rule-Spirit Anti-Pattern Hunt` before delivery claims.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` must return `Overall outcome: go` before any close/delivery claim.
 - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any close/delivery claim.
+- `python3 delphi-ai/tools/todo_closeout_guard.py <todo-path>` must return `Overall outcome: go` before pausing after a delivered TODO or changing closeout path/status.
 
 ## Non-Negotiables
 - Do not skip a phase silently; mark it `n/a` only with rationale.
 - Do not split into a new TODO for promotion follow-through unless promotion itself is the active work.
 - Do not leave stable decisions only in tactical notes or chat.
+- Do not leave delivered TODOs in `active/` without a valid closeout disposition and actionable next step.
