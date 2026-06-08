@@ -164,6 +164,7 @@ LANE="${2:-dev}"
 PRESERVE_OUTPUT="${PRESERVE_OUTPUT:-1}"
 CLEAN_OUTPUT="${CLEAN_OUTPUT:-0}"
 FLUTTER_SDK_DIR="$(resolve_flutter_sdk_dir "${FLUTTER_APP_DIR}" || true)"
+EXPLICIT_DEFINE_FILE="${FLUTTER_DART_DEFINE_FILE:-}"
 
 if [[ "${3:-}" == "--help" || "${3:-}" == "-h" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   usage
@@ -190,13 +191,24 @@ elif [[ -n "${4:-}" ]]; then
   exit 1
 fi
 
-LANE_FILE="${FLUTTER_APP_DIR}/config/defines/${LANE}.json"
+LANE_FILE="${EXPLICIT_DEFINE_FILE:-${FLUTTER_APP_DIR}/config/defines/${LANE}.json}"
 LOCAL_OVERRIDE_FILE="${FLUTTER_APP_DIR}/config/defines/local.override.json"
+USE_LOCAL_OVERRIDE=0
 
-if [ ! -f "${LANE_FILE}" ]; then
-  echo "Define file not found for lane '${LANE}': ${LANE_FILE}" >&2
-  echo "Usage: scripts/build_web.sh [output_dir] [lane]" >&2
-  exit 1
+if [[ -n "${EXPLICIT_DEFINE_FILE}" ]]; then
+  if [[ ! -f "${LANE_FILE}" ]]; then
+    echo "Explicit define file not found: ${LANE_FILE}" >&2
+    exit 1
+  fi
+else
+  if [[ ! -f "${LANE_FILE}" ]]; then
+    echo "Define file not found for lane '${LANE}': ${LANE_FILE}" >&2
+    echo "Usage: scripts/build_web.sh [output_dir] [lane]" >&2
+    exit 1
+  fi
+  if [[ -f "${LOCAL_OVERRIDE_FILE}" ]]; then
+    USE_LOCAL_OVERRIDE=1
+  fi
 fi
 
 ensure_flutter_sdk_git_metadata "${FLUTTER_SDK_DIR}"
@@ -217,7 +229,7 @@ build_cmd=(
   -o "${TMP_DIR}"
 )
 
-if [ -f "${LOCAL_OVERRIDE_FILE}" ]; then
+if [[ "${USE_LOCAL_OVERRIDE}" == "1" ]]; then
   build_cmd+=(--dart-define-from-file="${LOCAL_OVERRIDE_FILE}")
 fi
 
@@ -299,8 +311,24 @@ PY
 }
 
 resolve_landlord_domain() {
-  local lane_file="$1"
+  local primary_define_file="$1"
   local override_file="$2"
+  local explicit_define_mode="${3:-0}"
+
+  if [[ -n "${LANDLORD_DOMAIN:-}" ]]; then
+    printf '%s' "${LANDLORD_DOMAIN}"
+    return 0
+  fi
+
+  if [[ "${explicit_define_mode}" == "1" ]]; then
+    local from_primary=""
+    from_primary="$(read_json_key_from_file "${primary_define_file}" "LANDLORD_DOMAIN")"
+    if [[ -n "${from_primary}" && "${from_primary}" != "null" ]]; then
+      printf '%s' "${from_primary}"
+      return 0
+    fi
+    return 1
+  fi
 
   local from_override=""
   if [[ -f "${override_file}" ]]; then
@@ -312,7 +340,7 @@ resolve_landlord_domain() {
   fi
 
   local from_lane=""
-  from_lane="$(read_json_key_from_file "${lane_file}" "LANDLORD_DOMAIN")"
+  from_lane="$(read_json_key_from_file "${primary_define_file}" "LANDLORD_DOMAIN")"
   if [[ -n "${from_lane}" && "${from_lane}" != "null" ]]; then
     printf '%s' "${from_lane}"
     return 0
@@ -369,7 +397,13 @@ with open(path, "w", encoding="utf-8") as f:
 PY
 }
 
-landlord_domain="$(resolve_landlord_domain "${LANE_FILE}" "${LOCAL_OVERRIDE_FILE}" || true)"
+landlord_domain="$(
+  resolve_landlord_domain \
+    "${LANE_FILE}" \
+    "${LOCAL_OVERRIDE_FILE}" \
+    "$([[ -n "${EXPLICIT_DEFINE_FILE}" ]] && printf '1' || printf '0')" \
+    || true
+)"
 if [[ -z "${landlord_domain}" ]]; then
   echo "ERROR: LANDLORD_DOMAIN is required (set it in ${LANE_FILE} or ${LOCAL_OVERRIDE_FILE})." >&2
   exit 1

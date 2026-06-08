@@ -29,6 +29,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/gate_finding_resolution_scaffold.py` | python | Render a TODO-ready markdown resolution table scaffold from a merged subagent review packet. |
 | `tools/laravel_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Laravel endpoint and domain workflows. |
 | `tools/list_public_codex_skill_mirrors.sh` | shell | Emit the canonical list of Delphi skills that must remain mirrored into `~/.codex/skills/public`. |
+| `tools/metrics_consolidation_trigger.py` | python | Extract formalizable gate findings from a completed TODO and append PACED rule events for the metrics pipeline. |
 | `tools/paced_metrics_core.py` | python | Shared PACED metrics helpers used by CLI tools today and designed for future MCP tool exposure. |
 | `tools/paced_metrics_summary.py` | python | Aggregate rule events plus TODO-derived gate resolutions into derived Clean Rate and effectiveness summaries. |
 | `tools/orchestration_delivery_guard.py` | python | Validate approved orchestration execution evidence before local implementation or delivery claims, blocking missing validation rows, incomplete acceptance traceability evidence, stale runtime/browser/device provenance, unapproved spec-marker substitutions, and orchestrator-owned implementation slices while emitting a TEACH runtime response. |
@@ -76,10 +77,14 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/sync_codex_public_skill_mirrors.sh` | shell | Sync tracked canonical skills into curated public Codex mirrors under `~/.codex/skills/public`. |
 | `tools/sync_clinerules_mirrors.py` | python | Generate curated `.clinerules` mirror content from canonical Delphi rules/workflows. |
 | `tools/sync_clinerules_mirrors.sh` | shell | Shell entrypoint for `.clinerules` mirror synchronization. |
+| `tools/submodule_workspace_pin.sh` | shell | Pin all configured downstream submodules to the exact gitlink SHAs recorded by the superproject without overriding dirty worktrees. |
+| `tools/submodule_workspace_status.sh` | shell | Print a generic multi-repo submodule workspace status report derived from `.gitmodules`. |
+| `tools/submodule_workspace_track_lanes.sh` | shell | Switch configured downstream submodules to requested lane branches while keeping `foundation_documentation` on `main`. |
 | `tools/test_coverage_matrix_scaffold.sh` | shell | Generate a markdown coverage matrix scaffold for the Test Creation Standard workflow. |
 | `tools/test_orchestration_status_report.sh` | shell | Generate a required-stage status report and fail closure when any required gate is missing, blocked, failed, flaky, or exception-marked. |
 | `tools/test_quality_audit.sh` | shell | Scan selected test paths for bypass markers, weak assertion hints, test-only routes, auth shortcuts, and DI/mock patterns that need review. |
 | `tools/lib/promotion_contract.sh` | shell-lib | Load and validate local promotion-contract JSON so deterministic guards share one schema/parser. |
+| `tools/lib/submodule_workspace.sh` | shell-lib | Shared `.gitmodules`-driven helpers for canonical submodule workspace status, pinning, and lane tracking tools. |
 | `tools/lib/teach_runtime.sh` | shell-lib | Emit a consistent TEACH runtime response envelope for deterministic guard tools. |
 | `tools/verification_debt_audit.sh` | shell | Audit a target TODO for waiver/blocker/unchecked-item signals and scan selected paths for inline verification debt markers. |
 | `tools/verify_adherence_sync.sh` | shell | Verify downstream adherence-sync surfaces after Delphi-managed setup. |

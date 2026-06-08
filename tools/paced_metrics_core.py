@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wrapper that exposes the canonical gate-finding extractor under delphi-ai/tools."""
+"""Wrapper that exposes the canonical PACED metrics helpers under delphi-ai/tools."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "deterministic" / "core" / "gate_finding_resolution_extract.py"
-MODULE_NAME = "_delphi_deterministic_core_gate_finding_resolution_extract"
+MODULE_PATH = Path(__file__).resolve().parents[1] / "deterministic" / "core" / "paced_metrics_core.py"
+MODULE_NAME = "_delphi_deterministic_core_paced_metrics_core"
 
 SPEC = spec_from_file_location(MODULE_NAME, MODULE_PATH)
 if SPEC is None or SPEC.loader is None:
@@ -22,7 +22,3 @@ if PUBLIC_NAMES is None:
 for name in PUBLIC_NAMES:
     globals()[name] = getattr(MODULE, name)
 __all__ = list(PUBLIC_NAMES)
-
-
-if __name__ == "__main__":
-    raise SystemExit(MODULE.main())
