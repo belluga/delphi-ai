@@ -21,6 +21,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/environment_topology_contract_scaffold.py` | python | Generate a redacted downstream `foundation_documentation/artifacts/environment-topology.md` draft from repo evidence, env/config hints, compose files, safe runners, and submodules while marking inferred facts for user validation. |
 | `tools/environment_readiness_report.sh` | shell | Produce a read-only downstream readiness report by combining Genesis zero-state install preflight, Delphi readiness checks, non-mutating project environment checks, and validation-topology hints. |
 | `tools/exact_lookup_anti_pattern_audit.sh` | shell | Heuristically scan Flutter/Laravel code for broad-fetch, page-walk, and in-memory exact-lookup anti-patterns. |
+| `tools/finding_carry_forward_extract.py` | python | Extract a derived carry-forward packet from authoritative TODO finding dispositions so no-context reviewers and promotion loops can distinguish repeated/noise findings from materially new blockers. |
 | `tools/frontend_race_probe.sh` | shell | Orchestrate real repeated frontend race probes by burst level and capture deterministic pass/fail evidence for stack-native test runners. |
 | `tools/frontend_race_validation_scaffold.sh` | shell | Generate a markdown scenario matrix for frontend race-condition validation. |
 | `tools/flutter_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Flutter controller, domain, repository, and screen workflows. |
@@ -45,6 +46,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/guarded_git_push.sh` | shell | Run `git push` only after the promotion action guard and range diff guard both pass, including detection of direct pushes to lane branches. |
 | `tools/guarded_pr_create.sh` | shell | Run `gh pr create` only after the promotion action guard and range diff guard both pass against a local promotion contract. |
 | `tools/guarded_pr_merge.sh` | shell | Run `gh pr merge` only after the promotion action guard passes against a local promotion contract. |
+| `tools/install_foundation_main_only_guard.sh` | shell | Install local Git hooks that keep a canonical `foundation_documentation` clone pinned to one writable branch (default `main`) and emit PACED resolution guidance on forbidden branch operations. |
 | `tools/project_setup_normalization_packet.py` | python | Turn a derived project setup report into non-authoritative manual-remediation and normalization-TODO tracks for brownfield recalibration. |
 | `tools/project_recalibration_doctor.sh` | shell | Run downstream recalibration automation end-to-end by generating the setup report plus normalization packet and printing the exact next step. |
 | `tools/laravel_domain_resolution_test_audit.sh` | shell | Classify Laravel tenant-resolution test files as web-context, mobile-context, mixed-context, or unclassified. |
@@ -55,7 +57,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/rule_event_record.py` | python | Record explicit false positives, escapes, lifecycle changes, and `gate-escape` events for Pipeline/Copilot P1/P2 or Rule-Spirit escapes into the append-only PACED rule events ledger. |
 | `tools/rule_spirit_anti_pattern_scan.sh` | shell | Heuristically scan changed or selected repo surfaces for rule-spirit bypass shapes across shared, Flutter, Laravel, Docker, and future Go lanes, with severity triage, temporary allowlists, and optional JSON output. |
 | `tools/seed_rule_catalog.py` | python | Seed a project-local PACED rule catalog with canonical teaching-rule metadata and lifecycle labels. |
-| `tools/subagent_review_dispatch.py` | python | Build a derived no-context subagent dispatch packet for architecture opinions, critique, test-quality audit, or final review. |
+| `tools/subagent_review_dispatch.py` | python | Build a derived no-context subagent dispatch packet for architecture opinions, critique, test-quality audit, or final review, including carry-forward TODO finding dispositions when a governing TODO is supplied. |
 | `tools/subagent_review_merge.py` | python | Merge structured no-context subagent review results into a derived summary packet for TODO/gate resolution. |
 | `tools/todo_authority_guard.py` | python | Validate tactical TODO authority/process evidence before implementation or delivery claims, blocking missing approval records, missing touched-surface rule ingestion, missing delivery-gate rows under delivery claims, unresolved P1/P2 routing, and promotion findings that require split/renewed approval without a reference. |
 | `tools/todo_closeout_guard.py` | python | Validate delivered tactical TODO closeout disposition so `active/` TODOs cannot remain open after delivery, commit/push, or lane movement without a real active reason. |

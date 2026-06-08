@@ -38,10 +38,33 @@ cat > "$ACTIVE/missing-disposition.md" <<'TODO'
 - **Current delivery stage:** `Local-Implemented`
 - **Qualifiers:** `none`
 - **Next exact step:** Move this TODO to completed after validation.
+
+## Active Work State
+- **Work state:** `review`
+- **Why this state now:** Local implementation is complete and only closeout remains.
+- **Exit condition:** The TODO is moved to completed.
 TODO
 
 assert_no_go "$ACTIVE/missing-disposition.md"
 grep -q "CLOSEOUT-DISPOSITION-MISSING" "$OUTPUT_FILE"
+
+cat > "$ACTIVE/missing-active-work-state.md" <<'TODO'
+# TODO: Missing Active Work State
+
+## Delivery Status Canon
+- **Current delivery stage:** `Local-Implemented`
+- **Qualifiers:** `none`
+- **Next exact step:** Move this TODO to completed after validation.
+
+## TODO Closeout Disposition
+- **Disposition:** `move-completed`
+- **Disposition reason:** Local-only maintenance is complete after validation and commit/push.
+- **Post-commit/push status:** `pending`
+- **Next path/status action:** Move this TODO to `foundation_documentation/todos/completed/` after push.
+TODO
+
+assert_no_go "$ACTIVE/missing-active-work-state.md"
+grep -q "ACTIVE-WORK-STATE-MISSING" "$OUTPUT_FILE"
 
 cat > "$ACTIVE/move-completed-pending.md" <<'TODO'
 # TODO: Move Completed Pending
@@ -50,6 +73,11 @@ cat > "$ACTIVE/move-completed-pending.md" <<'TODO'
 - **Current delivery stage:** `Local-Implemented`
 - **Qualifiers:** `none`
 - **Next exact step:** Commit and push this implementation package.
+
+## Active Work State
+- **Work state:** `review`
+- **Why this state now:** Local implementation is complete and awaits the file move.
+- **Exit condition:** Commit/push completes and the TODO moves to completed.
 
 ## TODO Closeout Disposition
 - **Disposition:** `move-completed`
@@ -68,6 +96,11 @@ cat > "$ACTIVE/move-completed-complete.md" <<'TODO'
 - **Qualifiers:** `none`
 - **Next exact step:** Move this TODO to completed.
 
+## Active Work State
+- **Work state:** `review`
+- **Why this state now:** Local implementation is complete and only file movement remains.
+- **Exit condition:** The TODO is moved to completed.
+
 ## TODO Closeout Disposition
 - **Disposition:** `move-completed`
 - **Disposition reason:** Local-only maintenance is complete.
@@ -85,6 +118,11 @@ cat > "$ACTIVE/keep-active-stale.md" <<'TODO'
 - **Current delivery stage:** `Local-Implemented`
 - **Qualifiers:** `none`
 - **Next exact step:** Present the next pending validation point to the user.
+
+## Active Work State
+- **Work state:** `review`
+- **Why this state now:** The TODO is waiting on a real review step.
+- **Exit condition:** The remaining validation completes.
 
 ## TODO Closeout Disposition
 - **Disposition:** `keep-active`
@@ -105,6 +143,11 @@ cat > "$ACTIVE/keep-active-promotion.md" <<'TODO'
 - **Qualifiers:** `none`
 - **Next exact step:** Continue stage promotion through the github-stage-promotion-orchestrator.
 
+## Active Work State
+- **Work state:** `review`
+- **Why this state now:** Local implementation is complete and only promotion follow-through remains.
+- **Exit condition:** The promotion lane threshold is met.
+
 ## TODO Closeout Disposition
 - **Disposition:** `keep-active`
 - **Disposition reason:** Authorized promotion follow-through remains open.
@@ -121,6 +164,11 @@ cat > "$ACTIVE/blocked.md" <<'TODO'
 - **Current delivery stage:** `Local-Implemented`
 - **Qualifiers:** `Blocked`
 - **Next exact step:** Await user approval for the external dependency.
+
+## Active Work State
+- **Work state:** `blocked`
+- **Why this state now:** External dependency is unavailable.
+- **Exit condition:** The dependency becomes available and the TODO can resume.
 
 ## TODO Closeout Disposition
 - **Disposition:** `blocked`
@@ -141,7 +189,7 @@ with open(sys.argv[1], encoding="utf-8") as handle:
     data = json.load(handle)
 
 assert data["rule_id"] == "paced.todo.closeout-disposition"
-assert data["todo_count"] == 6
+assert data["todo_count"] == 7
 assert data["overall_outcome"] == "no-go"
 assert any(item["code"] == "CLOSEOUT-DISPOSITION-MISSING" for item in data["violations"])
 PY

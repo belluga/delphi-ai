@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>
+  ./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation|diagnostic>
 
 Runs the canonical local web navigation runner only after reconcile-branch,
 runtime bind-mount, and navigation-env preflight succeeds on the principal
@@ -182,9 +182,9 @@ fi
 
 SUITE="$1"
 case "$SUITE" in
-  readonly|mutation) ;;
+  readonly|mutation|diagnostic) ;;
   *)
-    echo "ERROR: unsupported suite '$SUITE'. Expected readonly or mutation." >&2
+    echo "ERROR: unsupported suite '$SUITE'. Expected readonly, mutation, or diagnostic." >&2
     usage >&2
     exit 1
     ;;
@@ -196,7 +196,7 @@ append_words "${NAV_RECONCILE_READONLY_REQUIRED_ENV:-${NAV_REQUIRED_READONLY_ENV
 append_words "${NAV_RECONCILE_MUTATION_REQUIRED_ENV:-${NAV_REQUIRED_MUTATION_ENV:-NAV_ADMIN_EMAIL NAV_ADMIN_PASSWORD}}" MUTATION_ENV_VARS
 
 REQUIRED_ENV_VARS=("${READONLY_ENV_VARS[@]}")
-if [[ "$SUITE" == "mutation" ]]; then
+if [[ "$SUITE" == "mutation" || "$SUITE" == "diagnostic" ]]; then
   REQUIRED_ENV_VARS+=("${MUTATION_ENV_VARS[@]}")
 fi
 
@@ -274,5 +274,4 @@ else
   echo "INFO: runtime bind mounts -> no mount checks configured; branch/env preflight only"
 fi
 
-export NAV_DEPLOY_LANE="${NAV_DEPLOY_LANE:-local}"
 "$RUNNER" "$SUITE"

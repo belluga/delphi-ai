@@ -20,7 +20,10 @@ Use this skill only when the user explicitly requests promotion from `stage` to 
 - Accept only green checks. No warnings-as-success shortcuts.
 - Required promotion gates with `flaky` status are not green. Pass-after-retry does not qualify as success.
 - Review Copilot comments even when CI is green. If a comment is pertinent, treat it as blocking until resolved or explicitly rejected with technical rationale.
+- Before the first `stage -> main` PR in a lane, run `copilot-pr-review` on each authoritative source repo/branch represented by the promotion once preflight is `go`, passing the governing TODO so prior adjudicated findings are carried forward. The mandatory order is internal no-context subagents first, external Claude/Copilot-sim second. When the lane wants to preserve the promotable branch history, use a derived remediation branch for the iterative review-loop commits and replay only the accepted net effect onto the authoritative source branch before opening the PR. Treat the review as evidence, not patch authority.
+- Every Copilot-style finding must be cross-checked against the governing TODO's approved objective, decision log, accepted behavior changes, non-goals, and validation matrix before it is classified as defect or noise.
 - Every blocking review finding must pass a scrutiny gate before code changes are chosen: classify it as a real defect, an intentional/by-design behavior, an upstream-lane drift issue, or non-actionable noise. A bot finding is evidence to inspect, not authority to patch blindly.
+- If the governing TODO already records the same locus/behavior as resolved, challenged, or deferred, do not reopen it just because a no-context reviewer repeated it. Reopen only when the current lane materially changed that locus/behavior or the prior rationale is objectively insufficient.
 - When a blocking finding is ambiguous, architectural, cross-module, or otherwise high-blast-radius, require an independent no-context critique via `wf-docker-independent-critique-method` before accepting or rejecting the finding.
 - Always pursue root cause. Never patch only to satisfy CI.
 - If a `stage -> main` finding requires product-code changes, return to the authoritative source branch and replay the normal promotion chain. For Flutter/Laravel this means the originating feature branch, then `feature -> dev -> stage`, and only after that may `stage -> main` resume. Never patch directly on `stage` and never create an ad hoc `dev`-derived blocker branch just to unblock `main`.
@@ -43,6 +46,7 @@ Classify the request before acting:
   - `bash delphi-ai/tools/github_main_promotion_preflight.sh --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>]`
   - Treat any `Overall outcome: no-go` result as a hard stop. Follow the emitted `resolution_prompt` before creating or reopening promotion PRs.
   - The preflight validates: stage health per repo (contains dev tip, green push runs), promotable diff beyond main, and Docker submodule alignment.
+- After main-promotion preflight returns `Overall outcome: go` and before creating the first PR, run `copilot-pr-review` against each authoritative source repo/branch represented in the lane, passing the governing TODO so prior dispositions are carried forward. First exhaust the internal no-context subagent sweep until locally clean. If the lane is preserving promotable history, do the iterative review-loop commits on a derived remediation branch, then replay the accepted net effect onto the authoritative source branch and rebuild the packet there. Only then run the Claude/Copilot-sim confirmation on the authoritative source branch. Loop until likely blockers are resolved or explicitly rejected as by-design after TODO-decision review.
 - Run `git status --short` in each touched repo for evidence collection.
 - Check open PRs before creating new ones.
 - For every promotion PR to `main`, include `- Expected SHA: <40-char-sha>` in the body if the repo enforces it.
@@ -52,17 +56,20 @@ Classify the request before acting:
 - **Preflight (before first PR):** Use `bash delphi-ai/tools/github_main_promotion_preflight.sh --scenario <scenario> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>]` as the first gate. The helper must return `Overall outcome: go` before the lane opens its first PR. Treat it as deterministic `GO|NO-GO` lane-health gating that implements TEACH at runtime: objective remote-repo checks trigger it, exit code `2` enforces the stop, `context` carries per-repo evidence, and `resolution_prompt` is the exact next-step guidance to follow before retrying.
 - **Snapshot (evidence collection):** Use `bash delphi-ai/tools/github_stage_promotion_snapshot.sh [--repo <owner/name>] [--pr <number>] [--branch <name>]` to capture current local status, candidate PR, and check snapshot before promotion decisions. Treat as evidence collection only; main-promotion gating, comment triage, and merge decisions remain manual in this skill.
 - **Completion guard (after all merges):** Before claiming the lane is finished, use `bash delphi-ai/tools/github_promotion_completion_guard.sh --lane main --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>] [--web-pr <number>]` and require `Overall outcome: go`. Treat as deterministic end-of-lane TEACH enforcement for Docker finalization and Flutter web follow-through.
+- **Copilot-style review preflight:** Use `copilot-pr-review` with `wf-docker-subagent-orchestration-method` and `claude-cli-calling` support immediately after preflight readiness and before the first PR; the internal no-context subagent sweep is mandatory before the Claude pass, and this orchestrator compares each finding against the governing TODO contract before accepting it.
 
 ## Finding Scrutiny Gate
 For any blocking PR/review finding, perform this gate before deciding to patch:
 1. Freeze the evidence: exact finding text, affected repo/branch/PR, relevant diff, and the intended design/behavior.
-2. Classify the finding as `confirmed defect | by-design intent | upstream-lane drift | non-actionable`.
-3. If the classification is not obviously objective, or the fix would touch architecture/ownership/flow decisions, run `wf-docker-independent-critique-method` with a bounded package before implementation.
-4. Record the resolution as `integrate | challenge with rationale | defer/block as upstream`.
-5. If implementation is required, return to the authoritative source branch before replaying promotion:
+2. Compare it against the governing TODO's approved objective, explicit decisions, accepted behavior changes, non-goals, and validation matrix.
+3. Classify the finding as `confirmed defect | by-design intent | upstream-lane drift | non-actionable`.
+4. If the same finding already exists in the TODO carry-forward packet and the lane did not materially change that locus/behavior, preserve the prior disposition instead of patching.
+5. If the classification is not obviously objective, or the fix would touch architecture/ownership/flow decisions, run `wf-docker-independent-critique-method` with a bounded package before implementation.
+6. Record the resolution as `integrate | challenge with rationale | defer/block as upstream`.
+7. If implementation is required, return to the authoritative source branch before replaying promotion:
    - Flutter/Laravel: fix on the originating feature branch, replay `feature -> dev -> stage`, then return to the pending `stage -> main` promotion.
    - Docker-specific blockers: fix on the authoritative Docker source branch/lane, replay `-> dev -> stage`, then reopen `stage -> main`.
-6. Never patch directly on `stage` or `main` just because the finding appeared there, unless that branch is already the authoritative source lane for the scenario.
+8. Never patch directly on `stage` or `main` just because the finding appeared there, unless that branch is already the authoritative source lane for the scenario.
 
 ## Repo Promotion Rules
 

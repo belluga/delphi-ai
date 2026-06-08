@@ -29,6 +29,11 @@ LEGACY_GATE_MAP: dict[str, dict] = {
         "decision_label": "Final review decision",
         "status_label": "Final review status",
     },
+    "cutover_integrity_audit": {
+        "heading": "## Independent Cutover Integrity Audit Gate",
+        "decision_label": "Cutover audit decision",
+        "status_label": "Cutover audit status",
+    },
 }
 
 # Regex to detect dynamic gate sections: "## Gate: <gate_id>"
@@ -213,6 +218,10 @@ def build_bundle(todo_path: Path) -> dict:
     lines = read_lines(todo_path)
     raw_qualifiers = extract_field(lines, "Qualifiers")
     qualifiers, invalid_qualifiers = parse_qualifiers(raw_qualifiers)
+    active_work_state_section = "## Active Work State"
+    work_state = extract_field_in_section(lines, active_work_state_section, "Work state")
+    work_state_reason = extract_field_in_section(lines, active_work_state_section, "Why this state now")
+    work_state_exit_condition = extract_field_in_section(lines, active_work_state_section, "Exit condition")
 
     blocker = extract_field_in_section(lines, "## Blocker Notes", "Blocker")
     why_blocked_now = extract_field_in_section(lines, "## Blocker Notes", "Why blocked now")
@@ -250,7 +259,7 @@ def build_bundle(todo_path: Path) -> dict:
     merged_gates = {**legacy_gates, **dynamic_gates}
 
     return {
-        "schema_version": "todo-validation-bundle-v2",
+        "schema_version": "todo-validation-bundle-v3",
         "todo_path": str(todo_path),
         "namespace": namespace,
         "artifact_type": infer_artifact_type(lines),
@@ -261,6 +270,12 @@ def build_bundle(todo_path: Path) -> dict:
             "qualifiers": qualifiers,
             "invalid_qualifiers": invalid_qualifiers,
             "next_exact_step": extract_field(lines, "Next exact step")
+        },
+        "active_work_state": {
+            "section_present": section_present(lines, active_work_state_section),
+            "work_state": work_state,
+            "why_this_state_now": work_state_reason,
+            "exit_condition": work_state_exit_condition,
         },
         "blocker_record": {
             "required": "Blocked" in qualifiers,

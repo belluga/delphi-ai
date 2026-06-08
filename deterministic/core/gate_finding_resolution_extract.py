@@ -24,6 +24,10 @@ REVIEW_CONFIG = {
         "heading": "## Independent No-Context Final Review Gate",
         "status_label": "Final review status",
     },
+    "cutover_integrity_audit": {
+        "heading": "## Independent Cutover Integrity Audit Gate",
+        "status_label": "Cutover audit status",
+    },
 }
 
 ALLOWED_RESOLUTIONS = {"Integrated", "Challenged", "Deferred"}

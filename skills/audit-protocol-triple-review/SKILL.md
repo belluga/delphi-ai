@@ -1,16 +1,17 @@
 ---
 name: audit-protocol-triple-review
-description: "Run a restartable three-auditor no-context audit loop (Elegance, Performance, Test Quality) with deterministic round state, dispatch packets, result validation, and clean-vs-resolution-vs-adjudication classification."
+description: "Run a restartable no-context audit loop with three baseline reviewers (Elegance, Performance, Test Quality) plus a conditional cutover-integrity reviewer for canonical-cutover and compatibility-shim scrutiny."
 ---
 
-# Triple Audit Protocol (Elegance, Performance, Test Quality)
+# Triple Audit Protocol (Baseline Three + Conditional Cutover Integrity)
 
 ## Purpose
-Provide a repeatable, restartable no-context audit loop with three specialized reviewers. The loop is a release gate for blocking risk, not an endless search for every possible improvement. It continues until all blocking findings are resolved or remaining findings are explicitly accepted as non-blocking debt. Contradictory findings are cross-examined and adjudicated by Delphi; the deterministic support only manages packet/state mechanics.
+Provide a repeatable, restartable no-context audit loop with three baseline specialized reviewers plus a conditional `cutover_integrity_audit` reviewer when the bounded package involves canonical cutover, legacy-path retirement, backward-compatibility exceptions, or suspected workaround architecture. The loop is a release gate for blocking risk, not an endless search for every possible improvement. It continues until all blocking findings are resolved or remaining findings are explicitly accepted as non-blocking debt. Contradictory findings are cross-examined and adjudicated by Delphi; the deterministic support only manages packet/state mechanics.
 
 ## When to Use
 - The user requests a structured external audit loop with three specialized reviewers.
 - A delivery gate requires elegance, performance, and test-quality checks before finalization.
+- The package includes hard-cut/cutover/compatibility semantics where a dedicated reviewer must verify that the chosen path is not a disguised shim.
 - In a multi-TODO orchestration run: trigger one independent audit per TODO delivery. Complete the current audit (reach `clean` or record `accepted-debt`) before advancing to the next TODO in the sequence.
 
 ## Orchestration Cadence
@@ -31,6 +32,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
   - `blocking`: must be fixed before promotion or next gate closure.
   - `accepted-debt`: valid but non-blocking; record rationale, owner/surface, and next action.
   - `out-of-scope`: useful observation outside the frozen package/gate; do not let it expand the current round.
+- `cutover_integrity_audit` findings must also be checked against the governing TODO's explicit compatibility mandates or temporary exceptions. A reviewer must not block a compatibility bridge that the TODO explicitly authorizes for a bounded scope with a removal/closeout condition, but should still challenge unclear scope, missing removal criteria, or accidental spread beyond that authorization.
 - Do not treat marginal improvements as release blockers. A reviewer may report them, but Delphi must not keep opening rounds for them unless they expose a concrete release risk.
 - For follow-up rounds after fixes, prefer delta-only audit packages. Re-auditing the full diff is valid only when the fix materially changed architecture, data flow, performance-critical access paths, or test coverage.
 
@@ -39,6 +41,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
 - **Elegance blockers:** structural remnants that contradict the implemented canonical direction and create real drift, duplicate old/new paths likely to diverge, package-first violations in the changed surface, decentralized mutation or query logic that bypasses the canonical domain/service path, or architecture changes that also carry correctness/performance/security risk. Pure preference refactors, naming polish, smaller decoupling opportunities, and architectural beautification without behavior/performance/security impact are non-blocking debt.
 - **Test-quality blockers:** missing or invalid evidence for final user-visible behavior, CRUD/mutation flows, backend contract semantics, required navigation/integration gates, real-backend coverage where required, CI gates that cannot run, mocks/fallbacks that hide production behavior, or assertions that cannot catch the targeted regression. Test organization or readability suggestions are non-blocking when required behavior coverage is already valid.
 - **Consumer-surface blockers:** producer surfaces delivered with only backend evidence when a frontend/admin/operator/integration consumer is required; missing `Frontend / Consumer Matrix` for a triggered package; or a matrix row that claims no consumer without an explicit approved backend-only/internal-only/external-only waiver.
+- **Cutover-integrity blockers:** pseudo-canonical `*_effective` fields, silent fallback mirrors, dual-read/dual-write bridges, compatibility shims, or query-time stitching that act as the final architecture without explicit TODO authorization and bounded removal criteria.
 
 ## Procedure
 1. **Freeze a bounded package**
@@ -53,17 +56,19 @@ When this skill is invoked as part of a multi-TODO orchestration run:
      python3 delphi-ai/skills/audit-protocol-triple-review/scripts/triple_audit_session.py start \
        --package <bounded_package_path> \
        [--todo <todo_path>] \
+       [--extra-lane cutover-integrity] \
        [--run-root <explicit_run_root>]
      ```
    - The runner creates session state, dispatch packets, expected result paths, and a progress markdown file.
    - The runner generates an effective `round-package.md` for each round. That package includes the current bounded package plus prior recorded `resolution.md` artifacts, so no-context reviewers receive prior decisions without relying on chat memory.
-3. **Spawn three no-context reviewers**
+3. **Spawn the baseline no-context reviewers**
    - Use the generated round dispatch markdown files only:
      - `dispatch/elegance.dispatch.md`
      - `dispatch/performance.dispatch.md`
      - `dispatch/test-quality.dispatch.md`
    - One reviewer per lane, with no extra context.
    - Ask each reviewer to return JSON compatible with `schemas/subagent_review_result.schema.json`.
+   - When the TODO or bounded package includes canonical cutover, compatibility retirement, explicit compatibility exceptions, legacy-path replacement, or suspected shim architecture, also run a fourth no-context reviewer using `review_kind=cutover_integrity_audit`. This reviewer must receive the same bounded package and the governing TODO path so it can cross-check whether a compatibility construct is accidental drift or an explicitly approved temporary exception.
 4. **Record reviewer results deterministically**
    - Save each returned JSON to a temp file, then validate/copy it into the session with:
      ```bash
@@ -79,7 +84,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
        --session <session_json_path>
      ```
    - The runner produces lane merges plus a round summary and classifies the round as:
-     - `clean`: all three result files are present and all three lanes have zero findings.
+     - `clean`: all required result files are present and every required lane has zero findings.
      - `needs_resolution`: findings exist but no clear contradiction packet is required.
      - `needs_adjudication`: reviewer outputs conflict materially and Delphi must cross-examine/adjudicate.
 6. **Resolve findings**
@@ -116,6 +121,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
 8. **Close**
    - Record the final clean round in the governing TODO or delivery gate evidence.
    - Treat either zero findings or zero unresolved blocking findings with recorded accepted debt as the objective clean condition.
+   - When `cutover_integrity_audit` was required, do not claim clean/close until its findings are resolved, accepted as explicit bounded debt, or challenged by citation to the governing TODO's approved compatibility mandate.
 
 ## Deterministic Support
 - Session runner:
@@ -127,6 +133,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
 ## Notes
 - The deterministic support is for session state, packet generation, result validation, and merge classification only.
 - Delphi still owns package bounding, contradiction adjudication, and whether a finding is truly resolved.
+- The session runner supports optional extra lanes through `--extra-lane`, including `cutover-integrity`.
 - A non-clean round without a recorded `resolution.md` is incomplete. Do not treat it as ready for the next audit round.
 - A `blocked` resolution is a stop sign, not a degraded pass.
 - `accepted-debt` is allowed only when the remaining issue is explicitly non-blocking with rationale, owner, and next action; it must be included in the next package so auditors do not treat it as accidental omission.

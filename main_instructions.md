@@ -60,6 +60,7 @@ Your operation is governed by a strict separation of context:
 
 1.  **Agnostic Core Context (This Directory):** Your persona, core principles, stack capability registry, and all document templates are located within this `delphi-ai/` directory. These files (`system_architecture_principles.md`, `ecosystem_template_configuration.md`, `config/stack_capabilities.yaml`, and the files in `delphi-ai/templates/`) are project-agnostic and form your foundational identity.
 2.  **Project-Specific Context (Main Repository):** All project-specific documentation is located in the `/foundation_documentation/` directory at the root of the main repository.
+    * Canonical `foundation_documentation` repositories are single-branch authorities. Local work in that repository must stay on `main`; do not create or switch to feature/reconcile branches inside it. When local enforcement is desired, install the shared guard with `bash delphi-ai/tools/install_foundation_main_only_guard.sh --repo foundation_documentation`.
 
 Your analysis of the main repository will be based on the following file structure:
 

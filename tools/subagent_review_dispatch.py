@@ -9,6 +9,8 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from finding_carry_forward_extract import build_carry_forward_packet
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
@@ -102,6 +104,29 @@ CONFIG = {
             "findings[]"
         ],
     },
+    "cutover_integrity_audit": {
+        "axes": ["adherence", "structural_soundness", "operational_fit", "performance", "elegance"],
+        "focus": [
+            "Determine whether the chosen path is truly canonical or just a disguised workaround/bridge.",
+            "Cross-check the governing TODO when provided: if it explicitly authorizes a compatibility shim, fallback bridge, or temporary dual-path, do not block the existence alone; instead assess whether the scope, rationale, and removal/closeout condition are explicit and coherent.",
+            "Escalate as blocking when pseudo-canonical fields, silent fallback mirrors, dual-read/dual-write bridges, or query-time stitching are left as the effective final architecture without explicit bounded authorization.",
+            "Treat style disagreement as non-blocking. The target is workaround architecture disguised as completion, not naming or formatting polish.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
+        ],
+        "result_fields": [
+            "overall_assessment",
+            "recommended_path",
+            "performance_position",
+            "elegance_position",
+            "structural_soundness_position",
+            "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
+            "findings[]"
+        ],
+    },
 }
 
 
@@ -144,7 +169,30 @@ def render_markdown(payload: dict) -> str:
     if payload.get("goal"):
         lines.extend(["", "## Goal", payload["goal"]])
     if payload.get("todo_path"):
-        lines.extend(["", "## Related TODO", f"`{payload['todo_path']}`"])
+        lines.extend(
+            [
+                "",
+                "## Related TODO",
+                f"`{payload['todo_path']}`",
+                "",
+                "Reviewers must cross-check findings against the governing TODO's explicit decisions, approved exceptions, compatibility mandates, and non-goals before classifying something as blocking drift.",
+            ]
+        )
+    if payload.get("historical_disposition_policy"):
+        lines.extend(["", "## Historical Finding Carry-Forward", "Previously adjudicated findings are historical context, not automatic reopening triggers."])
+        for policy_line in payload["historical_disposition_policy"]:
+            lines.append(f"- {policy_line}")
+    if payload.get("historical_dispositions"):
+        lines.extend(["", "### Recorded Dispositions"])
+        for entry in payload["historical_dispositions"]:
+            lines.extend(
+                [
+                    f"- `{entry['source_kind']} / {entry['finding_id']}` -> `{entry['carry_forward_class']}`",
+                    f"  - Disposition: {entry['source_disposition']}",
+                    f"  - Summary: {entry['summary']}",
+                    f"  - Reference: {entry['reference']}",
+                ]
+            )
     lines.extend(
         [
             "",
@@ -186,6 +234,9 @@ def main() -> int:
     }
     if args.todo_path:
         payload["todo_path"] = args.todo_path
+        historical = build_carry_forward_packet(Path(args.todo_path).resolve(), Path.cwd())
+        payload["historical_disposition_policy"] = historical["policy_lines"]
+        payload["historical_dispositions"] = historical["entries"]
     if args.goal:
         payload["goal"] = args.goal
 

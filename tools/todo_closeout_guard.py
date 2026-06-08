@@ -44,12 +44,14 @@ ACTIVE_PARTS = ("foundation_documentation", "todos", "active")
 PROMOTION_PARTS = ("foundation_documentation", "todos", "promotion_lane")
 COMPLETED_PARTS = ("foundation_documentation", "todos", "completed")
 DISPOSITION_SECTION = "TODO Closeout Disposition"
+ACTIVE_WORK_STATE_SECTION = "Active Work State"
 VALID_DISPOSITIONS = {
     "keep-active",
     "move-promotion-lane",
     "move-completed",
     "blocked",
 }
+VALID_ACTIVE_WORK_STATES = {"implementation", "review", "blocked"}
 POST_COMMIT_COMPLETE = {
     "complete",
     "completed",
@@ -103,6 +105,13 @@ def canonical_disposition(value: str | None) -> str:
         return "move-promotion-lane"
     if normalized == "completed":
         return "move-completed"
+    return normalized
+
+
+def canonical_work_state(value: str | None) -> str:
+    normalized = normalize(value).replace("_", "-")
+    if normalized in {"n/a once moved out of active", "n/a-once-moved-out-of-active"}:
+        return "n/a-once-moved-out-of-active"
     return normalized
 
 
@@ -257,9 +266,13 @@ def load_todo(todo_path: Path) -> dict[str, Any]:
     sections = extract_sections(lines)
     status_lines = find_section(sections, "Delivery Status Canon")
     closeout_lines = find_section(sections, DISPOSITION_SECTION)
+    active_work_lines = find_section(sections, ACTIVE_WORK_STATE_SECTION)
     stage = first_field(status_lines, ("Current delivery stage",))
     qualifiers = first_field(status_lines, ("Qualifiers",))
     next_step = first_field(status_lines, ("Next exact step",))
+    work_state = canonical_work_state(first_field(active_work_lines, ("Work state",)))
+    work_state_reason = first_field(active_work_lines, ("Why this state now",))
+    work_state_exit_condition = first_field(active_work_lines, ("Exit condition",))
     disposition = canonical_disposition(first_field(closeout_lines, ("Disposition", "Closeout disposition")))
     reason = first_field(closeout_lines, ("Disposition reason", "Reason"))
     post_commit_status = first_field(closeout_lines, ("Post-commit/push status", "Post commit/push status"))
@@ -271,6 +284,10 @@ def load_todo(todo_path: Path) -> dict[str, Any]:
         "stage": stage,
         "qualifiers": qualifiers,
         "next_step": next_step,
+        "active_work_state_section_present": bool(active_work_lines),
+        "work_state": work_state,
+        "work_state_reason": work_state_reason,
+        "work_state_exit_condition": work_state_exit_condition,
         "closeout_section_present": bool(closeout_lines),
         "disposition": disposition,
         "disposition_reason": reason,
@@ -288,6 +305,7 @@ def validate_todo(todo: dict[str, Any], git: dict[str, Any]) -> tuple[list[dict[
         "current_delivery_stage": todo["stage"],
         "qualifiers": todo["qualifiers"],
         "next_exact_step": todo["next_step"],
+        "work_state": todo["work_state"] or None,
         "delivery_claim": todo["delivery_claim"],
         "closeout_section_present": todo["closeout_section_present"],
         "disposition": todo["disposition"] or None,
@@ -296,10 +314,64 @@ def validate_todo(todo: dict[str, Any], git: dict[str, Any]) -> tuple[list[dict[
 
     if todo["path_state"] != "active" or not todo["delivery_claim"]:
         return violations, context
-
     qualifiers = normalize(todo["qualifiers"])
-    if "blocked" in qualifiers and not is_missing(todo["next_step"]):
+
+    if not todo["active_work_state_section_present"]:
+        violations.append(
+            build_violation(
+                "ACTIVE-WORK-STATE-MISSING",
+                "Delivered active TODO is missing the `Active Work State` section.",
+                "Add `## Active Work State` with work state, why this state now, and exit condition while the TODO remains in active/.",
+                ACTIVE_WORK_STATE_SECTION,
+            )
+        )
         return violations, context
+
+    if todo["work_state"] not in VALID_ACTIVE_WORK_STATES:
+        violations.append(
+            build_violation(
+                "ACTIVE-WORK-STATE-INVALID",
+                f"Active work state is missing or invalid: {todo['work_state'] or 'missing'}.",
+                "Use one of: implementation, review, blocked.",
+                ACTIVE_WORK_STATE_SECTION,
+            )
+        )
+    if is_missing(todo["work_state_reason"]):
+        violations.append(
+            build_violation(
+                "ACTIVE-WORK-STATE-REASON-MISSING",
+                "Active work state is missing `Why this state now`.",
+                "Explain why the TODO still belongs in active/.",
+                ACTIVE_WORK_STATE_SECTION,
+            )
+        )
+    if is_missing(todo["work_state_exit_condition"]):
+        violations.append(
+            build_violation(
+                "ACTIVE-WORK-STATE-EXIT-MISSING",
+                "Active work state is missing `Exit condition`.",
+                "Record the exact event that moves the TODO to the next state or lane.",
+                ACTIVE_WORK_STATE_SECTION,
+            )
+        )
+    if todo["work_state"] == "blocked" and "blocked" not in qualifiers:
+        violations.append(
+            build_violation(
+                "ACTIVE-WORK-STATE-BLOCKED-QUALIFIER-MISMATCH",
+                "Work state is blocked but Delivery Status Canon qualifiers do not include Blocked.",
+                "If work state is blocked, include `Blocked` in `Qualifiers` and keep blocker notes current.",
+                ACTIVE_WORK_STATE_SECTION,
+            )
+        )
+    if "blocked" in qualifiers and todo["work_state"] != "blocked":
+        violations.append(
+            build_violation(
+                "ACTIVE-WORK-STATE-BLOCKED-STATE-MISMATCH",
+                "Delivery Status Canon qualifiers include Blocked but work state is not blocked.",
+                "Set `Work state` to `blocked` whenever the TODO is blocked in active/.",
+                ACTIVE_WORK_STATE_SECTION,
+            )
+        )
 
     if not todo["closeout_section_present"]:
         violations.append(
@@ -367,7 +439,25 @@ def validate_todo(todo: dict[str, Any], git: dict[str, Any]) -> tuple[list[dict[
                     "Delivery Status Canon",
                 )
             )
+        if todo["work_state"] != "blocked":
+            violations.append(
+                build_violation(
+                    "ACTIVE-WORK-STATE-BLOCKED-DISPOSITION-MISMATCH",
+                    "Disposition is blocked but work state is not blocked.",
+                    "Set `Work state` to `blocked` when closeout disposition is blocked.",
+                    ACTIVE_WORK_STATE_SECTION,
+                )
+            )
     elif disposition in {"move-completed", "move-promotion-lane"}:
+        if todo["work_state"] != "review":
+            violations.append(
+                build_violation(
+                    "ACTIVE-WORK-STATE-REVIEW-REQUIRED",
+                    f"Disposition {disposition} requires active work state `review` while the TODO remains in active/.",
+                    "Set `Work state` to `review` once local implementation is complete and only review/promotion follow-through remains.",
+                    ACTIVE_WORK_STATE_SECTION,
+                )
+            )
         if is_missing(todo["next_path_action"]):
             violations.append(
                 build_violation(

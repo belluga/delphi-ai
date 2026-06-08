@@ -29,6 +29,7 @@ SATISFYING_GATE_STATUSES = {"no_material_findings", "findings_integrated", "waiv
 ALLOWED_GATE_DECISIONS = {"required", "recommended", "not_needed"}
 ALLOWED_GATE_STATUSES = {"not_run", "running", "no_material_findings", "findings_integrated", "blocked", "waived"}
 ALLOWED_DELIVERY_STAGES = {"Pending", "Local-Implemented", "Lane-Promoted", "Production-Ready"}
+ALLOWED_ACTIVE_WORK_STATES = {"implementation", "review", "blocked"}
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "todo_validation_bundle.schema.json"
 
 
@@ -76,6 +77,7 @@ def validate_bundle(bundle: dict) -> list[dict]:
 
     todo_path = canonicalize_todo_path(str(Path(bundle["todo_path"]).resolve()), Path.cwd())
     delivery = bundle["delivery_status"]
+    active_work_state = bundle["active_work_state"]
     blocker = bundle["blocker_record"]
     provisional = bundle["provisional_record"]
     artifact_state = bundle["artifact_state"]
@@ -96,6 +98,62 @@ def validate_bundle(bundle: dict) -> list[dict]:
 
     if is_missing(delivery["next_exact_step"]):
         add_issue(issues, "error", "TODO-NEXT-STEP-MISSING", "Next exact step is required.", "## Delivery Status Canon -> Next exact step", todo_path)
+
+    if artifact_state == "active":
+        if not active_work_state["section_present"]:
+            add_issue(
+                issues,
+                "error",
+                "TODO-ACTIVE-WORK-STATE-MISSING",
+                "Active TODO is missing the `Active Work State` section.",
+                "## Active Work State",
+                todo_path,
+            )
+        if active_work_state["work_state"] not in ALLOWED_ACTIVE_WORK_STATES:
+            add_issue(
+                issues,
+                "error",
+                "TODO-ACTIVE-WORK-STATE-INVALID",
+                "Active TODO work state is missing or invalid.",
+                "## Active Work State -> Work state",
+                todo_path,
+            )
+        if is_missing(active_work_state["why_this_state_now"]):
+            add_issue(
+                issues,
+                "error",
+                "TODO-ACTIVE-WORK-STATE-REASON-MISSING",
+                "Active TODO must explain why it remains in `active/`.",
+                "## Active Work State -> Why this state now",
+                todo_path,
+            )
+        if is_missing(active_work_state["exit_condition"]):
+            add_issue(
+                issues,
+                "error",
+                "TODO-ACTIVE-WORK-EXIT-CONDITION-MISSING",
+                "Active TODO must define the exact exit condition.",
+                "## Active Work State -> Exit condition",
+                todo_path,
+            )
+        if active_work_state["work_state"] == "blocked" and "Blocked" not in delivery["qualifiers"]:
+            add_issue(
+                issues,
+                "error",
+                "TODO-ACTIVE-WORK-BLOCKED-QUALIFIER-MISSING",
+                "Work state is `blocked` but delivery qualifiers do not include `Blocked`.",
+                "## Delivery Status Canon -> Qualifiers",
+                todo_path,
+            )
+        if "Blocked" in delivery["qualifiers"] and active_work_state["work_state"] != "blocked":
+            add_issue(
+                issues,
+                "error",
+                "TODO-ACTIVE-WORK-BLOCKED-STATE-MISSING",
+                "Delivery qualifiers include `Blocked` but work state is not `blocked`.",
+                "## Active Work State -> Work state",
+                todo_path,
+            )
 
     if blocker["required"]:
         if not blocker["present"]:

@@ -58,11 +58,14 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 
 ## Outputs
 - One governing TODO with clear lane, scope, decisions, plan, approval, execution notes, delivery evidence, and closeout status.
+- One explicit `Active Work State` whenever the governing TODO still lives under `foundation_documentation/todos/active/`.
 - Supporting feature brief only when needed.
 - Canonical module/doc updates when stable truth changed.
+- When package-level orchestration or pre-promotion review loops are in scope, the authoritative package-stage ledger lives in the orchestration execution plan, not in a parallel version-status file. Per-finding dispositions remain authoritative in the governing TODOs.
 
 ## Validation
 - The TODO records which phase workflow governed each major transition.
+- Any TODO that remains in `active/` records `Active Work State = implementation|review|blocked` plus an exact exit condition.
 - No phase-specific requirements are left only in chat.
 - Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
 - Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.

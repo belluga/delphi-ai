@@ -61,6 +61,32 @@ Use this only when the implementation intentionally diverges from a governing TO
 - **Same-branch continuation rule:** continue on the orchestrator branch only while the work remains inside this approved plan and the checkpoint manifest records the next exact step. After promotion, supersession, or scope drift, start from the promoted target branch or a fresh/rebased orchestrator branch.
 - **Build artifact policy:** generated deploy bundles such as `web-app` are excluded unless the plan explicitly owns deploy-artifact promotion.
 
+## Pre-Promotion Review Loop Ledger
+Use this section when the package enters a Copilot-mimic / Claude / pre-promotion review loop. This is the package-stage ledger for the loop. Do not create a separate manual version-status file for the same purpose. Accepted/challenged/resolved findings remain authoritative in the governing TODOs and their carry-forward packets.
+
+- **Loop in scope?:** `<yes|no>`
+- **Authoritative source branch:** `<source branch intended for promotion>`
+- **Active remediation branch:** `<review/<slug>-copilot-mimic-YYYYMMDD>|n/a>`
+- **Current round:** `<round identifier>`
+- **Last clean internal round:** `<round identifier|none yet>`
+- **Open package blockers:** `<TODO ids / short reasons>`
+- **Historical finding authority:** `<governing TODO carry-forward packet / TODO-local dispositions>`
+- **Review-branch CI-equivalent gate:** `<full in-scope matrix must pass here before replay/consolidation>`
+- **Authoritative-source post-replay policy:** `<sanity-only on pure ff/conflict-free replay | full matrix rerun when replay was non-trivial>`
+- **Next exact step:** `<the single exact next action for a no-context resume>`
+
+### Review Coverage Board
+Use this table to make package coverage explicit and resume-safe. Every governing TODO in the package must appear here once the pre-promotion review loop starts.
+
+| TODO ID | Review Status (`not-reviewed|in-review|reopened-fixed|clean-no-reopen|blocked`) | Latest Evidence Round / Commit | Notes / Blocker |
+| --- | --- | --- | --- |
+| `<PLAN-A>` | `<not-reviewed>` | `<round-id|commit|n/a>` | `<short note>` |
+
+### Anti-Loop Exit Criteria
+- Stop the internal loop only when every governing TODO is either `clean-no-reopen` or has an explicit approved `blocked/waived` disposition.
+- Do not reopen a previously adjudicated finding unless the current diff materially changed the same locus/behavior or the prior rationale is objectively insufficient.
+- Do not replay the remediation branch onto the authoritative source branch before the review-branch CI-equivalent gate is green.
+
 ## Workstreams
 Derive workstreams from the Acceptance Traceability Matrix. A workstream may group related criteria, but it must not hide a specific required UI artifact, endpoint, schema change, test lane, or runtime journey.
 

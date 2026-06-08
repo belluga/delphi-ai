@@ -50,11 +50,16 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
    - Before implementation dispatch, create or update an orchestration execution plan from `delphi-ai/templates/orchestration_execution_plan_template.md` when the wave coordinates multiple TODOs, multiple workstreams, or a user-requested approval plan.
    - Save that plan in the downstream project at `foundation_documentation/artifacts/execution-plans/<short-slug>.md`.
    - Treat the plan as derived execution topology: governing TODOs retain `WHAT` and done-criteria authority, while the plan records `HOW` the orchestrator will sequence, parallelize, reconcile, and validate.
+   - When the package enters a Copilot-mimic / Claude / pre-promotion review loop, the same plan must also carry:
+     - a package-level pre-promotion review-loop ledger;
+     - a **Review Coverage Board** that classifies every governing TODO as `not-reviewed | in-review | reopened-fixed | clean-no-reopen | blocked` with the latest evidence round/commit;
+     - anti-loop exit criteria that state when the loop may stop instead of reopening the same findings indefinitely.
    - Treat execution waves as orchestrator-owned internal control checkpoints, not user feedback gates. After approval, advance between waves autonomously unless a mandatory user decision, scope change, TODO conflict, real blocker, or validation waiver is encountered.
    - Before presenting the plan as ready for approval or delivery, run `python3 delphi-ai/tools/orchestration_plan_completion_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md` and require `Overall outcome: go`.
    - If the plan file is used as execution-ready evidence after approval, rerun the guard with `--require-approved`.
    - Do not dispatch workers or create worktrees until the plan has an explicit approval state or the governing TODO approval already covers the exact same orchestration topology.
    - The plan must include a `CI-Equivalent Local Suite Matrix` naming every repo-owned CI suite/job that will run for the touched repositories, the exact local command that mirrors it, and who must execute it on the reconciliation state before delivery or promotion claims.
+   - If a derived remediation branch will be used for pre-promotion review history, the plan must make explicit that the full in-scope `CI-Equivalent Local Suite Matrix` passes on the remediation branch before replay/consolidation back onto the authoritative source branch.
    - Partition the work into bounded slices with clear ownership and minimal overlap.
    - Assign every implementation workstream to a worker/subagent in the execution ownership ledger. Do not list the orchestrator as implementation owner for a TODO slice.
    - For each worker-owned slice, name the exact analyzer/lint, targeted test, and applicable build/publish gates that the worker must run before checkpoint acceptance. For Flutter slices, include the official analyzer command and any plan-required `flutter test`, web build, Android build, package build, or generated-code validation that applies to the touched files.
@@ -106,6 +111,10 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
    - Analyzer/build failures in worker-owned files return to that worker by default; the orchestrator may fix them locally only when the fix is pure merge reconciliation or unavoidable integration glue.
    - Repeat the reconcile-and-validate loop until the consolidated branch is green.
    - If a required validation lane cannot be run, record an explicit blocker with cause, owner, and next action instead of claiming completion.
+   - When a promotion/readiness loop is using a derived remediation branch, do not replay accepted net effect back onto the authoritative source branch until the remediation branch has passed the full in-scope `CI-Equivalent Local Suite Matrix`.
+   - After replay onto the authoritative source branch, require either:
+     - a bounded sanity pass when the replay was a pure fast-forward or conflict-free curated replay with no semantic divergence; or
+     - a full rerun of the in-scope `CI-Equivalent Local Suite Matrix` when the replay introduced conflicts, manual reconciliation, dropped hunks, non-trivial commit overlap, or any source-branch-only edits.
 8. **Close on reconciliation evidence**
    - Report delivery evidence from the reconciliation branch state, not from isolated worker branches.
    - Report delivery evidence by traceability row. Each row must have passed implementation evidence, passed test evidence, and passed runtime/web/device evidence when applicable.
