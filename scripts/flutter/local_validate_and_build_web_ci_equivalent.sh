@@ -31,11 +31,5 @@ fvm flutter test --no-pub \
   --exclude-tags=stage-compatibility \
   --dart-define-from-file=config/defines/dev.json
 
-rm -rf "$OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR"
-
-fvm flutter build web \
-  --release \
-  --no-tree-shake-icons \
-  --dart-define-from-file=config/defines/dev.json \
-  -o "$OUTPUT_DIR"
+CLEAN_OUTPUT=1 BUILD_HEARTBEAT_SECONDS="${BUILD_HEARTBEAT_SECONDS:-20}" \
+  bash scripts/build_web.sh "$OUTPUT_DIR" dev --clean-output

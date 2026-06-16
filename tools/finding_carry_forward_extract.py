@@ -24,6 +24,13 @@ PROMOTION_ROUTING_SECTION = "Promotion Finding Routing Ledger"
 PROMOTION_UNRESOLVED_STATUSES = {"open", "pending", "planned", "blocked", "unresolved", "failing"}
 BY_DESIGN_CLASSIFICATIONS = {"by-design intent", "by design intent", "non-actionable"}
 DEFERRED_CLASSIFICATIONS = {"upstream-lane drift"}
+DEFERRED_CLASSIFICATION_TOKENS = (
+    "follow-up",
+    "follow up",
+    "fast-follow",
+    "fast follow",
+    "hardening",
+)
 POLICY_LINES = [
     "Resolved findings are historical context only. Do not reopen them unless the current bounded package materially changes the same locus/behavior or fresh evidence shows regression.",
     "Challenged findings stay closed unless the current bounded package materially changes the same locus/behavior or the prior rationale is objectively insufficient.",
@@ -54,7 +61,14 @@ def classify_promotion_row(classification: str, routing: str, status: str) -> st
         return "unresolved"
     if normalized_classification in BY_DESIGN_CLASSIFICATIONS:
         return "challenged"
-    if normalized_classification in DEFERRED_CLASSIFICATIONS or "defer" in normalized_routing:
+    if (
+        normalized_classification in DEFERRED_CLASSIFICATIONS
+        or any(token in normalized_classification for token in DEFERRED_CLASSIFICATION_TOKENS)
+        or "defer" in normalized_routing
+        or "followup" in normalized_routing
+        or "follow-up" in normalized_routing
+        or "hardening" in normalized_routing
+    ):
         return "deferred"
     if normalized_status == "deferred":
         return "deferred"

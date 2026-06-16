@@ -42,6 +42,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
 - **Decision Adherence** must be validated before delivery.
 - **Pipeline/Copilot P1/P2 Preflight** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
+- **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root and referenced in the governing TODO.
 - **Rule-Spirit Anti-Pattern Hunt** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Final Deterministic Guards** must return `Overall outcome: go`:
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`

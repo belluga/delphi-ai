@@ -397,6 +397,61 @@ with open(path, "w", encoding="utf-8") as f:
 PY
 }
 
+compute_bundle_build_fingerprint() {
+  local build_dir="$1"
+  local app_dir="$2"
+
+  python3 - "${build_dir}" "${app_dir}" <<'PY'
+import hashlib
+import subprocess
+import sys
+from pathlib import Path
+
+build_dir = Path(sys.argv[1])
+app_dir = Path(sys.argv[2])
+tracked = [
+    "main.dart.js",
+    "flutter_bootstrap.js",
+    "flutter_service_worker.js",
+]
+
+content_hash = hashlib.sha256()
+found_any = False
+for rel in tracked:
+    path = build_dir / rel
+    if not path.exists():
+        continue
+    found_any = True
+    content_hash.update(rel.encode("utf-8"))
+    content_hash.update(b"\0")
+    content_hash.update(path.read_bytes())
+    content_hash.update(b"\0")
+
+git_sha = ""
+try:
+    git_sha = (
+        subprocess.check_output(
+            ["git", "-C", str(app_dir), "rev-parse", "--short", "HEAD"],
+            stderr=subprocess.DEVNULL,
+        )
+        .decode("utf-8")
+        .strip()
+    )
+except Exception:
+    git_sha = ""
+
+if not found_any:
+    print(git_sha or "local")
+    raise SystemExit(0)
+
+bundle_hash = content_hash.hexdigest()[:12]
+if git_sha:
+    print(f"{git_sha}-{bundle_hash}")
+else:
+    print(bundle_hash)
+PY
+}
+
 landlord_domain="$(
   resolve_landlord_domain \
     "${LANE_FILE}" \
@@ -409,9 +464,10 @@ if [[ -z "${landlord_domain}" ]]; then
   exit 1
 fi
 
-build_sha="$(git -C "${FLUTTER_APP_DIR}" rev-parse --short HEAD 2>/dev/null || true)"
+build_sha="$(compute_bundle_build_fingerprint "${TMP_DIR}" "${FLUTTER_APP_DIR}")"
 if [[ -z "${build_sha}" ]]; then
-  build_sha="local"
+  echo "ERROR: unable to compute non-empty web bundle fingerprint." >&2
+  exit 1
 fi
 
 inject_landlord_host "${OUTPUT_DIR}/index.html" "${landlord_domain}" "${build_sha}"

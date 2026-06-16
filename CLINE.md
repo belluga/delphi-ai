@@ -100,7 +100,7 @@ Use the smell detection skills:
   - active tactical TODO,
   - explicit `APROVADO` before project-modifying actions,
   - Decision Adherence Gate evidence before delivery.
-- Project-local orchestration rule: when subagents/worktrees are used, the orchestrator reconciles on a dedicated `reconcile/*` branch in the principal checkout(s); only worker/subagent lanes use isolated worktrees. Docker-backed tests and any tunnel/browser evidence must target that principal-checkout reconcile state.
+- Project-local orchestration rule: when subagents/worktrees are used, the orchestrator reconciles on a dedicated `reconcile/*` branch in the principal checkout(s); only worker/subagent lanes use isolated worktrees. Authoritative local validation, Docker-backed tests, and any tunnel/browser evidence must target that principal-checkout reconcile state. After CI-Equivalent passes on that consolidated reconcile state, replay the accepted net effect back onto the canonical version branch before promotion resumes; the reconcile branch itself is not the promotable lane. When promotion or non-orchestration closeout will resume from that replayed branch, require `orchestration_reconcile_replay_guard.py` to return `Overall outcome: go` against the orchestration plan and authoritative source repo first.
 - See `.clinerules/model-decision/shared-todo-driven-execution.md` and `.clinerules/workflows/docker-todo-driven-execution.md`.
 
 ## Verification

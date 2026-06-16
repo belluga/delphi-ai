@@ -11,12 +11,15 @@ description: "Coordinate parallel implementation subagents through isolated work
 Coordinate parallel implementation subagents without surrendering integration ownership. This method keeps each delegated slice in its own worktree, requires checkpoint commits from workers, and makes the orchestrator responsible for merging those checkpoints into one reconciliation branch where delivery evidence is collected.
 
 Worker-local success is necessary but insufficient. Workers/subagents may close their implementation slice only when their owned code is architecture-clean and compile/build-clean for every applicable local gate named in the plan. Code changes without the official analyzer/lint gate, applicable build/publish gate, and targeted tests are not a worker delivery; they are a blocker to checkpoint acceptance. Delivery only counts when the orchestrator validates the consolidated branch with the final runtime lane(s) required for the merged behavior, including any browser/device flows served from the principal local checkout. Final orchestrator acceptance also requires every in-scope repo-owned CI suite/job from the plan's `CI-Equivalent Local Suite Matrix` to have been executed locally and passed on the reconciliation state; targeted reruns do not substitute for that matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat that matrix as the minimum validation floor rather than the ceiling and run the broader local suites that are cheaper to fail here than later in CI or promotion.
+CI-Equivalent is a generic current-branch local product-proof concept, not a reconciliation-specific concept. This workflow uses reconciliation topology only when work is actually being reconciled from worker worktrees/branches.
 For Flutter visible behavior, ADB integration and Playwright navigation are interchangeable only when Android and Web behavior is the same. If the behavior differs materially across Android and Web, both lanes are required before the orchestrator may accept delivery.
 The closure bar is promotion-grade confidence for the full touched TODO/behavior set, even when the user only asked for local delivery or promotion to a lower lane.
 The reconciliation branch/worktree is execution topology only. It does not create a second tactical TODO, a second approval conversation, or a separate backlog authority from the governing TODO.
+Reconciliation topology is exclusive to real orchestrator-led worker/worktree integration. Do not manufacture a `reconcile/*` branch in an unrelated review, promotion, or single-branch execution flow merely to satisfy a reconcile-only wrapper; outside real orchestration, CI-Equivalent belongs on the current authoritative branch under evaluation.
 Branch authority is repo-local. In environments that mount multiple source repositories or submodules into one local runtime, the root checkout being on `reconcile/*` is not sufficient by itself; every runtime-facing source checkout must also be on `reconcile/*` (or on an explicitly recorded detached checkpoint) before authoritative local validation can begin.
 Derived publish/bundle repositories are runtime artifacts, not source-branch authority. Use them as generated outputs of the authoritative source checkout instead of treating their current branch as the orchestration truth.
 Implementation ownership belongs to workers/subagents. The orchestrator must not implement a TODO slice locally. The orchestrator may edit production/test/runtime code only when the edit is strictly necessary to reconcile worker checkpoints, resolve merge conflicts, or make integration glue that cannot be assigned back without blocking reconciliation; every such edit must be logged as orchestrator reconciliation scope, never as feature implementation.
+When consolidated CI-Equivalent or runtime validation fails on the reconciliation state, the default routing is back to the worker/subagent or TODO owner that owns the failing workstream or traceability row. The orchestrator only patches locally when the fix is strictly reconciliation/merge-conflict/integration-glue scope.
 
 ## Triggers
 - The user explicitly asks for subagents, delegation, or parallel implementation work.
@@ -45,7 +48,7 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
 3. Run the project's native test/build commands from the worker and reconciliation worktrees, including repo-provided wrappers when they are the canonical entrypoint.
    - For non-Laravel/Flutter stacks, `./scripts/delphi/run_reconcile_validation.sh --repo-command <stage> <repo-path> <command>` can enforce reconcile-branch discipline around project-native commands such as `go test ./...`.
 4. When web/browser validation depends on a published bundle, use the repository-approved publish/build command from the reconciliation branch before Playwright reruns.
-5. When browser validation depends on a local Docker/browser-facing domain, use `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` from the downstream environment root so branch discipline, configured runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts.
+5. When browser validation depends on a local Docker/browser-facing domain and the current authoritative branch is a real reconciliation branch, `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` may be used from the downstream environment root so reconciliation-specific branch discipline, configured runtime bind mounts, and navigation env preflight are checked before the Playwright runner starts. This helper is not the generic definition of CI-Equivalent.
 
 ## Procedure
 1. **Confirm authorization and bound the slice**
@@ -61,7 +64,7 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
    - Before presenting the plan as ready for approval or delivery, run `python3 delphi-ai/tools/orchestration_plan_completion_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md` and require `Overall outcome: go`.
    - If the plan file is used as execution-ready evidence after approval, rerun the guard with `--require-approved`.
    - Do not dispatch workers or create worktrees until the plan has an explicit approval state or the governing TODO approval already covers the exact same orchestration topology.
-   - The plan must include a `CI-Equivalent Local Suite Matrix` naming every repo-owned CI suite/job that will run for the touched repositories, the exact local command that mirrors it, and who must execute it on the reconciliation state before delivery or promotion claims.
+   - The plan must include a `CI-Equivalent Local Suite Matrix` naming every repo-owned CI suite/job that will run for the touched repositories, the exact local command that mirrors it, and who must execute it on the authoritative branch state for that wave before delivery or promotion claims.
    - If a derived remediation branch will be used for pre-promotion review history, the plan must make explicit that the full in-scope `CI-Equivalent Local Suite Matrix` passes on the remediation branch before replay/consolidation back onto the authoritative source branch.
    - Partition the work into bounded slices with clear ownership and minimal overlap.
    - Assign every implementation workstream to a worker/subagent in the execution ownership ledger. Do not list the orchestrator as implementation owner for a TODO slice.
@@ -114,7 +117,9 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
    - Analyzer/build failures in worker-owned files return to that worker by default; the orchestrator may fix them locally only when the fix is pure merge reconciliation or unavoidable integration glue.
    - Repeat the reconcile-and-validate loop until the consolidated branch is green.
    - If a required validation lane cannot be run, record an explicit blocker with cause, owner, and next action instead of claiming completion.
-   - When a promotion/readiness loop is using a derived remediation branch, do not replay accepted net effect back onto the authoritative source branch until the remediation branch has passed the full in-scope `CI-Equivalent Local Suite Matrix`.
+   - Once the consolidated branch is green, replay the accepted net effect back onto the execution plan's authoritative return branch / canonical version branch before any promotion, closeout, or non-orchestration lane resumes. The reconciliation branch is validation topology and recovery history; it is not itself the promotable source lane.
+   - Record that replay in `## Post-Reconcile Replay Evidence` of the orchestration execution plan, then require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md --repo <authoritative-source-repo>` to return `Overall outcome: go` before any promotion or non-orchestration closeout continues from the canonical branch.
+   - When a promotion/readiness loop is using a derived remediation branch, do not replay accepted net effect back onto the authoritative source branch until the remediation branch has passed the full in-scope `CI-Equivalent Local Suite Matrix`. The matrix remains current-branch local proof; it does not imply reconcile topology unless the branch under test is itself the reconciliation authority.
    - After replay onto the authoritative source branch, require either:
      - a bounded sanity pass when the replay was a pure fast-forward or conflict-free curated replay with no semantic divergence; or
      - a full rerun of the in-scope `CI-Equivalent Local Suite Matrix` when the replay introduced conflicts, manual reconciliation, dropped hunks, non-trivial commit overlap, or any source-branch-only edits.
@@ -142,11 +147,13 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
 - Orchestration execution plan under `foundation_documentation/artifacts/execution-plans/` for multi-TODO, multi-workstream, or user-requested approval waves.
 - One orchestrator reconciliation branch/worktree.
 - The principal local checkout attached to the orchestrator reconciliation branch whenever runtime validation depends on it, with every runtime-facing source checkout on `reconcile/*` or an explicitly recorded detached checkpoint.
+- One explicit authoritative return branch / canonical version branch that receives the accepted net effect after reconciliation passes and before promotion resumes.
 - One worker branch/worktree per delegated slice.
 - Checkpoint commits from workers.
 - Recoverable orchestrator checkpoint commits and persistent checkpoint manifests when the reconciliation branch is pushed for continuity.
 - Consolidated validation evidence collected from the reconciliation branch.
 - Delivery guard TEACH evidence for the approved plan before local implementation or delivery completion is claimed.
+- Post-reconcile replay guard TEACH evidence before promotion or non-orchestration closeout resumes from the canonical branch.
 - Explicit blocker records whenever a required validation lane could not run.
 - The same governing TODO retained as authority through promotion follow-through unless the promotion process itself became the active work item.
 
@@ -158,6 +165,7 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
 - Literal required markers from governing TODOs, such as named UI controls, tabs, routes, endpoints, schemas, web/browser/device lanes, loading states, and navigation behaviors, are either represented exactly in traceability or covered by an approved Spec Deviation Ledger row.
 - Execution waves are not used as routine human checkpoints; unexpected pauses must be justified by a mandatory decision/blocker/waiver condition.
 - The execution wave has a dedicated orchestrator reconciliation branch.
+- The orchestration plan records the authoritative return branch / canonical version branch, the reconcile failure-routing rule, and the post-reconcile promotion source.
 - When browser/device validation is in scope, the runtime target used for that validation resolves to the reconciliation branch state.
 - When browser/device validation is in scope, the environment root plus every runtime-facing source checkout are on `reconcile/*` or on an explicitly recorded detached checkpoint before authoritative validation begins.
 - Derived publish/bundle repos were not treated as source-branch authority for runtime/browser acceptance.
@@ -171,8 +179,11 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
 - The orchestrator verified the traceability matrix row-by-row against the merged state, including required web/browser/device/navigation evidence for UI-facing criteria.
 - Any browser/device runner that depended on URL or credential env proved those values in the shell or documented the approved env-file source before execution.
 - `orchestration_delivery_guard.py --require-approved` returns `Overall outcome: go` before any local implementation or delivery completion claim.
+- `orchestration_reconcile_replay_guard.py` returns `Overall outcome: go` before any promotion or non-orchestration closeout resumes from a package first integrated on `reconcile/*`.
+- Failures discovered on the reconciliation CI-Equivalent or runtime lane were routed back to the owning worker/subagent or governing TODO owner unless the edit was strictly reconciliation scope.
 - The orchestrator either validated every materially distinct touched behavior family at promotion-grade confidence or recorded an explicit blocker/waiver for the remaining gap.
 - Any missing required validation is represented as an explicit blocker rather than a silent waiver.
 - No new tactical TODO was created solely to represent reconciliation closure or operational promotion follow-through.
+- Promotion or non-orchestration closeout does not continue from the reconciliation branch itself; the accepted net effect is replayed onto the authoritative return branch / canonical version branch first.
 - Pushed orchestrator checkpoints include a persistent manifest with repo/branch/commit SHAs, governing TODOs, evidence, exclusions, and next promotion/discard step.
 - Orchestrator branches are not used as indefinite accumulation buckets after promotion, supersession, or scope drift.

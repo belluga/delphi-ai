@@ -266,12 +266,42 @@ NAV_ENV_SOURCE=""
 source_navigation_env_if_needed
 verify_required_env
 
+list_mutation_shards() {
+  local manifest_path="${NAV_WEB_SHARD_MANIFEST:-$ROOT_DIR/tools/flutter/web_app_tests/navigation_mutation_shards.json}"
+  node -e '
+    const fs = require("fs");
+    const manifest = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const shards = Object.keys((manifest.mutation && manifest.mutation.shards) || {});
+    if (shards.length === 0) {
+      process.exit(1);
+    }
+    for (const shard of shards) {
+      console.log(shard);
+    }
+  ' "$manifest_path"
+}
+
 echo "INFO: authoritative navigation validation -> suite=$SUITE"
 echo "INFO: navigation env source -> $NAV_ENV_SOURCE"
 if [[ -n "$NAV_RECONCILE_MOUNT_CHECKS" ]]; then
   echo "INFO: runtime bind mounts -> principal checkout confirmed from NAV_RECONCILE_MOUNT_CHECKS"
 else
   echo "INFO: runtime bind mounts -> no mount checks configured; branch/env preflight only"
+fi
+
+if [[ "$SUITE" == "mutation" && -z "${NAV_WEB_SHARD:-}" ]]; then
+  mapfile -t MUTATION_SHARDS < <(list_mutation_shards)
+  if [[ "${#MUTATION_SHARDS[@]}" -eq 0 ]]; then
+    echo "ERROR: could not resolve mutation shard manifest for authoritative navigation validation." >&2
+    exit 1
+  fi
+
+  for mutation_shard in "${MUTATION_SHARDS[@]}"; do
+    [[ -n "$mutation_shard" ]] || continue
+    echo "INFO: authoritative navigation validation -> mutation shard=$mutation_shard"
+    NAV_WEB_SHARD="$mutation_shard" "$RUNNER" "$SUITE"
+  done
+  exit 0
 fi
 
 "$RUNNER" "$SUITE"

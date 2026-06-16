@@ -51,6 +51,9 @@ Use this only when the implementation intentionally diverges from a governing TO
 - **Orchestrator reconciliation branch:** `<orchestrator/<slug>|n/a until approved>`
 - **Principal checkout policy:** `<principal checkout stays on reconciliation branch when runtime/browser/device validation depends on it>`
 - **Runtime-facing source checkouts:** `<root + mounted source repos/submodules that must be on reconcile/* before authoritative local validation>`
+- **Authoritative return branch after reconcile:** `<canonical version branch that receives the accepted net effect before promotion or non-orchestration closeout resumes>`
+- **Reconcile failure routing rule:** `<CI-Equivalent/runtime failures on reconcile return to the owning worker/subagent or TODO owner; orchestrator patches stay reconciliation-only>`
+- **Promotion source after reconcile:** `<authoritative return branch only; reconcile branch itself is never the promotable lane>`
 - **Worker branches / worktrees:** `<worker branch names or creation policy>`
 - **Derived artifact repos:** `<web-app or equivalent derived bundle repos that are not branch-authority sources>`
 
@@ -65,7 +68,7 @@ Use this only when the implementation intentionally diverges from a governing TO
 Use this section when the package enters a Copilot-mimic / Claude / pre-promotion review loop. This is the package-stage ledger for the loop. Do not create a separate manual version-status file for the same purpose. Accepted/challenged/resolved findings remain authoritative in the governing TODOs and their carry-forward packets.
 
 - **Loop in scope?:** `<yes|no>`
-- **Authoritative source branch:** `<source branch intended for promotion>`
+- **Authoritative source branch:** `<source branch intended for promotion; if the package was first integrated on reconcile, this is the post-replay canonical branch, not the reconcile branch itself>`
 - **Active remediation branch:** `<review/<slug>-copilot-mimic-YYYYMMDD>|n/a>`
 - **Current round:** `<round identifier>`
 - **Last clean internal round:** `<round identifier|none yet>`
@@ -121,7 +124,7 @@ Every row must be traceable to one or more Acceptance Traceability Matrix rows. 
 | `<area>` | `<test/build/navigation evidence>` | `<worker|reconciliation|device|browser>` | `<worker|orchestrator>` |
 
 ## CI-Equivalent Local Suite Matrix
-Every repo-owned CI suite/job that the touched repositories will execute for this wave must be represented here before approval. The orchestrator may run targeted reruns diagnostically, but local delivery and promotion readiness are blocked until every in-scope row has been executed locally and passed on the reconciliation state. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat this matrix as the minimum floor and add the broader local suites that are cheaper to fail here than later in CI or promotion.
+Every repo-owned CI suite/job that the touched repositories will execute for this wave must be represented here before approval. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. In a reconciliation workflow that authoritative branch is often the reconciliation branch, but reconcile topology is not what makes the run CI-Equivalent. The orchestrator may run targeted reruns diagnostically, but local delivery and promotion readiness are blocked until every in-scope row has been executed locally and passed on the authoritative branch state for this wave. Once the reconciliation state is green, replay the accepted net effect onto the `Authoritative return branch after reconcile` before promotion resumes. Published `stage`/`main` probes are separate evidence and do not replace this matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat this matrix as the minimum floor and add the broader local suites that are cheaper to fail here than later in CI or promotion.
 
 | Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Applies To (`worker-local|reconciliation|pre-promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -132,6 +135,21 @@ Fill this section only after execution, before claiming local implementation or 
 
 | Area | Required Evidence | Status | Evidence Artifact / Command | Owner |
 | --- | --- | --- | --- | --- |
+
+## Post-Reconcile Replay Evidence
+Fill this section once the reconciliation branch is green and the accepted net effect has been replayed onto the canonical branch that promotion or non-orchestration closeout will resume from.
+
+- **Replay required?:** `<yes when this package was first integrated on reconcile/*>`
+- **Replay status:** `<pending|passed|blocked|waived|n/a>`
+- **Accepted reconcile branch:** `<reconcile/<slug>>`
+- **Accepted reconcile commit:** `<git sha for the accepted integrated state>`
+- **Replay mode:** `<fast-forward|merge-commit|same-commit-alias|curated-replay>`
+- **Authoritative return branch verified:** `<same canonical branch declared under Orchestration Topology>`
+- **Authoritative return branch head after replay:** `<git sha now at the canonical return branch head>`
+- **Promotion source branch verified:** `<same canonical branch; reconcile is never the promotion source>`
+- **Replay commit(s) on authoritative branch:** `<same-as-reconcile|sha[, sha...]>`
+- **Replay proof summary:** `<brief proof of how the accepted reconcile state reached the canonical branch>`
+- **Post-replay authoritative CI-equivalent status:** `<passed|not-needed|waived|blocked>`
 
 ## Checkpoint Manifest
 Fill this after the checkpoint commits/pushes are created.
@@ -174,3 +192,8 @@ Fill this when browser/device/runtime validation is in scope.
 - **Command:** `python3 delphi-ai/tools/orchestration_delivery_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md --require-approved`
 - **Required before local implementation or delivery completion claim:** `Overall outcome: go`
 - **Blocks delivery when:** any traceability row lacks passed implementation/test evidence, a UI/runtime criterion lacks the required fresh web/browser/device/navigation evidence, divergent Android/Web behavior lacks either lane, a named artifact was substituted without an approved spec deviation, or any implementation row names the orchestrator as owner.
+
+## Post-Reconcile Replay Guard
+- **Command:** `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md --repo <authoritative-source-repo>`
+- **Required before promotion or non-orchestration closeout resumes from a package first integrated on reconcile:** `Overall outcome: go`
+- **Blocks advancement when:** the accepted reconcile state was not replayed onto the canonical return branch, replay evidence is incomplete, the promotion source still points at `reconcile/*`, or a curated replay skipped the required canonical-branch CI-equivalent rerun.

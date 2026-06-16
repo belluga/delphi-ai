@@ -224,6 +224,11 @@ def owner_names_orchestrator(owner: str) -> bool:
     return "orchestrator" in lowered or "orquestrador" in lowered
 
 
+def references_reconcile_branch(value: str) -> bool:
+    lowered = normalize_text(value)
+    return bool(re.search(r"(^|[^a-z0-9])reconcile/", lowered))
+
+
 def orchestrator_scope_allowed(scope: str) -> bool:
     lowered = scope.lower()
     if any(
@@ -502,6 +507,81 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                 "The required approval token is missing or not `APROVADO`.",
                 "Set `- **Approval token required before execution:** `APROVADO``.",
                 "Artifact Identity",
+            )
+        )
+
+    topology_lines = sections.get("Orchestration Topology", [])
+    authoritative_return_branch = extract_field(topology_lines, "Authoritative return branch after reconcile")
+    reconcile_failure_routing = extract_field(topology_lines, "Reconcile failure routing rule")
+    promotion_source_after_reconcile = extract_field(topology_lines, "Promotion source after reconcile")
+
+    if authoritative_return_branch is None or is_placeholder(authoritative_return_branch):
+        violations.append(
+            build_violation(
+                "RETURN-BRANCH-MISSING",
+                "The plan does not declare the authoritative return branch after reconciliation.",
+                "Add `- **Authoritative return branch after reconcile:**` under `## Orchestration Topology` and name the canonical version branch that receives the accepted net effect before promotion or closeout resumes.",
+                "Orchestration Topology",
+            )
+        )
+    elif references_reconcile_branch(authoritative_return_branch):
+        violations.append(
+            build_violation(
+                "RETURN-BRANCH-INVALID",
+                f"The authoritative return branch points at a reconciliation branch: {authoritative_return_branch}",
+                "Record the canonical version/source branch that receives the accepted reconcile net effect. The return branch must not itself be a `reconcile/*` branch.",
+                "Orchestration Topology",
+            )
+        )
+
+    if reconcile_failure_routing is None or is_placeholder(reconcile_failure_routing):
+        violations.append(
+            build_violation(
+                "RECONCILE-FAILURE-ROUTING-MISSING",
+                "The plan does not define how CI-Equivalent/runtime failures on reconciliation are routed.",
+                "Add `- **Reconcile failure routing rule:**` under `## Orchestration Topology` and state that failing work returns to the owning worker/subagent or TODO owner by default, with orchestrator edits limited to reconciliation scope.",
+                "Orchestration Topology",
+            )
+        )
+    else:
+        lowered_routing = normalize_text(reconcile_failure_routing)
+        if not any(token in lowered_routing for token in ("worker", "subagent", "todo owner", "responsible owner", "owning")):
+            violations.append(
+                build_violation(
+                    "RECONCILE-FAILURE-ROUTING-INCOMPLETE",
+                    f"The reconcile failure routing rule does not name the owning worker/subagent or TODO owner: {reconcile_failure_routing}",
+                    "State explicitly that CI-Equivalent/runtime failures on reconcile return to the owning worker/subagent or TODO owner by default.",
+                    "Orchestration Topology",
+                )
+            )
+        if "orchestrator" not in lowered_routing or not any(
+            token in lowered_routing for token in ("reconciliation-only", "reconciliation only", "merge-conflict", "integration glue")
+        ):
+            violations.append(
+                build_violation(
+                    "RECONCILE-FAILURE-ROUTING-SCOPE-MISSING",
+                    f"The reconcile failure routing rule does not limit orchestrator fixes to reconciliation scope: {reconcile_failure_routing}",
+                    "State explicitly that orchestrator code changes remain limited to reconciliation / merge-conflict / integration-glue scope when reconcile validation fails.",
+                    "Orchestration Topology",
+                )
+            )
+
+    if promotion_source_after_reconcile is None or is_placeholder(promotion_source_after_reconcile):
+        violations.append(
+            build_violation(
+                "PROMOTION-SOURCE-MISSING",
+                "The plan does not define the promotion source after reconciliation.",
+                "Add `- **Promotion source after reconcile:**` under `## Orchestration Topology` and state that promotion resumes from the authoritative return branch, not from the reconciliation branch itself.",
+                "Orchestration Topology",
+            )
+        )
+    elif references_reconcile_branch(promotion_source_after_reconcile):
+        violations.append(
+            build_violation(
+                "PROMOTION-SOURCE-INVALID",
+                f"The promotion source after reconcile points at a reconciliation branch: {promotion_source_after_reconcile}",
+                "Promotion must resume from the canonical version/source branch after replay, not from the orchestration-only `reconcile/*` branch.",
+                "Orchestration Topology",
             )
         )
 

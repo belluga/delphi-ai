@@ -28,12 +28,14 @@ When this skill is invoked as part of a multi-TODO orchestration run:
 
 ## Gate Calibration
 - The close condition is **no unresolved blocking finding**, not zero findings.
+- The classification step happens **before** deciding whether another round is necessary.
 - Delphi must classify every finding as one of:
   - `blocking`: must be fixed before promotion or next gate closure.
   - `accepted-debt`: valid but non-blocking; record rationale, owner/surface, and next action.
   - `out-of-scope`: useful observation outside the frozen package/gate; do not let it expand the current round.
 - `cutover_integrity_audit` findings must also be checked against the governing TODO's explicit compatibility mandates or temporary exceptions. A reviewer must not block a compatibility bridge that the TODO explicitly authorizes for a bounded scope with a removal/closeout condition, but should still challenge unclear scope, missing removal criteria, or accidental spread beyond that authorization.
 - Do not treat marginal improvements as release blockers. A reviewer may report them, but Delphi must not keep opening rounds for them unless they expose a concrete release risk.
+- Low-severity documentation/adherence polish, packet-clarity suggestions, and similar non-behavioral findings must not trigger another round by themselves. Either fix them inline and close the current round, or record them as `accepted-debt`.
 - For follow-up rounds after fixes, prefer delta-only audit packages. Re-auditing the full diff is valid only when the fix materially changed architecture, data flow, performance-critical access paths, or test coverage.
 
 ## Lane-Specific Blocking Criteria
@@ -104,6 +106,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
    - `next-round` is intentionally blocked until the current non-clean round has a recorded resolution with status `resolved` or `accepted-debt`.
    - If the resolution status is `blocked`, do not open a new audit round. Fix the blocker or explicitly accept the remaining risk as debt first.
    - If all remaining findings are non-blocking under the gate calibration, record `accepted-debt` instead of implementing marginal refactors to chase zero findings.
+   - If a non-blocking finding is fixed inline without changing the behavioral risk of the slice, record that inside the current `resolution.md` and close the round. Do not reopen the loop solely to confirm cosmetic or packet-only cleanup.
 7. **Prepare the next round**
    - Update the bounded package with:
      - the current diff/evidence state;
@@ -118,6 +121,7 @@ When this skill is invoked as part of a multi-TODO orchestration run:
      ```
    - Use `--package` when the diff/evidence package has been refreshed after fixes. The runner still wraps it in the generated effective round package with prior decisions.
    - Never open a new no-context round using a stale manually assembled package that omits the prior round decisions; the generated `round-package.md` is the dispatch source of truth.
+   - Open another round only when a blocker was fixed, a blocker was challenged and bounded by new evidence, or a material change to behavior/architecture/verification happened. Do not open another round for documentation-only cleanup that was already classified non-blocking.
 8. **Close**
    - Record the final clean round in the governing TODO or delivery gate evidence.
    - Treat either zero findings or zero unresolved blocking findings with recorded accepted debt as the objective clean condition.

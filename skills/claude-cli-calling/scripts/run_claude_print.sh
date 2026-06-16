@@ -15,6 +15,8 @@ Options:
   --add-dir <dir>          May be repeated
   --allowed-tools "<spec>"
   --output-format <fmt>    text|json|stream-json (default: text)
+  --include-partial-messages
+  --verbose
   --permission-mode <mode> bypassPermissions|default|acceptEdits|plan (default: bypassPermissions)
 EOF
 }
@@ -24,6 +26,8 @@ PROMPT=""
 PROMPT_FILE=""
 USE_STDIN=0
 OUTPUT_FORMAT="text"
+INCLUDE_PARTIAL_MESSAGES=0
+VERBOSE=0
 PERMISSION_MODE="bypassPermissions"
 ALLOWED_TOOLS=""
 ADD_DIRS=()
@@ -57,6 +61,14 @@ while [[ $# -gt 0 ]]; do
     --output-format)
       OUTPUT_FORMAT="${2:-}"
       shift 2
+      ;;
+    --include-partial-messages)
+      INCLUDE_PARTIAL_MESSAGES=1
+      shift
+      ;;
+    --verbose)
+      VERBOSE=1
+      shift
       ;;
     --permission-mode)
       PERMISSION_MODE="${2:-}"
@@ -96,6 +108,18 @@ CLAUDE_ARGS=(
   --output-format "$OUTPUT_FORMAT"
   --permission-mode "$PERMISSION_MODE"
 )
+
+if [[ "$OUTPUT_FORMAT" == "stream-json" ]]; then
+  VERBOSE=1
+fi
+
+if [[ "$INCLUDE_PARTIAL_MESSAGES" -eq 1 ]]; then
+  CLAUDE_ARGS+=(--include-partial-messages)
+fi
+
+if [[ "$VERBOSE" -eq 1 ]]; then
+  CLAUDE_ARGS+=(--verbose)
+fi
 
 if [[ -n "$ALLOWED_TOOLS" ]]; then
   CLAUDE_ARGS+=(--allowedTools "$ALLOWED_TOOLS")

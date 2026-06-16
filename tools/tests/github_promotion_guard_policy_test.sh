@@ -54,6 +54,40 @@ if bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
 fi
 grep -q "derived artifact" "$OUTPUT"
 
+if bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+  --contract "$CONTRACT" \
+  --action pr-create \
+  --repo-kind docker \
+  --repo-slug test/docker \
+  --head reconcile/v0.2.0+8/package \
+  --base dev \
+  >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected reconcile/* PR head to be blocked\n' >&2
+  exit 1
+fi
+grep -q "reconciliation branch" "$OUTPUT"
+grep -q "Replay the accepted reconcile state onto the canonical version/source branch first" "$OUTPUT"
+
+bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+  --contract "$CONTRACT" \
+  --action pr-create \
+  --repo-kind docker \
+  --repo-slug test/docker \
+  --head reconcile/dev-contains-stage-docker-20260518 \
+  --base dev \
+  >"$OUTPUT"
+grep -q "Overall outcome: go" "$OUTPUT"
+
+bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+  --contract "$CONTRACT" \
+  --action git-push \
+  --repo-kind docker \
+  --branch reconcile/dev-contains-stage-docker-20260518 \
+  --target-branch reconcile/dev-contains-stage-docker-20260518 \
+  >"$OUTPUT"
+grep -q "Overall outcome: go" "$OUTPUT"
+
 mkdir -p "$REPO"
 git -C "$REPO" init -q
 git -C "$REPO" config user.email test@example.test

@@ -33,6 +33,7 @@ If topology is ambiguous, run the Environment Topology Contract flow and stop at
 - Targeted reruns after a fix do not replace rerunning the in-scope CI-equivalent rows.
 - Browser/device evidence must prove the current reconciliation/build state is being served, not a stale bundle.
 - Browser CRUD/mutation validation must use the approved non-`main` mutation lane.
+- Respect wrapper branch-family contracts. CI-Equivalent remains current-branch local product proof. If a project-owned wrapper explicitly requires `reconcile/*`, do not cite it as the executor for a non-reconciliation gate unless you intentionally use a same-commit reconcile alias and record that equivalence. In real subagent orchestration, the authoritative branch under test is the consolidated reconciliation branch until that run is green; after that, replay the accepted net effect onto the plan's authoritative return branch before promotion or non-orchestration closeout resumes. Otherwise run the project-owned local build/publish path and the same product-facing suites directly on the active branch and record them with `test_orchestration_status_report.sh`.
 
 ## Default Sequence
 1. Environment/topology preflight.

@@ -34,6 +34,7 @@ cat > "$TODO_FILE" <<'TODO'
 | --- | --- | --- | --- | --- | --- | --- |
 | `PR-1` | `P1` | `by-design intent` | `same-todo-evidence-refresh` | Expected behavior; do not patch blindly. | `accepted` | `approval-123` |
 | `PR-2` | `P2` | `confirmed defect` | `same-todo-remediation` | Still open. | `open` | `same TODO pending` |
+| `PR-3` | `P3` | `follow-up-hardening` | `split-hardening` | Real issue, but not a current release blocker. | `deferred` | `foundation_documentation/todos/active/post_release_hardening/hardening/TODO-example.md` |
 TODO
 
 python3 "$TOOL" --todo "$TODO_FILE" --json-output "$JSON_OUT" >/dev/null
@@ -51,5 +52,6 @@ assert entries[("critique", "CRT-1")]["carry_forward_class"] == "challenged"
 assert entries[("cutover_integrity_audit", "CUT-1")]["carry_forward_class"] == "deferred"
 assert entries[("promotion_routing", "PR-1")]["carry_forward_class"] == "challenged"
 assert entries[("promotion_routing", "PR-2")]["carry_forward_class"] == "unresolved"
+assert entries[("promotion_routing", "PR-3")]["carry_forward_class"] == "deferred"
 print("finding_carry_forward_extract_test: OK")
 PY
