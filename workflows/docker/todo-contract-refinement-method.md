@@ -32,6 +32,8 @@ Turn a tactical TODO into an executable contract before approval. The TODO defin
    - Promote an assumption into contract if it changes scope, DoD, validation semantics, public contract, or module coherence.
 6. Build `Execution Plan`.
    - Record touched surfaces, ordered steps, test strategy, fail-first targets when required, and rollout/runtime notes.
+   - For multi-TODO packages, subagent orchestration, or promotion-readiness loops, treat the execution plan as the package-stage ledger. Record wave state, current blockers, active review/remediation branches, and next exact step there instead of creating a parallel version-status artifact.
+   - Keep per-finding accepted/challenged/resolved dispositions in the governing TODOs so carry-forward extraction remains authoritative.
 7. Add planning matrices before approval when triggered:
    - `Flow Evidence Planning Matrix` for user-visible, interactive, or user-flow-impacting surfaces, including non-visual refactors that feed screens or journeys.
    - `Local CI-Equivalent Suite Matrix` for repo-owned CI suites/jobs that will run for the touched slice.

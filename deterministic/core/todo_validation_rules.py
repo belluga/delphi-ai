@@ -11,7 +11,7 @@ DEFAULT_SOURCE_KIND = "validator"
 DEFAULT_SOURCE_REF = "delphi-ai/tools/todo_deterministic_validator.py"
 DEFAULT_LIFECYCLE_STATE = "adjusting"
 
-GATE_IDS = ("critique", "test_quality_audit", "final_review")
+GATE_IDS = ("critique", "test_quality_audit", "final_review", "cutover_integrity_audit")
 
 EXACT_RULES = {
     "TODO-BUNDLE-SCHEMA": {
@@ -48,6 +48,36 @@ EXACT_RULES = {
         "rule_id": "paced.todo.provisional-record.present",
         "title": "Provisional tactical TODOs must explain the provisional state",
         "resolution_contract": "Add the full `Provisional Notes` block before claiming the TODO is `Provisional`.",
+    },
+    "TODO-ACTIVE-WORK-STATE-MISSING": {
+        "rule_id": "paced.todo.active-work-state.present",
+        "title": "Active tactical TODOs must declare the active work state",
+        "resolution_contract": "Add the full `Active Work State` block while the TODO remains under `foundation_documentation/todos/active/`.",
+    },
+    "TODO-ACTIVE-WORK-STATE-INVALID": {
+        "rule_id": "paced.todo.active-work-state.canonical",
+        "title": "Active tactical TODO work state must use canonical values",
+        "resolution_contract": "Set `Work state` to `implementation`, `review`, or `blocked` while the TODO remains active.",
+    },
+    "TODO-ACTIVE-WORK-STATE-REASON-MISSING": {
+        "rule_id": "paced.todo.active-work-state.reason-present",
+        "title": "Active tactical TODOs must explain why they remain active",
+        "resolution_contract": "Fill `Why this state now` with one sentence that explains why the TODO still belongs in `active/`.",
+    },
+    "TODO-ACTIVE-WORK-EXIT-CONDITION-MISSING": {
+        "rule_id": "paced.todo.active-work-state.exit-condition-present",
+        "title": "Active tactical TODOs must define the exit condition",
+        "resolution_contract": "Fill `Exit condition` with the exact event that moves the TODO to the next state or lane.",
+    },
+    "TODO-ACTIVE-WORK-BLOCKED-QUALIFIER-MISSING": {
+        "rule_id": "paced.todo.active-work-state.blocked-qualifier-alignment",
+        "title": "Blocked work state must align with blocked delivery qualifier",
+        "resolution_contract": "If `Work state` is `blocked`, include `Blocked` in `Qualifiers` and keep the blocker notes current.",
+    },
+    "TODO-ACTIVE-WORK-BLOCKED-STATE-MISSING": {
+        "rule_id": "paced.todo.active-work-state.blocked-state-required",
+        "title": "Blocked delivery qualifier must align with blocked work state",
+        "resolution_contract": "If `Qualifiers` includes `Blocked`, set `Work state` to `blocked` and keep the blocker rationale aligned.",
     },
 }
 

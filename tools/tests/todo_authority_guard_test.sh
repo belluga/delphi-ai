@@ -194,4 +194,28 @@ TODO
 assert_no_go "$TMP_DIR/promotion-scope-change-no-ref.md"
 grep -q "PROMOTION-SCOPE-CHANGE-MISSING-REFERENCE" "$OUTPUT_FILE"
 
+cat > "$TMP_DIR/promotion-followup-no-ref.md" <<'TODO'
+# TODO: Promotion Followup No Reference
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `skills/github-stage-promotion-orchestrator/SKILL.md` | Promotion flow. | Explicit follow-up routing. | Silent deferral. | Check routing. |
+
+## Promotion Finding Routing Ledger
+| Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
+| --- | --- | --- | --- | --- | --- | --- |
+| `PR-3` | `P3` | `follow-up-hardening` | `same-todo-note-only` | Non-blocking but real. | `deferred` | `n/a` |
+TODO
+
+assert_no_go "$TMP_DIR/promotion-followup-no-ref.md"
+grep -q "PROMOTION-FOLLOWUP-MISSING-REFERENCE" "$OUTPUT_FILE"
+
 printf 'todo_authority_guard_test: OK\n'

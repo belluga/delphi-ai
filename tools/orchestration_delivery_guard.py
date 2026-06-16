@@ -484,6 +484,7 @@ def render_text(result: dict[str, Any]) -> str:
     lines.append("resolution_prompt:")
     if not violations:
         lines.append("  - The approved orchestration plan has concrete passed delivery evidence for every validation area.")
+        lines.append("  - If promotion or closeout will resume from a package first integrated on `reconcile/*`, replay the accepted net effect onto the canonical branch and require `orchestration_reconcile_replay_guard.py` to return `Overall outcome: go` before that next lane advances.")
         lines.append("  - Continue only within the governing TODO set and rerun this guard if ownership, validation scope, runtime target, or evidence changes.")
     else:
         seen: set[str] = set()

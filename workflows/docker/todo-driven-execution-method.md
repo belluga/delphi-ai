@@ -39,6 +39,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
 - **Decision Adherence** must be validated before delivery.
 - **Pipeline/Copilot P1/P2 Preflight** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
+- **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root and referenced in the governing TODO.
 - **Rule-Spirit Anti-Pattern Hunt** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Final Deterministic Guards** must return `Overall outcome: go`:
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
@@ -55,11 +56,14 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 
 ## Outputs
 - One governing TODO with clear lane, scope, decisions, plan, approval, execution notes, delivery evidence, and closeout status.
+- One explicit `Active Work State` whenever the governing TODO still lives under `foundation_documentation/todos/active/`.
 - Supporting feature brief only when needed.
 - Canonical module/doc updates when stable truth changed.
+- When package-level orchestration or pre-promotion review loops are in scope, the authoritative package-stage ledger lives in the orchestration execution plan, not in a parallel version-status file. Per-finding dispositions remain authoritative in the governing TODOs.
 
 ## Validation
 - The TODO records which phase workflow governed each major transition.
+- Any TODO that remains in `active/` records `Active Work State = implementation|review|blocked` plus an exact exit condition.
 - No phase-specific requirements are left only in chat.
 - Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
 - Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.

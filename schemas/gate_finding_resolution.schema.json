@@ -34,7 +34,8 @@
       "enum": [
         "critique",
         "test_quality_audit",
-        "final_review"
+        "final_review",
+        "cutover_integrity_audit"
       ]
     },
     "gate_status": {

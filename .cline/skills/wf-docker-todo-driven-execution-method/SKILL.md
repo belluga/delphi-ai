@@ -37,6 +37,7 @@ Load the phase skill that matches the current TODO state:
 - `Local CI-Equivalent Suite Matrix` executed locally for in-scope CI jobs.
 - `Decision Adherence` before delivery.
 - `Pipeline/Copilot P1/P2 Preflight` before delivery claims.
+- `Review Finding Classification` after review/audit findings are collected and before delivery claims. Reviewers do not change how they detect issues; classification happens afterward as `release-blocker | follow-up-fast-follow | follow-up-hardening | by-design/no-action`.
 - `Rule-Spirit Anti-Pattern Hunt` before delivery claims.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` must return `Overall outcome: go` before any close/delivery claim.
 - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any close/delivery claim.

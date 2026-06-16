@@ -30,11 +30,17 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - `Assumptions Preview` and `Execution Plan` below define **HOW** Delphi currently intends to deliver this contract.
 - This TODO is **bounded but elastic**: Delphi may absorb local discoveries only while they remain inside the same primary objective and the same main approval/review/promotion conversation. Secondary modules may still be touched when they are subordinate to that same slice.
 - If any assumption or plan step changes `Scope`, `Out of Scope`, `Definition of Done`, required validation semantics, public contract, or frozen decisions, update the TODO contract first and request renewed approval before execution continues.
+- If the intended path explicitly authorizes a compatibility shim, fallback bridge, dual-read/dual-write period, or another non-canonical temporary construct, record that authorization in the TODO with exact scope, rationale, and removal/closeout condition. Reviewers must be able to distinguish an approved temporary exception from accidental workaround drift.
 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`
 - **Qualifiers:** `<none|Provisional|Blocked|Provisional+Blocked>`
 - **Next exact step:** <Immediate next action required to move the TODO forward>
+
+## Active Work State (Required While TODO Remains In `active/`)
+- **Work state:** `<implementation|review|blocked|n/a once moved out of active>`
+- **Why this state now:** <one sentence explaining why the TODO is still in `active/`>
+- **Exit condition:** <what exact event moves it to the next state or lane>
 
 ## Scope
 - [ ] <What will be done>
@@ -46,6 +52,12 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - `Production-Ready`: final required lane threshold is complete and confidence gates are satisfied.
 - `Provisional`: delivery is intentionally partial/incomplete but useful for unblocking dependent work.
 - `Blocked`: work cannot currently proceed; `Blocker Notes` become mandatory.
+
+## Active Work State Semantics
+- `implementation`: the TODO is still gaining or changing implementation/test evidence.
+- `review`: local implementation is materially complete, but the TODO remains in `active/` because package-wide review, Copilot-mimic, CI-equivalent, final validation, or explicit promotion-readiness scrutiny is still open.
+- `blocked`: execution is paused on an explicit blocker; `Blocker Notes` are mandatory.
+- `n/a once moved out of active`: use after the TODO moves to `promotion_lane/` or `completed/`.
 
 ## Provisional Notes (Required if `Qualifiers` includes `Provisional`)
 - **Missing for production-ready:** <What is intentionally incomplete>
@@ -82,6 +94,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 
 ## Validation Steps
 - [ ] <Command, test flow, or manual validation step>
+- [ ] <When the TODO includes canonical cutover, backward-compatibility retirement, or explicit compatibility exceptions: run `cutover_integrity_audit` and record whether any remaining bridge is approved temporary scope or blocking drift.>
 
 ## Completion Evidence Matrix (Required Before Delivery Claim)
 Every `Definition of Done` item and every `Validation Steps` item must have a concrete evidence row before the TODO can claim `Local-Implemented`, move to `promotion_lane/`, move to `completed/`, or claim `Production-Ready`.
@@ -199,7 +212,7 @@ Map every user-visible, interactive, or user-flow-impacting criterion to the fin
 | `<criterion>` | `<visible UI|CRUD/mutation|field/DTO/domain refactor|save/readback|payload consumed by UI|filter/query|settings/capability|structure-only>` | `<classification>` | `<ADB integration|Playwright readonly|Playwright mutation|both|n/a>` | `<yes|no>` | `<yes|no>` | `<test/spec/runner planned>` | `<reason or n/a>` |
 
 ### Local CI-Equivalent Suite Matrix (Required Before `APROVADO` and Before Delivery Claim)
-A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
+A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. Reconcile-only wrappers are optional helpers when the current authoritative branch is a true reconciliation branch; they are not the definition of CI-Equivalent. Published `stage`/`main` probes are separate evidence and do not replace this matrix. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
 
 | Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before (`APROVADO|Local-Implemented|promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -306,6 +319,7 @@ Use exact trigger names and exact enum values only.
 - **Critique status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
+- **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
 - | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
 - | --- | --- | --- | --- | --- | --- | --- |
 - | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
@@ -364,6 +378,7 @@ When the heuristic scanner is in scope, prefer JSON evidence for non-trivial dif
 
 ## Promotion Finding Routing Ledger (Required When Promotion Finds Blockers)
 Use this only when promotion/CI/Copilot/check evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
+Carry prior recorded rows forward into every future no-context/Copilot review loop. A repeated finding is actionable only when the current bounded package materially changed the same locus/behavior or the prior adjudication is objectively insufficient.
 
 | Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -463,6 +478,7 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
+- **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
 - | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
 - | --- | --- | --- | --- | --- | --- | --- |
 - | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
@@ -483,6 +499,25 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Final review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
+- **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
+- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+- | --- | --- | --- | --- | --- | --- | --- |
+- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+- **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
+- **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
+
+## Independent Cutover Integrity Audit Gate
+- **Cutover audit decision:** `<required|recommended|not_needed>`
+- **Why this decision:** <why cutover or compatibility scrutiny is or is not required for this TODO>
+- **Cutover signals in scope:** `<canonical cutover|legacy-path retirement|compatibility exception|fallback bridge|dual-read/write|query-time stitching|none>`
+- **Package mode:** `<bounded-file-set|bounded-summary>`
+- **Canonical multi-lane audit protocol (when used):** `<audit-protocol-triple-review|n/a>`
+- **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
+- **Audit focus:** `<true canonical path|approved temporary exception scope|removal criteria|hidden fallback mirrors|pseudo-canonical fields>`
+- **Cutover audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <material findings summary or `none`>
+- **Resolution ledger:** use the machine-checkable table below when findings exist
+- **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
 - | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
 - | --- | --- | --- | --- | --- | --- | --- |
 - | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |

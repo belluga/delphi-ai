@@ -3,20 +3,21 @@
   "$id": "https://paced.internal/schemas/todo_validation_bundle.schema.json",
   "title": "PACED Tactical TODO Validation Bundle",
   "type": "object",
-  "required": [
-    "schema_version",
-    "todo_path",
-    "namespace",
-    "artifact_type",
-    "artifact_state",
-    "delivery_status",
-    "blocker_record",
-    "provisional_record",
-    "gates"
-  ],
+    "required": [
+      "schema_version",
+      "todo_path",
+      "namespace",
+      "artifact_type",
+      "artifact_state",
+      "delivery_status",
+      "active_work_state",
+      "blocker_record",
+      "provisional_record",
+      "gates"
+    ],
   "properties": {
     "schema_version": {
-      "const": "todo-validation-bundle-v2"
+      "const": "todo-validation-bundle-v3"
     },
     "todo_path": {
       "type": "string",
@@ -112,6 +113,30 @@
           "type": "string"
         },
         "last_confirmed_truth": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "active_work_state": {
+      "type": "object",
+      "required": [
+        "section_present",
+        "work_state",
+        "why_this_state_now",
+        "exit_condition"
+      ],
+      "properties": {
+        "section_present": {
+          "type": "boolean"
+        },
+        "work_state": {
+          "type": "string"
+        },
+        "why_this_state_now": {
+          "type": "string"
+        },
+        "exit_condition": {
           "type": "string"
         }
       },

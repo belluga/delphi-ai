@@ -74,6 +74,13 @@ PROMOTION_SCOPE_CHANGE_TOKENS = (
     "excecao",
     "exceção",
 )
+PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS = (
+    "follow-up",
+    "follow up",
+    "fast-follow",
+    "fast follow",
+    "hardening",
+)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
 UNRESOLVED_RE = re.compile(
@@ -371,6 +378,7 @@ def validate_promotion_routing(sections: dict[str, list[str]]) -> tuple[list[dic
             )
             continue
         severity = normalize(row[1])
+        classification = normalize(row[2])
         routing = normalize(row[3])
         rationale = row[4]
         status = normalize(row[5])
@@ -411,6 +419,15 @@ def validate_promotion_routing(sections: dict[str, list[str]]) -> tuple[list[dic
                     "PROMOTION-SCOPE-CHANGE-MISSING-REFERENCE",
                     f"Promotion routing row requires split/renewed approval/exception but has no reference: {row_text(row)}",
                     "Record the renewed approval, split TODO, waiver, or follow-up reference before continuing promotion.",
+                    PROMOTION_ROUTING_SECTION,
+                )
+            )
+        if any(token in classification for token in PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS) and value_is_missing(reference):
+            violations.append(
+                build_violation(
+                    "PROMOTION-FOLLOWUP-MISSING-REFERENCE",
+                    f"Promotion routing row classifies a finding as follow-up/hardening but has no explicit follow-up reference: {row_text(row)}",
+                    "Open or cite the explicit fast-follow/hardening TODO before claiming the finding is non-blocking for the current release.",
                     PROMOTION_ROUTING_SECTION,
                 )
             )
