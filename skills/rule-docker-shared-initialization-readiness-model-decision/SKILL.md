@@ -7,7 +7,8 @@ description: "Rule: MUST use whenever the scope matches this purpose: When downs
 When the context indicates downstream environment setup, repository verification, CI/CD readiness, or session start in a downstream project:
 - Run the Initialization Checklist (`delphi-ai/initialization_checklist.md`) and `bash delphi-ai/verify_context.sh`.
 - Execute the Environment Readiness Workflow (`delphi-ai/workflows/docker/environment-readiness-method.md`) to confirm submodule links, permissions, and README guidance.
-- When local validation/build/publish flows are likely, resolve the canonical execution owner and public validation targets during readiness (safe runners, published local-public hosts, preferred tenant domain) instead of discovering them ad hoc mid-task.
+- Resolve which Delphi stack capabilities are actually active in the project before executing stack-specific helpers. The registry at `delphi-ai/config/stack_capabilities.yaml` lists available capabilities only; active topology belongs to `foundation_documentation`, `.gitmodules`, README, compose/env examples, project-owned safe runners, or explicit user clarification.
+- When local validation/build/publish flows are likely, resolve the canonical execution owner and public validation targets during readiness (safe runners, published local-public hosts, preferred tenant/domain contract when the project declares one) instead of discovering them ad hoc mid-task.
 - Verify `foundation_documentation/policies/scope_subscope_governance.md` exists and is loaded before any route/module/screen task.
 - Document any remediation (symlinks, ownership fixes) and stable validation-topology facts before moving to feature work.
 - If tactical TODO discipline is in use, ensure `foundation_documentation/todos/{active,completed}` exists (create via `bash delphi-ai/verify_context.sh --repair --fix-todos` if desired).

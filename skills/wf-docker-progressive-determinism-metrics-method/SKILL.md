@@ -13,7 +13,8 @@ Use `workflows/docker/progressive-determinism-metrics-method.md` when PACED need
 Minimum responsibilities:
 1. Seed or refresh `rule-catalog.json`.
 2. Feed deterministic validators into `rule-events.jsonl`.
-3. Keep gate finding resolutions in the authoritative TODO, then extract the derived JSON packet.
-4. Generate the derived metrics summary.
+3. Use `rule_event_record.py gate-escape` for CI/Copilot P1/P2 and Rule-Spirit escapes that automatic extraction cannot infer.
+4. Keep gate finding resolutions in the authoritative TODO, then extract the derived JSON packet.
+5. Generate the derived metrics summary.
 
 Do not treat the metrics artifacts as canonical product truth. They are governance telemetry only.

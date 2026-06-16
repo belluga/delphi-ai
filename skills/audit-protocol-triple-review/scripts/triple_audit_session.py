@@ -26,7 +26,7 @@ SESSION_SCHEMA_VERSION = "triple-audit-session-v1"
 ROUND_SUMMARY_SCHEMA_VERSION = "triple-audit-round-summary-v1"
 RESOLUTION_STATUSES = ("resolved", "accepted-debt", "blocked")
 
-LANES = (
+BASE_LANES = (
     {
         "id": "elegance",
         "review_kind": "critique",
@@ -69,6 +69,23 @@ LANES = (
         ),
     },
 )
+
+EXTRA_LANES = {
+    "cutover-integrity": {
+        "id": "cutover-integrity",
+        "review_kind": "cutover_integrity_audit",
+        "goal": (
+            "Bounded cutover-integrity audit. Determine whether the chosen path is "
+            "truly canonical or just a disguised workaround/bridge. Escalate as "
+            "blocking when pseudo-canonical fields, silent fallback mirrors, "
+            "dual-read/dual-write bridges, or query-time stitching remain as the "
+            "effective final architecture without explicit bounded TODO "
+            "authorization. If the governing TODO explicitly authorizes a "
+            "temporary compatibility construct, challenge scope/removal criteria "
+            "instead of blocking its mere existence."
+        ),
+    },
+}
 
 SEVERITY_ORDER = {"none": 0, "low": 1, "medium": 2, "high": 3}
 
@@ -113,6 +130,15 @@ def default_run_root(package_path: Path, label: str | None) -> Path:
     stem = label or package_path.stem
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return package_path.parent / f"{slugify(stem)}-triple-audit-{timestamp}"
+
+
+def selected_lanes(extra_lane_ids: list[str] | None = None) -> list[dict]:
+    lanes = [dict(item) for item in BASE_LANES]
+    for lane_id in extra_lane_ids or []:
+        if lane_id not in EXTRA_LANES:
+            raise SystemExit(f"Unsupported extra lane: {lane_id}")
+        lanes.append(dict(EXTRA_LANES[lane_id]))
+    return lanes
 
 
 def validate_json(payload: dict, schema_path: Path, label: str) -> None:
@@ -203,6 +229,7 @@ def render_round_package(session: dict, round_number: int, base_package_path: Pa
         "- Performance blockers are concrete severe server/runtime risks such as unbounded scans, request loops where one endpoint/query is required, exact lookup through page walking, high-cardinality in-memory filtering, fetch-all scheduler reconciliation, or resource-exhaustion/security exposure.",
         "- Elegance blockers are structural remnants that contradict the canonical direction and create real drift, duplicate old/new paths likely to diverge, package-first/domain boundary violations, or elegance issues that also carry correctness/performance/security risk.",
         "- Test-quality blockers are missing or invalid evidence for final behavior, CRUD/mutation, backend semantics, required navigation/integration gates, real-backend coverage, CI execution, or mocks/fallbacks that hide production behavior.",
+        "- Cutover-integrity blockers are pseudo-canonical fields, silent fallback mirrors, dual-read/dual-write bridges, or query-time stitching that act as the final architecture without explicit bounded TODO authorization and removal criteria.",
         "- Marginal performance polish, naming/style preferences, and non-risky architectural beautification should be reported as non-blocking debt, not as a reason to continue the audit loop.",
         "",
         "## Current Bounded Package",
@@ -334,7 +361,7 @@ def build_round(session: dict, round_number: int) -> dict:
     round_package_path = prepare_round_package(session, round_number, round_root)
 
     lanes = []
-    for lane in LANES:
+    for lane in selected_lanes(session.get("extra_lane_ids")):
         dispatch_json_path = dispatch_root / f"{lane['id']}.dispatch.json"
         dispatch_markdown_path = dispatch_root / f"{lane['id']}.dispatch.md"
         result_path = results_root / f"{lane['id']}.result.json"
@@ -532,11 +559,12 @@ def start_session(args: argparse.Namespace) -> int:
         "progress_markdown_path": str(progress_markdown_path),
         "package_path": str(package_path),
         "todo_path": str(todo_path) if todo_path else None,
+        "extra_lane_ids": list(dict.fromkeys(args.extra_lane or [])),
         "run_root": str(run_root),
         "current_round": 1,
         "rounds": [],
         "exact_next_step": (
-            "Spawn one no-context reviewer per lane using the current round dispatch "
+            "Spawn one no-context reviewer per required lane using the current round dispatch "
             "markdown files, then record each JSON result with `record-result`."
         ),
     }
@@ -582,7 +610,7 @@ def record_result(args: argparse.Namespace) -> int:
 
     round_info["status"] = "results-recorded"
     session["exact_next_step"] = (
-        "Record the remaining reviewer JSON results, or run `merge` once all three "
+        "Record the remaining reviewer JSON results, or run `merge` once all required "
         "lane results are present."
     )
     save_session(session)
@@ -721,7 +749,7 @@ def render_resolution_template(session: dict, round_info: dict) -> str:
             "",
             "## Accepted Non-Blocking Debt",
             "",
-            "- Record any valid but non-blocking performance/elegance/test-quality findings here with rationale and owner/surface.",
+            "- Record any valid but non-blocking performance/elegance/test-quality/cutover-integrity findings here with rationale and owner/surface.",
             "",
             "## Next Audit Package Requirements",
             "",
@@ -841,7 +869,7 @@ def next_round(args: argparse.Namespace) -> int:
     session["current_round"] = next_round_number
     session["rounds"].append(build_round(session, next_round_number))
     session["exact_next_step"] = (
-        "Spawn one no-context reviewer per lane using the new current-round dispatch "
+        "Spawn one no-context reviewer per required lane using the new current-round dispatch "
         "markdown files, then record each JSON result with `record-result`."
     )
     save_session(session)
@@ -867,6 +895,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--label",
         help="Optional label used when deriving the default run-root directory.",
     )
+    start.add_argument(
+        "--extra-lane",
+        action="append",
+        choices=sorted(EXTRA_LANES.keys()),
+        help="Optional extra reviewer lane to include in every round.",
+    )
     start.set_defaults(func=start_session)
 
     status = subparsers.add_parser("status", help="Show current session status.")
@@ -881,7 +915,6 @@ def build_parser() -> argparse.ArgumentParser:
     record.add_argument(
         "--lane",
         required=True,
-        choices=[lane["id"] for lane in LANES],
         help="Lane id to record.",
     )
     record.add_argument("--input", required=True, help="Reviewer JSON file path.")

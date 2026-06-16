@@ -22,6 +22,7 @@ When starting a new session, CI/CD readiness, or session start in a downstream p
 
 - Run the Initialization Checklist (`delphi-ai/initialization_checklist.md`) and `bash delphi-ai/verify_context.sh`.
 - Execute the Environment Readiness Workflow (`delphi-ai/workflows/docker/environment-readiness-method.md`) to confirm submodule links, permissions, and README guidance.
+- Resolve which Delphi stack capabilities are actually active in the project before executing stack-specific helpers. The registry at `delphi-ai/config/stack_capabilities.yaml` lists available capabilities only; active topology belongs to `foundation_documentation`, `.gitmodules`, README, compose/env examples, project-owned safe runners, or explicit user clarification.
 - Verify `foundation_documentation/policies/scope_subscope_governance.md` exists and is loaded before any route/module/screen task.
 - Do **not** use this rule to block Delphi self-maintenance inside the `delphi-ai/` repo itself.
 
@@ -40,6 +41,7 @@ When defining or editing a workflow:
 - Use `delphi-ai/templates/workflow-template.md` as the scaffold.
 - Name files in kebab-case and include required header fields.
 - Create or update the corresponding rule so the workflow is triggerable.
+- Keep one canonical source for durable behavior. Workflow files carry detailed method semantics; workflow skills should usually be concise entrypoints that reference the canonical workflow instead of copying the full body.
 - For implementation-capable workflows, encode governance gates (complexity classification, Plan Review Gate, Decision Baseline freeze, APROVADO gate, Decision Adherence Gate).
 
 ## Realtime Delta Streams
@@ -75,4 +77,5 @@ When setting up, re-initializing, or verifying the Delphi framework in a downstr
 
 - Run `bash delphi-ai/verify_context.sh` (read-only by default).
 - If it fails on Delphi-managed links/artifacts, run `bash delphi-ai/verify_context.sh --repair`.
+- Use `delphi-ai/config/stack_capabilities.yaml` only to identify capabilities Delphi can support. Active project stacks, runtime owners, tenants/domains, validation targets, and safe runners must be resolved from `foundation_documentation`, project-owned config/env, README, or explicit user clarification.
 - Ensure `foundation_documentation/todos/{active,completed}` directories exist.

@@ -25,6 +25,8 @@ This method critiques the delivered implementation and its evidence. It is not a
 - security/performance residual risks already present in the delivery packet
 - elegance regressions (loss of simplicity, coherence, or minimal incidental complexity)
 - structural regressions caused by brittle workarounds or structural shortcuts, such as ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt
+- pipeline/Copilot-style `P1|P2` defects that should have been caught before CI
+- rule-spirit anti-patterns, including disguised bypasses of the rules ingested for execution
 - verification debt and waiver quality
 
 The reviewer should not reopen the whole architecture by default. Only a material defect, approval-breaking divergence, or clearly insufficient evidence may force a broader reset.
@@ -33,7 +35,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 - Tactical TODO under `foundation_documentation/todos/active/`.
 - Implemented change package (diff or bounded touched-surface set).
 - Decision Adherence Validation and Module Decision Consistency Validation.
-- Validation/test output, test-quality-audit evidence from `wf-docker-independent-test-quality-audit-method`, security/performance evidence, and verification-debt evidence already collected for delivery.
+- Validation/test output, test-quality-audit evidence from `wf-docker-independent-test-quality-audit-method`, Pipeline/Copilot P1/P2 Preflight evidence, Rule-Spirit Anti-Pattern Hunt evidence, security/performance evidence, and verification-debt evidence already collected for delivery.
 - A bounded final-review package:
   - either a curated file/evidence set,
   - or a concise structured delivery summary.
@@ -50,6 +52,8 @@ The reviewer should not reopen the whole architecture by default. Only a materia
   - decision-adherence and module-consistency status;
   - validation evidence index;
   - test-quality-audit evidence and status;
+  - Pipeline/Copilot P1/P2 Preflight status;
+  - Rule-Spirit Anti-Pattern Hunt status;
   - residual risks;
   - existing waivers and unresolved verification debt.
 - Preserve concrete evidence and explicit residual risks rather than smoothing them into generic prose.
@@ -81,6 +85,8 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - missing, weak, bypass-prone, or incomplete test logic and test-audit evidence;
    - waiver/debt misuse;
    - residual operational/security/performance risks;
+   - unresolved pipeline/Copilot-style `P1|P2` defects;
+   - anti-patterns that satisfy a rule superficially while violating its architectural intent;
    - elegance regressions;
    - structural regressions caused by brittle workarounds or structural shortcuts that should block closure.
 5. Treat the review as challenge evidence only:

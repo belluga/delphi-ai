@@ -108,4 +108,10 @@ Then run the adherence sync validation if you need governance mirror proof:
 bash delphi-ai/verify_adherence_sync.sh
 ```
 
+Optional but recommended for canonical `foundation_documentation` clones:
+```bash
+bash delphi-ai/tools/install_foundation_main_only_guard.sh --repo foundation_documentation
+```
+This installs local Git hooks that keep `foundation_documentation` on the single writable canonical branch (`main`) and emit PACED guidance when a checkout or branch mutation tries to leave that model.
+
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.

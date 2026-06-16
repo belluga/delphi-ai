@@ -34,7 +34,8 @@
         "architecture_opinion",
         "critique",
         "test_quality_audit",
-        "final_review"
+        "final_review",
+        "cutover_integrity_audit"
       ]
     },
     "bounded_package_path": {
@@ -74,7 +75,69 @@
     },
     "goal": {
       "type": "string"
+    },
+    "historical_disposition_policy": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "historical_dispositions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/historical_disposition"
+      }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "historical_disposition": {
+      "type": "object",
+      "required": [
+        "source_kind",
+        "finding_id",
+        "carry_forward_class",
+        "source_disposition",
+        "summary",
+        "reference"
+      ],
+      "properties": {
+        "source_kind": {
+          "enum": [
+            "promotion_routing",
+            "critique",
+            "test_quality_audit",
+            "final_review",
+            "cutover_integrity_audit"
+          ]
+        },
+        "finding_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "carry_forward_class": {
+          "enum": [
+            "resolved",
+            "challenged",
+            "deferred",
+            "unresolved"
+          ]
+        },
+        "source_disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }

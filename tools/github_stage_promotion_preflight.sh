@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 usage() {
   cat <<'EOF'
-Usage: github_stage_promotion_preflight.sh --source <ref> [--repo <path>] [--base <ref>] [--require-diff-shape <any|submodule-only>]
+Usage: github_stage_promotion_preflight.sh --source <ref> [--repo <path>] [--base <ref>] [--require-diff-shape <any|submodule-only>] [--orchestration-plan <path>]
 
 Run the deterministic first-PR preflight for the GitHub Stage Promotion Orchestrator.
 This helper is a TEACH runtime blocker: objective git checks trigger it, exit code `2`
@@ -20,6 +22,7 @@ Options:
   --repo <path>                        Repository to inspect. Defaults to current directory.
   --base <ref>                         Authoritative base ref that the source must contain. Defaults to origin/dev.
   --require-diff-shape <shape>         Optional additional diff-shape gate. Supported: any, submodule-only.
+  --orchestration-plan <path>          Optional orchestration execution plan. When provided, the post-reconcile replay guard must return `Overall outcome: go` before normal source-branch preflight continues.
   -h, --help                           Show this help text.
 
 Exit codes:
@@ -38,6 +41,7 @@ REPO_INPUT="."
 SOURCE_REF=""
 BASE_REF="origin/dev"
 REQUIRE_DIFF_SHAPE="any"
+ORCHESTRATION_PLAN=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -61,6 +65,11 @@ while [ $# -gt 0 ]; do
       REQUIRE_DIFF_SHAPE="$2"
       shift 2
       ;;
+    --orchestration-plan)
+      [ $# -ge 2 ] || die "missing value for --orchestration-plan"
+      ORCHESTRATION_PLAN="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -80,6 +89,14 @@ esac
 
 REPO_ROOT="$(git -C "$REPO_INPUT" rev-parse --show-toplevel 2>/dev/null || true)"
 [ -n "$REPO_ROOT" ] || die "path is not inside a git repository: $REPO_INPUT"
+
+if [ -n "$ORCHESTRATION_PLAN" ]; then
+  if python3 "$SCRIPT_DIR/orchestration_reconcile_replay_guard.py" --plan "$ORCHESTRATION_PLAN" --repo "$REPO_ROOT"; then
+    :
+  else
+    exit $?
+  fi
+fi
 
 repo_git() {
   git -C "$REPO_ROOT" "$@"
@@ -190,6 +207,12 @@ TOPOLOGY_ONLY_RECONCILIATION_READY=false
 TOPOLOGY_ONLY_RECONCILIATION_REASON=""
 NORMALIZED_BASE_REF="$(normalize_lane_ref "$BASE_REF")"
 NORMALIZED_SOURCE_REF="$(normalize_lane_ref "$SOURCE_SHORT")"
+SOURCE_IS_RECONCILE_BRANCH=false
+case "$NORMALIZED_SOURCE_REF" in
+  reconcile/*)
+    SOURCE_IS_RECONCILE_BRANCH=true
+    ;;
+esac
 if [ "$SOURCE_HAS_DIFF" = false ] && [ "$NORMALIZED_BASE_REF" = "dev" ]; then
   STAGE_SHA="$(resolve_commit "origin/stage")"
   if [ -n "$STAGE_SHA" ] \
@@ -224,7 +247,12 @@ if [ "$CURRENT_BRANCH" = "$SOURCE_SHORT" ] && [ "$WORKTREE_DIRTY" = true ]; then
 fi
 
 OVERALL_GO=true
-if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ]; then
+RECONCILE_POLICY_READY=true
+if [ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
+  RECONCILE_POLICY_READY=false
+fi
+
+if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$RECONCILE_POLICY_READY" = false ]; then
   OVERALL_GO=false
 fi
 
@@ -242,6 +270,12 @@ if [ "$LINEAGE_READY" = false ]; then
   RESOLUTION_PROMPTS+=("Update '$SOURCE_SHORT' so it contains '$BASE_REF' before opening the first promotion PR.")
   RESOLUTION_PROMPTS+=("Fast path: git fetch origin --prune && git checkout '$SOURCE_SHORT' && git rebase '$BASE_REF'.")
   RESOLUTION_PROMPTS+=("Fallback when rebase is not desirable: create a fresh branch from '$BASE_REF' and cherry-pick only the source-only commits listed in context.")
+fi
+
+if [ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
+  VIOLATIONS+=("Source '$SOURCE_REF' is a reconciliation branch. Promotion may not start from reconcile/*.")
+  RESOLUTION_PROMPTS+=("Replay the accepted reconcile state onto the canonical version/source branch first, then rerun this preflight from that canonical branch.")
+  RESOLUTION_PROMPTS+=("If this package came from orchestrated reconcile, record the replay in the orchestration plan and require python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan-path> --repo <authoritative-source-repo> to return Overall outcome: go before retrying promotion.")
 fi
 
 if [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
@@ -267,6 +301,7 @@ printf '\n'
 printf 'Preflight summary\n'
 printf '  - worktree clean for source branch: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 printf '  - source contains base tip: %s\n' "$([ "$LINEAGE_READY" = true ] && printf yes || printf no)"
+printf '  - source is not reconcile/* (or approved topology-only replay): %s\n' "$([ "$RECONCILE_POLICY_READY" = true ] && printf yes || printf no)"
 printf '  - source has promotable diff beyond base: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
 printf '  - topology-only reconciliation accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  - diff shape requirement (%s): %s\n' "$REQUIRE_DIFF_SHAPE" "$([ "$DIFF_SHAPE_READY" = true ] && printf pass || printf fail)"
@@ -277,6 +312,9 @@ printf '\n'
 if [ "$OVERALL_GO" = true ]; then
   NEXT_PROMPTS+=("Continue with the promotion skill and capture the live PR/check evidence snapshot next.")
   NEXT_PROMPTS+=("Optional follow-up: bash delphi-ai/tools/github_stage_promotion_snapshot.sh --branch $SOURCE_SHORT")
+  if [ -n "$ORCHESTRATION_PLAN" ]; then
+    NEXT_PROMPTS+=("The supplied orchestration plan already proved post-reconcile replay back onto the canonical branch for this promotion handoff.")
+  fi
 
   printf 'TEACH runtime response\n'
   printf 'status: ready\n'
@@ -293,11 +331,15 @@ if [ "$OVERALL_GO" = true ]; then
   printf '  base_sha: %s\n' "$BASE_SHA"
   printf '  merge_base: %s\n' "$MERGE_BASE_SHA"
   printf '  source_contains_base_tip: yes\n'
+  printf '  source_is_reconcile_branch: %s\n' "$([ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && printf yes || printf no)"
   printf '  source_has_promotable_diff: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
   printf '  topology_only_reconciliation_accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
   printf '  diff_shape_requirement: %s\n' "$REQUIRE_DIFF_SHAPE"
   printf '  diff_shape_ready: yes\n'
   printf '  worktree_clean_for_source: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
+  if [ -n "$ORCHESTRATION_PLAN" ]; then
+    printf '  orchestration_plan: %s\n' "$ORCHESTRATION_PLAN"
+  fi
   if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then
     printf '  topology_only_reconciliation_reason: %s\n' "$TOPOLOGY_ONLY_RECONCILIATION_REASON"
   fi
@@ -305,7 +347,11 @@ if [ "$OVERALL_GO" = true ]; then
   exit 0
 fi
 
-RESOLUTION_PROMPTS+=("Rerun the preflight and require 'Overall outcome: go' before the first promotion PR: bash delphi-ai/tools/github_stage_promotion_preflight.sh --source $SOURCE_REF --base $BASE_REF --require-diff-shape $REQUIRE_DIFF_SHAPE")
+RERUN_COMMAND="bash delphi-ai/tools/github_stage_promotion_preflight.sh --source $SOURCE_REF --base $BASE_REF --require-diff-shape $REQUIRE_DIFF_SHAPE"
+if [ -n "$ORCHESTRATION_PLAN" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --orchestration-plan $ORCHESTRATION_PLAN"
+fi
+RESOLUTION_PROMPTS+=("Rerun the preflight and require 'Overall outcome: go' before the first promotion PR: $RERUN_COMMAND")
 
 printf 'TEACH runtime response\n'
 printf 'status: blocked\n'
@@ -322,11 +368,15 @@ printf '  base_ref: %s\n' "$BASE_REF"
 printf '  base_sha: %s\n' "$BASE_SHA"
 printf '  merge_base: %s\n' "$MERGE_BASE_SHA"
 printf '  source_contains_base_tip: %s\n' "$([ "$LINEAGE_READY" = true ] && printf yes || printf no)"
+printf '  source_is_reconcile_branch: %s\n' "$([ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && printf yes || printf no)"
 printf '  source_has_promotable_diff: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
 printf '  topology_only_reconciliation_accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  diff_shape_requirement: %s\n' "$REQUIRE_DIFF_SHAPE"
 printf '  diff_shape_ready: %s\n' "$([ "$DIFF_SHAPE_READY" = true ] && printf yes || printf no)"
 printf '  worktree_clean_for_source: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
+if [ -n "$ORCHESTRATION_PLAN" ]; then
+  printf '  orchestration_plan: %s\n' "$ORCHESTRATION_PLAN"
+fi
 printf '  base_only_commits_missing_from_source_count: %s\n' "$BASE_ONLY_COUNT"
 printf '  source_only_commits_beyond_base_count: %s\n' "$SOURCE_ONLY_COUNT"
 if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then

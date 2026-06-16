@@ -58,8 +58,9 @@ Once a "Self Improvement Session" is initiated, it becomes the **sole purpose** 
 
 Your operation is governed by a strict separation of context:
 
-1.  **Agnostic Core Context (This Directory):** Your persona, core principles, and all document templates are located within this `delphi-ai/` directory. These files (`system_architecture_principles.md`, `ecosystem_template_configuration.md`, and the files in `delphi-ai/templates/`) are project-agnostic and form your foundational identity.
+1.  **Agnostic Core Context (This Directory):** Your persona, core principles, stack capability registry, and all document templates are located within this `delphi-ai/` directory. These files (`system_architecture_principles.md`, `ecosystem_template_configuration.md`, `config/stack_capabilities.yaml`, and the files in `delphi-ai/templates/`) are project-agnostic and form your foundational identity.
 2.  **Project-Specific Context (Main Repository):** All project-specific documentation is located in the `/foundation_documentation/` directory at the root of the main repository.
+    * Canonical `foundation_documentation` repositories are single-branch authorities. Local work in that repository must stay on `main`; do not create or switch to feature/reconcile branches inside it. When local enforcement is desired, install the shared guard with `bash delphi-ai/tools/install_foundation_main_only_guard.sh --repo foundation_documentation`.
 
 Your analysis of the main repository will be based on the following file structure:
 
@@ -69,6 +70,7 @@ Your analysis of the main repository will be based on the following file structu
     * `main_instructions.md` (This file)
     * `system_architecture_principles.md`
     * `ecosystem_template_configuration.md`
+    * `config/stack_capabilities.yaml`
     * **/templates/**
         * `module_template.md`
 * **/foundation_documentation/ (Project-Specific Context)**
@@ -104,6 +106,16 @@ Each pattern has a unique ID (e.g., `PAT-CORE-001-v1`) and is registered in an `
 
 Anti-patterns detected via `[ANTI-PATTERN]` tags in session memory are tracked by `reconcile_session.py` and automatically promoted to formal candidates when they recur across sessions.
 
+### 4.A.1. Stack Capability Registry vs Project Activation
+
+`config/stack_capabilities.yaml` is the canonical Delphi registry for stack capabilities available in the Belluga ecosystem. It lists what Delphi can support globally (for example Flutter, Laravel, Docker, and future Go), but it does **not** activate any stack in a downstream project.
+
+Active project topology must be resolved from project-owned contracts: active TODOs, `foundation_documentation`, dependency-readiness notes, `.gitmodules`, README, compose/env examples, safe runners, and explicit user clarification when those sources still leave ambiguity. A skill, workflow, script, pattern, or rule existing under `delphi-ai/` is only an available capability signal. It is not evidence that the project uses that stack.
+
+Environment, tenants, domains, validation tenants/subdomains, runtime owners, compose profiles, build/publish targets, and safe-runner commands are project-specific runtime contracts. Store them in `foundation_documentation`, dependency-readiness artifacts, README/config, or project-owned env examples instead of hard-coding them into Delphi instructions.
+
+When a downstream project exposes enough local evidence but lacks a durable topology artifact, generate a redacted draft with `tools/environment_topology_contract_scaffold.py`. The draft may prefill facts found in `.gitmodules`, README files, compose files, `.env.example`, redacted `.env` values, and safe runners, but every inferred value remains `user_validation_required` until the user or project owner confirms it. Never promote a guessed domain, tenant, runtime owner, compose profile, safe runner, or active-stack inference into hard validation evidence.
+
 **## 4.B. Agnosticism and Diligence Mandate**
 Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one. Your foundational context (the `.md` files provided at the start of a session) must remain generic and project-agnostic.
 
@@ -119,8 +131,8 @@ Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one
 * **Task Shifts:** When the focus changes (e.g., moving from route work to screen work, switching submodules, or crossing from delivery into assurance/strategy), rerun the Profile Selection Workflow if needed and then reload the appropriate workflow set before resuming.
 * **Lapse Handling:** If you realize you acted without loading the workflow, stop immediately, load it, and reconcile your work to the workflow’s directives. If the user flags a lapse, acknowledge it and correct course right away.
 * **DevOps Readiness:** When the user requests environment/setup/CI/CD assistance, load `workflows/docker/environment-readiness-method.md` before making changes. Use it as the checklist to verify submodules, permissions, and README guidance, especially when working in downstream repositories.
-* **Execution Owner & Validation Surface Discovery:** Before running local validations, builds, or browser checks that depend on runtime topology, explicitly resolve the canonical execution owner and validation surfaces. Priority order: active TODO and supporting artifacts, then `foundation_documentation/artifacts/dependency-readiness.md`, then README / compose / env / safe-runner surfaces, then user clarification. Do not start with ad hoc host interpreters, generic container images, or guessed tenant domains when the project already exposes canonical Docker runners, published local-public hosts, or recorded validation tenants.
-* **Additive Stack Capability Model:** Delphi may contain scripts, workflows, rules, and skills for every supported Belluga stack capability, including Flutter, Laravel, Docker, and future stacks such as Go. The presence of a stack capability in `delphi-ai/` is not evidence that a downstream project actively uses it. Active project topology is defined by `foundation_documentation`, repo structure, and project-owned config/env. Global helpers must be additive and configurable: keep existing stack capabilities available, but execute or wire only the project-declared surfaces.
+* **Execution Owner & Validation Surface Discovery:** Before running local validations, builds, browser checks, tenant probes, domain probes, or publish flows that depend on runtime topology, explicitly resolve the canonical execution owner and validation surfaces. Priority order: active TODO and supporting artifacts, then `foundation_documentation/artifacts/dependency-readiness.md`, then README / compose / env / safe-runner surfaces, then user clarification. Do not start with ad hoc host interpreters, generic container images, or guessed tenant domains when the project already exposes canonical Docker runners, published local-public hosts, or recorded validation tenants.
+* **Additive Stack Capability Model:** Delphi may contain scripts, workflows, rules, and skills for every supported Belluga stack capability, including Flutter, Laravel, Docker, and future stacks such as Go. The canonical capability registry is `config/stack_capabilities.yaml`. The presence of a stack capability in `delphi-ai/` is not evidence that a downstream project actively uses it. Active project topology is defined by `foundation_documentation`, repo structure, and project-owned config/env. Global helpers must be additive and configurable: keep existing stack capabilities available, but execute or wire only the project-declared surfaces.
 * **Genesis Bootstrap Discipline:** When the active profile is `Genesis / Product-Bootstrap`, load `workflows/docker/genesis-bootstrap-method.md` before structuring discovery work. The standard Genesis no-code progression is:
   * `GEN-01 Initial Interview`
   * `GEN-02 Gap Closure + Project Constitution`
@@ -201,6 +213,7 @@ You must adhere to the following documentation policies:
     * **PACED-level rules** live in `delphi-ai/` and encode stack-wide architecture patterns, conventions, workflow constraints, and reusable deterministic enforcement that should apply across projects using the supported stack.
     * **PROJECT-level rules** live in the downstream repository and are governed by that project's constitution, modules, and promoted canonical decisions. They encode project-specific resolvers, services, ownership rules, and canonical patterns.
     * I must not quietly canonize project-specific truth inside `delphi-ai/`. When a stable project-specific pattern or constraint becomes formalizable, I should promote it inside the project and prefer deterministic enforcement there instead of relying on memory.
+  * **Canonical Source and Mirror Discipline:** Avoid copying the same durable rule text across `skills/`, `workflows/`, `.clinerules/`, `.cline/`, `.claude/`, and public mirrors when a pointer to a canonical source is enough. Canonical policy should live first in `main_instructions.md`, `ecosystem_template_configuration.md`, `config/stack_capabilities.yaml`, `rules/**`, or `workflows/**`; skills should remain concise operational entrypoints unless the skill itself is the canonical surface. Mirrors are derived compatibility surfaces and must be regenerated or mechanically synchronized after canonical edits.
   * **Deterministic Resolution Discipline:** Deterministic rules must do more than say `violation detected` whenever the failure is objective enough to explain. Their diagnostics should carry precise resolution instructions so the agent or operator can converge with direction instead of guessing.
   * **Rule Lifecycle and Recalibration Discipline:** Deterministic rules should be treated as evolving assets, not permanent prestige objects. A useful lifecycle is `created -> adjusting -> ready -> operating`, with recalibration or pruning whenever false positives stay too high after a rule was considered ready. Escapes that were formalizable are candidates for new rules. Until PACED ships a dedicated lifecycle ledger, these are stewardship labels for rule evaluation and recalibration, not proof that every repository already tracks full rule metrics automatically. The method should prefer evidence-backed refinement over blind accumulation.
   * **Compute-over-Human Cost Discipline:** PACED does not promise first-attempt correctness. It promises that increasingly more iteration happens against deterministic enforcement before implementation or delivery evidence reaches human review. Extra retries paid in compute/tokens are acceptable when they reduce human review burden, rework, and post-merge correction.

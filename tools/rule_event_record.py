@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "deterministic" / "core"))
 
 from paced_metrics_core import (
     append_jsonl,
@@ -15,6 +18,19 @@ from paced_metrics_core import (
     utc_now,
     validate_schema,
 )
+
+
+GATE_RULE_IDS = {
+    "pipeline-p1-p2": "paced.gate.pipeline-p1-p2-preflight",
+    "rule-spirit-anti-pattern": "paced.gate.rule-spirit-anti-pattern-hunt",
+}
+
+
+def stable_fingerprint(text: str) -> str:
+    lowered = text.lower().strip()
+    slug = "".join(char if char.isalnum() else "-" for char in lowered)
+    slug = "-".join(part for part in slug.split("-") if part)
+    return slug[:80] or "manual-gate-escape"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -35,6 +51,17 @@ def build_parser() -> argparse.ArgumentParser:
     escape.add_argument("--reason", required=True)
     escape.add_argument("--source-kind", default="manual", choices=["ci", "lint", "analyzer", "validator", "hybrid", "manual"])
     escape.add_argument("--source-ref", default="manual")
+
+    gate_escape = subparsers.add_parser(
+        "gate-escape",
+        help="Record a P1/P2 or rule-spirit escape with canonical gate rule IDs.",
+    )
+    gate_escape.add_argument("--gate", required=True, choices=sorted(GATE_RULE_IDS))
+    gate_escape.add_argument("--todo-path", required=True)
+    gate_escape.add_argument("--summary", required=True, help="Short human-readable escaped condition summary.")
+    gate_escape.add_argument("--fingerprint", help="Optional stable fingerprint. Defaults to a slug of --gate + --summary.")
+    gate_escape.add_argument("--source-kind", default="manual", choices=["ci", "lint", "analyzer", "validator", "hybrid", "manual"])
+    gate_escape.add_argument("--source-ref", default="manual")
 
     state = subparsers.add_parser("state-change", help="Record a lifecycle change for a rule.")
     state.add_argument("--rule-id", required=True)
@@ -85,24 +112,34 @@ def main() -> int:
             "outcome": args.outcome,
             "reason": args.reason,
         }
-    elif args.command == "escape":
+    elif args.command in {"escape", "gate-escape"}:
+        if args.command == "gate-escape":
+            rule_id = GATE_RULE_IDS[args.gate]
+            rule_level = "paced"
+            reason = args.summary
+            fingerprint = args.fingerprint or stable_fingerprint(f"{args.gate}:{args.summary}")
+        else:
+            rule_id = args.rule_id
+            rule_level = args.rule_level
+            reason = args.reason
+            fingerprint = args.fingerprint
         todo_path = canonical_todo_path(args.todo_path, Path.cwd())
         prior_events = load_jsonl(events_path)
-        episode_id = next_rule_episode_id(prior_events, args.rule_id, todo_path, args.fingerprint)
+        episode_id = next_rule_episode_id(prior_events, rule_id, todo_path, fingerprint)
         payload = {
             "schema_version": "rule-event-v1",
             "artifact_kind": "rule_event",
-            "event_id": build_rule_event_id("rule_escape_recorded", args.rule_id, todo_path, args.fingerprint, timestamp),
+            "event_id": build_rule_event_id("rule_escape_recorded", rule_id, todo_path, fingerprint, timestamp),
             "event_kind": "rule_escape_recorded",
             "timestamp": timestamp,
-            "rule_id": args.rule_id,
-            "rule_level": args.rule_level,
+            "rule_id": rule_id,
+            "rule_level": rule_level,
             "todo_path": todo_path,
             "episode_id": episode_id,
-            "fingerprint": args.fingerprint,
+            "fingerprint": fingerprint,
             "source_kind": args.source_kind,
             "source_ref": args.source_ref,
-            "reason": args.reason,
+            "reason": reason,
         }
     else:
         payload = {

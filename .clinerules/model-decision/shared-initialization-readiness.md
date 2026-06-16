@@ -6,6 +6,7 @@
 When the context indicates downstream environment setup, repository verification, CI/CD readiness, or session start in a downstream project:
 - Run the Initialization Checklist (`delphi-ai/initialization_checklist.md`) and `bash delphi-ai/verify_context.sh`.
 - Execute the Environment Readiness Workflow (`delphi-ai/workflows/docker/environment-readiness-method.md`) to confirm submodule links, permissions, and README guidance.
+- Resolve which Delphi stack capabilities are actually active in the project before executing stack-specific helpers. The registry at `delphi-ai/config/stack_capabilities.yaml` lists available capabilities only; active topology belongs to `foundation_documentation`, `.gitmodules`, README, compose/env examples, project-owned safe runners, or explicit user clarification.
 - Verify `foundation_documentation/policies/scope_subscope_governance.md` exists and is loaded before any route/module/screen task.
 - Document any remediation (symlinks, ownership fixes) before moving to feature work.
 - If tactical TODO discipline is in use, ensure `foundation_documentation/todos/{active,completed}` exists (create via `bash delphi-ai/verify_context.sh --repair --fix-todos` if desired).

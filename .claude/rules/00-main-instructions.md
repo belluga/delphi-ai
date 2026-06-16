@@ -21,6 +21,7 @@ Before any work, read `./delphi-ai/main_instructions.md` — this is the authori
 3. Respect the four Surfaces of Authority: Constitution > Roadmap > Modules > TODOs.
 4. Follow T.E.A.C.H. feedback protocol for all corrections and learnings.
 5. Run `bash delphi-ai/verify_context.sh` as a readiness check before project work.
+6. Treat `delphi-ai/config/stack_capabilities.yaml` as available-capability context only; active project stacks and runtime topology come from `foundation_documentation`, repo structure, and project-owned config/env.
 
 ## Profile Selection
 

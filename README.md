@@ -15,8 +15,13 @@ To attach PACED authority to any repository:
 3.  **Link & Validate Environment:**
     ```bash
     bash delphi-ai/verify_context.sh --repair
+    bash delphi-ai/verify_context.sh
     ```
-4.  **Automate CI:** Call the `laravel-ci-engine.yml` in your project's GitHub Actions.
+4.  **Verify agent-surface sync (recommended):**
+    ```bash
+    bash delphi-ai/verify_adherence_sync.sh
+    ```
+5.  **Automate CI:** Call the shared workflow your project subscribes to from GitHub Actions.
 
 *Note: Ensure your project has a `foundation_documentation/project_constitution.md` with a declared `Namespace` (e.g., `flutter`, `laravel`) to enable stack-specific rules.*
 
@@ -29,21 +34,41 @@ The core thesis is that **accumulated system complexity should accelerate correc
 
 ---
 
+## Operating Model
+
+- **Bootloaders first:** start from the repo bootloader (`AGENTS.md`, `CLINE.md`, `CLAUDE.md`, or `GEMINI.md`), then load `delphi-ai/main_instructions.md`.
+- **Profile before task work:** declare the active profile and technical scope via `delphi-ai/workflows/docker/profile-selection-method.md`.
+- **TODO authority:** planning is advisory; implementation authority requires a tactical TODO, explicit `APROVADO`, and delivery-gate evidence.
+- **CI Equivalent:** local product proof on the current authoritative branch using the same product-facing suites/jobs the pipeline runs for that scope.
+- **Reconcile topology:** `reconcile/*` is reserved for real orchestrator-led multi-worktree reconciliation. It is not a generic prerequisite for CI Equivalent.
+- **Promotion boundary:** after a green reconcile, replay the accepted net effect onto the canonical version/source branch, then continue promotion from that canonical branch. Promotion may not start from `reconcile/*`.
+- **Post-reconcile proof:** for reconcile-origin packages, record replay evidence in the orchestration plan, require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan> --repo <authoritative-source-repo>` to return `Overall outcome: go`, and then run `github_stage_promotion_preflight.sh --orchestration-plan <plan>` from the canonical source branch.
+
+---
+
 ## 🏗️ Cascading Architecture (Governance Hierarchy)
 
-PACED operates under a dual-layer **governance hierarchy** to ensure architecture consistency while allowing project-specific flexibility. This is managed through two distinct surfaces:
+PACED operates under a layered **governance hierarchy** to ensure architecture consistency while allowing project-specific flexibility.
 
-### I. Instruction Layer (`rules/`)
+### I. Instruction Layer
 Heuristic guidelines that the agent (Delphi) must interpret and apply.
+Canonical source: `delphi-ai/rules/`. Runtime surface: `.agents/rules/`.
 1.  **Local Rules (`.agents/rules/local/`):** Project-specific constitution and decisions. **Always overrides.**
 2.  **Stack Rules (`.agents/rules/stack/`):** Specialized patterns for the active stack (Flutter, Laravel, Docker, etc.).
 3.  **Core Rules (`.agents/rules/core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
 
-### II. Deterministic Layer (`deterministic/`)
+### II. Deterministic Layer
 Algorithmic authority (Scripts, Guards, Linters) that the agent **must obey**. This is the non-negotiable Law of the Ecosystem.
+Canonical source: `delphi-ai/deterministic/`. Runtime surface: `.agents/deterministic/`.
 1.  **Local Deterministic (`local/`):** Project-specific configurations, exceptions, and business-logic guardrails.
 2.  **Stack Deterministic (`stack/`):** Technology-specific presets (e.g., Pint, Flutter Analyze, or custom architecture scripts).
 3.  **Core Deterministic (`core/`):** Global PACED guards (TODO completion, Impact classifier, Session management).
+
+### III. Patterns Layer
+Versioned Patterns and Anti-Patterns that capture reusable solutions and known failure modes.
+1.  **Local Patterns (`foundation_documentation/patterns/local/`):** Project-specific patterns. **Highest precedence.**
+2.  **Stack Patterns (`delphi-ai/patterns/stacks/<namespace>/`):** Stack-specific patterns.
+3.  **Core Patterns (`delphi-ai/patterns/core/`):** Universal PACED patterns.
 
 ---
 
@@ -85,7 +110,18 @@ The `verify_context.sh` script is the orchestrator of the environment. When run 
 3. Repair and Validate:
    ```bash
    bash delphi-ai/verify_context.sh --repair
+   bash delphi-ai/verify_context.sh
    ```
+4. Confirm mirror sync when needed:
+   ```bash
+   bash delphi-ai/verify_adherence_sync.sh
+   ```
+
+For instruction-only PACED maintenance inside `delphi-ai/`, use:
+```bash
+bash delphi-ai/self_check.sh
+```
+instead of downstream readiness gates.
 
 ---
 
@@ -158,7 +194,7 @@ jobs:
     secrets:
       # O token deve ter acesso de leitura ao repositório belluga/delphi-ai
       GH_PAT: ${{ secrets.GH_PAT }}
-```},{find:
+```
 
 **Benefícios da Assinatura:**
 - **Zero Drift:** O CI remoto é 100% simétrico ao ambiente local (via `--repair`).

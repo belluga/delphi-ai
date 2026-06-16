@@ -282,6 +282,45 @@ check_skill_mirrors() {
   [ "$status" = "PASS" ]
 }
 
+check_claude_skill_mirrors() {
+  local status="PASS"
+  local notes=()
+  local skill_dir
+  local claude_root="$DEL_ROOT/.claude/skills"
+
+  if [ ! -d "$claude_root" ]; then
+    emit "| Canonical vs .claude skill mirror | SKIP | .claude/skills not present |"
+    return 0
+  fi
+
+  while IFS= read -r skill_dir; do
+    local skill_name
+    local canonical
+    local claude
+
+    skill_name="$(basename "$skill_dir")"
+    canonical="$DEL_ROOT/skills/$skill_name/SKILL.md"
+    claude="$skill_dir/SKILL.md"
+
+    if [ ! -f "$canonical" ]; then
+      status="FAIL"
+      notes+=("${skill_name} missing canonical skill")
+      continue
+    fi
+    if ! cmp -s "$canonical" "$claude"; then
+      status="FAIL"
+      notes+=("${skill_name} differs from canonical")
+    fi
+  done < <(find "$claude_root" -mindepth 1 -maxdepth 1 -type d | sort)
+
+  local note_text="all .claude skills mirror canonical"
+  if [ ${#notes[@]} -gt 0 ]; then
+    note_text="$(IFS='; '; echo "${notes[*]}")"
+  fi
+  emit "| Canonical vs .claude skill mirror | $status | $note_text |"
+  [ "$status" = "PASS" ]
+}
+
 check_public_mirrors() {
   local status="PASS"
   local notes=()
@@ -376,6 +415,7 @@ check_skill_tooling_register() {
 check_workflow_counterparts || coherence_failed=$((coherence_failed + 1))
 check_cline_counterparts || coherence_failed=$((coherence_failed + 1))
 check_skill_mirrors || coherence_failed=$((coherence_failed + 1))
+check_claude_skill_mirrors || coherence_failed=$((coherence_failed + 1))
 check_public_mirrors || coherence_failed=$((coherence_failed + 1))
 check_skill_tooling_register || coherence_failed=$((coherence_failed + 1))
 

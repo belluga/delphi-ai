@@ -146,7 +146,7 @@ jobs:
 
       - name: "Deterministic Guard: TODO Completion"
         working-directory: "project"
-        run: python3 delphi-ai/deterministic/core/todo_completion_guard.py --all-completed
+        run: python3 delphi-ai/tools/todo_completion_guard.py --all-completed
 
       - name: "Stack Analysis: Lint ($LINTER_CMD)"
         working-directory: "project"
@@ -173,6 +173,36 @@ data["$STACK_KEY"] = gates_list
 gates_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 print(f"Registered '$STACK_KEY' gates in namespace_gates.json")
 EOF
+
+# 5. Register available capability when it is not already declared.
+CAPABILITY_REGISTRY_PATH="$SCRIPT_ROOT/config/stack_capabilities.yaml"
+if [ -f "$CAPABILITY_REGISTRY_PATH" ]; then
+  if grep -Eq "^[[:space:]]{2}${STACK_KEY}:" "$CAPABILITY_REGISTRY_PATH"; then
+    echo "REVIEW: Stack [$STACK_KEY] already exists in config/stack_capabilities.yaml; update lifecycle/default surfaces if this bootstrap promotes it."
+  else
+    cat <<EOF >> "$CAPABILITY_REGISTRY_PATH"
+
+  $STACK_KEY:
+    lifecycle: available
+    purpose: Stack capability created by tools/bootstrap_stack.sh.
+    default_surfaces:
+      - rules/stacks/$STACK_KEY/
+      - deterministic/stacks/$STACK_KEY/
+      - .github/workflows/shared/${STACK_KEY}-engine.yml
+    activation_markers:
+      - Project-owned module docs
+      - Project-owned manifests/config
+      - Project-owned build/test/run wrappers
+    detection_markers:
+      root_files: []
+      nested_files: []
+    execution_policy: Execute only when the downstream project declares this stack active.
+EOF
+    echo "Registered '$STACK_KEY' capability in config/stack_capabilities.yaml"
+  fi
+else
+  echo "WARN: config/stack_capabilities.yaml missing; stack capability registry was not updated."
+fi
 
 echo ""
 echo "SUCCESS: Stack [$STACK_KEY] is now part of the PACED Ecosystem."
