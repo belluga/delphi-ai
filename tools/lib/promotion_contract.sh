@@ -29,6 +29,7 @@ print("\t".join([
     str(data.get("bot_next_version_policy", "")),
     str(data.get("docs_remote_promotion", "")),
     b(data.get("ci_behavior_change_authorized", False)),
+    b(data.get("ci_test_harness_change_authorized", False)),
     b(data.get("promotion_behavior_change_authorized", False)),
 ]))
 PY
@@ -42,6 +43,7 @@ PY
     PROMOTION_CONTRACT_BOT_NEXT_VERSION_POLICY \
     PROMOTION_CONTRACT_DOCS_REMOTE_PROMOTION \
     PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED \
+    PROMOTION_CONTRACT_CI_TEST_HARNESS_CHANGE_AUTHORIZED \
     PROMOTION_CONTRACT_PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED \
     <<< "$contract_values"
 

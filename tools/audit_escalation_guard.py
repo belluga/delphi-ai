@@ -31,8 +31,10 @@ AUDIT_TRIGGER_HEADING = "## Audit Trigger Matrix"
 
 
 def extract_heading_section(text: str, heading: str) -> str | None:
+    # Accept the canonical template heading plus an optional explanatory suffix,
+    # e.g. "## Audit Trigger Matrix (Required Before Audit Decisions Are Trusted)".
     pattern = re.compile(
-        rf"^{re.escape(heading)}\s*$\n(?P<body>.*?)(?=^##\s|\Z)",
+        rf"^{re.escape(heading)}(?:\s+\([^\n]*\))?\s*$\n(?P<body>.*?)(?=^##\s|\Z)",
         re.MULTILINE | re.DOTALL,
     )
     match = pattern.search(text)

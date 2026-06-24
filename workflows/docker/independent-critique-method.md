@@ -17,6 +17,7 @@ It must also challenge whether the planned path is sound for performance, elegan
 
 ## Inputs
 - Tactical TODO under `foundation_documentation/todos/active/`.
+- The pushed review baseline recorded in `Gate: Review Baseline Freeze`.
 - Frozen decisions, assumptions preview, execution plan, and Plan Review Gate output.
 - A bounded critique package:
   - either a curated file set,
@@ -51,34 +52,43 @@ It must also challenge whether the planned path is sound for performance, elegan
 ## Procedure
 1. Use the latest successful `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
    - If implementation or planning changed any trigger materially, rerun the audit-escalation guard before trusting the old critique decision.
-2. Build the bounded critique package.
+2. Confirm the review baseline freeze is already committed and pushed.
+   - The TODO must record `Gate: Review Baseline Freeze` with a real branch/commit/push reference before the first critique run.
+   - If that gate is missing or unresolved, block the critique lane instead of treating an unpushed worktree snapshot as canonical review input.
+3. Build the bounded critique package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
-3. Run one fresh auxiliary critique with no inherited thread context.
+4. Run one fresh auxiliary critique with no inherited thread context.
    - If a subagent is available in the environment, use that subagent with `fork_context=false`.
    - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
    - In other environments, use the closest equivalent that guarantees no prior thread contamination.
-4. Prompt the reviewer to return findings first, ordered by severity, and to avoid implementation.
+5. Prompt the reviewer to return findings first, ordered by severity, and to avoid implementation.
    - Require explicit positions on:
      - performance acceptability;
      - elegance (simplicity/coherence/minimal incidental complexity);
      - structural soundness, meaning resistance to brittle workarounds or structural shortcuts such as ad hoc patches, layered patches over unresolved defects, contract bypasses, opportunistic duplication, hidden coupling, or other avoidable structural debt.
-5. Treat the critique as challenge evidence only:
+6. Treat the critique as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may invalidate assumptions or planning quality, but it does not replace user approval.
-6. If the first no-context critique attempt fails or times out, retry once with a tighter package.
-7. If a `required` critique still cannot be obtained after one retry:
+7. If the first no-context critique attempt fails or times out, retry once with a tighter package.
+8. If a `required` critique still cannot be obtained after one retry:
    - record the tooling limitation explicitly;
    - do not silently treat bounded self-review as equivalent to a true fresh no-context critique;
    - require either a blocker state or an explicit waiver before `APROVADO`;
    - treat `blocked` as non-satisfying until the gate is actually run or explicitly waived by the approval authority.
-8. Resolve every material finding explicitly in the TODO as one of:
+9. Resolve every material finding explicitly in the TODO as one of:
    - `Integrated`
    - `Challenged`
    - `Deferred with rationale`
    - If structured reviewer JSON was used, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
    - Prefer the machine-checkable resolution table from `templates/todo_template.md`, then derive `*-resolution.json` with `python3 delphi-ai/tools/gate_finding_resolution_extract.py --review-kind critique ...` when metrics are in scope.
-9. If the critique reveals contract changes, module supersedes, or approval-material plan changes, refresh the TODO and request renewed approval before implementation.
-10. Treat `audit-protocol-triple-review` as additive only.
+10. After critique findings converge, run the narrower assumption-vs-code coherence guard before `APROVADO`.
+   - Use the governing TODO plus the exact code/test files cited by the still-live assumptions.
+   - Require concrete file-path evidence for those assumptions; if the TODO only cites docs or vague notes, strengthen it before approval.
+   - Run `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>` and record the result in `Gate: Assumption Code Coherence`.
+11. After the planning-side integrations settle, run `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` to compare the current TODO against the pushed review baseline.
+   - If the guard reports material scope-governing drift, return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected critique/review lanes before approval.
+12. If the critique, the assumption-vs-code guard, or the review-scope-drift guard reveals contract changes, module supersedes, or approval-material/significant plan changes, send the TODO back to the review loop, refresh it, revalidate the evolved scope with the user, and request renewed approval only after the updated direction reconverges.
+13. Treat `audit-protocol-triple-review` as additive only.
    - It may coexist with this critique lane.
    - It does not silently replace this planning challenge gate.
 
@@ -86,6 +96,7 @@ It must also challenge whether the planned path is sound for performance, elegan
 - A recorded critique decision (`required|recommended|not_needed`) with rationale.
 - A bounded critique package reference.
 - Findings summarized in the TODO with explicit resolution status.
+- An assumption-vs-code coherence record showing whether the remaining assumptions still match the cited code reality.
 - A blocker or waiver record if a required no-context critique could not be executed.
 
 ## Non-Authority Rule

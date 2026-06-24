@@ -31,15 +31,24 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 ## Non-Negotiable Gates Visible At The Umbrella
 - **No implementation before `APROVADO`** for tactical and ephemeral TODO lanes.
 - **Decision Baseline (Frozen)** must exist before implementation and must be refreshed with renewed approval if approval-material facts change.
+- **Review Baseline Freeze** must be committed and pushed before the first planning-side review or guard run, and its branch/commit/push evidence must be recorded in `Gate: Review Baseline Freeze`.
+- **Post-review scope drift** must be checked before `APROVADO`:
+  - `python3 delphi-ai/tools/review_scope_drift_guard.py <todo-path>`
+  - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, and refresh the pushed baseline as required before approval resumes.
 - **Approval and rule-ingestion evidence** must be recorded in the TODO after `APROVADO` and before implementation:
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`
 - **Complexity policy (`small|medium|big`)** must be recorded during contract refinement.
 - **Plan Review Gate** must run according to the recorded complexity and risk.
+- **Devil's-Advocate alias mapping** is canonical at the TODO-driven umbrella:
+  - when the user, TODO, or an external reference asks for a `devil's advocate` critique/review/loop, treat the canonical planning-side equivalent as `wf-docker-independent-critique-method`;
+  - when that request also expects a persistent objection/finding ledger, evidence-based reopening, or repeated no-context rounds until no blocking objection remains, layer `audit-protocol-triple-review` on top;
+  - `audit-protocol-triple-review` is additive and does not silently replace the required planning-side independent critique gate.
 - **Completion Evidence Matrix** must contain criterion-specific evidence for every `Definition of Done` and `Validation Steps` item before delivery claims.
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
+- **Behavior-targeted CI validity** is mandatory: every CI-equivalent row must declare the exact scenario it proves plus the required fixture/seed/runtime preconditions, and a green suite is invalid when the intended behavior was never actually exercised.
 - **Decision Adherence** must be validated before delivery.
 - **Pipeline/Copilot P1/P2 Preflight** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
-- **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root and referenced in the governing TODO.
+- **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected and deduplicated. Use `review-finding-classification`. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step recorded in the governing TODO's `Promotion Finding Routing Ledger`. Every finding must be classified as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root, and the governing TODO must record the exact follow-up path/reference before the delivery claim is clean.
 - **Rule-Spirit Anti-Pattern Hunt** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Final Deterministic Guards** must return `Overall outcome: go`:
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`

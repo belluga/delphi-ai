@@ -471,3 +471,28 @@ if [[ -z "${build_sha}" ]]; then
 fi
 
 inject_landlord_host "${OUTPUT_DIR}/index.html" "${landlord_domain}" "${build_sha}"
+
+write_build_metadata() {
+  local target_dir="$1"
+  local app_dir="$2"
+  local source_branch="$3"
+  local flutter_sha=""
+  local build_time_utc=""
+
+  flutter_sha="$(
+    git -C "${app_dir}" rev-parse HEAD 2>/dev/null | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]' || true
+  )"
+  if [[ -z "${flutter_sha}" ]]; then
+    echo "ERROR: unable to resolve flutter-app HEAD SHA for build metadata." >&2
+    exit 1
+  fi
+
+  build_time_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  printf '{"flutter_git_sha":"%s","source_branch":"%s","build_time_utc":"%s"}\n' \
+    "${flutter_sha}" \
+    "${source_branch}" \
+    "${build_time_utc}" \
+    > "${target_dir}/build_metadata.json"
+}
+
+write_build_metadata "${OUTPUT_DIR}" "${FLUTTER_APP_DIR}" "${LANE}"

@@ -23,6 +23,9 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 3. **Edit workflow**
    - Add/update jobs to run required commands (e.g., `fvm flutter analyze`, `composer test`, Docker build/push).
    - Ensure caching and matrix strategies keep runtimes lean.
+   - Load `ci-equivalent-governance` before changing any stage-facing suite/job family or named broad local stage contract/profile such as `stage-full`.
+   - When the repo exposes a named broad local stage contract/profile, update that local contract in the same change and keep it aligned with the parity rules from `ci-equivalent-governance`. Do not leave the pipeline broader than the named local parity gate.
+   - Wrapper-identical means more than sharing the same inner smoke command. If the pipeline owns explicit fixture/bootstrap seed, cleanup/teardown, provenance checks, runtime override setup, restore/readback preparation, or similar lifecycle steps around that smoke suite, the named local stage contract must execute the same lifecycle too.
 4. **Secrets & permissions**
    - Verify required secrets exist; document any new ones in secure channels (never in repo).
 5. **Dry-run / validation**
@@ -30,6 +33,8 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 6. **Documentation + roadmap**
    - Note the change and expected impact in DevOps roadmap.
    - Mention new pipeline requirements in the relevant delivery profiles/scopes if they affect local workflows.
+   - If the pipeline change alters which suites define the broad local stage gate, update the local contract/runbook wording in the same change so `stage-full` (or equivalent) still means full stage-pipeline parity under `ci-equivalent-governance`.
+   - If the pipeline adds or reclassifies explicit pre/post lifecycle steps around a stage-facing validation surface, update the named local stage contract in the same change so those steps are no longer implicit or assumed from prior state.
 7. **Session summary** – capture results and any follow-up (e.g., secrets to rotate).
 
 ## Outputs

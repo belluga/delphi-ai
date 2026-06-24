@@ -15,6 +15,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - This skill is for automated test quality and coverage. It does not authorize fallback behavior in production code paths.
 - This skill must prevent false negatives caused by harness/environment readiness defects from being misclassified as product regressions.
 - Prefer test-first sequencing when behavior is verifiable, especially for bugfixes, regressions, user-visible behavior, and contract-level changes.
+- When a new or changed test also changes a stage-facing suite family, wrapper, lifecycle step, or broad local stage gate such as `stage-full`, load `ci-equivalent-test-surface-admission`.
 
 ## Preferred Deterministic Helper
 - Use `bash delphi-ai/tools/test_coverage_matrix_scaffold.sh --intent <compatibility|unit-regression|critical-user-journey> --strategy <test-first|test-after|not-applicable> --platform-matrix <value> --behavior "<critical path>" [--behavior "..."] [--decision "D-T01:..."] [--output <path>]` to scaffold the repeatable coverage matrix before filling in the real decisions.
@@ -55,24 +56,28 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
    - Flutter tests gate web bundle build.
    - Compatibility gate requires web + mobile execution (or explicit blocked status).
    - Docker validation gates deploy on bundle metadata matching pinned Flutter commit.
-8. **Implement tests with anti-bypass rules**
+8. **Admit stage-facing test-surface changes**
+   - If the test changes `CI Equivalent` or broad stage-gate composition, route it through `ci-equivalent-test-surface-admission`.
+   - Keep local broad-stage parity and stage pipeline on the same owner wrapper/leaf-command family.
+   - Preserve readonly vs mutation separation; mutation remains non-`main`.
+9. **Implement tests with anti-bypass rules**
    - No silent mock fallback for compatibility/critical-user-journey scope.
    - No committed `skip`, `only`, or committed golden update bypass.
    - No assertions that pass only on “no exception thrown” without business-state verification.
    - No success criteria based solely on HTTP status when payload semantics matter.
    - No retrofitted tests that only validate the post-fix implementation when a fail-first path was practical.
-9. **Run validation**
+10. **Run validation**
    - Execute required suites and CI-equivalent commands.
    - Capture evidence for each frozen decision.
    - Run preflight checks before the suite so environment/harness defects are caught as readiness issues, not test failures.
-10. **Classify execution status honestly**
+11. **Classify execution status honestly**
    - `passed`: all required gates executed and green.
    - `blocked`: required gate could not run (for example no mobile device/emulator).
    - `failed`: gate executed and failed.
    - `blocked` is never equivalent to `passed`.
    - If the suite cannot produce valid evidence because of local/transient infra, harness readiness, permission ownership, missing secrets, or target unreachability, classify it as `blocked`/invalid evidence rather than `failed`.
    - Do not justify product-code changes from `blocked` local evidence alone.
-11. **Decision Adherence Validation**
+12. **Decision Adherence Validation**
    - Build a `Decision Adherence Validation` table for `D-T*` decisions.
    - Any unresolved `Exception` blocks completion until decisions are updated and approved.
 

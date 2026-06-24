@@ -57,6 +57,8 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
 4. **Merge and interpret**
    - Merge reviewer outputs into a derived summary packet.
    - Record the actual authoritative resolution back in the TODO/gate as `Integrated|Challenged|Deferred` plus usefulness/formalizable classification using the machine-checkable resolution table from the tactical TODO template.
+   - When the review feeds delivery, promotion, Copilot-mimic, or no-context release scrutiny, run `review-finding-classification` and then reconcile each deduplicated finding into the governing TODO's `Promotion Finding Routing Ledger` with one of: `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
+   - Non-blocking real findings are not disposable. Before the delivery claim can be called clean, route them to an explicit follow-up TODO and record that path in the governing TODO.
    - If you want a ready-to-paste table, render it from the merge packet:
      ```bash
      python3 delphi-ai/tools/gate_finding_resolution_scaffold.py \

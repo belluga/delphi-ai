@@ -10,6 +10,7 @@ Use after `github-stage-promotion-orchestrator` is explicitly triggered and befo
 ## Responsibilities
 - Confirm the user explicitly authorized `dev-only` or `through-stage`.
 - Confirm target repo(s), authoritative source branch/ref, and destination lane.
+- When the lane is governed by a version/package TODO, confirm that governing TODO path up front and record the matching repo-authority key (`root|flutter-app|laravel-app|web-app|foundation_documentation`) that preflight will validate.
 - Run `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence.
 - Classify one scenario from tool evidence plus explicit user authorization: `docker-normal`, `docker-bot-next-version`, `docker-mixed`, `flutter-only`, `laravel-only`, or `flutter-laravel`.
 - Treat `web-app` only as derived artifact evidence; never classify or promote it.
@@ -24,6 +25,7 @@ For `through-stage`, app source promotion is not complete until Docker gitlink f
 ## Outputs
 - Authorized scope: `dev-only|through-stage`.
 - Scenario classification, classifier outcome, and repo/source-ref map.
+- Governing TODO path + repo-authority key when the promotion is package/version governed.
 - Explicit `web-app` handling note when generated artifact evidence appears.
 - Blocker or next phase: `github-stage-promotion-contract-preflight`.
 

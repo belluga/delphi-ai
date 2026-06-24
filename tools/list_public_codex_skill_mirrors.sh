@@ -2,6 +2,7 @@
 set -euo pipefail
 
 mirrored_skills=(
+  "review-finding-classification"
   "test-quality-audit"
   "test-creation-standard"
   "test-orchestration-suite"

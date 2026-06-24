@@ -17,7 +17,10 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
    - Add one concrete row for every `Definition of Done` and `Validation Steps` criterion.
    - Evidence must be criterion-specific, not aggregate or representative.
 2. Execute every in-scope row in the `Local CI-Equivalent Suite Matrix` locally and mark it `passed`, or record an explicit approved `n/a`/waiver.
-   - Honor wrapper branch-family contracts while doing so. CI-Equivalent remains current-branch local product proof. If a project-owned wrapper explicitly requires `reconcile/*`, it is authoritative only on that branch family. On any non-reconciliation branch, run the project-owned local build/publish path and the same product-facing suites directly with deterministic status reporting unless you intentionally create an explicit same-commit reconcile alias and record the equivalence.
+   - Load `ci-equivalent-governance` before deciding whether a row truly satisfies `CI-Equivalent`, whether a reconcile-only wrapper is valid on the current branch family, or whether a broad local stage gate such as `stage-full` is parity-complete rather than diagnostic.
+  - A row is valid only when the executed evidence proves the row's declared behavior/scenario under its declared fixture/seed/runtime preconditions.
+  - A generic suite pass is invalid when the target behavior was not actually exercised because required seed data, user linkage, fixtures, runtime bootstrap, or publication state were missing.
+   - When the declared scenario says navigation/browser or device runtime proof is the strongest available lane, do not close the row on backend-only, unit/widget-only, or aggregate suite evidence.
 3. Validate decision adherence and module decision consistency.
 4. Run security risk assessment.
 5. Run performance/concurrency assessment.
@@ -25,9 +28,11 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 7. Run `Pipeline/Copilot P1/P2 Preflight`.
    - Review implemented diff, CI-equivalent evidence, and likely CI/Copilot failure modes.
    - Unresolved `P1|P2` blocks delivery.
+   - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. Delivery/final-review/promotion-readiness judgment and any gate-satisfying review subagents use the highest review-focused tier; review subagents remain stateless by default unless the tool/client requires resumable reviewer state for a bounded package.
 8. Run `Review Finding Classification`.
    - Do this **after** Copilot/audit/reviewer findings are collected and deduplicated.
    - Do **not** weaken reviewer prompts or detection behavior to reduce findings.
+   - Use `review-finding-classification` as the canonical triage surface before writing ledger routing.
    - Classify each finding as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
    - Only `release-blocker` findings block the current release/promotion claim.
    - If a non-blocking finding still needs real work, split it into an explicit TODO under:
@@ -61,6 +66,8 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 - Visible, interactive, or user-flow-impacting criteria require item-specific integration/device or navigation/browser evidence unless an approved structure-only rationale exists.
 - Browser/web-visible criteria require source-owned Playwright evidence when the repo exposes a Playwright suite.
 - CRUD/mutation criteria require mutation-path evidence on the approved non-main target.
+- CI-equivalent rows must prove the intended behavior, not merely prove that the suite can run. Missing behavior-targeted data/fixtures/preconditions keep the row `blocked`, even if the command itself exits green.
+- A row that claims broad stage-pipeline parity is invalid whenever `ci-equivalent-governance` would reject its contract shape, branch topology, lifecycle-step coverage, or stale-precondition assumptions.
 - Backend producer surfaces cannot close on backend evidence alone when the `Frontend / Consumer Matrix` declares a consumer.
 - No delivery claim is valid while `todo_completion_guard.py` returns anything other than `Overall outcome: go`.
 - No delivery claim is valid while `todo_authority_guard.py --require-delivery-gates` returns anything other than `Overall outcome: go`.

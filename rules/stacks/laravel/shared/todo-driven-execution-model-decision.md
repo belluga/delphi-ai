@@ -168,6 +168,11 @@ If the change restores previously documented or verifiably working behavior (inc
 - If a required critique still cannot be obtained, record blocker/waiver handling before approval.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
+- After critique findings converge and before approval, run the dedicated assumption-vs-code coherence guard:
+  - `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>`
+  - use the governing TODO plus the exact code/test files cited by the still-live assumptions;
+  - require concrete code/test path evidence for those assumptions;
+  - if the guard finds a wrong code assumption or code-contradicting direction, refresh the TODO and rerun the affected review/critique loop before `APROVADO`.
 
 ### Gate I — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.

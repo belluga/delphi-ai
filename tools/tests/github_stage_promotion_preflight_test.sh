@@ -10,6 +10,10 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 REMOTE="$TMP_DIR/origin.git"
 REPO="$TMP_DIR/repo"
 OUTPUT="$TMP_DIR/preflight.out"
+FOUNDATION="$TMP_DIR/foundation_documentation"
+PACKAGE_DIR="$FOUNDATION/todos/active/v2.0.0+1"
+PACKAGE_TODO="$PACKAGE_DIR/TODO-v2.0.0+1-release-package.md"
+CHILD_TODO="$PACKAGE_DIR/TODO-v2.0.0+1-sample.md"
 
 git init --bare -q "$REMOTE"
 git init -q "$REPO"
@@ -27,9 +31,51 @@ git -C "$REPO" checkout -q -b feature/promotable dev
 printf 'feature\n' >> "$REPO/app.txt"
 git -C "$REPO" add app.txt
 git -C "$REPO" commit -q -m "feature change"
+FEATURE_SHA="$(git -C "$REPO" rev-parse HEAD)"
+
+mkdir -p "$PACKAGE_DIR"
+cat >"$CHILD_TODO" <<'EOF'
+# TODO (v2.0.0+1): Sample Child
+
+## Delivery Status Canon
+- **Current delivery stage:** `Local-Implemented`
+EOF
+cat >"$PACKAGE_TODO" <<EOF
+# TODO (v2.0.0+1): Current Version Release Package
+
+## Delivery Status Canon
+- **Current delivery stage:** \`Local-Implemented\`
+
+## Current Branch Authority
+- Root canonical branch: \`feature/promotable\`
+- \`foundation_documentation\` authority branch: \`main\`
+- Canonical post-replay source baselines currently under promotion consideration:
+  - root \`feature/promotable@$FEATURE_SHA\`
+  - \`foundation_documentation\` \`main@bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\`
+
+## Current Diff Child Owners (Approved + In Scope)
+- \`todos/active/v2.0.0+1/TODO-v2.0.0+1-sample.md\`
+- \`todos/active/v2.0.0+1/TODO-v2.0.0+1-release-package.md\`
+EOF
 
 bash "$SCRIPT" --repo "$REPO" --source feature/promotable --base origin/dev >"$OUTPUT"
 grep -q "Overall outcome: go" "$OUTPUT"
+
+bash "$SCRIPT" --repo "$REPO" --source feature/promotable --base origin/dev --governing-todo "$PACKAGE_TODO" --repo-key root >"$OUTPUT"
+grep -q "Overall outcome: go" "$OUTPUT"
+grep -q "governing_todo: $PACKAGE_TODO" "$OUTPUT"
+
+git -C "$REPO" checkout -q feature/promotable
+printf 'post-proof drift\n' >> "$REPO/app.txt"
+git -C "$REPO" add app.txt
+git -C "$REPO" commit -q -m "post-proof drift"
+
+if bash "$SCRIPT" --repo "$REPO" --source feature/promotable --base origin/dev --governing-todo "$PACKAGE_TODO" --repo-key root >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected governing TODO authority drift to block preflight\n' >&2
+  exit 1
+fi
+grep -q "authoritative baseline SHA" "$OUTPUT"
 
 git -C "$REPO" checkout -q -b reconcile/direct-promote dev
 printf 'reconcile\n' >> "$REPO/app.txt"

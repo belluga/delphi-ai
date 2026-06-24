@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<'EOF'
-Usage: github_stage_promotion_preflight.sh --source <ref> [--repo <path>] [--base <ref>] [--require-diff-shape <any|submodule-only>] [--orchestration-plan <path>]
+Usage: github_stage_promotion_preflight.sh --source <ref> [--repo <path>] [--base <ref>] [--require-diff-shape <any|submodule-only>] [--orchestration-plan <path>] [--governing-todo <path> --repo-key <root|belluga_now_docker|flutter-app|laravel-app|web-app|foundation_documentation>]
 
 Run the deterministic first-PR preflight for the GitHub Stage Promotion Orchestrator.
 This helper is a TEACH runtime blocker: objective git checks trigger it, exit code `2`
@@ -23,6 +23,8 @@ Options:
   --base <ref>                         Authoritative base ref that the source must contain. Defaults to origin/dev.
   --require-diff-shape <shape>         Optional additional diff-shape gate. Supported: any, submodule-only.
   --orchestration-plan <path>          Optional orchestration execution plan. When provided, the post-reconcile replay guard must return `Overall outcome: go` before normal source-branch preflight continues.
+  --governing-todo <path>              Optional governing package/release TODO with `Current Branch Authority`.
+  --repo-key <key>                     Required with --governing-todo. Selects which repo authority to validate.
   -h, --help                           Show this help text.
 
 Exit codes:
@@ -42,6 +44,8 @@ SOURCE_REF=""
 BASE_REF="origin/dev"
 REQUIRE_DIFF_SHAPE="any"
 ORCHESTRATION_PLAN=""
+GOVERNING_TODO=""
+REPO_KEY=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -70,6 +74,16 @@ while [ $# -gt 0 ]; do
       ORCHESTRATION_PLAN="$2"
       shift 2
       ;;
+    --governing-todo)
+      [ $# -ge 2 ] || die "missing value for --governing-todo"
+      GOVERNING_TODO="$2"
+      shift 2
+      ;;
+    --repo-key)
+      [ $# -ge 2 ] || die "missing value for --repo-key"
+      REPO_KEY="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -87,8 +101,24 @@ case "$REQUIRE_DIFF_SHAPE" in
   *) die "unsupported --require-diff-shape value: $REQUIRE_DIFF_SHAPE" ;;
 esac
 
+if [ -n "$GOVERNING_TODO" ] && [ -z "$REPO_KEY" ]; then
+  die "--repo-key is required when --governing-todo is provided"
+fi
+
+if [ -n "$REPO_KEY" ] && [ -z "$GOVERNING_TODO" ]; then
+  die "--governing-todo is required when --repo-key is provided"
+fi
+
 REPO_ROOT="$(git -C "$REPO_INPUT" rev-parse --show-toplevel 2>/dev/null || true)"
 [ -n "$REPO_ROOT" ] || die "path is not inside a git repository: $REPO_INPUT"
+
+if [ -n "$GOVERNING_TODO" ]; then
+  if python3 "$SCRIPT_DIR/github_promotion_source_authority_guard.py" --repo "$REPO_ROOT" --source-ref "$SOURCE_REF" --governing-todo "$GOVERNING_TODO" --repo-key "$REPO_KEY"; then
+    :
+  else
+    exit $?
+  fi
+fi
 
 if [ -n "$ORCHESTRATION_PLAN" ]; then
   if python3 "$SCRIPT_DIR/orchestration_reconcile_replay_guard.py" --plan "$ORCHESTRATION_PLAN" --repo "$REPO_ROOT"; then
@@ -315,6 +345,9 @@ if [ "$OVERALL_GO" = true ]; then
   if [ -n "$ORCHESTRATION_PLAN" ]; then
     NEXT_PROMPTS+=("The supplied orchestration plan already proved post-reconcile replay back onto the canonical branch for this promotion handoff.")
   fi
+  if [ -n "$GOVERNING_TODO" ]; then
+    NEXT_PROMPTS+=("The supplied governing TODO already proved source-branch authority for repo key '$REPO_KEY'.")
+  fi
 
   printf 'TEACH runtime response\n'
   printf 'status: ready\n'
@@ -340,6 +373,10 @@ if [ "$OVERALL_GO" = true ]; then
   if [ -n "$ORCHESTRATION_PLAN" ]; then
     printf '  orchestration_plan: %s\n' "$ORCHESTRATION_PLAN"
   fi
+  if [ -n "$GOVERNING_TODO" ]; then
+    printf '  governing_todo: %s\n' "$GOVERNING_TODO"
+    printf '  repo_key: %s\n' "$REPO_KEY"
+  fi
   if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then
     printf '  topology_only_reconciliation_reason: %s\n' "$TOPOLOGY_ONLY_RECONCILIATION_REASON"
   fi
@@ -350,6 +387,9 @@ fi
 RERUN_COMMAND="bash delphi-ai/tools/github_stage_promotion_preflight.sh --source $SOURCE_REF --base $BASE_REF --require-diff-shape $REQUIRE_DIFF_SHAPE"
 if [ -n "$ORCHESTRATION_PLAN" ]; then
   RERUN_COMMAND="$RERUN_COMMAND --orchestration-plan $ORCHESTRATION_PLAN"
+fi
+if [ -n "$GOVERNING_TODO" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --governing-todo $GOVERNING_TODO --repo-key $REPO_KEY"
 fi
 RESOLUTION_PROMPTS+=("Rerun the preflight and require 'Overall outcome: go' before the first promotion PR: $RERUN_COMMAND")
 
@@ -376,6 +416,10 @@ printf '  diff_shape_ready: %s\n' "$([ "$DIFF_SHAPE_READY" = true ] && printf ye
 printf '  worktree_clean_for_source: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 if [ -n "$ORCHESTRATION_PLAN" ]; then
   printf '  orchestration_plan: %s\n' "$ORCHESTRATION_PLAN"
+fi
+if [ -n "$GOVERNING_TODO" ]; then
+  printf '  governing_todo: %s\n' "$GOVERNING_TODO"
+  printf '  repo_key: %s\n' "$REPO_KEY"
 fi
 printf '  base_only_commits_missing_from_source_count: %s\n' "$BASE_ONLY_COUNT"
 printf '  source_only_commits_beyond_base_count: %s\n' "$SOURCE_ONLY_COUNT"

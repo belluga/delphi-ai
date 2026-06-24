@@ -123,4 +123,93 @@ if bash "$ROOT_DIR/tools/github_promotion_diff_guard.sh" \
 fi
 grep -q "bot/next-version -> dev" "$OUTPUT"
 
+HARNESS_CONTRACT="$TMP_DIR/harness-contract.json"
+bash "$ROOT_DIR/tools/github_promotion_contract_init.sh" \
+  --output "$HARNESS_CONTRACT" \
+  --scope through-stage \
+  --gitlink-policy pipeline-only \
+  --ci-test-harness-change-authorized true \
+  >/dev/null
+
+WORKFLOW_REPO="$TMP_DIR/workflow-repo"
+mkdir -p "$WORKFLOW_REPO/.github/workflows"
+git -C "$WORKFLOW_REPO" init -q
+git -C "$WORKFLOW_REPO" config user.email test@example.test
+git -C "$WORKFLOW_REPO" config user.name "Test User"
+cat >"$WORKFLOW_REPO/.github/workflows/test.yml" <<'YAML'
+jobs:
+  browser-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run navigation mutation
+        env:
+          NAV_TEST_RUN_ID: stage-1
+          NAV_WEB_TEST_TYPE: mutation
+        run: echo ok
+YAML
+git -C "$WORKFLOW_REPO" add .github/workflows/test.yml
+git -C "$WORKFLOW_REPO" commit -q -m initial
+git -C "$WORKFLOW_REPO" branch dev
+
+git -C "$WORKFLOW_REPO" checkout -q -b feature/harness dev
+python3 - "$WORKFLOW_REPO/.github/workflows/test.yml" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+needle = "          NAV_TEST_RUN_ID: stage-1\n"
+replacement = needle + "          NAV_PUBLIC_TAXONOMY_MANAGED_FIXTURE: '1'\n"
+path.write_text(text.replace(needle, replacement), encoding="utf-8")
+PY
+git -C "$WORKFLOW_REPO" add .github/workflows/test.yml
+git -C "$WORKFLOW_REPO" commit -q -m "Narrow test harness tweak"
+
+if bash "$ROOT_DIR/tools/github_promotion_diff_guard.sh" \
+  --contract "$CONTRACT" \
+  --repo "$WORKFLOW_REPO" \
+  --mode range \
+  --base-ref dev \
+  --source-ref feature/harness \
+  >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected workflow test-harness change without narrow authorization to be blocked\n' >&2
+  exit 1
+fi
+grep -q "ci_test_harness_change_authorized=true" "$OUTPUT"
+
+bash "$ROOT_DIR/tools/github_promotion_diff_guard.sh" \
+  --contract "$HARNESS_CONTRACT" \
+  --repo "$WORKFLOW_REPO" \
+  --mode range \
+  --base-ref dev \
+  --source-ref feature/harness \
+  >"$OUTPUT"
+grep -q "Overall outcome: go" "$OUTPUT"
+
+git -C "$WORKFLOW_REPO" checkout -q -b feature/control dev
+python3 - "$WORKFLOW_REPO/.github/workflows/test.yml" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+path.write_text(text.replace("    runs-on: ubuntu-latest\n", "    runs-on: ubuntu-24.04\n"), encoding="utf-8")
+PY
+git -C "$WORKFLOW_REPO" add .github/workflows/test.yml
+git -C "$WORKFLOW_REPO" commit -q -m "Control plane tweak"
+
+if bash "$ROOT_DIR/tools/github_promotion_diff_guard.sh" \
+  --contract "$HARNESS_CONTRACT" \
+  --repo "$WORKFLOW_REPO" \
+  --mode range \
+  --base-ref dev \
+  --source-ref feature/control \
+  >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected workflow control-plane change to stay blocked under narrow test-harness authorization\n' >&2
+  exit 1
+fi
+grep -q "ci_behavior_change_authorized=true" "$OUTPUT"
+
 printf 'github_promotion_guard_policy_test: OK\n'

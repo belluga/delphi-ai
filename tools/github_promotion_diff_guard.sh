@@ -10,8 +10,8 @@ usage() {
 Usage: github_promotion_diff_guard.sh --contract <path> [--repo <path>] --mode <staged|worktree|range> [--base-ref <ref>] [--source-ref <ref>]
 
 Deterministically classify a promotion-lane diff and emit a TEACH runtime blocker when
-the staged/worktree/range includes forbidden surfaces such as gitlinks or CI/promotion
-behavior changes without explicit authorization.
+the staged/worktree/range includes forbidden surfaces such as gitlinks, CI control-plane
+changes, CI test-harness changes, or promotion-tooling changes without explicit authorization.
 EOF
 }
 
@@ -100,6 +100,8 @@ esac
 declare -a CHANGED_PATHS=()
 declare -a GITLINK_PATHS=()
 declare -a CI_SURFACE_PATHS=()
+declare -a CI_TEST_HARNESS_SURFACE_PATHS=()
+declare -a CI_CONTROL_PLANE_SURFACE_PATHS=()
 declare -a PROMOTION_SURFACE_PATHS=()
 
 append_unique() {
@@ -136,6 +138,84 @@ classify_path() {
   esac
 }
 
+workflow_line_is_test_harness_safe() {
+  local line="$1"
+
+  if [[ "$line" =~ ^[+-][[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[+-][[:space:]]*# ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[+-][[:space:]]*[A-Z0-9_]*(NAV|PLAYWRIGHT|PWDEBUG|TEST|TESTS|MUTATION|READONLY|INTEGRATION|E2E|SMOKE|SHARD|SPEC|FIXTURE)[A-Z0-9_]*:[[:space:]].*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ (integration_test/|(^|[^A-Za-z0-9_])tests?/|(^|[^A-Za-z0-9_])specs?/|\.spec\.[A-Za-z0-9]+|\.test\.[A-Za-z0-9]+|_test\.[A-Za-z0-9]+|[A-Za-z0-9._/-]*(fixture|shard|mutation|readonly|playwright)[A-Za-z0-9._/-]*\.(json|ya?ml|cjs|js|ts)) ]]; then
+    return 0
+  fi
+
+  return 1
+}
+
+classify_ci_surface_path() {
+  local path="$1"
+  local line
+  local has_relevant_lines=false
+
+  case "$path" in
+    .github/workflows/*) ;;
+    .github/actions/*|.github/scripts/*)
+      append_unique CI_CONTROL_PLANE_SURFACE_PATHS "$path"
+      return
+      ;;
+    *)
+      append_unique CI_CONTROL_PLANE_SURFACE_PATHS "$path"
+      return
+      ;;
+  esac
+
+  while IFS= read -r line; do
+    case "$line" in
+      diff\ --git\ *|index\ *|@@\ *|---\ *|+++\ *)
+        continue
+        ;;
+      +*|-*)
+        has_relevant_lines=true
+        ;;
+      *)
+        continue
+        ;;
+    esac
+
+    if ! workflow_line_is_test_harness_safe "$line"; then
+      append_unique CI_CONTROL_PLANE_SURFACE_PATHS "$path"
+      return
+    fi
+  done < <(
+    case "$MODE" in
+      staged)
+        git -C "$REPO_ROOT" diff --cached -U0 --ignore-submodules=none -- "$path"
+        ;;
+      worktree)
+        git -C "$REPO_ROOT" diff -U0 --ignore-submodules=none -- "$path"
+        ;;
+      range)
+        git -C "$REPO_ROOT" diff -U0 --ignore-submodules=none "$BASE_REF..$SOURCE_REF" -- "$path"
+        ;;
+    esac
+  )
+
+  if [ "$has_relevant_lines" = true ]; then
+    append_unique CI_TEST_HARNESS_SURFACE_PATHS "$path"
+    return
+  fi
+
+  append_unique CI_CONTROL_PLANE_SURFACE_PATHS "$path"
+}
+
 while IFS=$'\t' read -r meta primary_path secondary_path; do
   path="$primary_path"
   [ -n "${secondary_path:-}" ] && path="$secondary_path"
@@ -159,6 +239,7 @@ teach_add_context "inspection_mode: $MODE"
 teach_add_context "scope: $PROMOTION_CONTRACT_SCOPE"
 teach_add_context "gitlink_policy: $PROMOTION_CONTRACT_GITLINK_POLICY"
 teach_add_context "ci_behavior_change_authorized: $PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED"
+teach_add_context "ci_test_harness_change_authorized: $PROMOTION_CONTRACT_CI_TEST_HARNESS_CHANGE_AUTHORIZED"
 teach_add_context "promotion_behavior_change_authorized: $PROMOTION_CONTRACT_PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED"
 
 if [ -n "$BASE_REF" ]; then
@@ -202,12 +283,34 @@ if [ "${#GITLINK_PATHS[@]}" -gt 0 ]; then
   fi
 fi
 
-if [ "${#CI_SURFACE_PATHS[@]}" -gt 0 ] && [ "$PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED" != "true" ]; then
-  teach_add_violation "CI workflow behavior surfaces changed without explicit authorization."
-  teach_add_resolution "Revert CI workflow/config changes or regenerate the contract with ci_behavior_change_authorized=true after explicit user approval."
-  ci_paths="$(printf '%s, ' "${CI_SURFACE_PATHS[@]}")"
-  ci_paths="${ci_paths%, }"
-  teach_add_context "ci_surface_paths: $ci_paths"
+if [ "${#CI_SURFACE_PATHS[@]}" -gt 0 ]; then
+  for path in "${CI_SURFACE_PATHS[@]}"; do
+    classify_ci_surface_path "$path"
+  done
+fi
+
+if [ "${#CI_TEST_HARNESS_SURFACE_PATHS[@]}" -gt 0 ]; then
+  ci_test_paths="$(printf '%s, ' "${CI_TEST_HARNESS_SURFACE_PATHS[@]}")"
+  ci_test_paths="${ci_test_paths%, }"
+  teach_add_context "ci_test_harness_surface_paths: $ci_test_paths"
+fi
+
+if [ "${#CI_CONTROL_PLANE_SURFACE_PATHS[@]}" -gt 0 ]; then
+  ci_control_paths="$(printf '%s, ' "${CI_CONTROL_PLANE_SURFACE_PATHS[@]}")"
+  ci_control_paths="${ci_control_paths%, }"
+  teach_add_context "ci_control_plane_surface_paths: $ci_control_paths"
+fi
+
+if [ "${#CI_TEST_HARNESS_SURFACE_PATHS[@]}" -gt 0 ] \
+  && [ "$PROMOTION_CONTRACT_CI_TEST_HARNESS_CHANGE_AUTHORIZED" != "true" ] \
+  && [ "$PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED" != "true" ]; then
+  teach_add_violation "CI workflow test-harness surfaces changed without explicit authorization."
+  teach_add_resolution "Revert CI workflow test-harness changes or regenerate the contract with ci_test_harness_change_authorized=true after explicit user approval."
+fi
+
+if [ "${#CI_CONTROL_PLANE_SURFACE_PATHS[@]}" -gt 0 ] && [ "$PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED" != "true" ]; then
+  teach_add_violation "CI workflow control-plane surfaces changed without explicit authorization."
+  teach_add_resolution "Revert CI workflow control-plane changes or regenerate the contract with ci_behavior_change_authorized=true after explicit user approval."
 fi
 
 if [ "${#PROMOTION_SURFACE_PATHS[@]}" -gt 0 ] && [ "$PROMOTION_CONTRACT_PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" != "true" ]; then

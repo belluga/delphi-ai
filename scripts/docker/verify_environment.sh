@@ -69,6 +69,30 @@ echo "== docker compose config (default) =="
 docker compose config >/dev/null
 echo "OK"
 
+echo "== web shell runtime mount invariants =="
+if ! file_has 'FLUTTER_WEB_SHELL_PATH: /opt/flutter-web-shell/index.html' docker-compose.yml; then
+  die "docker-compose.yml must configure FLUTTER_WEB_SHELL_PATH at /opt/flutter-web-shell/index.html"
+fi
+for compose_mount in \
+  '- ./web-app:/opt/flutter-web-shell:ro'; do
+  if ! grep -Fq -- "${compose_mount}" docker-compose.yml; then
+    die "docker-compose.yml missing required web shell mount '${compose_mount}'"
+  fi
+done
+if grep -Fq -- './web-app:/var/www/flutter:ro' docker-compose.yml; then
+  die "docker-compose.yml must not mount web-app into /var/www/flutter; use /opt/flutter-web-shell to avoid nested bind-mount drift"
+fi
+for nginx_template in docker/nginx/local.conf.template docker/nginx/prod.conf.template; do
+  [[ -f "${nginx_template}" ]] || die "missing ${nginx_template}"
+  if ! grep -Fq 'root /opt/flutter-web-shell;' "${nginx_template}"; then
+    die "${nginx_template} must serve Flutter web assets from /opt/flutter-web-shell"
+  fi
+  if grep -Fq 'root /var/www/flutter;' "${nginx_template}"; then
+    die "${nginx_template} must not serve Flutter web assets from /var/www/flutter"
+  fi
+done
+echo "OK"
+
 if [[ -n "$DELPHI_COMPOSE_CONFIG_PROFILES" ]]; then
   for compose_profile in $DELPHI_COMPOSE_CONFIG_PROFILES; do
     echo "== docker compose config (--profile ${compose_profile}) =="

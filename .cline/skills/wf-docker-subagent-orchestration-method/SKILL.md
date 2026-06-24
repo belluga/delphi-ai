@@ -20,4 +20,6 @@ Provide a portable orchestration layer for PACED review subagents using derived 
 2. Generate the dispatch packet for the chosen review kind.
 3. Require reviewer outputs in JSON compatible with `schemas/subagent_review_result.schema.json`.
 4. Merge the results and fold the authoritative resolution back into the governing TODO/gate.
+   - When the review participates in delivery or promotion gates, run `review-finding-classification` before reconciling every deduplicated finding into the governing TODO's `Promotion Finding Routing Ledger` as `release-blocker | follow-up-fast-follow | follow-up-hardening | by-design/no-action`.
+   - Real non-blocking findings must be routed to explicit follow-up TODOs before the package can be considered clean.
 5. Keep every packet derived and non-authoritative.

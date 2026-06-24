@@ -165,6 +165,31 @@ For any criterion that includes user-flow CRUD or mutation behavior (create, edi
 ## Decision Baseline (Frozen Before Implementation)
 - [ ] `D-01` <Expected outcome that implementation must adhere to>
 
+## Gate: Review Baseline Freeze
+- **Gate decision:** `required`
+- **Why this decision:** <why the first planning-side review/guard must start from a committed and pushed TODO baseline>
+- **Trigger stage:** `before the first planning-side review or guard run`
+- **Baseline branch:** `<branch>`
+- **Baseline commit:** `<sha>`
+- **Baseline push reference:** `<origin/<branch>>`
+- **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <what was frozen, or what blocked the freeze>
+- **Evidence / reference:** <commit/push evidence or artifact>
+- **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
+
+## Gate: Review Scope Drift
+- **Gate decision:** `required`
+- **Why this decision:** <why post-review material drift must be checked before approval>
+- **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
+- **Baseline source:** `Review Baseline Freeze -> Baseline commit`
+- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
+- **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
+- **No-go handling rule:** `return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes; this is not a hard rejection`
+- **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <whether material sections drifted and what happened next>
+- **Evidence / reference:** <guard output artifact or command reference>
+- **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
+
 ## Questions To Close
 - [ ] <Question that changes implementation>
 
@@ -212,11 +237,13 @@ Map every user-visible, interactive, or user-flow-impacting criterion to the fin
 | `<criterion>` | `<visible UI|CRUD/mutation|field/DTO/domain refactor|save/readback|payload consumed by UI|filter/query|settings/capability|structure-only>` | `<classification>` | `<ADB integration|Playwright readonly|Playwright mutation|both|n/a>` | `<yes|no>` | `<yes|no>` | `<test/spec/runner planned>` | `<reason or n/a>` |
 
 ### Local CI-Equivalent Suite Matrix (Required Before `APROVADO` and Before Delivery Claim)
-A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. Reconcile-only wrappers are optional helpers when the current authoritative branch is a true reconciliation branch; they are not the definition of CI-Equivalent. Published `stage`/`main` probes are separate evidence and do not replace this matrix. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
+A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. If the project exposes a named broad local stage profile such as `stage-full`, that profile must be the parity-complete local mirror of the stage pipeline for the touched scope on that branch rather than a hand-curated subset; narrower diagnostic bundles must use distinct names. Reconcile-only wrappers are optional helpers when the current authoritative branch is a true reconciliation branch; they are not the definition of CI-Equivalent. Published `stage`/`main` probes are separate evidence and do not replace this matrix. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
 
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before (`APROVADO|Local-Implemented|promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| `<flutter-app / Validate and Build Web>` | `<why this CI surface will run for the touched scope>` | `<exact local command that mirrors the CI suite/job>` | `<milestone>` | `<planned>` | `<command output artifact / report / n/a>` | `<scope or waiver rationale>` |
+Each row must be behavior-targeted, not just suite-targeted. Record the exact behavior/scenario the row proves and the fixture/seed/runtime preconditions required for that behavior to be meaningfully exercised. If the intended behavior cannot be proven with ambient data, add deterministic bootstrap/seed/preparation as part of the matrix instead of accepting a generic suite pass. When the strongest available proof is navigation/browser or device runtime evidence, plan and execute that lane whenever it is realistically available. If there is real uncertainty about what exact scenario must be proven, stop and confirm it with the user before claiming the matrix is complete.
+
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before (`APROVADO|Local-Implemented|promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `<flutter-app / Validate and Build Web>` | `<why this CI surface will run for the touched scope>` | `<exact new/changed behavior this row proves>` | `<required fixture/seed/runtime publication/user-state preconditions>` | `<exact local command that mirrors the CI suite/job>` | `<milestone>` | `<planned>` | `<command output artifact / report / n/a>` | `<scope, stronger-lane requirement, or waiver rationale>` |
 
 ### Runtime / Rollout Notes
 - `<migrations, feature flags, infra/runtime concerns, or n/a>`
@@ -326,6 +353,17 @@ Use exact trigger names and exact enum values only.
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
+## Gate: Assumption Code Coherence
+- **Gate decision:** `<required|recommended|not_needed>`
+- **Why this decision:** <why the still-live assumptions do or do not need a dedicated code-coherence pass>
+- **Trigger stage:** `after critique convergence and before APROVADO`
+- **Guard scope:** `<A-01,A-02 or none>`
+- **Guard command:** `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path> [--json-output <artifact-path>]`
+- **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <wrong-code-assumption findings, integrated adjustments, or `none`>
+- **Evidence / reference:** <artifact path, reviewer note, or rationale>
+- **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
+
 ## Approval
 Record the approval evidence after the user approves the bounded execution plan. This section is intentionally small: it documents the approval that already happened; it does not create a second approval ceremony.
 
@@ -376,13 +414,17 @@ Complete this after the execution plan is approved and the touched surfaces are 
 
 When the heuristic scanner is in scope, prefer JSON evidence for non-trivial diffs. Scanner allowlists must be temporary and include owner, expiration, and reason; expired entries count as active findings.
 
-## Promotion Finding Routing Ledger (Required When Promotion Finds Blockers)
-Use this only when promotion/CI/Copilot/check evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
+## Promotion Finding Routing Ledger (Required When Promotion/Review Finds Any Finding)
+Use this whenever promotion/CI/Copilot/check/no-context review evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
 Carry prior recorded rows forward into every future no-context/Copilot review loop. A repeated finding is actionable only when the current bounded package materially changed the same locus/behavior or the prior adjudication is objectively insufficient.
+Every deduplicated finding must be classified as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
+- Only `release-blocker` rows may block the current delivery/promotion claim.
+- `follow-up-fast-follow` and `follow-up-hardening` rows require an explicit TODO path/reference before the package can be called clean.
+- `by-design/no-action` rows require rationale that ties back to approved intent, pre-existing scope boundaries, or proven reviewer noise.
 
-| Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
+| Finding ID | Finding Source | Severity | Classification | Required Action | Status | Rationale / Follow-up Reference |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<PR/check/comment id>` | `<P1|P2|P3|P4|n/a>` | `<confirmed defect|by-design intent|upstream-lane drift|non-actionable>` | `<same-todo-remediation|same-todo-evidence-refresh|split-required|renewed-approval-required|defer-follow-up|non-actionable>` | `<why same TODO is still valid, or why split/renewal is required>` | `<open|fixed|re-evidenced|accepted|deferred|blocked>` | `<approval reference, split TODO, follow-up owner/path, or n/a>` |
+| `<PR/check/comment id>` | `<Copilot|Claude|no-context audit|CI check|manual review>` | `<P1|P2|P3|P4|high|medium|low|n/a>` | `<release-blocker|follow-up-fast-follow|follow-up-hardening|by-design/no-action>` | `<fix in current TODO|split fast-follow TODO|split hardening TODO|no action>` | `<open|fixed|routed|accepted|blocked>` | `<why this classification is correct, plus exact TODO path or approval rationale>` |
 
 ## TODO Closeout Disposition
 - **Disposition:** `<keep-active|move-promotion-lane|move-completed|blocked>`

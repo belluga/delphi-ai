@@ -18,7 +18,7 @@ The canonical operational workflow is `workflows/docker/todo-driven-execution-me
 - `todo-delivery-gates-method`
 - `todo-closeout-promotion-method`
 
-The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Rules Acknowledgement / Ingestion`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, `todo_authority_guard.py`, and `todo_completion_guard.py` remain blocking obligations at their respective phases.
+The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Rules Acknowledgement / Ingestion`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, `todo_authority_guard.py`, and `todo_completion_guard.py` remain blocking obligations at their respective phases. A `Local CI-Equivalent Suite Matrix` is valid only when each row explicitly identifies the intended behavior/scenario plus the fixture/seed/runtime preconditions required to exercise it; a generic green suite is not acceptable evidence when the new/changed behavior was never actually provable in that run.
 
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
@@ -183,6 +183,11 @@ If the change restores previously documented or verifiably working behavior (inc
 - If a required critique still cannot be obtained, record blocker/waiver handling before approval.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
+- After critique findings converge and before approval, run the dedicated assumption-vs-code coherence guard:
+  - `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>`
+  - use the governing TODO plus the exact code/test files cited by the still-live assumptions;
+  - require concrete code/test path evidence for those assumptions;
+  - if the guard finds a wrong code assumption or code-contradicting direction, refresh the TODO and rerun the affected review/critique loop before `APROVADO`.
 
 ### Gate J — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
@@ -237,6 +242,8 @@ If the change restores previously documented or verifiably working behavior (inc
 - If integration/device or navigation/browser coverage is not applicable because the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation with the reason.
 - Aggregate validation summaries are supporting notes only. They do not replace row-level evidence for each DoD/validation criterion.
 - If a criterion cannot be validated, mark it `blocked` or record an explicit approved waiver; do not mark it passed from adjacent or representative evidence.
+- If a CI-equivalent row or evidence packet depends on seeded data, fixture bootstrap, user linkage, runtime publication state, or other scenario preconditions, those preconditions must be recorded explicitly in the TODO and actually satisfied in the proving run. A green command without the required scenario data is not valid delivery evidence.
+- When a stronger final runtime lane is realistically available for the changed behavior, prefer navigation/browser or device runtime evidence over weaker backend-only or aggregate coverage; if the exact expected scenario is still unclear, stop and validate it with the user before closing the gate.
 - Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` and `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` after all delivery-side gates are recorded and before any delivery-complete claim; require `Overall outcome: go` from both.
 
 ### Gate O — Decision Adherence Gate (mandatory before delivery)

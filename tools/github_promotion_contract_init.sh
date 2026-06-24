@@ -17,6 +17,8 @@ Options:
   --docs-remote-promotion <forbidden|explicit-only>
                                                 Default: forbidden.
   --ci-behavior-change-authorized <true|false>  Default: false.
+  --ci-test-harness-change-authorized <true|false>
+                                                Default: false.
   --promotion-behavior-change-authorized <true|false>
                                                 Default: false.
   -h, --help                                    Show this help text.
@@ -34,6 +36,7 @@ GITLINK_POLICY="forbidden"
 BOT_NEXT_VERSION_POLICY=""
 DOCS_REMOTE_PROMOTION="forbidden"
 CI_BEHAVIOR_CHANGE_AUTHORIZED="false"
+CI_TEST_HARNESS_CHANGE_AUTHORIZED="false"
 PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED="false"
 
 while [ $# -gt 0 ]; do
@@ -66,6 +69,11 @@ while [ $# -gt 0 ]; do
     --ci-behavior-change-authorized)
       [ $# -ge 2 ] || die "missing value for --ci-behavior-change-authorized"
       CI_BEHAVIOR_CHANGE_AUTHORIZED="$2"
+      shift 2
+      ;;
+    --ci-test-harness-change-authorized)
+      [ $# -ge 2 ] || die "missing value for --ci-test-harness-change-authorized"
+      CI_TEST_HARNESS_CHANGE_AUTHORIZED="$2"
       shift 2
       ;;
     --promotion-behavior-change-authorized)
@@ -124,6 +132,11 @@ case "$CI_BEHAVIOR_CHANGE_AUTHORIZED" in
   *) die "unsupported --ci-behavior-change-authorized value: $CI_BEHAVIOR_CHANGE_AUTHORIZED" ;;
 esac
 
+case "$CI_TEST_HARNESS_CHANGE_AUTHORIZED" in
+  true|false) ;;
+  *) die "unsupported --ci-test-harness-change-authorized value: $CI_TEST_HARNESS_CHANGE_AUTHORIZED" ;;
+esac
+
 case "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" in
   true|false) ;;
   *) die "unsupported --promotion-behavior-change-authorized value: $PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" ;;
@@ -131,7 +144,7 @@ esac
 
 mkdir -p "$(dirname "$OUTPUT_PATH")"
 
-python3 - "$OUTPUT_PATH" "$SCOPE" "$MAX_LANE" "$GITLINK_POLICY" "$BOT_NEXT_VERSION_POLICY" "$DOCS_REMOTE_PROMOTION" "$CI_BEHAVIOR_CHANGE_AUTHORIZED" "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" <<'PY'
+python3 - "$OUTPUT_PATH" "$SCOPE" "$MAX_LANE" "$GITLINK_POLICY" "$BOT_NEXT_VERSION_POLICY" "$DOCS_REMOTE_PROMOTION" "$CI_BEHAVIOR_CHANGE_AUTHORIZED" "$CI_TEST_HARNESS_CHANGE_AUTHORIZED" "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" <<'PY'
 import json
 import os
 import sys
@@ -145,6 +158,7 @@ from datetime import datetime, timezone
     bot_next_version_policy,
     docs_remote_promotion,
     ci_behavior_change_authorized,
+    ci_test_harness_change_authorized,
     promotion_behavior_change_authorized,
 ) = sys.argv[1:]
 
@@ -158,6 +172,7 @@ payload = {
     "bot_next_version_policy": bot_next_version_policy,
     "docs_remote_promotion": docs_remote_promotion,
     "ci_behavior_change_authorized": ci_behavior_change_authorized == "true",
+    "ci_test_harness_change_authorized": ci_test_harness_change_authorized == "true",
     "promotion_behavior_change_authorized": promotion_behavior_change_authorized == "true",
 }
 
@@ -174,5 +189,6 @@ printf '  gitlink_policy: %s\n' "$GITLINK_POLICY"
 printf '  bot_next_version_policy: %s\n' "$BOT_NEXT_VERSION_POLICY"
 printf '  docs_remote_promotion: %s\n' "$DOCS_REMOTE_PROMOTION"
 printf '  ci_behavior_change_authorized: %s\n' "$CI_BEHAVIOR_CHANGE_AUTHORIZED"
+printf '  ci_test_harness_change_authorized: %s\n' "$CI_TEST_HARNESS_CHANGE_AUTHORIZED"
 printf '  promotion_behavior_change_authorized: %s\n' "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED"
 printf '\nOverall outcome: ready\n'

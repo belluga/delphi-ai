@@ -37,6 +37,11 @@ Turn a tactical TODO into an executable contract before approval. The TODO defin
 7. Add planning matrices before approval when triggered:
    - `Flow Evidence Planning Matrix` for user-visible, interactive, or user-flow-impacting surfaces, including non-visual refactors that feed screens or journeys.
    - `Local CI-Equivalent Suite Matrix` for repo-owned CI suites/jobs that will run for the touched slice.
+     - For each row, record the exact behavior/scenario the row is intended to prove.
+     - Record the fixture/seed/runtime preconditions required for that behavior to be meaningfully exercised.
+     - If the intended behavior cannot be proven with ambient data, add the deterministic bootstrap/seed/preparation step to the TODO instead of treating a generic suite pass as sufficient.
+     - When user-visible behavior can be proven through navigation/browser or device runtime lanes, plan that stronger evidence by default.
+     - If there is real ambiguity about what exact scenario must be proven, validate that expectation with the user before approval.
    - `Frontend / Consumer Matrix` for backend endpoints, jobs, settings namespaces, payloads, schemas, projections, capabilities, read models, webhooks, or other producer surfaces.
 
 ## Outputs

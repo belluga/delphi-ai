@@ -27,6 +27,8 @@ Before launching tests, resolve and record:
 If topology is ambiguous, run the Environment Topology Contract flow and stop at `blocked` until the user validates the target. Do not guess runtime owners, domains, tenants, or publish commands.
 
 ## Stage Policy
+- Load `ci-equivalent-governance` before deciding whether any local suite, profile, or runner qualifies as `CI Equivalent` or as a broad stage-parity gate such as `stage-full`.
+- If the touched change adds or rewires any stage-facing test row, wrapper, lifecycle step, or readonly/mutation coverage row, load `ci-equivalent-test-surface-admission` before claiming the matrix or gate is current.
 - Required stages are `passed`, `failed`, `blocked`, `flaky`, `skipped`, or `not-applicable`.
 - `blocked` is not `passed`; it can only close with an approved waiver or explicit scope exclusion.
 - `flaky`, including pass-after-retry, is not promotion-grade evidence unless waived with owner/rationale.
@@ -34,6 +36,7 @@ If topology is ambiguous, run the Environment Topology Contract flow and stop at
 - Browser/device evidence must prove the current reconciliation/build state is being served, not a stale bundle.
 - Browser CRUD/mutation validation must use the approved non-`main` mutation lane.
 - Respect wrapper branch-family contracts. CI-Equivalent remains current-branch local product proof. If a project-owned wrapper explicitly requires `reconcile/*`, do not cite it as the executor for a non-reconciliation gate unless you intentionally use a same-commit reconcile alias and record that equivalence. In real subagent orchestration, the authoritative branch under test is the consolidated reconciliation branch until that run is green; after that, replay the accepted net effect onto the plan's authoritative return branch before promotion or non-orchestration closeout resumes. Otherwise run the project-owned local build/publish path and the same product-facing suites directly on the active branch and record them with `test_orchestration_status_report.sh`.
+- Use `ci-equivalent-governance` as the authority for broad stage-gate naming, stage-pipeline parity, lifecycle-step inclusion, and stale-precondition invalidation.
 
 ## Default Sequence
 1. Environment/topology preflight.
@@ -41,7 +44,7 @@ If topology is ambiguous, run the Environment Topology Contract flow and stop at
 3. Flutter unit and widget tests.
 4. Flutter integration tests on required platforms with real backend when compatibility or backend coupling matters.
 5. Project-owned web build/publish wrapper when Flutter web or browser-visible surfaces changed.
-6. Browser navigation/mutation tests through the project-owned Playwright runner.
+6. Browser navigation/mutation tests through the project-owned Playwright runner, including any pipeline-owned fixture/bootstrap/cleanup lifecycle that brackets those suites.
 7. Compatibility metadata check.
 8. Final stage report and decision-adherence check.
 

@@ -7,6 +7,9 @@ description: "Simulate GitHub Copilot pull request review before CI or promotion
 
 Use this skill when the user wants a pre-PR audit that mirrors GitHub Copilot code review as closely as practical from the local workspace.
 
+When the lane also carries delivery, readiness, or promotion claims, load `ci-equivalent-governance` before deciding whether the current branch has enough local validation to open or close the review loop.
+When an accepted remediation wave adds or rewires any stage-facing test, wrapper, lifecycle step, or readonly/mutation row, load `ci-equivalent-test-surface-admission` before claiming the review branch or authoritative source branch is CI-equivalent ready.
+
 ## Official behavior to mirror
 
 As of June 5, 2026, GitHub Docs describe Copilot code review with these constraints:
@@ -63,6 +66,7 @@ If the repository has submodule gitlink changes, review the affected submodule r
    - On generic PR review flows, the active review branch may be the same authoritative source branch under review.
    - On promotion/readiness flows where the promotable branch history should stay clean, create a derived remediation branch from the authoritative source branch before the first review commit and keep the iterative review/fix commits there.
    - After each such commit, rebuild the bounded packet against the same base branch so the next review runs on the new `base...HEAD` from the active review branch instead of a stale worktree snapshot.
+   - If that remediation wave changed a stage-facing test/harness surface, run `ci-equivalent-test-surface-admission` before treating the branch as ready for the next CI-equivalent claim.
    - On promotion/readiness flows, update the orchestration execution plan's package-level review-loop ledger after each accepted remediation wave so a no-context session can resume from the current round without inventing a parallel status file.
    - On promotion/readiness flows, update the orchestration plan's **Review Coverage Board** after each accepted remediation wave so every governing TODO is explicitly classified as `not-reviewed | in-review | reopened-fixed | clean-no-reopen | blocked`, with the latest evidence round/commit recorded.
    - On package-based promotion/readiness flows, move each governing TODO progressively from `active/` to `promotion_lane/` as soon as it is locally complete and explicitly `clean/no-reopen` in the current loop; do not wait for the entire package to go green before moving already-clean TODOs.
@@ -75,9 +79,10 @@ If the repository has submodule gitlink changes, review the affected submodule r
    - `medium-effort`: cross-module logic, performance, contract, and coverage risks.
    - Add a `tooling` pass when workflows, test runners, or tooling changed.
 6. Merge and deduplicate findings by locus.
-7. Run **post-review finding triage**.
+7. Run **post-review finding triage** through `review-finding-classification`.
    - Do this after reviewer output is collected.
    - Do **not** change reviewer prompts, reviewer heuristics, or detection standards to force fewer findings.
+   - Load `review-finding-classification` as the canonical triage surface before routing findings into the governing TODO.
    - Classify each finding as:
      - `release-blocker`
      - `follow-up-fast-follow`
@@ -125,6 +130,7 @@ This is especially important for compatibility/cutover findings: do not patch aw
 The same scrutiny rule applies to internal subagent findings. Internal reviewers are not patch authority; they are the pre-Claude defect sieve.
 
 Reviewers do not decide blocker-vs-follow-up by themselves. They surface likely issues. The release/process triage happens afterward against the governing TODO and current promotion goal.
+That triage must run through `review-finding-classification`, including when the findings came from real GitHub Copilot/Codex review surfaces rather than only local mimic passes.
 
 ## Promotion Remediation Branch Mode
 
@@ -136,11 +142,7 @@ When this review is part of promotion-readiness or pre-promotion preflight, pref
 - Run the iterative fix/validate/commit loop only on that derived remediation branch.
 - Once the review branch is locally clean, compare `source-branch..review-branch` and decide the accepted net effect.
 - Before replaying anything, run the full in-scope local `CI-Equivalent Suite Matrix` on the **review branch**. Consolidation/replay is allowed only after that matrix is green or has explicit approved waivers.
-- Validation-surface rule for that gate:
-  - the remediation history branch remains `review/*`;
-  - CI-Equivalent remains current-branch local product proof on `review/*`, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope;
-  - if the project-owned validation wrapper is explicitly reconcile-only (for example `run_reconcile_validation.sh` or `run_navigation_reconcile_validation.sh`), do not cite that wrapper as the review-branch executor by default;
-  - use a reconcile-only wrapper only when the branch under test is a real same-commit reconcile alias and the equivalence is recorded in the review ledger.
+- Validation-surface rule for that gate: the remediation history branch remains `review/*`, and `ci-equivalent-governance` decides what qualifies as valid current-branch local proof there, including reconcile-wrapper exceptions and broad stage-gate naming.
 - Replay the accepted net effect onto the authoritative source branch as one or a few curated commits only after the review-branch CI-equivalent run is green.
 - Rebuild the bounded packet on the authoritative source branch after the replay and run a final confirmation pass there before claiming CI-equivalent or promotion readiness.
 

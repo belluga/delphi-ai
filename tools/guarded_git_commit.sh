@@ -7,8 +7,8 @@ usage() {
   cat <<'EOF'
 Usage: guarded_git_commit.sh --contract <path> [--repo-kind <docker|flutter|laravel|docs|other>] -- [git commit args...]
 
-Run git commit only after the promotion action guard and staged diff guard both return
-`Overall outcome: go`.
+Run git commit only after the promotion action guard plus both staged/worktree diff
+guards return `Overall outcome: go`.
 EOF
 }
 
@@ -53,5 +53,9 @@ current_branch="$(git rev-parse --abbrev-ref HEAD)"
 "$SCRIPT_DIR/github_promotion_diff_guard.sh" \
   --contract "$CONTRACT_PATH" \
   --mode staged
+
+"$SCRIPT_DIR/github_promotion_diff_guard.sh" \
+  --contract "$CONTRACT_PATH" \
+  --mode worktree
 
 git commit "$@"

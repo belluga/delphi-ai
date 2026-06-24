@@ -30,6 +30,7 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
    - move to `completed/` only when the final required lane threshold for the TODO is complete;
    - for local-only Delphi self-maintenance where remote promotion is intentionally out of scope, move to `completed/` only after local validation, commit/push, and canonical docs are complete.
 6. Route post-review findings explicitly:
+   - Run `review-finding-classification` before changing the routing ledger or splitting follow-up owners.
    - `release-blocker` stays with the current governing TODO/package and must be fixed or explicitly re-approved before promotion continues;
    - `follow-up-fast-follow` becomes an explicit TODO under `foundation_documentation/todos/active/fast_follow_required/followup/`;
    - `follow-up-hardening` becomes an explicit TODO under `foundation_documentation/todos/active/post_release_hardening/hardening/`;
