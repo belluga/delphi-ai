@@ -17,7 +17,6 @@ Scenario semantics:
   flutter-only      Flutter lane completion plus required Docker finalization.
   laravel-only      Laravel lane completion plus required Docker finalization.
   flutter-laravel   Flutter + Laravel lane completion plus required Docker finalization.
-
 Lane semantics:
   stage  validates the final `dev -> stage` state.
   main   validates the final `stage -> main` state.
@@ -64,6 +63,7 @@ WEB_REPO=""
 WEB_PR=""
 DOCKER_FLUTTER_PATH="flutter-app"
 DOCKER_LARAVEL_PATH="laravel-app"
+WORKSPACE_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -141,6 +141,8 @@ esac
 
 EXPECT_FLUTTER=false
 EXPECT_LARAVEL=false
+FLUTTER_REPO_EFFECTIVE="$FLUTTER_REPO"
+LARAVEL_REPO_EFFECTIVE="$LARAVEL_REPO"
 
 case "$SCENARIO" in
   docker-only) ;;
@@ -189,6 +191,59 @@ add_context() {
   CONTEXT_LINES+=("$1")
 }
 
+repo_slug_from_url() {
+  local url="$1"
+  local slug=""
+
+  case "$url" in
+    git@github.com:*)
+      slug="${url#git@github.com:}"
+      ;;
+    ssh://git@github.com/*)
+      slug="${url#ssh://git@github.com/}"
+      ;;
+    https://github.com/*)
+      slug="${url#https://github.com/}"
+      ;;
+    http://github.com/*)
+      slug="${url#http://github.com/}"
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  slug="${slug%.git}"
+  if [[ "$slug" =~ ^[^/]+/[^/]+$ ]]; then
+    printf '%s' "$slug"
+  fi
+}
+
+repo_slug_from_gitmodules_path() {
+  local path="$1"
+  local key=""
+  local name=""
+  local url=""
+
+  if [ ! -f "$WORKSPACE_ROOT/.gitmodules" ]; then
+    return 0
+  fi
+
+  key="$(
+    git -C "$WORKSPACE_ROOT" config -f "$WORKSPACE_ROOT/.gitmodules" --get-regexp '^submodule\..*\.path$' 2>/dev/null \
+      | awk -v target="$path" '$2 == target { print $1; exit }'
+  )"
+
+  if [ -z "$key" ]; then
+    return 0
+  fi
+
+  name="${key#submodule.}"
+  name="${name%.path}"
+  url="$(git -C "$WORKSPACE_ROOT" config -f "$WORKSPACE_ROOT/.gitmodules" --get "submodule.$name.url" 2>/dev/null || true)"
+  repo_slug_from_url "$url"
+}
+
 require_argument_teach() {
   local condition="$1"
   local violation="$2"
@@ -203,24 +258,6 @@ require_argument_teach() {
 require_argument_teach "$( [ -n "$DOCKER_REPO" ] && printf true || printf false )" \
   "Scenario '$SCENARIO' cannot be claimed complete without --docker-repo because Docker finalization is part of lane completion." \
   "Rerun with --docker-repo <owner/name> and require the Docker target branch to be green before claiming completion."
-
-if [ "$EXPECT_FLUTTER" = true ]; then
-  require_argument_teach "$( [ -n "$FLUTTER_REPO" ] && printf true || printf false )" \
-    "Scenario '$SCENARIO' requires --flutter-repo so the Flutter lane state can be validated before Docker finalization." \
-    "Rerun with --flutter-repo <owner/name> and require the Flutter target branch to contain '$SOURCE_BRANCH' plus green post-merge push runs."
-fi
-
-if [ "$EXPECT_LARAVEL" = true ]; then
-  require_argument_teach "$( [ -n "$LARAVEL_REPO" ] && printf true || printf false )" \
-    "Scenario '$SCENARIO' requires --laravel-repo so the Laravel lane state can be validated before Docker finalization." \
-    "Rerun with --laravel-repo <owner/name> and require the Laravel target branch to contain '$SOURCE_BRANCH' plus green post-merge push runs."
-fi
-
-if [ "$LANE" = "main" ] && [ "$EXPECT_FLUTTER" = true ]; then
-  require_argument_teach "$( [ -n "$WEB_REPO" ] && printf true || printf false )" \
-    "Flutter main completion requires downstream web follow-through evidence, but --web-repo was not provided." \
-    "Rerun with --web-repo <owner/name>; if the downstream path is PR-based, also pass --web-pr <number> so the merge can be validated deterministically."
-fi
 
 if ! gh auth status >/dev/null 2>&1; then
   add_violation "gh auth status is not healthy, so the promotion lane cannot be validated deterministically."
@@ -406,6 +443,36 @@ docker_submodule_sha() {
   fi
 }
 
+resolve_effective_repo_inputs() {
+  if [ -z "$FLUTTER_REPO_EFFECTIVE" ]; then
+    FLUTTER_REPO_EFFECTIVE="$(repo_slug_from_gitmodules_path "$DOCKER_FLUTTER_PATH")"
+  fi
+
+  if [ -z "$LARAVEL_REPO_EFFECTIVE" ]; then
+    LARAVEL_REPO_EFFECTIVE="$(repo_slug_from_gitmodules_path "$DOCKER_LARAVEL_PATH")"
+  fi
+}
+
+resolve_effective_repo_inputs
+
+if [ "$EXPECT_FLUTTER" = true ]; then
+  require_argument_teach "$( [ -n "$FLUTTER_REPO_EFFECTIVE" ] && printf true || printf false )" \
+    "Scenario '$SCENARIO' requires Flutter repo evidence, but no Flutter repository slug is available." \
+    "Pass --flutter-repo <owner/name> or keep '.gitmodules' available with the canonical '$DOCKER_FLUTTER_PATH' URL."
+fi
+
+if [ "$EXPECT_LARAVEL" = true ]; then
+  require_argument_teach "$( [ -n "$LARAVEL_REPO_EFFECTIVE" ] && printf true || printf false )" \
+    "Scenario '$SCENARIO' requires Laravel repo evidence, but no Laravel repository slug is available." \
+    "Pass --laravel-repo <owner/name> or keep '.gitmodules' available with the canonical '$DOCKER_LARAVEL_PATH' URL."
+fi
+
+if [ "$LANE" = "main" ] && [ "$EXPECT_FLUTTER" = true ]; then
+  require_argument_teach "$( [ -n "$WEB_REPO" ] && printf true || printf false )" \
+    "Flutter main completion requires downstream web follow-through evidence, but --web-repo was not provided." \
+    "Rerun with --web-repo <owner/name>; if the downstream path is PR-based, also pass --web-pr <number> so the merge can be validated deterministically."
+fi
+
 validate_submodule_alignment() {
   local role="$1"
   local human_label="$2"
@@ -457,8 +524,8 @@ validate_submodule_alignment() {
     # ──────────────────────────────────────────────
     local app_repo=""
     case "$role" in
-      flutter) app_repo="$FLUTTER_REPO" ;;
-      laravel) app_repo="$LARAVEL_REPO" ;;
+      flutter) app_repo="$FLUTTER_REPO_EFFECTIVE" ;;
+      laravel) app_repo="$LARAVEL_REPO_EFFECTIVE" ;;
     esac
 
     if [ -n "$app_repo" ]; then
@@ -557,8 +624,8 @@ printf '\n'
 
 printf 'Requested repos\n'
 printf '  - docker: %s\n' "${DOCKER_REPO:-not-provided}"
-printf '  - flutter: %s\n' "${FLUTTER_REPO:-not-required}"
-printf '  - laravel: %s\n' "${LARAVEL_REPO:-not-required}"
+printf '  - flutter: %s\n' "${FLUTTER_REPO_EFFECTIVE:-not-required}"
+printf '  - laravel: %s\n' "${LARAVEL_REPO_EFFECTIVE:-not-required}"
 printf '  - web: %s\n' "${WEB_REPO:-not-required}"
 if [ -n "$WEB_PR" ]; then
   printf '  - web PR: %s\n' "$WEB_PR"
@@ -569,11 +636,11 @@ if [ "${#VIOLATIONS[@]}" -eq 0 ]; then
   validate_lane_repo "docker" "$DOCKER_REPO" "Docker"
 
   if [ "$EXPECT_FLUTTER" = true ]; then
-    validate_lane_repo "flutter" "$FLUTTER_REPO" "Flutter"
+    validate_lane_repo "flutter" "$FLUTTER_REPO_EFFECTIVE" "Flutter"
   fi
 
   if [ "$EXPECT_LARAVEL" = true ]; then
-    validate_lane_repo "laravel" "$LARAVEL_REPO" "Laravel"
+    validate_lane_repo "laravel" "$LARAVEL_REPO_EFFECTIVE" "Laravel"
   fi
 
   if [ "$EXPECT_FLUTTER" = true ]; then
@@ -617,11 +684,11 @@ if [ "${#VIOLATIONS[@]}" -eq 0 ]; then
 fi
 
 RERUN_COMMAND="bash delphi-ai/tools/github_promotion_completion_guard.sh --lane $LANE --scenario $SCENARIO --docker-repo $DOCKER_REPO"
-if [ -n "$FLUTTER_REPO" ]; then
-  RERUN_COMMAND="$RERUN_COMMAND --flutter-repo $FLUTTER_REPO"
+if [ -n "$FLUTTER_REPO_EFFECTIVE" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --flutter-repo $FLUTTER_REPO_EFFECTIVE"
 fi
-if [ -n "$LARAVEL_REPO" ]; then
-  RERUN_COMMAND="$RERUN_COMMAND --laravel-repo $LARAVEL_REPO"
+if [ -n "$LARAVEL_REPO_EFFECTIVE" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --laravel-repo $LARAVEL_REPO_EFFECTIVE"
 fi
 if [ -n "$WEB_REPO" ]; then
   RERUN_COMMAND="$RERUN_COMMAND --web-repo $WEB_REPO"

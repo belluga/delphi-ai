@@ -19,10 +19,12 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 1. Fill the `Completion Evidence Matrix`.
    - Add one concrete row for every `Definition of Done` and `Validation Steps` criterion.
    - Evidence must be criterion-specific, not aggregate or representative.
+   - For any manual/browser/device/runtime-visible validation row, record a runtime freshness attestation before interpreting the result: authoritative `branch@sha`, local build/publish artifact or fingerprint, served runtime target, and proof that the served target matched that exact build.
 2. Execute every in-scope row in the `Local CI-Equivalent Suite Matrix` locally and mark it `passed`, or record an explicit approved `n/a`/waiver.
    - Load `ci-equivalent-governance` before deciding whether a row truly satisfies `CI-Equivalent`, whether a reconcile-only wrapper is valid on the current branch family, or whether a broad local stage gate such as `stage-full` is parity-complete rather than diagnostic.
   - A row is valid only when the executed evidence proves the row's declared behavior/scenario under its declared fixture/seed/runtime preconditions.
   - A generic suite pass is invalid when the target behavior was not actually exercised because required seed data, user linkage, fixtures, runtime bootstrap, or publication state were missing.
+  - If the row depends on a real browser/device/manual runtime surface, do not run or interpret it until the runtime freshness attestation proves the served target is fresh for the current authoritative build. Missing or mismatched freshness keeps the row `blocked`.
    - When the declared scenario says navigation/browser or device runtime proof is the strongest available lane, do not close the row on backend-only, unit/widget-only, or aggregate suite evidence.
 3. Validate decision adherence and module decision consistency.
 4. Run security risk assessment.
@@ -68,6 +70,7 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 ## Non-Negotiables
 - Visible, interactive, or user-flow-impacting criteria require item-specific integration/device or navigation/browser evidence unless an approved structure-only rationale exists.
 - Browser/web-visible criteria require source-owned Playwright evidence when the repo exposes a Playwright suite.
+- Browser/manual/device evidence is invalid unless it records a runtime freshness attestation proving the exercised runtime matched the current authoritative build before the result was trusted.
 - CRUD/mutation criteria require mutation-path evidence on the approved non-main target.
 - CI-equivalent rows must prove the intended behavior, not merely prove that the suite can run. Missing behavior-targeted data/fixtures/preconditions keep the row `blocked`, even if the command itself exits green.
 - A row that claims broad stage-pipeline parity is invalid whenever `ci-equivalent-governance` would reject its contract shape, branch topology, lifecycle-step coverage, or stale-precondition assumptions.

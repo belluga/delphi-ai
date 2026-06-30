@@ -65,6 +65,23 @@ bash "$SCRIPT" --repo "$REPO" --source feature/promotable --base origin/dev --go
 grep -q "Overall outcome: go" "$OUTPUT"
 grep -q "governing_todo: $PACKAGE_TODO" "$OUTPUT"
 
+cat >"$PACKAGE_DIR/TODO-v2.0.0+1-late-hotfix.md" <<'EOF'
+# TODO (v2.0.0+1): Late Hotfix
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+EOF
+
+if bash "$SCRIPT" --repo "$REPO" --source feature/promotable --base origin/dev --governing-todo "$PACKAGE_TODO" --repo-key root >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected live release-package drift to block preflight\n' >&2
+  exit 1
+fi
+grep -q "Release Package Rollup Guard" "$OUTPUT"
+grep -q "not frozen in the release package" "$OUTPUT"
+
+rm "$PACKAGE_DIR/TODO-v2.0.0+1-late-hotfix.md"
+
 git -C "$REPO" checkout -q feature/promotable
 printf 'post-proof drift\n' >> "$REPO/app.txt"
 git -C "$REPO" add app.txt

@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+# shellcheck source=lib/git_hook_stack.sh
+source "${TOOLS_DIR}/lib/git_hook_stack.sh"
+
 usage() {
   cat <<'EOF'
 Usage:
   bash delphi-ai/tools/install_pipeline_only_gitlink_commit_guard.sh --repo <path>
 
-Installs a local pre-commit hook that blocks manual gitlink commits. In this model,
-submodule pointer movement is pipeline-owned only and must not be committed by hand.
+Installs a local pre-commit hook in the shared Delphi hook stack that blocks manual
+gitlink commits. In this model, submodule pointer movement is pipeline-owned only
+and must not be committed by hand.
 EOF
 }
 
@@ -43,17 +48,12 @@ if ! git -C "$repo_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 repo_abs="$(cd "$repo_path" && pwd -P)"
-git_dir_raw="$(git -C "$repo_abs" rev-parse --git-dir)"
-if [[ "$git_dir_raw" = /* ]]; then
-  git_dir="$git_dir_raw"
-else
-  git_dir="$(cd "$repo_abs/$git_dir_raw" && pwd -P)"
-fi
+delphi_hook_stack_prepare "$repo_abs"
 
-hooks_dir="$git_dir/delphi-hooks/pipeline-only-gitlink"
-mkdir -p "$hooks_dir"
+hook_file="$(mktemp)"
+trap 'rm -f "$hook_file"' EXIT
 
-cat >"$hooks_dir/pre-commit" <<'EOF'
+cat >"$hook_file" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -120,8 +120,9 @@ fi
   echo "Manual commit attempted while the superproject contains gitlink movement."
   echo
   echo "Authority:"
-  echo "In this repository, gitlink updates are pipeline-owned only. Manual local commits"
-  echo "must not move submodule pointers."
+  echo "In this repository, gitlink updates are pipeline-produced artifacts. Only the"
+  echo "project-authorized automation may move submodule pointers; manual local commits"
+  echo "must not do so."
   echo
   echo "Constraint:"
   echo "Any staged gitlink diff or worktree gitlink drift blocks 'git commit', including"
@@ -138,18 +139,19 @@ fi
   echo
   echo "Expected Behavior:"
   echo "Revert or unstage the gitlink changes before committing normal files."
-  echo "If a promotion lane needs app pin movement, let the pipeline-owned"
-  echo "'bot/next-version -> dev -> stage' path carry that gitlink update."
+  echo "If the project needs a new submodule pin, wait for the project-authorized"
+  echo "pipeline to create or refresh the automation branch that carries the gitlink"
+  echo "update (for example a bot-produced lane branch)."
   echo
   echo "Decision:"
-  echo "Commit blocked because gitlink movement was detected outside the pipeline-owned path."
+  echo "Commit blocked because gitlink movement was detected outside the project-authorized automation path."
 } >&2
 
 exit 42
 EOF
 
-chmod +x "$hooks_dir/pre-commit"
-git -C "$repo_abs" config core.hooksPath "$hooks_dir"
+delphi_hook_stack_install_managed_hook "pipeline-only-gitlink" "pre-commit" "$hook_file"
+delphi_hook_stack_activate "$repo_abs"
 
 printf 'Installed Delphi pipeline-only gitlink commit guard in %s\n' "$repo_abs"
-printf 'Git hooks path: %s\n' "$hooks_dir"
+printf 'Git hooks path: %s\n' "$DELPHI_HOOK_STACK_BIN_DIR"

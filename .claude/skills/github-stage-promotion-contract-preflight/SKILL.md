@@ -14,11 +14,12 @@ Use after intake has classified the scenario and before opening or mutating any 
 - Keep `ci_behavior_change_authorized=false`, `ci_test_harness_change_authorized=false`, and `promotion_behavior_change_authorized=false` unless the user explicitly authorized those exact change classes.
 - Use `ci_test_harness_change_authorized=true` only for narrow workflow diffs that merely extend or retarget existing test harness/test-selection surfaces; it does not authorize broader CI control-plane edits.
 - Run `git status --short` in each touched repo.
-- When a version/package TODO governs the lane, run `python3 delphi-ai/tools/github_promotion_source_authority_guard.py --repo <repo> --source-ref <source-ref> --governing-todo <todo-path> --repo-key <key>` and require `Overall outcome: go` before normal source preflight.
+- When a version/package TODO governs the lane, require repo-specific source authority to return `Overall outcome: go` before normal source preflight. If the governing TODO is a release-package TODO, treat that authority as live: first require the package rollup to match the current version membership under `active/<version>` plus `promotion_lane/<version>`, and require every live child TODO to already be promotion-eligible.
 - When that package/version authority applies, treat the TODO-recorded version branch, typically `*-rc`, as the authoritative source branch for the first `CI-Equivalent` run. A later `review/*` branch may add validation, but it does not replace the required `*-rc` proof.
 - Run first-PR preflight:
   - normal source: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <source-branch> --base origin/dev`
   - version/package source: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <source-branch> --base origin/dev --governing-todo <todo-path> --repo-key <key>`
+    - when `<todo-path>` is a release-package TODO, this command now auto-runs `github_release_package_rollup_guard.py` before `github_promotion_source_authority_guard.py`
   - bot lane: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source origin/bot/next-version --base origin/dev --require-diff-shape submodule-only`
 - If the package was first integrated on `reconcile/*`, do not let preflight start from that branch. First record replay in the orchestration execution plan and require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan-path> --repo <authoritative-source-repo>` to return `Overall outcome: go`. Then run stage preflight from the canonical branch, preferably with `--orchestration-plan <plan-path>` so the preflight delegates to the replay guard before checking promotion lineage.
 - Discover existing PRs before creating new ones.
@@ -62,6 +63,7 @@ The wrappers enforce action/diff policy only. They do not prove PR checks, revie
 ## Non-Negotiables
 - Any `Overall outcome: no-go` from preflight or guards blocks mutation.
 - A version/package promotion source is not authoritative unless the governing TODO's `Current Branch Authority` and exact `branch@sha` baseline both match the source branch under evaluation.
+- A release-package TODO is not authoritative unless its `Current Diff Child Owners` still matches the live version membership and every live child owner is already at a promotable delivery stage.
 - In that version/package case, a green `review/*` matrix without a prior green authoritative `*-rc` matrix is still `no-go`.
 - A promotion source branch named `reconcile/*` is always a blocker. Promotion resumes only after replay onto the canonical branch is proven.
 - Do not open the first promotion PR while unresolved P1/P2 pre-promotion review findings remain.

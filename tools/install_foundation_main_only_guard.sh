@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+# shellcheck source=lib/git_hook_stack.sh
+source "${TOOLS_DIR}/lib/git_hook_stack.sh"
+
 usage() {
   cat <<'EOF'
 Usage:
   bash delphi-ai/tools/install_foundation_main_only_guard.sh --repo <path> [--branch main]
 
-Installs local Git hooks that enforce a canonical foundation_documentation repository
-to remain on a single writable branch. The default approved branch is `main`.
+Installs local Git hooks in the shared Delphi hook stack that enforce a canonical
+foundation_documentation repository to remain on a single writable branch. The
+default approved branch is `main`.
 EOF
 }
 
@@ -53,17 +58,13 @@ if ! git -C "$repo_path" rev-parse --verify "refs/heads/$canonical_branch^{commi
 fi
 
 repo_abs="$(cd "$repo_path" && pwd -P)"
-git_dir_raw="$(git -C "$repo_abs" rev-parse --git-dir)"
-if [[ "$git_dir_raw" = /* ]]; then
-  git_dir="$git_dir_raw"
-else
-  git_dir="$(cd "$repo_abs/$git_dir_raw" && pwd -P)"
-fi
+delphi_hook_stack_prepare "$repo_abs"
 
-hooks_dir="$git_dir/delphi-hooks/foundation-main-only"
-mkdir -p "$hooks_dir"
+reference_hook="$(mktemp)"
+post_checkout_hook="$(mktemp)"
+trap 'rm -f "$reference_hook" "$post_checkout_hook"' EXIT
 
-cat >"$hooks_dir/reference-transaction" <<EOF
+cat >"$reference_hook" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -118,7 +119,7 @@ while read -r old_oid new_oid ref_name; do
 done
 EOF
 
-cat >"$hooks_dir/post-checkout" <<EOF
+cat >"$post_checkout_hook" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -174,9 +175,10 @@ fi
 exit 96
 EOF
 
-chmod +x "$hooks_dir/reference-transaction" "$hooks_dir/post-checkout"
-git -C "$repo_abs" config core.hooksPath "$hooks_dir"
+delphi_hook_stack_install_managed_hook "foundation-main-only" "reference-transaction" "$reference_hook"
+delphi_hook_stack_install_managed_hook "foundation-main-only" "post-checkout" "$post_checkout_hook"
+delphi_hook_stack_activate "$repo_abs"
 
 printf 'Installed Delphi foundation main-only guard in %s\n' "$repo_abs"
-printf 'Git hooks path: %s\n' "$hooks_dir"
+printf 'Git hooks path: %s\n' "$DELPHI_HOOK_STACK_BIN_DIR"
 printf 'Approved branch: %s\n' "$canonical_branch"

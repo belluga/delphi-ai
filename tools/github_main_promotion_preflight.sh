@@ -14,14 +14,14 @@ set -euo pipefail
 # T.E.A.C.H. compliance:
 #   Triggered  – called explicitly before opening the first stage→main PR
 #   Enforced   – exit code 2 = NO-GO, exit code 0 = GO
-#   Automated  – bash script, no manual intervention
+#   Automated  – deterministic shell evaluation once invoked at the main-lane preflight gate
 #   Contextual – emits per-repo SHAs, run status, submodule alignment evidence
 #   Hinting    – resolution_prompt gives exact next steps to resolve blockers
 # ─────────────────────────────────────────────────────────────────────────────
 
 usage() {
   cat <<'EOF'
-Usage: github_main_promotion_preflight.sh --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>]
+Usage: github_main_promotion_preflight.sh [--scenario <auto|docker-only|flutter-only|laravel-only|flutter-laravel>] --docker-repo <owner/name> [--flutter-repo <owner/name>] [--laravel-repo <owner/name>] [--web-repo <owner/name>]
 
 Run the deterministic first-PR preflight for the GitHub Main Promotion Orchestrator.
 This helper is a TEACH runtime blocker: objective remote-repo checks trigger it,
@@ -38,14 +38,17 @@ The response carries:
 Checks performed per pertinent repo:
   1. stage branch exists and resolves to a commit
   2. main branch exists and resolves to a commit
-  3. stage contains the current dev tip (upstream health)
+  3. stage-vs-dev drift is recorded for context; it is a hard blocker for Docker, and for app repos it is enforced through Docker gitlink alignment instead of requiring stage to contain the latest dev tip
   4. stage has a promotable diff beyond main
   5. Post-merge push runs on stage are green for the current head
   6. Docker submodule gitlinks on stage point to correct app-repo stage SHAs
-  7. (Flutter main) --web-repo is provided when Flutter participates
+  7. Scenario is inferred objectively from Docker stage gitlinks: an app repo is pertinent only when the Docker stage gitlink SHA is not already contained in that app's main history
+  8. (Flutter main) --web-repo is provided when Flutter participates
 
 Options:
-  --scenario <scenario>          Required. One of: docker-only, flutter-only, laravel-only, flutter-laravel.
+  --scenario <scenario>          Optional. One of: auto, docker-only, flutter-only, laravel-only, flutter-laravel.
+                                 Omit or pass auto to infer the scenario from Docker stage gitlinks.
+                                 Any explicit scenario is treated as an assertion and must match the inferred scenario.
   --docker-repo <owner/name>     Required. Docker repository (always part of lane completion).
   --flutter-repo <owner/name>    Required when scenario includes Flutter.
   --laravel-repo <owner/name>    Required when scenario includes Laravel.
@@ -91,6 +94,7 @@ LARAVEL_REPO=""
 WEB_REPO=""
 DOCKER_FLUTTER_PATH="flutter-app"
 DOCKER_LARAVEL_PATH="laravel-app"
+WORKSPACE_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -141,13 +145,18 @@ done
 
 # ── Validation ───────────────────────────────────────────────────────────────
 
-[ -n "$SCENARIO" ] || die "--scenario is required"
+[ -n "$SCENARIO" ] || SCENARIO="auto"
 [ -n "$DOCKER_REPO" ] || die "--docker-repo is required"
 
+REQUESTED_SCENARIO="$SCENARIO"
+INFERRED_SCENARIO=""
 EXPECT_FLUTTER=false
 EXPECT_LARAVEL=false
+FLUTTER_REPO_EFFECTIVE="$FLUTTER_REPO"
+LARAVEL_REPO_EFFECTIVE="$LARAVEL_REPO"
 
 case "$SCENARIO" in
+  auto) ;;
   docker-only) ;;
   flutter-only)
     EXPECT_FLUTTER=true
@@ -200,24 +209,60 @@ add_context() {
   CONTEXT_LINES+=("$1")
 }
 
-# ── Argument requirement checks (TEACH-style) ───────────────────────────────
-
-if [ "$EXPECT_FLUTTER" = true ] && [ -z "$FLUTTER_REPO" ]; then
-  add_violation "Scenario '$SCENARIO' requires --flutter-repo so the Flutter stage health can be validated before opening main PRs."
-  add_resolution "Rerun with --flutter-repo <owner/name>."
-fi
-
-if [ "$EXPECT_LARAVEL" = true ] && [ -z "$LARAVEL_REPO" ]; then
-  add_violation "Scenario '$SCENARIO' requires --laravel-repo so the Laravel stage health can be validated before opening main PRs."
-  add_resolution "Rerun with --laravel-repo <owner/name>."
-fi
-
-if [ "$EXPECT_FLUTTER" = true ] && [ -z "$WEB_REPO" ]; then
-  add_violation "Flutter main promotion requires downstream web follow-through evidence, but --web-repo was not provided."
-  add_resolution "Rerun with --web-repo <owner/name> so the preflight can confirm web-app readiness for Flutter main completion."
-fi
-
 # ── Helper functions ─────────────────────────────────────────────────────────
+
+repo_slug_from_url() {
+  local url="$1"
+  local slug=""
+
+  case "$url" in
+    git@github.com:*)
+      slug="${url#git@github.com:}"
+      ;;
+    ssh://git@github.com/*)
+      slug="${url#ssh://git@github.com/}"
+      ;;
+    https://github.com/*)
+      slug="${url#https://github.com/}"
+      ;;
+    http://github.com/*)
+      slug="${url#http://github.com/}"
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+
+  slug="${slug%.git}"
+  if [[ "$slug" =~ ^[^/]+/[^/]+$ ]]; then
+    printf '%s' "$slug"
+  fi
+}
+
+repo_slug_from_gitmodules_path() {
+  local path="$1"
+  local key=""
+  local name=""
+  local url=""
+
+  if [ ! -f "$WORKSPACE_ROOT/.gitmodules" ]; then
+    return 0
+  fi
+
+  key="$(
+    git -C "$WORKSPACE_ROOT" config -f "$WORKSPACE_ROOT/.gitmodules" --get-regexp '^submodule\..*\.path$' 2>/dev/null \
+      | awk -v target="$path" '$2 == target { print $1; exit }'
+  )"
+
+  if [ -z "$key" ]; then
+    return 0
+  fi
+
+  name="${key#submodule.}"
+  name="${name%.path}"
+  url="$(git -C "$WORKSPACE_ROOT" config -f "$WORKSPACE_ROOT/.gitmodules" --get "submodule.$name.url" 2>/dev/null || true)"
+  repo_slug_from_url "$url"
+}
 
 branch_head_sha() {
   local repo="$1"
@@ -286,6 +331,179 @@ docker_submodule_sha() {
   fi
 }
 
+configure_expectations_for_scenario() {
+  local scenario="$1"
+
+  EXPECT_FLUTTER=false
+  EXPECT_LARAVEL=false
+
+  case "$scenario" in
+    docker-only) ;;
+    flutter-only)
+      EXPECT_FLUTTER=true
+      ;;
+    laravel-only)
+      EXPECT_LARAVEL=true
+      ;;
+    flutter-laravel)
+      EXPECT_FLUTTER=true
+      EXPECT_LARAVEL=true
+      ;;
+    *)
+      die "unsupported effective scenario value: $scenario"
+      ;;
+  esac
+}
+
+role_main_containment_status() {
+  local role="$1"
+  local repo="$2"
+  local docker_path="$3"
+  local docker_stage_sha="$4"
+  local actual_sha=""
+  local main_sha=""
+  local compare_line=""
+  local compare_status=""
+  local compare_behind=""
+  local compare_ahead=""
+  local human_label=""
+
+  case "$role" in
+    flutter) human_label="Flutter" ;;
+    laravel) human_label="Laravel" ;;
+    *) die "unsupported role for containment status: $role" ;;
+  esac
+
+  actual_sha="$(docker_submodule_sha "$DOCKER_REPO" "$docker_path" "$docker_stage_sha")"
+  SUBMODULE_SHA_BY_ROLE["$role"]="${actual_sha:-missing}"
+
+  if [ -z "$actual_sha" ]; then
+    printf 'absent'
+    return 0
+  fi
+
+  if [ -z "$repo" ]; then
+    add_violation "Docker stage pins $human_label gitlink '$docker_path' at '$actual_sha', but no $human_label repository slug is available for objective stage→main scenario inference."
+    add_resolution "Pass --${role}-repo <owner/name> or keep '.gitmodules' available with the canonical '$docker_path' URL so the preflight can infer whether $human_label is already promoted to main."
+    add_context "scenario-$role | repo=missing | stage_gitlink_sha=$actual_sha | main_contains_stage_gitlink=unknown | pertinent=unknown"
+    printf 'unknown'
+    return 0
+  fi
+
+  main_sha="$(branch_head_sha "$repo" "main")"
+  if [ -z "$main_sha" ]; then
+    add_violation "Unable to resolve $human_label 'main' branch in '$repo' while inferring the stage→main repo set."
+    add_resolution "Repair repository/branch access for '$repo:main', then rerun this preflight."
+    add_context "scenario-$role | repo=$repo | stage_gitlink_sha=$actual_sha | app_main_sha=missing | main_contains_stage_gitlink=unknown | pertinent=unknown"
+    printf 'unknown'
+    return 0
+  fi
+
+  compare_line="$(compare_summary "$repo" "$actual_sha" "$main_sha")"
+  if [ -z "$compare_line" ]; then
+    add_violation "Unable to compare Docker stage gitlink '$actual_sha' against $human_label main head '$main_sha' in '$repo'."
+    add_resolution "Repair GitHub compare access for '$repo', then rerun this preflight."
+    add_context "scenario-$role | repo=$repo | stage_gitlink_sha=$actual_sha | app_main_sha=$main_sha | main_contains_stage_gitlink=unknown | pertinent=unknown"
+    printf 'unknown'
+    return 0
+  fi
+
+  IFS=$'\t' read -r compare_status compare_behind compare_ahead <<< "$compare_line"
+  if [ "${compare_behind:-}" = "0" ]; then
+    add_context "scenario-$role | repo=$repo | stage_gitlink_sha=$actual_sha | app_main_sha=$main_sha | main_contains_stage_gitlink=yes | pertinent=no"
+    printf 'not-pertinent'
+    return 0
+  fi
+
+  add_context "scenario-$role | repo=$repo | stage_gitlink_sha=$actual_sha | app_main_sha=$main_sha | main_contains_stage_gitlink=no | pertinent=yes"
+  printf 'pertinent'
+}
+
+infer_main_scenario() {
+  local docker_stage_sha=""
+  local flutter_status=""
+  local laravel_status=""
+  local pertinent_count=0
+
+  docker_stage_sha="$(branch_head_sha "$DOCKER_REPO" "stage")"
+  STAGE_SHA_BY_ROLE["docker"]="${docker_stage_sha:-missing}"
+
+  if [ -z "$docker_stage_sha" ]; then
+    add_violation "Unable to resolve Docker 'stage' branch in '$DOCKER_REPO', so the stage→main scenario cannot be inferred objectively."
+    add_resolution "Repair repository/branch access for '$DOCKER_REPO:stage', then rerun this preflight."
+    add_context "scenario-inference | docker_repo=$DOCKER_REPO | docker_stage_sha=missing | inferred_scenario=unknown"
+    return 1
+  fi
+
+  flutter_status="$(role_main_containment_status "flutter" "$FLUTTER_REPO_EFFECTIVE" "$DOCKER_FLUTTER_PATH" "$docker_stage_sha")"
+  laravel_status="$(role_main_containment_status "laravel" "$LARAVEL_REPO_EFFECTIVE" "$DOCKER_LARAVEL_PATH" "$docker_stage_sha")"
+
+  case "$flutter_status" in
+    unknown) return 1 ;;
+    pertinent) pertinent_count=$((pertinent_count + 1)) ;;
+  esac
+
+  case "$laravel_status" in
+    unknown) return 1 ;;
+    pertinent) pertinent_count=$((pertinent_count + 1)) ;;
+  esac
+
+  if [ "$flutter_status" = "pertinent" ] && [ "$laravel_status" = "pertinent" ]; then
+    INFERRED_SCENARIO="flutter-laravel"
+  elif [ "$flutter_status" = "pertinent" ]; then
+    INFERRED_SCENARIO="flutter-only"
+  elif [ "$laravel_status" = "pertinent" ]; then
+    INFERRED_SCENARIO="laravel-only"
+  else
+    INFERRED_SCENARIO="docker-only"
+  fi
+
+  add_context "scenario-inference | docker_repo=$DOCKER_REPO | docker_stage_sha=$docker_stage_sha | flutter=$flutter_status | laravel=$laravel_status | inferred_scenario=$INFERRED_SCENARIO"
+  return 0
+}
+
+resolve_effective_repo_inputs() {
+  if [ -z "$FLUTTER_REPO_EFFECTIVE" ]; then
+    FLUTTER_REPO_EFFECTIVE="$(repo_slug_from_gitmodules_path "$DOCKER_FLUTTER_PATH")"
+  fi
+
+  if [ -z "$LARAVEL_REPO_EFFECTIVE" ]; then
+    LARAVEL_REPO_EFFECTIVE="$(repo_slug_from_gitmodules_path "$DOCKER_LARAVEL_PATH")"
+  fi
+}
+
+# ── Scenario inference and argument checks (TEACH-style) ────────────────────
+
+resolve_effective_repo_inputs
+infer_main_scenario || true
+
+if [ -z "$INFERRED_SCENARIO" ]; then
+  INFERRED_SCENARIO="unknown"
+elif [ "$REQUESTED_SCENARIO" != "auto" ] && [ "$REQUESTED_SCENARIO" != "$INFERRED_SCENARIO" ]; then
+  add_violation "Explicit scenario '$REQUESTED_SCENARIO' does not match the objectively inferred stage→main scenario '$INFERRED_SCENARIO'."
+  add_resolution "Rerun with '--scenario auto' or '--scenario $INFERRED_SCENARIO'. The main-lane repo set must be derived from Docker stage gitlinks rather than TODO narrative."
+fi
+
+if [ "$INFERRED_SCENARIO" != "unknown" ]; then
+  SCENARIO="$INFERRED_SCENARIO"
+  configure_expectations_for_scenario "$SCENARIO"
+fi
+
+if [ "$EXPECT_FLUTTER" = true ] && [ -z "$FLUTTER_REPO_EFFECTIVE" ]; then
+  add_violation "Scenario '$SCENARIO' requires Flutter repo evidence, but no Flutter repository slug is available."
+  add_resolution "Pass --flutter-repo <owner/name> or keep '.gitmodules' available with the canonical '$DOCKER_FLUTTER_PATH' URL."
+fi
+
+if [ "$EXPECT_LARAVEL" = true ] && [ -z "$LARAVEL_REPO_EFFECTIVE" ]; then
+  add_violation "Scenario '$SCENARIO' requires Laravel repo evidence, but no Laravel repository slug is available."
+  add_resolution "Pass --laravel-repo <owner/name> or keep '.gitmodules' available with the canonical '$DOCKER_LARAVEL_PATH' URL."
+fi
+
+if [ "$EXPECT_FLUTTER" = true ] && [ -z "$WEB_REPO" ]; then
+  add_violation "Flutter main promotion requires downstream web follow-through evidence, but --web-repo was not provided."
+  add_resolution "Rerun with --web-repo <owner/name> so the preflight can confirm web-app readiness for Flutter main completion."
+fi
+
 # ── Per-repo validation ─────────────────────────────────────────────────────
 
 validate_repo_stage_health() {
@@ -327,7 +545,11 @@ validate_repo_stage_health() {
     return
   fi
 
-  # Check 1: stage contains dev tip (upstream health)
+  # Check 1: capture stage-vs-dev drift.
+  # Docker keeps the hard upstream-health requirement because it is the final
+  # replay/finalization lane. App repos may still be promotable to main when
+  # Docker stage already pins their exact stage SHA for the package, even if
+  # dev has moved ahead with unrelated later work.
   if [ -n "$dev_sha" ]; then
     compare_line="$(compare_summary "$repo" "$dev_sha" "$stage_sha")"
     if [ -n "$compare_line" ]; then
@@ -336,8 +558,10 @@ validate_repo_stage_health() {
         STAGE_CONTAINS_DEV_BY_ROLE["$role"]="yes"
       else
         STAGE_CONTAINS_DEV_BY_ROLE["$role"]="no"
-        add_violation "$human_label 'stage' in '$repo' does not contain the current 'dev' tip (behind by ${compare_behind} commits)."
-        add_resolution "Complete the pending dev→stage promotion for '$repo' before attempting stage→main. Use github-stage-promotion-orchestrator."
+        if [ "$role" = "docker" ]; then
+          add_violation "$human_label 'stage' in '$repo' does not contain the current 'dev' tip (behind by ${compare_behind} commits)."
+          add_resolution "Complete the pending dev→stage promotion for '$repo' before attempting stage→main. Use github-stage-promotion-orchestrator."
+        fi
       fi
     else
       STAGE_CONTAINS_DEV_BY_ROLE["$role"]="unknown"
@@ -439,15 +663,16 @@ validate_submodule_alignment() {
 # ── Header ───────────────────────────────────────────────────────────────────
 
 printf 'GitHub Main Promotion Preflight\n'
-printf 'Scenario: %s\n' "$SCENARIO"
+printf 'Requested scenario: %s\n' "$REQUESTED_SCENARIO"
+printf 'Effective scenario: %s\n' "$SCENARIO"
 printf 'Source branch: stage\n'
 printf 'Target branch: main\n'
 printf '\n'
 
 printf 'Requested repos\n'
 printf '  - docker: %s\n' "${DOCKER_REPO:-not-provided}"
-printf '  - flutter: %s\n' "${FLUTTER_REPO:-not-required}"
-printf '  - laravel: %s\n' "${LARAVEL_REPO:-not-required}"
+printf '  - flutter: %s\n' "${FLUTTER_REPO_EFFECTIVE:-not-required}"
+printf '  - laravel: %s\n' "${LARAVEL_REPO_EFFECTIVE:-not-required}"
 printf '  - web: %s\n' "${WEB_REPO:-not-required}"
 printf '\n'
 
@@ -458,12 +683,12 @@ if [ "${#VIOLATIONS[@]}" -eq 0 ]; then
   validate_repo_stage_health "docker" "$DOCKER_REPO" "Docker"
 
   # Validate app repos when pertinent
-  if [ "$EXPECT_FLUTTER" = true ] && [ -n "$FLUTTER_REPO" ]; then
-    validate_repo_stage_health "flutter" "$FLUTTER_REPO" "Flutter"
+  if [ "$EXPECT_FLUTTER" = true ] && [ -n "$FLUTTER_REPO_EFFECTIVE" ]; then
+    validate_repo_stage_health "flutter" "$FLUTTER_REPO_EFFECTIVE" "Flutter"
   fi
 
-  if [ "$EXPECT_LARAVEL" = true ] && [ -n "$LARAVEL_REPO" ]; then
-    validate_repo_stage_health "laravel" "$LARAVEL_REPO" "Laravel"
+  if [ "$EXPECT_LARAVEL" = true ] && [ -n "$LARAVEL_REPO_EFFECTIVE" ]; then
+    validate_repo_stage_health "laravel" "$LARAVEL_REPO_EFFECTIVE" "Laravel"
   fi
 
   # Validate Docker submodule alignment when app repos participate
@@ -497,6 +722,7 @@ if [ "${#VIOLATIONS[@]}" -eq 0 ]; then
   printf 'resolution_prompt:\n'
   print_response_list '  ' "${READY_PROMPTS[@]}"
   printf 'context:\n'
+  printf '  requested_scenario: %s\n' "$REQUESTED_SCENARIO"
   printf '  scenario: %s\n' "$SCENARIO"
   printf '  source_branch: stage\n'
   printf '  target_branch: main\n'
@@ -508,12 +734,12 @@ fi
 
 # ── NO-GO path ───────────────────────────────────────────────────────────────
 
-RERUN_COMMAND="bash delphi-ai/tools/github_main_promotion_preflight.sh --scenario $SCENARIO --docker-repo $DOCKER_REPO"
-if [ -n "$FLUTTER_REPO" ]; then
-  RERUN_COMMAND="$RERUN_COMMAND --flutter-repo $FLUTTER_REPO"
+RERUN_COMMAND="bash delphi-ai/tools/github_main_promotion_preflight.sh --scenario auto --docker-repo $DOCKER_REPO"
+if [ -n "$FLUTTER_REPO_EFFECTIVE" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --flutter-repo $FLUTTER_REPO_EFFECTIVE"
 fi
-if [ -n "$LARAVEL_REPO" ]; then
-  RERUN_COMMAND="$RERUN_COMMAND --laravel-repo $LARAVEL_REPO"
+if [ -n "$LARAVEL_REPO_EFFECTIVE" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --laravel-repo $LARAVEL_REPO_EFFECTIVE"
 fi
 if [ -n "$WEB_REPO" ]; then
   RERUN_COMMAND="$RERUN_COMMAND --web-repo $WEB_REPO"
@@ -530,6 +756,7 @@ print_response_list '  ' "${VIOLATIONS[@]}"
 printf 'resolution_prompt:\n'
 print_response_list '  ' "${RESOLUTION_PROMPTS[@]}"
 printf 'context:\n'
+printf '  requested_scenario: %s\n' "$REQUESTED_SCENARIO"
 printf '  scenario: %s\n' "$SCENARIO"
 printf '  source_branch: stage\n'
 printf '  target_branch: main\n'

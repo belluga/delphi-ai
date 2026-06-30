@@ -53,8 +53,9 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
    - the derived review branch must pass its own in-scope CI-equivalent matrix before it can be declared review-clean;
    - if replaying the accepted review net effect changes the authoritative source codebase, rerun the authoritative CI-equivalent matrix before claiming promotion readiness again;
    - if the authoritative source codebase is unchanged from its last green CI-equivalent state, do not rerun it gratuitously.
-13. Rerun `todo_authority_guard.py <todo-path> --require-delivery-gates`, `todo_completion_guard.py`, and `todo_closeout_guard.py <todo-path>` before any close-claim path/status change.
-14. After commit/push or lane movement, update `Post-commit/push status` and run `todo_closeout_guard.py --all-active --repo <repo-root>`; if it flags a `move-*` TODO still in `active/`, move it or change the disposition with a real remaining active reason.
+13. Inside promotion flow, once the authoritative current-head `CI-Equivalent` result is green and only lane follow-through remains, convert immediately to promotion action or `promotion_lane/`; do not keep the TODO/package in open-ended local review unless a newly frozen `release-blocker`, incomplete replay, pending remote lane evidence, or guard-mandated rerun is explicit.
+14. Rerun `todo_authority_guard.py <todo-path> --require-delivery-gates`, `todo_completion_guard.py`, and `todo_closeout_guard.py <todo-path>` before any close-claim path/status change.
+15. After commit/push or lane movement, update `Post-commit/push status` and run `todo_closeout_guard.py --all-active --repo <repo-root>`; if it flags a `move-*` TODO still in `active/`, move it or change the disposition with a real remaining active reason.
 
 ## Outputs
 - Updated TODO stage/path.
@@ -64,6 +65,7 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
 ## Non-Negotiables
 - Same governing TODO remains authoritative through promotion follow-through.
 - `active/` is not a single semantic state: every active TODO must declare whether it is still in `implementation`, in package/promotion `review`, or explicitly `blocked`.
+- Inside promotion flow, a current-head authoritative green `CI-Equivalent` result is a decision point, not an invitation to reopen local investigation. Extra broad local reruns require head movement, invalidation-guard output, or a newly classified `release-blocker`.
 - No `Production-Ready` claim before the final required lane threshold is complete.
 - No close-claim path/status change while either deterministic guard returns anything other than `Overall outcome: go`.
 - No delivered TODO may remain in `active/` without a valid closeout disposition and actionable next step.

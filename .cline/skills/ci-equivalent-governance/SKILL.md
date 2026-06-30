@@ -17,6 +17,7 @@ Freeze the meaning of `CI Equivalent` as current-branch local product proof on t
 - It is scope-complete for the touched repo/job family. A targeted rerun, representative smoke path, or single happy path is diagnostic evidence unless the approved matrix explicitly says that narrower scope is complete.
 - Published `stage` or `main` probes are separate evidence. They never replace `CI Equivalent`.
 - `CI Equivalent` is a generic proof concept. Reconciliation is only one possible execution topology.
+- If the required local runtime surface for a broad gate is unavailable, hung, or ambiguous, the `CI Equivalent` claim is `blocked`, not `passed`, and published-lane evidence still does not replace it.
 
 ## Authoritative Branch And Wrapper Discipline
 - The branch under test is the current authoritative branch for the claim being made.
@@ -43,6 +44,13 @@ A local bundle is not valid `stage-full` parity when any of these are true:
 
 Narrower diagnostic bundles must use distinct names and must not be reported as the broad stage gate.
 
+When a broad local gate such as `stage-full` cannot complete because the local runtime surface is unhealthy or non-responsive:
+- treat the gate as a blocking local infrastructure failure, not as a soft warning;
+- do not continue promotion, replay, or closeout on the theory that remote `stage` or `main` evidence is "good enough";
+- do not reinterpret targeted local checks as a substitute for the missing broad gate;
+- only explicit human waiver may authorize progression without that gate;
+- emit a PACED/TEACH stop response that names the blocked gate, the failing runtime surface, why evolution is disallowed, and the next local recovery action.
+
 ## Mutation And Production Semantics
 - Mutation validation belongs only on an approved non-`main` lane.
 - If the touched behavior includes mutation, `CI Equivalent` must include corresponding local mutation evidence on that non-production lane.
@@ -53,16 +61,26 @@ Before claiming `CI Equivalent`, record:
 - authoritative branch under evaluation;
 - governing TODO branch authority when package/version promotion is in scope, including the exact `*-rc` branch name and validated `branch@sha` when applicable;
 - exact local commands or contract profiles run;
+- runtime freshness attestation for every manual/browser/device proof surface: authoritative `branch@sha`, local build/publish artifact or fingerprint, served target URL/device/tunnel, and the comparison/probe proving the served target matched that build before the test result was interpreted;
 - touched repo/job family covered;
 - runtime topology, publish path, domains, tenants, and credentials lane when relevant;
 - whether readonly and mutation behaviors were both required;
 - whether pipeline-owned lifecycle steps were executed locally as part of the same contract;
 - evidence artifacts proving the current build/branch state was the one actually served.
 
-Browser/device evidence is invalid if it cannot prove the current build, bundle, or runtime state was what the runner exercised.
+Browser/device evidence is invalid if it cannot prove the current build, bundle, or runtime state was what the runner exercised. Freshness must be proven before the test result is trusted, not reconstructed afterward from assumption.
+
+## Evidence Reuse And Invalidation
+- Exact `branch@sha` remains the traceability anchor for CI-equivalent and promotion claims. Do not stop recording it.
+- SHA drift alone is not the canonical rerun trigger once a passed CI-equivalent artifact already exists.
+- Reuse is allowed only when a deterministic, project-owned invalidation/reuse guard proves the current authoritative branch differs from that passed baseline only on explicitly safe-reuse surfaces.
+- Rerun is required when the guard reports any invalidating drift in product code, test ownership, wrappers, lifecycle steps, build/publish/provenance paths, runtime/bootstrap/config, or other stage-facing surfaces.
+- Manual admission/authority refresh is required when the current branch is dirty, diverged from the baseline topology, or the baseline artifact/TODO/policy no longer line up deterministically.
+- Backward-compatibility note: if an older report artifact lacks recorded repo head metadata, the guard may fall back to the governing TODO `branch@sha` entries, but that is weaker than artifact-native repo-state evidence and should be phased out.
 
 ## Relationship To Other Skills
 - `ci-equivalent-test-surface-admission` decides how new or changed tests, wrappers, lifecycle steps, and suite rows enter the canonical stage-facing surface without local/pipeline drift.
+- `ci_equivalent_evidence_invalidation_guard.py` decides whether a previously passed CI-equivalent artifact is still reusable on the current heads or whether the broad gate must rerun.
 - `test-orchestration-suite` decides the concrete suite matrix and execution order.
 - `wf-docker-todo-delivery-gates-method` uses this skill when deciding whether TODO evidence really counts as `CI Equivalent`.
 - `github-stage-promotion-orchestrator` and `github-main-promotion-orchestrator` use this skill before any promotion-ready claim.
@@ -76,9 +94,13 @@ Browser/device evidence is invalid if it cannot prove the current build, bundle,
 4. If suite membership, wrapper ownership, lifecycle steps, or readonly/mutation rows changed, load `ci-equivalent-test-surface-admission` and complete that admission before claiming parity.
 5. Record any deliberate same-commit reconcile alias or waiver explicitly.
 6. Treat published-lane checks as additional evidence only.
+7. Before any manual/browser/device validation lane, produce or refresh the runtime freshness attestation and stop immediately if the served target cannot be proven fresh for the current authoritative build.
+8. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
+9. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
 
 ## Done Criteria
 - The in-scope local matrix is current-branch local proof, not proxy evidence.
 - Any `stage-full`-style gate is parity-complete for the touched scope.
 - Required lifecycle/precondition steps are executed by the same local contract rather than assumed from prior state.
 - Delivery or promotion claims do not rest on published-lane proof or targeted reruns alone.
+- Missing or non-responsive runtime surfaces block the claim rather than silently downgrading the local proof requirement.

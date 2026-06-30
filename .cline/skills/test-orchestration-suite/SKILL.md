@@ -22,9 +22,11 @@ Before launching tests, resolve and record:
 - required stages and their exact local commands;
 - canonical execution owner per stage (`host`, safe runner, compose service, CI, device, browser runner);
 - public/browser validation targets and tenant/subdomain if relevant;
+- runtime freshness attestation plan for every manual/browser/device target: authoritative `branch@sha`, local build/publish command plus artifact/fingerprint, served URL/device/tunnel target, and the probe or comparison that will prove the served target matches that build;
 - whether each touched behavior requires unit, widget, integration/device, browser/navigation, real-backend, or mutation evidence.
 
 If topology is ambiguous, run the Environment Topology Contract flow and stop at `blocked` until the user validates the target. Do not guess runtime owners, domains, tenants, or publish commands.
+If runtime freshness cannot be proven for a target, stop at `blocked` before launching the corresponding manual/browser/device lane. Do not debug product behavior against an unproven runtime.
 
 ## Stage Policy
 - Load `ci-equivalent-governance` before deciding whether any local suite, profile, or runner qualifies as `CI Equivalent` or as a broad stage-parity gate such as `stage-full`.
@@ -34,6 +36,7 @@ If topology is ambiguous, run the Environment Topology Contract flow and stop at
 - `flaky`, including pass-after-retry, is not promotion-grade evidence unless waived with owner/rationale.
 - Targeted reruns after a fix do not replace rerunning the in-scope CI-equivalent rows.
 - Browser/device evidence must prove the current reconciliation/build state is being served, not a stale bundle.
+- Manual/browser/device observations are invalid until the runtime freshness attestation passes. A stale or mismatched served target is an environment blocker, not product evidence.
 - Browser CRUD/mutation validation must use the approved non-`main` mutation lane.
 - Respect wrapper branch-family contracts. CI-Equivalent remains current-branch local product proof. If a project-owned wrapper explicitly requires `reconcile/*`, do not cite it as the executor for a non-reconciliation gate unless you intentionally use a same-commit reconcile alias and record that equivalence. In real subagent orchestration, the authoritative branch under test is the consolidated reconciliation branch until that run is green; after that, replay the accepted net effect onto the plan's authoritative return branch before promotion or non-orchestration closeout resumes. Otherwise run the project-owned local build/publish path and the same product-facing suites directly on the active branch and record them with `test_orchestration_status_report.sh`.
 - Use `ci-equivalent-governance` as the authority for broad stage-gate naming, stage-pipeline parity, lifecycle-step inclusion, and stale-precondition invalidation.
@@ -44,9 +47,10 @@ If topology is ambiguous, run the Environment Topology Contract flow and stop at
 3. Flutter unit and widget tests.
 4. Flutter integration tests on required platforms with real backend when compatibility or backend coupling matters.
 5. Project-owned web build/publish wrapper when Flutter web or browser-visible surfaces changed.
-6. Browser navigation/mutation tests through the project-owned Playwright runner, including any pipeline-owned fixture/bootstrap/cleanup lifecycle that brackets those suites.
-7. Compatibility metadata check.
-8. Final stage report and decision-adherence check.
+6. Runtime freshness attestation against the real manual/browser/device target.
+7. Browser navigation/mutation tests through the project-owned Playwright runner, including any pipeline-owned fixture/bootstrap/cleanup lifecycle that brackets those suites.
+8. Compatibility metadata check.
+9. Final stage report and decision-adherence check.
 
 Adjust the sequence only when the TODO baseline documents why the risk surface is different.
 

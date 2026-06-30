@@ -61,13 +61,14 @@ Before claiming `CI Equivalent`, record:
 - authoritative branch under evaluation;
 - governing TODO branch authority when package/version promotion is in scope, including the exact `*-rc` branch name and validated `branch@sha` when applicable;
 - exact local commands or contract profiles run;
+- runtime freshness attestation for every manual/browser/device proof surface: authoritative `branch@sha`, local build/publish artifact or fingerprint, served target URL/device/tunnel, and the comparison/probe proving the served target matched that build before the test result was interpreted;
 - touched repo/job family covered;
 - runtime topology, publish path, domains, tenants, and credentials lane when relevant;
 - whether readonly and mutation behaviors were both required;
 - whether pipeline-owned lifecycle steps were executed locally as part of the same contract;
 - evidence artifacts proving the current build/branch state was the one actually served.
 
-Browser/device evidence is invalid if it cannot prove the current build, bundle, or runtime state was what the runner exercised.
+Browser/device evidence is invalid if it cannot prove the current build, bundle, or runtime state was what the runner exercised. Freshness must be proven before the test result is trusted, not reconstructed afterward from assumption.
 
 ## Evidence Reuse And Invalidation
 - Exact `branch@sha` remains the traceability anchor for CI-equivalent and promotion claims. Do not stop recording it.
@@ -93,8 +94,9 @@ Browser/device evidence is invalid if it cannot prove the current build, bundle,
 4. If suite membership, wrapper ownership, lifecycle steps, or readonly/mutation rows changed, load `ci-equivalent-test-surface-admission` and complete that admission before claiming parity.
 5. Record any deliberate same-commit reconcile alias or waiver explicitly.
 6. Treat published-lane checks as additional evidence only.
-7. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
-8. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
+7. Before any manual/browser/device validation lane, produce or refresh the runtime freshness attestation and stop immediately if the served target cannot be proven fresh for the current authoritative build.
+8. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
+9. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
 
 ## Done Criteria
 - The in-scope local matrix is current-branch local proof, not proxy evidence.

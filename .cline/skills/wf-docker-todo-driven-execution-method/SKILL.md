@@ -22,7 +22,7 @@ Load the phase skill that matches the current TODO state:
 ## Required State Machine
 1. Classify lane and framing.
 2. Refine the TODO contract.
-3. Run approval gates and obtain explicit `APROVADO`.
+3. Run approval gates, including optional bounded pre-approval RED evidence capture when the TODO requires it, and obtain explicit `APROVADO`.
 4. Record approval/rule-ingestion evidence and require `todo_authority_guard.py <todo-path>` to return `Overall outcome: go`.
 5. Execute only inside the approved boundary.
 6. Complete delivery gates and deterministic guards.
@@ -30,6 +30,7 @@ Load the phase skill that matches the current TODO state:
 
 ## Gates That Must Stay Visible
 - No tactical implementation before `APROVADO`.
+- Pre-`APROVADO` RED evidence capture, when used, is test-only evidence work and never production implementation.
 - `Decision Baseline (Frozen)` before implementation.
 - `Gate: Review Baseline Freeze` committed and pushed before the first planning-side review/guard run.
 - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` must return `Overall outcome: go` before `APROVADO` whenever the TODO used the review loop.

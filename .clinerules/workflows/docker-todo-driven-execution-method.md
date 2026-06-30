@@ -15,7 +15,7 @@ Use this workflow as the TODO-driven **orchestrator**. It owns the state machine
 | --- | --- | --- |
 | Lane and framing | The work is not yet classified as micro-fix, ephemeral TODO, profile-scoped ledger, feature brief, or tactical TODO. | `workflows/docker/todo-lane-framing-method.md` |
 | Contract refinement | A tactical TODO exists or will be made executable, but scope, decisions, anchors, matrices, or complexity need refinement. | `workflows/docker/todo-contract-refinement-method.md` |
-| Approval gates | The TODO is refined enough to seek plan review, audit-floor decisions, critique, and explicit `APROVADO`. | `workflows/docker/todo-approval-gates-method.md` |
+| Approval gates | The TODO is refined enough to seek plan review, optional bounded pre-approval RED evidence capture, audit-floor decisions, critique, and explicit `APROVADO`. | `workflows/docker/todo-approval-gates-method.md` |
 | Execution boundary | `APROVADO` exists and implementation is about to start or is underway. | `workflows/docker/todo-execution-boundary-method.md` |
 | Delivery gates | Implementation is complete enough for a local delivery claim, promotion readiness, or close-claim evidence. | `workflows/docker/todo-delivery-gates-method.md` |
 | Closeout and promotion | Stable outcomes need canonicalization, promotion-lane movement, completion, or blocked-state handling. | `workflows/docker/todo-closeout-promotion-method.md` |
@@ -33,6 +33,11 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 
 ## Non-Negotiable Gates Visible At The Umbrella
 - **No implementation before `APROVADO`** for tactical and ephemeral TODO lanes.
+- **Pre-APROVADO RED Evidence Capture**, when used, is a bounded test-only evidence lane rather than implementation:
+  - it applies only to maintenance/regression or tactical bugfix TODOs;
+  - it may touch only tests and strictly test-only support surfaces recorded in the TODO;
+  - it must never touch production code, runtime/config/deploy surfaces, or canonical project docs outside TODO authoring;
+  - it must record `red_reproduced|red_not_reproduced|blocked` and send the TODO back through reconvergence if the evidence invalidates the current path.
 - **Decision Baseline (Frozen)** must exist before implementation and must be refreshed with renewed approval if approval-material facts change.
 - **Review Baseline Freeze** must be committed and pushed before the first planning-side review or guard run, and its branch/commit/push evidence must be recorded in `Gate: Review Baseline Freeze`.
 - **Post-review scope drift** must be checked before `APROVADO`:

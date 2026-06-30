@@ -174,6 +174,27 @@ If the change restores previously documented or verifiably working behavior (inc
   - require concrete code/test path evidence for those assumptions;
   - if the guard finds a wrong code assumption or code-contradicting direction, refresh the TODO and rerun the affected review/critique loop before `APROVADO`.
 
+### Gate H1 — Pre-APROVADO RED Evidence Capture (optional, bounded for bugfix/regression)
+- This gate exists only for maintenance/regression or tactical bugfix TODOs when reproducing the observed external symptom before implementation would materially reduce scope ambiguity.
+- It is evidence capture, not implementation. Its purpose is to prove or disprove the symptom path, not to lock in a preferred solution or silently advance delivery.
+- Preconditions:
+  - a refined TODO already exists with a concrete symptom, route/surface, and intended fail-first target;
+  - the TODO records why pre-approval RED capture is `required|recommended|not_needed`;
+  - the TODO lists the exact allowed test/support surfaces for this gate.
+- Allowed edits are limited to:
+  - test files;
+  - strictly test-only support surfaces such as fixtures, builders, fakes, or harness glue;
+  - framework-specific test support paths stored outside the usual test directory only when the TODO explicitly lists them as test-only support.
+- Forbidden edits during this gate:
+  - production code, runtime/config/deploy surfaces, migrations, routes, schemas, or application logic;
+  - canonical project docs outside TODO authoring;
+  - weakening existing assertions or writing solution-shaped expectations that merely encode the planned implementation.
+- Required outcome recording in the TODO:
+  - `red_reproduced`
+  - `red_not_reproduced`
+  - `blocked`
+- If the RED capture disproves the current path, reveals a materially different failure surface, or requires production changes just to become testable, stop, refresh the TODO, and rerun the affected review/critique lanes before approval resumes.
+
 ### Gate I — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
 
@@ -190,9 +211,10 @@ If the change restores previously documented or verifiably working behavior (inc
 - The approval token is: **APROVADO**.
 - After approval, record a compact `Approval` section in the TODO with the approval evidence, exact approved scope, explicit exclusions, and renewed-approval trigger.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
-  - call `apply_patch`,
-  - run write commands that change project files,
-  - or make any project/submodule/code/docs modifications.
+  - call `apply_patch` or run write commands that change project files outside the bounded Gate H1 lane;
+  - modify production code, runtime/config/deploy surfaces, or canonical project docs outside TODO authoring;
+  - or treat test-only RED evidence as implementation authority.
+- During Gate H1, any allowed write must stay inside the exact test/support surfaces listed in the TODO and remains subject to renewed review-loop convergence before `APROVADO`.
 
 ### Gate L — Rules Acknowledgement / Ingestion (mandatory after `APROVADO` and before execution)
 - Use the approved execution plan to identify the exact touched surfaces.

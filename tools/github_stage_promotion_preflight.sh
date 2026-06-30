@@ -23,7 +23,7 @@ Options:
   --base <ref>                         Authoritative base ref that the source must contain. Defaults to origin/dev.
   --require-diff-shape <shape>         Optional additional diff-shape gate. Supported: any, submodule-only.
   --orchestration-plan <path>          Optional orchestration execution plan. When provided, the post-reconcile replay guard must return `Overall outcome: go` before normal source-branch preflight continues.
-  --governing-todo <path>              Optional governing package/release TODO with `Current Branch Authority`.
+  --governing-todo <path>              Optional governing package/release TODO with `Current Branch Authority`. Release-package TODOs also trigger the live rollup guard before repo-specific source authority is checked.
   --repo-key <key>                     Required with --governing-todo. Selects which repo authority to validate.
   -h, --help                           Show this help text.
 
@@ -113,6 +113,13 @@ REPO_ROOT="$(git -C "$REPO_INPUT" rev-parse --show-toplevel 2>/dev/null || true)
 [ -n "$REPO_ROOT" ] || die "path is not inside a git repository: $REPO_INPUT"
 
 if [ -n "$GOVERNING_TODO" ]; then
+  if [[ "$(basename "$GOVERNING_TODO")" == *release-package.md ]]; then
+    if python3 "$SCRIPT_DIR/github_release_package_rollup_guard.py" --governing-todo "$GOVERNING_TODO" --base-ref "$BASE_REF" --workspace-root "$REPO_ROOT"; then
+      :
+    else
+      exit $?
+    fi
+  fi
   if python3 "$SCRIPT_DIR/github_promotion_source_authority_guard.py" --repo "$REPO_ROOT" --source-ref "$SOURCE_REF" --governing-todo "$GOVERNING_TODO" --repo-key "$REPO_KEY"; then
     :
   else

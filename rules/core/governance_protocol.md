@@ -62,14 +62,24 @@ Patterns e Anti-Patterns seguem a mesma cascata de autoridade do PACED:
 
 **Regra de resolução:** Local sobrescreve Stack, Stack sobrescreve Core. Toda sobrescrita DEVE ser explícita via campo `supersedes` no `_index.json`. Shadowing silencioso é uma violação.
 
-### 6.2 Integração T.E.A.C.H.
+### 6.2 Semântica T.E.A.C.H.
+
+`T.E.A.C.H.` não é apenas um formato de resposta. No PACED ele define o envelope operacional dos guards determinísticos. A sua face de protocolo de comunicação vive principalmente em `Contextual` e `Hinting`, mas o acrônimo completo também inclui semântica de disparo, execução determinística e enforcement de `go|no-go`:
+
+- **Triggered:** a regra roda porque uma condição objetiva ou um gate explícito a acionou.
+- **Enforced:** o resultado pode bloquear a evolução (`exit 2` / `no-go`) ou autorizar (`go`); não é conselho solto.
+- **Automated:** uma vez conectada ao workflow correto ou invocada no gate exigido, a avaliação roda de forma determinística e não depende de disciplina humana ou memória do agente.
+- **Contextual:** a resposta carrega a evidência exata do estado avaliado, para que o operador saiba o que foi observado.
+- **Hinting:** a resposta aponta o próximo reparo exato, em vez de apenas sinalizar que algo falhou.
+
+### 6.3 Integração T.E.A.C.H.
 
 O componente **E (Enforced)** do T.E.A.C.H. agora inclui a obrigação de rastreabilidade de patterns:
 
 > **Enforced Rule — Pattern Traceability:**
 > Quando um TODO implementa ou se baseia em um pattern catalogado, o agente DEVE incluir a referência `[PATTERN: <id>]` no corpo do TODO (preferencialmente na seção de decisão ou na DoD). O `todo_completion_guard.py` valida que todos os IDs referenciados existem na cadeia de autoridade.
 
-### 6.3 Ciclo de Vida de um Pattern
+### 6.4 Ciclo de Vida de um Pattern
 
 ```
 Descoberta (sessão/audit) → [PATTERN] tag na session_memory
@@ -81,7 +91,7 @@ Formalização (humano/strategic) → pattern_template.md + _index.json
 Enforcement (guard) → Validação de referências em TODOs
 ```
 
-### 6.4 Promoção de Anti-Patterns
+### 6.5 Promoção de Anti-Patterns
 
 O `reconcile_session.py` rastreia anti-patterns via `[ANTI-PATTERN]` tags e mantém um ledger de frequência (`anti_pattern_ledger.json`). Quando um anti-pattern atinge o threshold de recorrência (2x), o sistema:
 
@@ -89,7 +99,7 @@ O `reconcile_session.py` rastreia anti-patterns via `[ANTI-PATTERN]` tags e mant
 2. O candidato é revisado pelo Strategic (Manus/Marcelo).
 3. Após aprovação, é formalizado como anti-pattern no nível apropriado (local/stack/core).
 
-### 6.5 Validação Determinística
+### 6.6 Validação Determinística
 
 O `todo_completion_guard.py` valida referências `[PATTERN: id]` em TODOs:
 

@@ -189,6 +189,27 @@ If the change restores previously documented or verifiably working behavior (inc
   - require concrete code/test path evidence for those assumptions;
   - if the guard finds a wrong code assumption or code-contradicting direction, refresh the TODO and rerun the affected review/critique loop before `APROVADO`.
 
+### Gate I1 — Pre-APROVADO RED Evidence Capture (optional, bounded for bugfix/regression)
+- This gate exists only for maintenance/regression or tactical bugfix TODOs when reproducing the observed external symptom before implementation would materially reduce scope ambiguity.
+- It is evidence capture, not implementation. Its purpose is to prove or disprove the symptom path, not to lock in a preferred solution or silently advance delivery.
+- Preconditions:
+  - a refined TODO already exists with a concrete symptom, route/surface, and intended fail-first target;
+  - the TODO records why pre-approval RED capture is `required|recommended|not_needed`;
+  - the TODO lists the exact allowed test/support surfaces for this gate.
+- Allowed edits are limited to:
+  - test files;
+  - strictly test-only support surfaces such as fixtures, builders, fakes, or harness glue;
+  - framework-specific test support paths stored outside the usual test directory only when the TODO explicitly lists them as test-only support.
+- Forbidden edits during this gate:
+  - production code, runtime/config/deploy surfaces, migrations, routes, schemas, or application logic;
+  - canonical project docs outside TODO authoring;
+  - weakening existing assertions or writing solution-shaped expectations that merely encode the planned implementation.
+- Required outcome recording in the TODO:
+  - `red_reproduced`
+  - `red_not_reproduced`
+  - `blocked`
+- If the RED capture disproves the current path, reveals a materially different failure surface, or requires production changes just to become testable, stop, refresh the TODO, and rerun the affected review/critique lanes before approval resumes.
+
 ### Gate J — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
 
@@ -205,9 +226,10 @@ If the change restores previously documented or verifiably working behavior (inc
 - The approval token is: **APROVADO**.
 - After approval, record a compact `Approval` section in the TODO with the approval evidence, exact approved scope, explicit exclusions, and renewed-approval trigger.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
-  - call `apply_patch`,
-  - run write commands that change project files,
-  - or make any project/submodule/code/docs modifications.
+  - call `apply_patch` or run write commands that change project files outside the bounded Gate I1 lane;
+  - modify production code, runtime/config/deploy surfaces, or canonical project docs outside TODO authoring;
+  - or treat test-only RED evidence as implementation authority.
+- During Gate I1, any allowed write must stay inside the exact test/support surfaces listed in the TODO and remains subject to renewed review-loop convergence before `APROVADO`.
 
 ### Gate M — Rules Acknowledgement / Ingestion (mandatory after `APROVADO` and before execution)
 - Use the approved execution plan to identify the exact touched surfaces.
@@ -236,7 +258,8 @@ If the change restores previously documented or verifiably working behavior (inc
 - User-visible, interactive, or user-flow-impacting criteria must name the exact integration/device test or navigation/browser test that exercises the item. In Flutter scope, integration means ADB/device execution and navigation/browser means Playwright against the final browser-facing domain. Analyzer output, code inspection, screenshots, unit tests, widget tests, and aggregate suite summaries are valid supporting implementation evidence, but cannot satisfy final flow acceptance by themselves.
 - User-flow impact must be assessed case by case. CRUD/mutation is a strong signal, but field refactors, DTO/domain/payload changes, validation, projections, query/filter semantics, settings/capabilities, read models, and persisted state changes require flow assessment when they can feed a screen or user journey.
 - Flutter flow-impacting criteria must record platform parity. If Android and Web behavior is the same, either ADB integration or Playwright navigation may satisfy final runtime acceptance. If Android and Web behavior differs materially, both lanes must pass before delivery.
-- Browser/web-visible criteria must name source-owned Playwright spec + runner evidence when the repository exposes a Playwright suite. Flutter web evidence must name the `tools/flutter/web_app_tests/**` spec, the project-owned navigation runner, target URL/lane, project-defined build/publish proof from `foundation_documentation` or dependency-readiness notes, and refreshed real-domain bundle provenance.
+- Browser/web-visible criteria must name source-owned Playwright spec + runner evidence when the repository exposes a Playwright suite. Flutter web evidence must name the `tools/flutter/web_app_tests/**` spec, the project-owned navigation runner, target URL/lane, project-defined build/publish proof from `foundation_documentation` or dependency-readiness notes, and a runtime freshness attestation that records the authoritative `branch@sha`, the local build/publish artifact or fingerprint, the served runtime target, and the proof that the served target matched that exact build before the result was trusted.
+- Manual/browser/device/runtime-visible validation is `blocked` whenever that freshness attestation is missing, ambiguous, or mismatched. In that state, observed behavior is not product evidence and cannot close the criterion.
 - User-flow CRUD/mutation criteria must name integration/device or navigation/browser evidence that performs the local mutation path on the approved non-main validation target.
 - Browser/web CRUD/mutation criteria must name the Playwright `mutation` lane on an approved non-`main` target. `readonly` Playwright, screenshots, and route-load smoke do not satisfy mutation evidence.
 - If integration/device or navigation/browser coverage is not applicable because the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation with the reason.

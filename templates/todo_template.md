@@ -105,7 +105,7 @@ For any user-visible, interactive, or user-flow-impacting criterion, the evidenc
 
 Platform parity rule: if Android and Web exercise the same visible behavior through the same contract, one final runtime lane is sufficient (`integration/device` via ADB or `navigation/browser` via Playwright). If Android and Web behavior differs materially for the criterion, record and pass both lanes before delivery. Subagent/worker-local evidence may stop at code, unit, widget, package, and targeted tests; the orchestrator may accept delivery only after the consolidated branch has the required final runtime lane(s).
 
-For browser/web-visible behavior, Playwright is the canonical browser navigation evidence whenever the downstream repository exposes a Playwright web suite. The evidence row must name the source-owned Playwright spec and the runner command, typically `tools/flutter/web_app_tests/**` executed through the project-owned navigation runner. Browser evidence must first publish the current checkout with the project-defined build/publish command and output target from `foundation_documentation` or dependency-readiness notes, confirm the browser-facing domain is serving that refreshed bundle, and then run Playwright against the real configured domain (for example `NAV_LANDLORD_URL` / `NAV_TENANT_URL` when that topology applies). For web CRUD/mutation, the Playwright `mutation` lane on an approved non-`main` target is required; a `readonly` web smoke is not enough.
+For browser/web-visible behavior, Playwright is the canonical browser navigation evidence whenever the downstream repository exposes a Playwright web suite. The evidence row must name the source-owned Playwright spec and the runner command, typically `tools/flutter/web_app_tests/**` executed through the project-owned navigation runner. Browser evidence must first publish the current checkout with the project-defined build/publish command and output target from `foundation_documentation` or dependency-readiness notes, record the authoritative `branch@sha` plus the local build artifact/fingerprint for that published state, prove that the browser-facing domain is serving that exact refreshed bundle through a concrete comparison/provenance check, and only then run Playwright against the real configured domain (for example `NAV_LANDLORD_URL` / `NAV_TENANT_URL` when that topology applies). If the served target cannot be proven fresh for the current build, mark the evidence row `blocked` instead of treating the observed behavior as product evidence. For web CRUD/mutation, the Playwright `mutation` lane on an approved non-`main` target is required; a `readonly` web smoke is not enough.
 
 For any criterion that includes user-flow CRUD or mutation behavior (create, edit, update, save, delete, reorder, submit, persist, or equivalent), the integration/device or navigation/browser evidence must exercise the local mutation path against the approved non-main validation target. A read-only navigation, mocked local filter, or backend-only assertion is not enough when the change can affect a user-facing save or readback flow. For non-CRUD refactors, the TODO must still assess whether changed fields/contracts/projections affect user flows; if yes, the same runtime evidence rule applies.
 
@@ -228,6 +228,16 @@ Execution planning describes **HOW** Delphi intends to deliver the TODO contract
 - **Strategy:** `<test-first|test-after|not-applicable>`
 - **Why:** <reasoning>
 - **Fail-first target(s) (when required):** <tests to fail first or rationale for non-applicability>
+
+### Pre-APROVADO RED Evidence Capture (Optional for bugfix/regression)
+- **Decision (`required|recommended|not_needed|waived`):** `<decision>`
+- **Why now:** <why reproducing the observed symptom before approval materially reduces ambiguity, or `n/a`>
+- **Target symptom:** <external failure to reproduce; route/surface/user-visible symptom>
+- **Allowed surfaces:** `<exact test files and strictly test-only support paths>`
+- **Forbidden surfaces reaffirmed:** `production code|runtime/config/deploy|canonical project docs outside TODO authoring`
+- **Planned command / target:** `<test command(s) or `n/a`>`
+- **Status (`not_run|running|red_reproduced|red_not_reproduced|blocked|waived`):** `<status>`
+- **Findings summary:** <what the RED established, disproved, or why it blocked>
 
 ### Flow Evidence Planning Matrix (Required Before `APROVADO`)
 Map every user-visible, interactive, or user-flow-impacting criterion to the final runtime evidence required before delivery. Do not limit this to obviously visual work or to CRUD/mutation: refactors that change fields, DTOs, domain models, payloads, validation, query/projection semantics, or persisted state must be assessed case by case. If the changed surface can affect an admin/public screen, save/readback flow, list/detail rendering, filter/search result, or persisted user-visible state, record the required runtime evidence or an explicit non-applicability rationale.

@@ -79,6 +79,16 @@ Progressive determinism is the operating model underneath PACED. It ensures:
 - The iteration cost is mostly **computational**, not human.
 - Every project leaves behind more **deterministic intelligence** than it consumed.
 
+## T.E.A.C.H. Runtime Envelope
+
+`T.E.A.C.H.` is not only a message format. In PACED it is the runtime enforcement envelope used by deterministic guards and promotion gates. Its communication-facing sublayer lives mainly in `Contextual` and `Hinting`, but the full acronym also includes trigger semantics, deterministic execution, and stop/go enforcement.
+
+- **Triggered**: the rule runs because an objective condition or an explicit gate requires it.
+- **Enforced**: the output can stop the lane (`Overall outcome: no-go` / exit `2`), not merely advise.
+- **Automated**: once wired into the correct workflow or invoked at the required gate, the evaluation runs deterministically instead of depending on memory or discipline.
+- **Contextual**: the response carries the exact local evidence that produced the decision.
+- **Hinting**: the response carries the next repair step, not just the failure label.
+
 ### Deterministic Guards (Phase 0)
 The following guards are now active in the `deterministic/core/` directory:
 - `todo_completion_guard.py`: Enforces criterion-specific evidence for every Definition of Done (DoD) and validation step before TODOs can be trusted as `Local-Implemented`, `promotion_lane`, `completed`, or `Production-Ready`.
@@ -207,4 +217,4 @@ jobs:
 - **PACED**: The engineering method.
 - **Delphi**: The agent persona implementing the method.
 - **delphi-ai/**: The repository/install surface.
-- **T.E.A.C.H.**: The communication protocol (Title, Evidence, Action, Context, Hint).
+- **T.E.A.C.H.**: The deterministic runtime envelope for guards and lane gates; `Contextual` + `Hinting` are its communication-facing sublayer.

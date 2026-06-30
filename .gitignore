@@ -7,3 +7,6 @@ laravel-app/
 __pycache__/
 *.pyc
 *.pyo
+
+# Ephemeral analysis/database artifacts
+artifacts/db/

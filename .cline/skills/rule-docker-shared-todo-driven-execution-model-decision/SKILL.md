@@ -31,7 +31,7 @@ When this skill triggers, load the canonical rule first and follow it as the sou
    - complexity policy (`small|medium|big`);
    - Plan Review Gate when required;
    - Decision Baseline freeze and module-coherence check.
-3. Do not modify project code, submodule code, tests, runtime files, or project docs before explicit `APROVADO`, unless the canonical rule's exemption/micro-fix lane applies.
+3. Do not modify project code, submodule code, runtime files, or project docs before explicit `APROVADO`, unless the canonical rule's exemption/micro-fix lane applies. Test/support edits before approval are allowed only through the canonical bounded pre-`APROVADO` RED evidence capture lane for bugfix/regression TODOs.
 4. After `APROVADO`, record compact approval evidence in the TODO, ingest the governing rules/workflows for the touched surfaces, and run `tools/todo_authority_guard.py <todo-path>` before execution.
 5. Before delivery, require evidence for:
    - Completion Evidence Matrix;

@@ -12,7 +12,8 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 - Run this skill when the user explicitly asks to reset/rebaseline the repository to the latest `dev`, prepare for the next implementation, or audit local/remote branch leftovers before cleanup.
 - This skill is a preflight plus safe cleanup flow. It must not destroy unmerged work.
 - Remote branch deletion is never automatic here. The skill only reports merged remote cleanup candidates.
-- This skill must not manually edit, stage, or rewrite Docker submodule gitlinks as part of "getting the workspace ready". Gitlink creation, adjustment, or reconciliation belongs only to the promotion-lane workflow.
+- This skill must not manually edit, stage, or rewrite Docker submodule gitlinks as part of "getting the workspace ready". Gitlink creation, adjustment, or reconciliation belongs only to the project-authorized promotion/pipeline flow.
+- When submodules are configured with `ignore = all` in `.gitmodules`, a clean-looking root status is not authority that gitlink work is missing or required. Treat the source repositories and pipeline-produced gitlink artifacts as the deciding surfaces instead of trying to make the superproject look "clean".
 - In multi-repository ecosystems, restrict the default rebaseline scope to the implementation repositories that the user is actively preparing for the next coding cycle. Do not automatically widen the audit to adjacent generated repos, deployment mirrors, documentation mirrors, or artifact-only repositories unless the user explicitly asks.
 - PACED Docker ecosystem default:
   - include: the Docker/orchestration root repository and implementation source repositories named by the project (commonly `flutter-app` and `laravel-app`).
@@ -93,7 +94,7 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
    - Proceed only if:
      - no blocking branches remain
      - the current workspace state is safe to move away from
-     - the repo does not require manual gitlink adjustment to appear "clean"; if gitlink movement would be needed, stop and defer that work to the promotion-lane workflow instead of editing submodule pointers here
+     - the repo does not require manual gitlink adjustment to appear "clean"; if gitlink movement would be needed, or if root cleanliness is ambiguous because `ignore = all` masks submodule drift, stop and defer that work to the project-authorized promotion/pipeline flow instead of editing submodule pointers here
    - Then:
      - switch to `dev`
      - update it to the latest `origin/dev`
@@ -126,5 +127,5 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 - Safe local-only merged branches are removed when applicable.
 - Merged remote branches are reported, not auto-deleted.
 - `bot/next-version` is treated as a remote promotion-lane branch, not a normal local branch.
-- Gitlink ownership remains with the promotion lane; this skill never performs manual gitlink surgery as part of rebaseline.
+- Gitlink ownership remains with the project-authorized promotion/pipeline flow; this skill never performs manual gitlink surgery as part of rebaseline.
 - The repository only lands on updated `dev` when no blocking branch ambiguity remains.

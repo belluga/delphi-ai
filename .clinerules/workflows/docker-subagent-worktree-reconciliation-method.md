@@ -1,6 +1,6 @@
 ---
 name: "docker-subagent-worktree-reconciliation-method"
-description: "Coordinate parallel implementation subagents through isolated worktrees, an orchestrator-owned reconciliation branch, and consolidated validation before delivery."
+description: "Coordinate parallel implementation subagents through isolated worktrees, an orchestrator-owned reconciliation branch attached to the principal checkout, and consolidated validation before delivery."
 ---
 
 <!-- Generated from `workflows/docker/subagent-worktree-reconciliation-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
@@ -15,8 +15,9 @@ Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Eq
 CI-Equivalent is a generic current-branch local product-proof concept, not a reconciliation-specific concept. This workflow uses reconciliation topology only when work is actually being reconciled from worker worktrees/branches.
 For Flutter visible behavior, ADB integration and Playwright navigation are interchangeable only when Android and Web behavior is the same. If the behavior differs materially across Android and Web, both lanes are required before the orchestrator may accept delivery.
 The closure bar is promotion-grade confidence for the full touched TODO/behavior set, even when the user only asked for local delivery or promotion to a lower lane.
-The reconciliation branch/worktree is execution topology only. It does not create a second tactical TODO, a second approval conversation, or a separate backlog authority from the governing TODO.
+The reconciliation branch is execution topology only. It is hosted on the principal checkout for authoritative validation and does not create a second tactical TODO, a second approval conversation, or a separate backlog authority from the governing TODO.
 Reconciliation topology is exclusive to real orchestrator-led worker/worktree integration. Do not manufacture a `reconcile/*` branch in an unrelated review, promotion, or single-branch execution flow merely to satisfy a reconcile-only wrapper; outside real orchestration, `ci-equivalent-governance` still keeps `CI-Equivalent` on the current authoritative branch under evaluation.
+Authoritative local validation belongs to the principal checkout only. Linked git worktrees are worker/executor implementation surfaces and may never be used as the authoritative runtime surface for broad `CI-Equivalent` gates, promotion wrappers, browser proof, tunnel proof, or device proof.
 Branch authority is repo-local. In environments that mount multiple source repositories or submodules into one local runtime, the root checkout being on `reconcile/*` is not sufficient by itself; every runtime-facing source checkout must also be on `reconcile/*` (or on an explicitly recorded detached checkpoint) before authoritative local validation can begin.
 Derived publish/bundle repositories are runtime artifacts, not source-branch authority. Use them as generated outputs of the authoritative source checkout instead of treating their current branch as the orchestration truth.
 Implementation ownership belongs to workers/subagents. The orchestrator must not implement a TODO slice locally. The orchestrator may edit production/test/runtime code only when the edit is strictly necessary to reconcile worker checkpoints, resolve merge conflicts, or make integration glue that cannot be assigned back without blocking reconciliation; every such edit must be logged as orchestrator reconciliation scope, never as feature implementation.
@@ -78,11 +79,11 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - Define the consolidated validation plan before dispatching workers.
 2. **Establish the branch/worktree topology**
    - Freeze one base branch or base commit for the execution wave.
-   - Create one orchestrator-owned reconciliation branch/worktree from that base.
+   - Create one orchestrator-owned reconciliation branch from that base and attach it to the principal checkout before authoritative validation begins.
    - Create one worker branch/worktree per delegated slice from that same base unless a later dependency requires an intentional rebase.
    - Prefer clear branch names that make roles obvious, such as `orchestrator/<slug>` and `worker/<slug>-<lane>`.
-   - Treat the reconciliation branch/worktree as an integration surface only, not as new TODO authority.
-   - When runtime validation depends on the main local checkout, browser-facing domain, tunnel, emulator, or attached device, keep that principal checkout on the orchestrator-owned reconciliation branch. Worker branches stay in auxiliary worktrees only.
+   - Treat the reconciliation branch as an integration surface only, not as new TODO authority.
+   - When runtime validation depends on the main local checkout, browser-facing domain, tunnel, emulator, or attached device, move the principal checkout onto the orchestrator-owned reconciliation branch and keep authoritative validation there. Worker branches stay in auxiliary worktrees only, and a linked worktree is never an acceptable substitute for the principal checkout during authoritative validation.
    - When the runtime is assembled from multiple source repositories/submodules, verify branch authority per mounted source checkout, not just at the root. Root + runtime-facing source repos must all be on `reconcile/*` (or on an explicitly recorded detached checkpoint) before authoritative validation. Do not treat derived publish/bundle repos as source-branch authority.
 3. **Dispatch workers with explicit contracts**
    - Give each worker explicit ownership of files/modules, required tests, and checkpoint expectations.
@@ -151,7 +152,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 
 ## Outputs
 - Orchestration execution plan under `foundation_documentation/artifacts/execution-plans/` for multi-TODO, multi-workstream, or user-requested approval waves.
-- One orchestrator reconciliation branch/worktree.
+- One orchestrator reconciliation branch attached to the principal checkout for authoritative local validation.
 - The principal local checkout attached to the orchestrator reconciliation branch whenever runtime validation depends on it, with every runtime-facing source checkout on `reconcile/*` or an explicitly recorded detached checkpoint.
 - One explicit authoritative return branch / canonical version branch that receives the accepted net effect after reconciliation passes and before promotion resumes.
 - One worker branch/worktree per delegated slice.
