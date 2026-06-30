@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --script-id "delphi.backend_concurrency_probe" \
+    --script-path "delphi-ai/tools/backend_concurrency_probe.sh" \
+    --surface "delphi-tool" \
+    --start-dir "$PWD"
+  delphi_script_usage_install_exit_trap
+fi
+
 usage() {
   cat <<'EOF'
 Usage: backend_concurrency_probe.sh --url <url> [--method <verb>] [--concurrency <n>] [--concurrency <n> ...] [--header "<name>: <value>"] [--body-file <path>] [--idempotency-header <name>] [--idempotency-mode <same|unique>] [--expect-status <code>] [--batches <n>] [--output-dir <dir>]
@@ -112,6 +124,12 @@ if [ -z "$OUTPUT_DIR" ]; then
   OUTPUT_DIR="$(mktemp -d)"
 else
   mkdir -p "$OUTPUT_DIR"
+fi
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  delphi_script_usage_set_scenario "method-${METHOD,,}"
+  delphi_script_usage_add_metadata "concurrency_levels" "$(IFS=,; echo "${CONCURRENCY_LEVELS[*]}")"
+  delphi_script_usage_add_metadata "batches" "$BATCHES"
 fi
 
 exit_code=0

@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --script-id "delphi.runtime_load_probe" \
+    --script-path "delphi-ai/tools/runtime_load_probe.sh" \
+    --surface "delphi-tool" \
+    --start-dir "$PWD"
+  delphi_script_usage_install_exit_trap
+fi
+
 usage() {
   cat <<'EOF'
 Usage: runtime_load_probe.sh --url <url>
@@ -213,6 +225,11 @@ fi
 for stage in "${STAGES[@]}"; do
   [[ "$stage" =~ ^[1-9][0-9]*:[1-9][0-9]*$ ]] || die "invalid --stage value: $stage"
 done
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  delphi_script_usage_set_scenario "$MODE"
+  delphi_script_usage_add_metadata "stage_count" "${#STAGES[@]}"
+fi
 
 if [ -n "$EXPECT_STATUS" ]; then
   [[ "$EXPECT_STATUS" =~ ^[0-9]{3}$ ]] || die "--expect-status must be a 3-digit HTTP status code"

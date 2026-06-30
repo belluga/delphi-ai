@@ -95,6 +95,10 @@ The following guards are now active in the `deterministic/core/` directory:
 - `finding_impact_classifier.py`: Analyzes code diffs to classify findings (Logic vs. Cosmetic) and prevents risky promotions.
 - `session_lock_manager.py`: Manages session state and prevents concurrent agent conflicts.
 - `metrics_consolidation_trigger.py`: Automatically extracts formalizable findings and populates the rule-events ledger.
+- `script_usage_record.py`: Appends project-local script-usage events into a dedicated metrics ledger without mixing them into PACED rule/gate streams.
+- `script_usage_summary.py`: Aggregates the project-local script-usage ledger into derived JSON/Markdown summaries for counts, outcomes, scenarios, and recent runs.
+
+Auxiliary tooling telemetry stays project-local under `foundation_documentation/artifacts/metrics/` as a sibling artifact family to PACED governance metrics. It is intentionally separate from `rule-events.jsonl`.
 
 ---
 

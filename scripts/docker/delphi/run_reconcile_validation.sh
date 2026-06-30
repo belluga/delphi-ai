@@ -225,6 +225,20 @@ fi
 
 cd "$ROOT_DIR"
 
+if [[ -f "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --repo-root "$ROOT_DIR" \
+    --script-id "root.run_reconcile_validation" \
+    --script-path "scripts/delphi/run_reconcile_validation.sh" \
+    --surface "root-script"
+  delphi_script_usage_set_scenario "scope-${SCOPE}"
+  delphi_script_usage_add_metadata "laravel_tests" "${#LARAVEL_TESTS[@]}"
+  delphi_script_usage_add_metadata "flutter_tests" "${#FLUTTER_TESTS[@]}"
+  delphi_script_usage_add_metadata "repo_commands" "${#GENERIC_STAGE_NAMES[@]}"
+fi
+
 if ! require_reconcile_branch "$ROOT_DIR" "Environment root"; then
   exit 1
 fi
@@ -235,7 +249,17 @@ cleanup() {
   fi
 }
 
-trap cleanup EXIT
+cleanup_and_record() {
+  local status=$?
+  cleanup
+  delphi_script_usage_capture_exit "$status"
+}
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  trap cleanup_and_record EXIT
+else
+  trap cleanup EXIT
+fi
 
 if [[ -z "$STATUS_OUTPUT" ]]; then
   STATUS_DIR="${RECONCILE_STATUS_DIR:-foundation_documentation/artifacts/tmp}"

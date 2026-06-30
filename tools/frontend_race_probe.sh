@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$SCRIPT_DIR/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --script-id "delphi.frontend_race_probe" \
+    --script-path "delphi-ai/tools/frontend_race_probe.sh" \
+    --surface "delphi-tool" \
+    --start-dir "$PWD"
+  delphi_script_usage_install_exit_trap
+fi
+
 usage() {
   cat <<'EOF'
 Usage: frontend_race_probe.sh --scenario <id> --runner <command>
@@ -139,6 +151,12 @@ if [ -z "$OUTPUT_DIR" ]; then
   OUTPUT_DIR="$(mktemp -d)"
 else
   mkdir -p "$OUTPUT_DIR"
+fi
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  delphi_script_usage_set_scenario "$SCENARIO"
+  delphi_script_usage_add_metadata "burst_levels" "$(IFS=,; echo "${BURST_LEVELS[*]}")"
+  delphi_script_usage_add_metadata "repetitions" "$REPETITIONS"
 fi
 
 SUMMARY_TSV="$OUTPUT_DIR/summary.tsv"

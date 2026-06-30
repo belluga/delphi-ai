@@ -26,6 +26,8 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/finding_carry_forward_extract.py` | python | Extract a derived carry-forward packet from authoritative TODO finding dispositions so no-context reviewers and promotion loops can distinguish repeated/noise findings from materially new blockers. |
 | `tools/review_finding_routing_scaffold.py` | python | Render a guard-compatible `Promotion Finding Routing Ledger` scaffold from operator-supplied finding metadata without choosing blocker/follow-up authority automatically. |
 | `tools/review_scope_drift_guard.py` | python | Compare a current TODO against the pushed pre-review baseline recorded in `Gate: Review Baseline Freeze` and return `no-go` when scope-governing sections drift materially, forcing renewed user scope validation before approval resumes. |
+| `tools/script_usage_record.py` | python | Append one deterministic script-usage event into the project-local metrics ledger without mixing it into PACED rule/gate streams. |
+| `tools/script_usage_summary.py` | python | Aggregate project-local script-usage events into derived JSON/Markdown summaries with counts, outcomes, scenarios, and recent-run metadata. |
 | `tools/frontend_race_probe.sh` | shell | Orchestrate real repeated frontend race probes by burst level and capture deterministic pass/fail evidence for stack-native test runners. |
 | `tools/frontend_race_validation_scaffold.sh` | shell | Generate a markdown scenario matrix for frontend race-condition validation. |
 | `tools/flutter_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Flutter controller, domain, repository, and screen workflows. |
@@ -94,6 +96,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/test_orchestration_status_report.sh` | shell | Generate a required-stage status report and fail closure when any required gate is missing, blocked, failed, flaky, or exception-marked. |
 | `tools/test_quality_audit.sh` | shell | Scan selected test paths for bypass markers, weak assertion hints, test-only routes, auth shortcuts, and DI/mock patterns that need review. |
 | `tools/lib/git_hook_stack.sh` | shell-lib | Shared installer helpers for Delphi-managed Git hook stacks so multiple PACED hook guards can coexist under one `core.hooksPath`. |
+| `tools/lib/script_usage.sh` | shell-lib | Shared shell helpers for recording project-local deterministic script-usage telemetry and refreshing derived summaries on script exit. |
 | `tools/lib/promotion_contract.sh` | shell-lib | Load and validate local promotion-contract JSON so deterministic guards share one schema/parser. |
 | `tools/lib/submodule_workspace.sh` | shell-lib | Shared `.gitmodules`-driven helpers for canonical submodule workspace status, pinning, and lane tracking tools. |
 | `tools/lib/teach_runtime.sh` | shell-lib | Emit a consistent TEACH runtime response envelope for deterministic guard tools. |

@@ -60,6 +60,17 @@ if [ -z "$REPO_ROOT" ]; then
 fi
 [ -n "$REPO_ROOT" ] || die "unable to resolve repository root from: $REPO_INPUT"
 
+if [[ -f "$REPO_ROOT/delphi-ai/tools/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$REPO_ROOT/delphi-ai/tools/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --repo-root "$REPO_ROOT" \
+    --script-id "delphi.environment_readiness_report" \
+    --script-path "delphi-ai/tools/environment_readiness_report.sh" \
+    --surface "delphi-tool"
+  delphi_script_usage_install_exit_trap
+fi
+
 if [ -f "$REPO_ROOT/main_instructions.md" ] && [ -d "$REPO_ROOT/skills" ] && [ -d "$REPO_ROOT/rules" ] && [ -d "$REPO_ROOT/workflows" ] && [ ! -e "$REPO_ROOT/delphi-ai" ]; then
   die "environment_readiness_report.sh is for downstream environments, not the canonical delphi-ai repository"
 fi
@@ -141,6 +152,11 @@ print_step() {
 REPO_MODE="downstream"
 if [ ! -d "$REPO_ROOT/foundation_documentation" ]; then
   REPO_MODE="zero-state"
+fi
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  delphi_script_usage_set_scenario "$REPO_MODE"
+  delphi_script_usage_add_metadata "include_adherence_sync" "$([ "$INCLUDE_ADHERENCE_SYNC" = true ] && echo yes || echo no)"
 fi
 
 printf 'Environment Readiness Report\n'

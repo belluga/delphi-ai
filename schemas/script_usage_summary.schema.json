@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/script_usage_summary.schema.json",
+  "title": "Script Usage Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "generated_at",
+    "event_count",
+    "script_count",
+    "status_counts",
+    "scripts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "script-usage-summary-v1"
+    },
+    "artifact_kind": {
+      "const": "script_usage_summary"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "script_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "failed",
+        "usage_error",
+        "interrupted"
+      ],
+      "properties": {
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usage_error": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "interrupted": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scripts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "script_id",
+          "script_path",
+          "surface",
+          "total_runs",
+          "status_counts",
+          "last_run_at",
+          "average_duration_ms",
+          "scenarios"
+        ],
+        "properties": {
+          "script_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "script_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "delphi-tool",
+              "root-tool",
+              "root-script"
+            ]
+          },
+          "total_runs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status_counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "passed",
+              "failed",
+              "usage_error",
+              "interrupted"
+            ],
+            "properties": {
+              "passed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "usage_error": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "interrupted": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "last_run_at": {
+            "type": "string",
+            "minLength": 1
+          },
+          "average_duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scenarios": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}

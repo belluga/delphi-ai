@@ -4,6 +4,17 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+if [[ -f "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --repo-root "$ROOT_DIR" \
+    --script-id "root.verify_environment" \
+    --script-path "scripts/verify_environment.sh" \
+    --surface "root-script"
+  delphi_script_usage_install_exit_trap
+fi
+
 die() {
   echo "ERROR: $*" >&2
   exit 1
@@ -48,6 +59,10 @@ DELPHI_LOCAL_DB_ENV_FILE="${DELPHI_LOCAL_DB_ENV_FILE:-laravel-app/.env}"
 DELPHI_LOCAL_DB_REQUIRED_PATTERN="${DELPHI_LOCAL_DB_REQUIRED_PATTERN:-^(DB_URI|DB_URI_LANDLORD|DB_URI_TENANTS)=}"
 DELPHI_LOCAL_DB_HOST_PATTERN="${DELPHI_LOCAL_DB_HOST_PATTERN:-mongo:27017}"
 DELPHI_NGINX_STORAGE_REQUIRED_PATTERN="${DELPHI_NGINX_STORAGE_REQUIRED_PATTERN:-alias[[:space:]]+/var/www/storage/app/public/;}"
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  delphi_script_usage_add_metadata "compose_profiles" "${COMPOSE_PROFILES_EFFECTIVE:-unset}"
+fi
 
 is_configured_item() {
   local needle="$1"
