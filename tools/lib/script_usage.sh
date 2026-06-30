@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 
-delphi_script_usage_find_repo_root() {
+delphi_script_usage_default_delphi_root() {
+  local helper_dir=""
+  helper_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd 2>/dev/null || true)"
+  [[ -n "$helper_dir" ]] || return 1
+  cd "$helper_dir/../.." 2>/dev/null && pwd 2>/dev/null || return 1
+}
+
+delphi_script_usage_is_delphi_root() {
+  local candidate="${1:-}"
+  [[ -n "$candidate" ]] || return 1
+  [[ -f "$candidate/tools/script_usage_record.py" ]] || return 1
+  [[ -f "$candidate/tools/script_usage_summary.py" ]] || return 1
+}
+
+delphi_script_usage_find_delphi_root() {
   local start="${1:-$PWD}"
   local current="$start"
 
   while [[ -n "$current" && "$current" != "/" ]]; do
-    if [[ -d "$current/foundation_documentation" && -d "$current/delphi-ai" ]]; then
+    if delphi_script_usage_is_delphi_root "$current"; then
       printf '%s\n' "$current"
       return 0
     fi
@@ -27,6 +41,7 @@ PY
 }
 
 delphi_script_usage_init() {
+  local delphi_root=""
   local repo_root=""
   local script_id=""
   local script_path=""
@@ -36,6 +51,10 @@ delphi_script_usage_init() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
+      --delphi-root)
+        delphi_root="${2:-}"
+        shift 2
+        ;;
       --repo-root)
         repo_root="${2:-}"
         shift 2
@@ -66,26 +85,35 @@ delphi_script_usage_init() {
     esac
   done
 
-  if [[ -z "$repo_root" ]]; then
-    repo_root="$(delphi_script_usage_find_repo_root "$start_dir" || true)"
+  local resolved_root=""
+  if delphi_script_usage_is_delphi_root "$delphi_root"; then
+    resolved_root="$(cd "$delphi_root" && pwd)"
+  elif delphi_script_usage_is_delphi_root "$repo_root"; then
+    resolved_root="$(cd "$repo_root" && pwd)"
+  else
+    resolved_root="$(delphi_script_usage_default_delphi_root || true)"
+    if ! delphi_script_usage_is_delphi_root "$resolved_root"; then
+      resolved_root="$(delphi_script_usage_find_delphi_root "$start_dir" || true)"
+    fi
   fi
-  if [[ -z "$repo_root" || ! -d "$repo_root/foundation_documentation" ]]; then
+
+  if ! delphi_script_usage_is_delphi_root "$resolved_root"; then
     DELPHI_SCRIPT_USAGE_ENABLED=0
     return 0
   fi
 
-  if [[ ! -f "$repo_root/delphi-ai/tools/script_usage_record.py" ]]; then
-    DELPHI_SCRIPT_USAGE_ENABLED=0
-    return 0
-  fi
+  local metrics_root="${DELPHI_SCRIPT_USAGE_STATE_DIR:-artifacts/local/metrics}"
 
   DELPHI_SCRIPT_USAGE_ENABLED=1
-  DELPHI_SCRIPT_USAGE_REPO_ROOT="$repo_root"
+  DELPHI_SCRIPT_USAGE_REPO_ROOT="$resolved_root"
   DELPHI_SCRIPT_USAGE_SCRIPT_ID="$script_id"
   DELPHI_SCRIPT_USAGE_SCRIPT_PATH="$script_path"
   DELPHI_SCRIPT_USAGE_SURFACE="$surface"
   DELPHI_SCRIPT_USAGE_SCENARIO="$scenario"
   DELPHI_SCRIPT_USAGE_START_MS="$(delphi_script_usage_now_ms)"
+  DELPHI_SCRIPT_USAGE_EVENTS_PATH="${DELPHI_SCRIPT_USAGE_EVENTS_PATH:-$metrics_root/events/script-usage.jsonl}"
+  DELPHI_SCRIPT_USAGE_SUMMARY_JSON_PATH="${DELPHI_SCRIPT_USAGE_SUMMARY_JSON_PATH:-$metrics_root/script-usage-summary.json}"
+  DELPHI_SCRIPT_USAGE_SUMMARY_MARKDOWN_PATH="${DELPHI_SCRIPT_USAGE_SUMMARY_MARKDOWN_PATH:-$metrics_root/script-usage-summary.md}"
   declare -ag DELPHI_SCRIPT_USAGE_METADATA=()
 }
 
@@ -117,8 +145,9 @@ delphi_script_usage_capture_exit() {
   duration_ms="$((end_ms - DELPHI_SCRIPT_USAGE_START_MS))"
   local cmd=(
     python3
-    "${DELPHI_SCRIPT_USAGE_REPO_ROOT}/delphi-ai/tools/script_usage_record.py"
+    "${DELPHI_SCRIPT_USAGE_REPO_ROOT}/tools/script_usage_record.py"
     --repo-root "${DELPHI_SCRIPT_USAGE_REPO_ROOT}"
+    --events-jsonl "${DELPHI_SCRIPT_USAGE_EVENTS_PATH}"
     --script-id "${DELPHI_SCRIPT_USAGE_SCRIPT_ID}"
     --script-path "${DELPHI_SCRIPT_USAGE_SCRIPT_PATH}"
     --surface "${DELPHI_SCRIPT_USAGE_SURFACE}"
@@ -135,10 +164,11 @@ delphi_script_usage_capture_exit() {
   done
   "${cmd[@]}" >/dev/null 2>&1 || true
   python3 \
-    "${DELPHI_SCRIPT_USAGE_REPO_ROOT}/delphi-ai/tools/script_usage_summary.py" \
+    "${DELPHI_SCRIPT_USAGE_REPO_ROOT}/tools/script_usage_summary.py" \
     --repo "${DELPHI_SCRIPT_USAGE_REPO_ROOT}" \
-    --summary-json foundation_documentation/artifacts/metrics/script-usage-summary.json \
-    --summary-markdown foundation_documentation/artifacts/metrics/script-usage-summary.md \
+    --events-jsonl "${DELPHI_SCRIPT_USAGE_EVENTS_PATH}" \
+    --summary-json "${DELPHI_SCRIPT_USAGE_SUMMARY_JSON_PATH}" \
+    --summary-markdown "${DELPHI_SCRIPT_USAGE_SUMMARY_MARKDOWN_PATH}" \
     >/dev/null 2>&1 || true
 }
 

@@ -9,8 +9,11 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 REPO_DIR="$TMP_DIR/repo"
-mkdir -p "$REPO_DIR/foundation_documentation/artifacts/metrics/events"
-mkdir -p "$REPO_DIR/delphi-ai"
+mkdir -p "$REPO_DIR/artifacts/local/metrics/events"
+mkdir -p "$REPO_DIR/tools"
+touch "$REPO_DIR/tools/script_usage_record.py"
+touch "$REPO_DIR/tools/script_usage_summary.py"
+git -C "$REPO_DIR" init -q
 
 python3 "$RECORD_TOOL" \
   --repo-root "$REPO_DIR" \
@@ -45,9 +48,9 @@ python3 "$RECORD_TOOL" \
   --cwd "$REPO_DIR" \
   --metadata mode=repair
 
-EVENTS_FILE="$REPO_DIR/foundation_documentation/artifacts/metrics/events/script-usage.jsonl"
-SUMMARY_JSON="$REPO_DIR/foundation_documentation/artifacts/metrics/script-usage-summary.json"
-SUMMARY_MD="$REPO_DIR/foundation_documentation/artifacts/metrics/script-usage-summary.md"
+EVENTS_FILE="$REPO_DIR/artifacts/local/metrics/events/script-usage.jsonl"
+SUMMARY_JSON="$REPO_DIR/artifacts/local/metrics/script-usage-summary.json"
+SUMMARY_MD="$REPO_DIR/artifacts/local/metrics/script-usage-summary.md"
 
 [[ "$(wc -l < "$EVENTS_FILE" | tr -d ' ')" == "3" ]]
 grep -q '"script_id": "root.verify_environment"' "$EVENTS_FILE"
@@ -77,7 +80,7 @@ python3 "$RECORD_TOOL" \
   --cwd "$NOOP_REPO" \
   --quiet
 
-if [[ -e "$NOOP_REPO/foundation_documentation/artifacts/metrics/events/script-usage.jsonl" ]]; then
+if [[ -e "$NOOP_REPO/artifacts/local/metrics/events/script-usage.jsonl" ]]; then
   echo "expected noop repo not to create metrics artifacts" >&2
   exit 1
 fi

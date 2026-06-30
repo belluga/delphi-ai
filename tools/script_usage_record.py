@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record deterministic script-usage events for downstream telemetry."""
+"""Record deterministic script-usage events for Delphi-local telemetry."""
 
 from __future__ import annotations
 
@@ -18,12 +18,12 @@ from paced_metrics_core import (
 )
 
 
-DEFAULT_EVENTS_PATH = "foundation_documentation/artifacts/metrics/events/script-usage.jsonl"
+DEFAULT_EVENTS_PATH = "artifacts/local/metrics/events/script-usage.jsonl"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Append a script-usage event to the downstream metrics ledger.")
-    parser.add_argument("--repo-root", default=".", help="Downstream repo root.")
+    parser = argparse.ArgumentParser(description="Append a script-usage event to the local Delphi metrics ledger.")
+    parser.add_argument("--repo-root", default=".", help="Delphi repository root.")
     parser.add_argument("--events-jsonl", default=DEFAULT_EVENTS_PATH, help="Ledger path, relative to --repo-root unless absolute.")
     parser.add_argument("--script-id", required=True, help="Stable script identifier.")
     parser.add_argument("--script-path", required=True, help="Repo-relative script path.")
@@ -83,10 +83,9 @@ def git_value(repo_root: Path, *args: str) -> str:
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
-    foundation_dir = repo_root / "foundation_documentation"
-    if not foundation_dir.exists():
+    if not (repo_root / "tools" / "script_usage_record.py").exists():
         if not args.quiet:
-            print("script usage metrics skipped: no downstream foundation_documentation found", file=sys.stderr)
+            print("script usage metrics skipped: no Delphi repository root found", file=sys.stderr)
         return 0
 
     events_path = resolve_path(repo_root, args.events_jsonl)

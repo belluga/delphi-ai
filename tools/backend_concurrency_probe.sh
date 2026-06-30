@@ -6,6 +6,7 @@ if [[ -f "$SCRIPT_DIR/lib/script_usage.sh" ]]; then
   # shellcheck source=/dev/null
   source "$SCRIPT_DIR/lib/script_usage.sh"
   delphi_script_usage_init \
+    --delphi-root "$SCRIPT_DIR/.." \
     --script-id "delphi.backend_concurrency_probe" \
     --script-path "delphi-ai/tools/backend_concurrency_probe.sh" \
     --surface "delphi-tool" \

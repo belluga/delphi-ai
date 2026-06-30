@@ -95,10 +95,10 @@ The following guards are now active in the `deterministic/core/` directory:
 - `finding_impact_classifier.py`: Analyzes code diffs to classify findings (Logic vs. Cosmetic) and prevents risky promotions.
 - `session_lock_manager.py`: Manages session state and prevents concurrent agent conflicts.
 - `metrics_consolidation_trigger.py`: Automatically extracts formalizable findings and populates the rule-events ledger.
-- `script_usage_record.py`: Appends project-local script-usage events into a dedicated metrics ledger without mixing them into PACED rule/gate streams.
-- `script_usage_summary.py`: Aggregates the project-local script-usage ledger into derived JSON/Markdown summaries for counts, outcomes, scenarios, and recent runs.
+- `script_usage_record.py`: Appends Delphi-local script-usage events into a dedicated metrics ledger without mixing them into PACED rule/gate streams.
+- `script_usage_summary.py`: Aggregates the Delphi-local script-usage ledger into derived JSON/Markdown summaries for counts, outcomes, scenarios, and recent runs.
 
-Auxiliary tooling telemetry stays project-local under `foundation_documentation/artifacts/metrics/` as a sibling artifact family to PACED governance metrics. It is intentionally separate from `rule-events.jsonl`.
+Delphi self-maintenance script-usage telemetry stays local under `delphi-ai/artifacts/local/metrics/`, is gitignored, and is intentionally separate from downstream PACED project metrics plus `rule-events.jsonl`.
 
 ---
 
@@ -145,6 +145,8 @@ PACED closes the feedback loop by collecting metrics at the end of every session
 - **Location:** `foundation_documentation/artifacts/metrics/rule-events.jsonl`
 - **Automation:** The `post-session-review` workflow automatically triggers metrics collection.
 - **Goal:** Identify which rules are effective (True Positives) and which are escaping, allowing the ecosystem to recalibrate its deterministic layer.
+
+For Delphi-only local script-usage telemetry, use the gitignored state under `delphi-ai/artifacts/local/metrics/`.
 
 ---
 

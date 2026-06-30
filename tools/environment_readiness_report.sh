@@ -64,7 +64,7 @@ if [[ -f "$REPO_ROOT/delphi-ai/tools/lib/script_usage.sh" ]]; then
   # shellcheck source=/dev/null
   source "$REPO_ROOT/delphi-ai/tools/lib/script_usage.sh"
   delphi_script_usage_init \
-    --repo-root "$REPO_ROOT" \
+    --delphi-root "$REPO_ROOT/delphi-ai" \
     --script-id "delphi.environment_readiness_report" \
     --script-path "delphi-ai/tools/environment_readiness_report.sh" \
     --surface "delphi-tool"

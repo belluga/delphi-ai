@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate deterministic script-usage telemetry into derived summaries."""
+"""Aggregate deterministic script-usage telemetry into derived local Delphi summaries."""
 
 from __future__ import annotations
 
@@ -10,16 +10,18 @@ from pathlib import Path
 from paced_metrics_core import load_jsonl, utc_now, validate_schema, write_json
 
 
-DEFAULT_EVENTS_PATH = "foundation_documentation/artifacts/metrics/events/script-usage.jsonl"
+DEFAULT_EVENTS_PATH = "artifacts/local/metrics/events/script-usage.jsonl"
+DEFAULT_SUMMARY_JSON = "artifacts/local/metrics/script-usage-summary.json"
+DEFAULT_SUMMARY_MARKDOWN = "artifacts/local/metrics/script-usage-summary.md"
 STATUS_KEYS = ("passed", "failed", "usage_error", "interrupted")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Aggregate script-usage telemetry into a derived summary.")
-    parser.add_argument("--repo", default=".", help="Downstream repo root.")
+    parser.add_argument("--repo", default=".", help="Delphi repository root.")
     parser.add_argument("--events-jsonl", default=DEFAULT_EVENTS_PATH, help="Ledger path, relative to --repo unless absolute.")
-    parser.add_argument("--summary-json", required=True, help="Output path for the JSON summary.")
-    parser.add_argument("--summary-markdown", help="Optional output path for the markdown summary.")
+    parser.add_argument("--summary-json", default=DEFAULT_SUMMARY_JSON, help="Output path for the JSON summary.")
+    parser.add_argument("--summary-markdown", default=DEFAULT_SUMMARY_MARKDOWN, help="Optional output path for the markdown summary.")
     return parser.parse_args()
 
 
@@ -69,6 +71,8 @@ def render_markdown(payload: dict) -> str:
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo).resolve()
+    if not (repo_root / "tools" / "script_usage_summary.py").exists():
+        raise SystemExit("script usage summary requires a Delphi repository root")
     events_path = resolve_path(repo_root, args.events_jsonl)
     events = load_jsonl(events_path)
 

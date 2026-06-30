@@ -7,6 +7,7 @@ if [[ -f "$SCRIPT_DIR/tools/lib/script_usage.sh" ]]; then
   # shellcheck source=/dev/null
   source "$SCRIPT_DIR/tools/lib/script_usage.sh"
   delphi_script_usage_init \
+    --delphi-root "$SCRIPT_DIR" \
     --script-id "delphi.self_check" \
     --script-path "delphi-ai/self_check.sh" \
     --surface "delphi-tool" \

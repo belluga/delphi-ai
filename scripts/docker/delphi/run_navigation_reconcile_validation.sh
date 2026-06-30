@@ -214,7 +214,7 @@ if [[ -f "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh" ]]; then
   # shellcheck source=/dev/null
   source "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh"
   delphi_script_usage_init \
-    --repo-root "$ROOT_DIR" \
+    --delphi-root "$ROOT_DIR/delphi-ai" \
     --script-id "root.run_navigation_reconcile_validation" \
     --script-path "scripts/delphi/run_navigation_reconcile_validation.sh" \
     --surface "root-script"

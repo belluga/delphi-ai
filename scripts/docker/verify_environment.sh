@@ -8,7 +8,7 @@ if [[ -f "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh" ]]; then
   # shellcheck source=/dev/null
   source "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh"
   delphi_script_usage_init \
-    --repo-root "$ROOT_DIR" \
+    --delphi-root "$ROOT_DIR/delphi-ai" \
     --script-id "root.verify_environment" \
     --script-path "scripts/verify_environment.sh" \
     --surface "root-script"
