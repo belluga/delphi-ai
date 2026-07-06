@@ -32,6 +32,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 - Named worker slices with explicit file/module ownership.
 - Required validation plan for worker-local and consolidated lanes.
 - Worker GOAL contract for each delegated executor when the active client supports persistent goals, including the bounded objective, owned workstream/traceability rows, minimum local validation before `complete`, and exact `blocked` condition.
+- Worker model/state contract for each delegated executor when the active client supports model selection or sticky/custom agents. Routine executor workers default to `gpt-5.4-mini`, `medium`, and sticky-per-chat/TODO compact state; high-risk executor escalation must be explicit in the orchestration plan.
 - Execution ownership ledger that assigns every implementation workstream to a worker/subagent and limits orchestrator code edits to reconciliation/merge-conflict scope.
 - Acceptance Traceability Matrix that maps every governing TODO DoD item, validation step, and literal UI/API/runtime marker to a non-orchestrator owner and planned implementation/test/runtime evidence.
 - Spec Deviation Ledger for any intentional substitution of a governing TODO artifact, UI control, navigation path, endpoint, schema term, or validation lane.
@@ -65,7 +66,8 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - If the plan file is used as execution-ready evidence after approval, rerun the guard with `--require-approved`.
    - Do not dispatch workers or create worktrees until the plan has an explicit approval state or the governing TODO approval already covers the exact same orchestration topology.
    - The plan must include a `CI-Equivalent Local Suite Matrix` naming every repo-owned CI suite/job that will run for the touched repositories, the exact local command that mirrors it, and who must execute it on the authoritative branch state for that wave before delivery or promotion claims.
-   - Load `workflows/docker/effort-selection-method.md` when assigning effort tiers or GOAL policy for the orchestrator and workers.
+   - Load `workflows/docker/effort-selection-method.md` when assigning model routing, effort tiers, sticky executor state, or GOAL policy for the orchestrator and workers.
+   - When the active client supports model selection or sticky/custom agents, the plan must record the executor model/state policy for each worker lane. Routine code workers default to `gpt-5.4-mini` at `medium` with sticky state scoped only to the current chat/TODO, compacted to owned files, implementation decisions, commands/tests, blockers, and last accepted patch state.
    - When the active client supports persistent goals, the plan must also record one worker GOAL contract per executor workstream so no-context resume is bounded by the same ownership and validation contract the orchestrator approved.
    - If a derived remediation branch will be used for pre-promotion review history, the plan must make explicit that the full in-scope `CI-Equivalent Local Suite Matrix` passes on the remediation branch before replay/consolidation back onto the authoritative source branch.
    - Partition the work into bounded slices with clear ownership and minimal overlap.
@@ -85,8 +87,9 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 3. **Dispatch workers with explicit contracts**
    - Give each worker explicit ownership of files/modules, required tests, and checkpoint expectations.
    - Give each worker explicit ownership of the Acceptance Traceability Matrix rows it must satisfy, including any exact UI/API/runtime markers from the TODO.
-   - Per `workflows/docker/effort-selection-method.md`, dispatch executor subagents at the routine `medium` level by default.
-   - When the active client exposes persistent goals, open one GOAL per executor subagent. The GOAL must name the bounded objective, owned files/modules or traceability rows, minimum local validation required before `complete`, and the exact condition that forces `blocked`. Review-only/no-context subagents stay stateless by default and formal review subagents use the highest review-focused tier unless the tool/client requires a different resumable shape for the bounded package.
+   - Per `workflows/docker/effort-selection-method.md`, dispatch routine executor subagents on `gpt-5.4-mini` at the routine `medium` level by default when model selection is available.
+   - Use sticky executor state only within the current chat/TODO. The worker must not monitor background processes, retain raw logs/full diffs/transcripts/artifacts, or carry state across unrelated scopes; reset or recompact it at closeout, major scope/module change, high-volume context ingestion, stale/confused state, or material branch/worktree authority change.
+   - When the active client exposes persistent goals, open one GOAL per executor subagent. The GOAL must name the bounded objective, owned files/modules or traceability rows, minimum local validation required before `complete`, and the exact condition that forces `blocked`. Review-only/no-context subagents stay stateless by default and formal review subagents use `gpt-5.5` plus the highest review-focused tier unless the tool/client requires a different resumable shape for the bounded package.
    - Tell each worker it is not alone in the codebase and must not revert edits from other lanes.
    - Require workers to produce checkpoint commits whenever a coherent slice builds or passes its targeted tests.
    - Checkpoint evidence must include the local tests, official analyzer/lint, applicable build/publish gates, and implementation notes for the slice. Missing or failed architecture/build evidence is a worker blocker, not a reconciliation TODO.

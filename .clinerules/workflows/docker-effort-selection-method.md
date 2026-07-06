@@ -1,8 +1,11 @@
 ---
-description: Select the appropriate effort tier, model routing, executor state policy, and GOAL policy for sessions, orchestrators, executor subagents, monitors, and review subagents when the active client exposes those controls.
+name: "docker-effort-selection-method"
+description: "Select the appropriate effort tier, model routing, executor state policy, and GOAL policy for sessions, orchestrators, executor subagents, monitors, and review subagents when the active client exposes those controls."
 ---
 
-# Method: Effort Selection
+<!-- Generated from `workflows/docker/effort-selection-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
+
+# Workflow: Effort Selection
 
 ## Purpose
 Centralize how Delphi chooses effort tiers, model routing, executor state, and GOAL usage so token spend stays intentional, repeatable, and proportional to judgment risk.

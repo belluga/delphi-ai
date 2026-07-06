@@ -10,11 +10,13 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 
 ## Scope Controls
 - Run this skill when the user explicitly asks to reset/rebaseline the repository to the latest `dev`, prepare for the next implementation, or audit local/remote branch leftovers before cleanup.
+- This skill is the branch/rebaseline component of repository prune. For broader repository cleanup that includes worktrees, stale local residue, or artifact handoff, route through `prune-repository`.
 - This skill is a preflight plus safe cleanup flow. It must not destroy unmerged work.
 - Remote branch deletion is never automatic here. The skill only reports merged remote cleanup candidates.
 - This skill must not manually edit, stage, or rewrite Docker submodule gitlinks as part of "getting the workspace ready". Gitlink creation, adjustment, or reconciliation belongs only to the project-authorized promotion/pipeline flow.
 - When submodules are configured with `ignore = all` in `.gitmodules`, a clean-looking root status is not authority that gitlink work is missing or required. Treat the source repositories and pipeline-produced gitlink artifacts as the deciding surfaces instead of trying to make the superproject look "clean".
 - In multi-repository ecosystems, restrict the default rebaseline scope to the implementation repositories that the user is actively preparing for the next coding cycle. Do not automatically widen the audit to adjacent generated repos, deployment mirrors, documentation mirrors, or artifact-only repositories unless the user explicitly asks.
+- This skill must not delete `artifacts/**`; when repository preparation reveals artifact pollution, hand it to `prune-artifacts` after branch/worktree safety is understood.
 - PACED Docker ecosystem default:
   - include: the Docker/orchestration root repository and implementation source repositories named by the project (commonly `flutter-app` and `laravel-app`).
   - exclude by default: derived artifact repositories and documentation authority repositories (commonly `web-app` and `foundation_documentation`).

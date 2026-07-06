@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prune Artifacts"
+  short_description: "Safely prune Delphi artifact folders"
+  default_prompt: "Use $prune-artifacts to dry-run artifact cleanup after successful closeout."

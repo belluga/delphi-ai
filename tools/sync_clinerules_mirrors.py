@@ -148,6 +148,14 @@ MIRRORS: tuple[Mirror, ...] = (
         workflow_name="docker-todo-driven-execution-method",
     ),
     Mirror(
+        key="docker-todo-sequencing-method",
+        kind="workflow",
+        source="workflows/docker/todo-sequencing-method.md",
+        destination=".clinerules/workflows/docker-todo-sequencing-method.md",
+        title="Workflow: TODO Sequencing",
+        workflow_name="docker-todo-sequencing-method",
+    ),
+    Mirror(
         key="docker-todo-lane-framing-method",
         kind="workflow",
         source="workflows/docker/todo-lane-framing-method.md",
@@ -202,6 +210,14 @@ MIRRORS: tuple[Mirror, ...] = (
         destination=".clinerules/workflows/docker-performance-concurrency-validation-method.md",
         title="Workflow: Performance & Concurrency Validation Lanes",
         workflow_name="docker-performance-concurrency-validation-method",
+    ),
+    Mirror(
+        key="docker-effort-selection-method",
+        kind="workflow",
+        source="workflows/docker/effort-selection-method.md",
+        destination=".clinerules/workflows/docker-effort-selection-method.md",
+        title="Workflow: Effort Selection",
+        workflow_name="docker-effort-selection-method",
     ),
     Mirror(
         key="docker-update-skill-method",
