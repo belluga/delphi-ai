@@ -21,6 +21,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - commit and push the governing TODO package in its authoritative repo (normally `foundation_documentation`);
    - record `Gate: Review Baseline Freeze` with the baseline branch, commit SHA, push reference, and evidence;
    - if the baseline-evidence update itself changes any scope-governing section, refresh the freeze so the recorded baseline matches the package that will actually enter review.
+   - if the TODO is still drafting its review packet before this gate is satisfied or waived, record that work only as packet preparation using explicit provisional wording such as `prepared-pre-freeze` or `pending-freeze`; do **not** mark planning-side review/guard rows as `passed` until the freeze requirement is satisfied or explicitly waived and the authoritative review/guard actually ran.
 3. Run the Module Coherence Gate:
    - check that active decisions align with module docs and project constitution;
    - raise approval-material drift before implementation.
@@ -60,6 +61,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - No implementation before `APROVADO`.
 - Bounded pre-approval RED evidence capture is allowed only when the TODO explicitly authorizes it and only on listed test/support surfaces; it never authorizes production changes.
 - No planning-side review or guard run before `Gate: Review Baseline Freeze` is satisfied or explicitly waived.
+- Pre-freeze packet preparation must not masquerade as authoritative review completion; use explicit provisional wording such as `prepared-pre-freeze` or `pending-freeze` until the freeze requirement is satisfied or waived and the actual review/guard has run.
 - The assumption-vs-code coherence guard must be clean or explicitly waived before `APROVADO`.
 - The post-review scope-drift guard must be clean or explicitly waived before `APROVADO`.
 - Approval evidence must be recorded in the TODO; do not rely on chat memory alone after the gate has passed.

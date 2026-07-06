@@ -19,6 +19,11 @@ Load the phase skill that matches the current TODO state:
 - `wf-docker-todo-delivery-gates-method`
 - `wf-docker-todo-closeout-promotion-method`
 
+## Package-Stage Methods
+- When multiple approved TODOs must run sequentially on one lane to reduce rework, also load `wf-docker-todo-sequencing-method`.
+- When sequencing is active, the sequencing plan owns checkpoint granularity and branch-state gate topology; downstream delivery gates must inherit that recorded gate, and isolated pre-browser prefixes keep delivery claims provisional until replay plus the deferred authoritative broad gate succeed.
+- When multiple workers/subagents are used, also load `wf-docker-subagent-worktree-reconciliation-method`.
+
 ## Required State Machine
 1. Classify lane and framing.
 2. Refine the TODO contract.
@@ -33,6 +38,7 @@ Load the phase skill that matches the current TODO state:
 - Pre-`APROVADO` RED evidence capture, when used, is test-only evidence work and never production implementation.
 - `Decision Baseline (Frozen)` before implementation.
 - `Gate: Review Baseline Freeze` committed and pushed before the first planning-side review/guard run.
+- Any review-packet preparation recorded before that freeze is satisfied must stay explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) and must not be labeled as a passed planning-side review/guard result.
 - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` must return `Overall outcome: go` before `APROVADO` whenever the TODO used the review loop.
 - Complexity policy (`small|medium|big`) and `Plan Review Gate` before approval when required.
 - If the user/TODO/external reference asks for a `devil's advocate` loop, map it canonically to `wf-docker-independent-critique-method`; add `audit-protocol-triple-review` when the request also implies a persistent objection ledger, evidence-based reopening, or repeated no-context rounds until blocking objections are closed.
@@ -50,6 +56,7 @@ Load the phase skill that matches the current TODO state:
 ## Non-Negotiables
 - Do not skip a phase silently; mark it `n/a` only with rationale.
 - Do not open planning-side review from an unpushed worktree snapshot.
+- Do not let a TODO inside an isolated sequencing wave bypass the sequencing plan by running the deferred authoritative broad gate from the worktree.
 - Do not split into a new TODO for promotion follow-through unless promotion itself is the active work.
 - Do not leave stable decisions only in tactical notes or chat.
 - Do not treat review-scope-drift `no-go` as a hard rejection; it means the scope evolved and must be revalidated with the user before the loop resumes.

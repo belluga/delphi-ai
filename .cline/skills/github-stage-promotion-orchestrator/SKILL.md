@@ -78,7 +78,9 @@ The intake phase must classify exactly one scenario before mutation. Use `python
 - Reconcile-only wrappers and broad stage-gate naming must obey `ci-equivalent-governance`; do not invent promotion-local exceptions.
 - Promotion remediation may not silently rewrite stage-facing test ownership. If a remediation touches those surfaces, route it through `ci-equivalent-test-surface-admission` before lane-readiness claims.
 - If a package was first integrated on `reconcile/*`, require `orchestration_reconcile_replay_guard.py` to return `Overall outcome: go` against the orchestration plan and authoritative source repo before any promotion branch is treated as ready.
+- If a package is still on `sequence/*`, require explicit user validation plus replay onto the canonical version/source branch before any promotion branch is treated as ready.
 - Do not open promotion PRs from an orchestration-only reconciliation branch. Replay the accepted net effect onto the canonical version/source branch first, then resume promotion from that authoritative branch.
+- Do not open promotion PRs from a checkpoint-only sequencing branch. Validate that branch with the user, replay the accepted net effect onto the canonical version/source branch, and resume promotion from that authoritative branch.
 - Do not open promotion PRs from the remediation branch. Promotion always resumes from the authoritative source branch after replay and reconfirmation.
 - Do not create a fresh Docker/root promotion branch from `dev` or `stage` to stand in for a Flutter/Laravel authoritative source branch.
 - Do not reconstruct Flutter/Laravel source state in the Docker/root repo through cherry-picks, manual gitlink rewrites, or root-level reset/normalization commits intended to "realign" the lane.

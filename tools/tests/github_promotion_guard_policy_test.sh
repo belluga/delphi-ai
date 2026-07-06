@@ -69,6 +69,21 @@ fi
 grep -q "reconciliation branch" "$OUTPUT"
 grep -q "Replay the accepted reconcile state onto the canonical version/source branch first" "$OUTPUT"
 
+if bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+  --contract "$CONTRACT" \
+  --action pr-create \
+  --repo-kind docker \
+  --repo-slug test/docker \
+  --head sequence/v0.2.0+8/package \
+  --base dev \
+  >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected sequence/* PR head to be blocked\n' >&2
+  exit 1
+fi
+grep -q "sequencing branch" "$OUTPUT"
+grep -q "Validate the accepted sequence state with the user" "$OUTPUT"
+
 bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
   --contract "$CONTRACT" \
   --action pr-create \
@@ -211,5 +226,53 @@ if bash "$ROOT_DIR/tools/github_promotion_diff_guard.sh" \
   exit 1
 fi
 grep -q "ci_behavior_change_authorized=true" "$OUTPUT"
+
+WORKTREE_CONTRACT="$TMP_DIR/worktree-contract.json"
+bash "$ROOT_DIR/tools/github_promotion_contract_init.sh" \
+  --output "$WORKTREE_CONTRACT" \
+  --scope through-stage \
+  --gitlink-policy pipeline-only \
+  >/dev/null
+
+CHILD_REPO="$TMP_DIR/child-repo"
+mkdir -p "$CHILD_REPO"
+git -C "$CHILD_REPO" init -q
+git -C "$CHILD_REPO" config user.email test@example.test
+git -C "$CHILD_REPO" config user.name "Test User"
+printf 'first\n' >"$CHILD_REPO/version.txt"
+git -C "$CHILD_REPO" add version.txt
+git -C "$CHILD_REPO" commit -q -m "Child commit A"
+CHILD_SHA_A="$(git -C "$CHILD_REPO" rev-parse HEAD)"
+printf 'second\n' >"$CHILD_REPO/version.txt"
+git -C "$CHILD_REPO" commit -q -am "Child commit B"
+CHILD_SHA_B="$(git -C "$CHILD_REPO" rev-parse HEAD)"
+
+WORKTREE_REPO="$TMP_DIR/worktree-repo"
+mkdir -p "$WORKTREE_REPO"
+git -C "$WORKTREE_REPO" init -q
+git -C "$WORKTREE_REPO" config user.email test@example.test
+git -C "$WORKTREE_REPO" config user.name "Test User"
+touch "$WORKTREE_REPO/README.md"
+git -C "$WORKTREE_REPO" add README.md
+git -C "$WORKTREE_REPO" commit -q -m initial
+git -c protocol.file.allow=always -C "$WORKTREE_REPO" submodule add -q "$CHILD_REPO" flutter-app
+git -C "$WORKTREE_REPO/flutter-app" checkout -q "$CHILD_SHA_A"
+git -C "$WORKTREE_REPO" add .gitmodules flutter-app
+git -C "$WORKTREE_REPO" commit -q -m "Pin flutter-app gitlink"
+git -C "$WORKTREE_REPO/flutter-app" checkout -q "$CHILD_SHA_B"
+
+if ! bash "$ROOT_DIR/tools/github_promotion_diff_guard.sh" \
+  --contract "$WORKTREE_CONTRACT" \
+  --repo "$WORKTREE_REPO" \
+  --mode worktree \
+  >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected worktree gitlink checkout drift to remain advisory\n' >&2
+  exit 1
+fi
+grep -q "gitlink_checkout_drift_advisory: present" "$OUTPUT"
+grep -q "Do not treat the root gitlink as source authority for app repos." "$OUTPUT"
+grep -q "Do not create a manual root gitlink commit to 'realign' this state." "$OUTPUT"
+grep -q "gitlink_checkout_drift_paths: flutter-app => root_recorded_sha=$CHILD_SHA_A; child_head_sha=$CHILD_SHA_B" "$OUTPUT"
 
 printf 'github_promotion_guard_policy_test: OK\n'

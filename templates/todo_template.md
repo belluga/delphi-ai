@@ -158,12 +158,37 @@ For any criterion that includes user-flow CRUD or mutation behavior (create, edi
 - [ ] `D-01` <Decision: chosen option + short rationale + module decision ref (or `No Prior Decision`)>
 
 ## Module Decision Baseline Snapshot (Required Before APROVADO)
-- | Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
-- | --- | --- | --- | --- |
-- | `<module#decision-id>` | <summary> | <handling> | <file:line/section> |
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `<module#decision-id>` | <summary> | <handling> | <file:line/section> |
 
 ## Decision Baseline (Frozen Before Implementation)
 - [ ] `D-01` <Expected outcome that implementation must adhere to>
+
+## Architecture Change Governance (Required When This TODO Corrects or Supersedes Architecture)
+- **Applicability (`required|not_needed`):** `<not_needed>`
+- **Why this applies:** `<why this TODO is or is not architecture-corrective>`
+- **Deviation / debt being retired:** `<n/a or exact wrong path being removed>`
+- **Target steady-state after closeout:** `<n/a or exact canonical architecture that must remain>`
+- **Temporary exceptions allowed:** `<none|bounded temporary exception + rationale>`
+- **Cutover / removal condition:** `<n/a or exact condition that retires the old path>`
+
+### Patterns To Enforce (Required when applicability = `required`)
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| `<pattern or canonical decision>` | `<module decision / PATTERN id / n/a>` | `<surface/family>` | `<why this becomes the required path>` |
+
+### Prohibited Anti-Patterns (Required when applicability = `required`)
+| Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
+| --- | --- | --- | --- |
+| `<retired wrong path>` | `<guard/lint/review/test signal>` | `<why this would reintroduce the deviation>` | `<none or exact bounded exception>` |
+
+### Architecture Protection Harness (Required when applicability = `required`)
+Plan the concrete protections that keep the corrected architecture from regressing. Rows marked `implement-in-this-todo` must also appear in `Definition of Done`, `Validation Steps`, and the relevant evidence/gate sections before approval.
+
+| Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| `<rule|linter|analyzer|pint|guard|test|audit>` | `<surface>` | `<real command/rule/artifact>` | `<what regression this blocks>` | `<timing>` | `<how this becomes real or exact follow-up reference>` |
 
 ## Gate: Review Baseline Freeze
 - **Gate decision:** `required`
@@ -176,13 +201,14 @@ For any criterion that includes user-flow CRUD or mutation behavior (create, edi
 - **Findings summary:** <what was frozen, or what blocked the freeze>
 - **Evidence / reference:** <commit/push evidence or artifact>
 - **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
+- **Pre-freeze packet-prep rule:** `if review-loop rows are drafted before this gate is satisfied or explicitly waived, keep them explicitly provisional (for example \`prepared-pre-freeze\` or \`pending-freeze\`) and do not mark them \`passed\` until the real freeze-backed review/guard run exists`
 
 ## Gate: Review Scope Drift
 - **Gate decision:** `required`
 - **Why this decision:** <why post-review material drift must be checked before approval>
 - **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
-- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
+- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
 - **No-go handling rule:** `return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes; this is not a hard rejection`
 - **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
@@ -357,9 +383,9 @@ Use exact trigger names and exact enum values only.
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -394,14 +420,14 @@ Complete this after the execution plan is approved and the touched surfaces are 
 | `<rule/workflow path>` | <why it applies> | <non-negotiable constraints> | <forbidden shortcuts/regressions> | <what changes in execution/validation> |
 
 ## Decision Adherence Validation (Mandatory Before Delivery)
-- | Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
-- | --- | --- | --- | --- |
-- | `D-01` | <status> | <file:line/test/doc> | <notes> |
+| Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
+| --- | --- | --- | --- |
+| `D-01` | <status> | <file:line/test/doc> | <notes> |
 
 ## Module Decision Consistency Validation (1-1 Mandatory Before Delivery)
-- | Module Decision Ref | Planned Handling | Delivery Status (`Preserved|Superseded (Approved)|Regression`) | Evidence | Notes |
-- | --- | --- | --- | --- | --- |
-- | `<module#decision-id>` | <handling> | <status> | <file:line/test/doc> | <notes> |
+| Module Decision Ref | Planned Handling | Delivery Status (`Preserved|Superseded (Approved)|Regression`) | Evidence | Notes |
+| --- | --- | --- | --- | --- |
+| `<module#decision-id>` | <handling> | <status> | <file:line/test/doc> | <notes> |
 
 ### Exception Handling
 - If any decision is `Exception`, delivery is blocked until:
@@ -531,9 +557,9 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -552,9 +578,9 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -570,9 +596,9 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 

@@ -137,6 +137,17 @@ branch_is_reconcile_branch() {
   esac
 }
 
+branch_is_sequence_branch() {
+  case "$1" in
+    sequence/*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 branch_is_topology_replay_branch() {
   case "$1" in
     reconcile/dev-contains-stage-*)
@@ -208,9 +219,17 @@ if [ "$ACTION" = "pr-create" ] || [ "$ACTION" = "pr-merge" ]; then
     teach_add_violation "Promotion PR head '$HEAD_BRANCH' is a reconciliation branch. Promotion may not advance directly from reconcile/*."
     teach_add_resolution "Replay the accepted reconcile state onto the canonical version/source branch first, then open the promotion PR from that canonical branch."
   fi
+  if branch_is_sequence_branch "${HEAD_BRANCH:-}"; then
+    teach_add_violation "Promotion PR head '$HEAD_BRANCH' is a sequencing branch. Promotion may not advance directly from sequence/*."
+    teach_add_resolution "Validate the accepted sequence state with the user, replay it onto the canonical version/source branch first, then open the promotion PR from that canonical branch."
+  fi
   if branch_is_reconcile_branch "${BASE_BRANCH:-}"; then
     teach_add_violation "Promotion PR base '$BASE_BRANCH' is a reconciliation branch. reconcile/* is orchestration-only topology, not a promotable lane."
     teach_add_resolution "Use the canonical lane branch (dev, stage, or main) as the PR base after the accepted reconcile state has been replayed onto its authoritative source branch."
+  fi
+  if branch_is_sequence_branch "${BASE_BRANCH:-}"; then
+    teach_add_violation "Promotion PR base '$BASE_BRANCH' is a sequencing branch. sequence/* is checkpoint-only topology, not a promotable lane."
+    teach_add_resolution "Use the canonical lane branch (dev, stage, or main) as the PR base after the accepted sequence state has been user-validated and replayed onto its authoritative source branch."
   fi
 fi
 
@@ -251,6 +270,11 @@ if [ "$ACTION" = "git-commit" ] && branch_is_reconcile_branch "${BRANCH_NAME:-}"
   teach_add_resolution "Finish reconcile on reconcile/*, replay the accepted net effect onto the canonical source branch, and continue promotion work from that canonical branch instead."
 fi
 
+if [ "$ACTION" = "git-commit" ] && branch_is_sequence_branch "${BRANCH_NAME:-}"; then
+  teach_add_violation "Promotion-lane commits may not happen on sequencing branch '$BRANCH_NAME'."
+  teach_add_resolution "Finish the sequence lane with user validation, replay the accepted net effect onto the canonical source branch, and continue promotion work from that canonical branch instead."
+fi
+
 if [ "$ACTION" = "git-push" ] && branch_is_lane_branch "${BRANCH_NAME:-}"; then
   teach_add_violation "Direct pushes from lane branch '$BRANCH_NAME' are forbidden."
   teach_add_resolution "Do not push lane branches directly. Push the authoritative source branch and move '$BRANCH_NAME' only through the reviewed PR path."
@@ -261,6 +285,11 @@ if [ "$ACTION" = "git-push" ] && branch_is_reconcile_branch "${BRANCH_NAME:-}" &
   teach_add_resolution "Replay the accepted reconcile state onto the canonical source branch and push that canonical branch instead of reconcile/*."
 fi
 
+if [ "$ACTION" = "git-push" ] && branch_is_sequence_branch "${BRANCH_NAME:-}"; then
+  teach_add_violation "Promotion-lane pushes may not originate from sequencing branch '$BRANCH_NAME'."
+  teach_add_resolution "Replay the accepted sequence state onto the canonical source branch after user validation and push that canonical branch instead of sequence/*."
+fi
+
 if [ "$ACTION" = "git-push" ] && branch_is_lane_branch "${TARGET_BRANCH:-}"; then
   teach_add_violation "Direct pushes targeting lane branch '$TARGET_BRANCH' are forbidden."
   teach_add_resolution "Do not push to '$TARGET_BRANCH' directly. Open or advance the reviewed PR path for that lane instead."
@@ -269,6 +298,11 @@ fi
 if [ "$ACTION" = "git-push" ] && branch_is_reconcile_branch "${TARGET_BRANCH:-}" && ! branch_is_topology_replay_branch "${TARGET_BRANCH:-}"; then
   teach_add_violation "Promotion-lane pushes may not target reconciliation branch '$TARGET_BRANCH'."
   teach_add_resolution "Keep reconcile branches inside orchestration only. Promotion push activity must target the canonical source or remediation branch after replay."
+fi
+
+if [ "$ACTION" = "git-push" ] && branch_is_sequence_branch "${TARGET_BRANCH:-}"; then
+  teach_add_violation "Promotion-lane pushes may not target sequencing branch '$TARGET_BRANCH'."
+  teach_add_resolution "Keep sequence branches inside TODO sequencing only. Promotion push activity must target the canonical source or remediation branch after replay."
 fi
 
 if [ -n "$BASE_BRANCH" ]; then

@@ -113,6 +113,10 @@ if [[ "${#staged_gitlinks[@]}" -eq 0 && "${#worktree_gitlinks[@]}" -eq 0 ]]; the
   exit 0
 fi
 
+if [[ "${#staged_gitlinks[@]}" -eq 0 ]]; then
+  exit 0
+fi
+
 {
   echo "PACED Pipeline-Only Gitlink Commit Guard"
   echo
@@ -125,16 +129,12 @@ fi
   echo "must not do so."
   echo
   echo "Constraint:"
-  echo "Any staged gitlink diff or worktree gitlink drift blocks 'git commit', including"
-  echo "paths that 'git commit -a' would auto-stage."
+  echo "Any staged gitlink diff blocks 'git commit', including paths that"
+  echo "'git commit -a' would auto-stage from checkout drift."
   echo
   if [[ "${#staged_gitlinks[@]}" -gt 0 ]]; then
     echo "Staged gitlink paths:"
     printf ' - %s\n' "${staged_gitlinks[@]}"
-  fi
-  if [[ "${#worktree_gitlinks[@]}" -gt 0 ]]; then
-    echo "Worktree gitlink paths:"
-    printf ' - %s\n' "${worktree_gitlinks[@]}"
   fi
   echo
   echo "Expected Behavior:"

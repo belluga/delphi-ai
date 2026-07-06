@@ -108,6 +108,20 @@ grep -q "Promotion may not start from reconcile/\\*" "$OUTPUT"
 grep -q "Replay the accepted reconcile state onto the canonical version/source branch first" "$OUTPUT"
 
 git -C "$REPO" checkout -q dev
+git -C "$REPO" checkout -q -b sequence/direct-promote dev
+printf 'sequence\n' >> "$REPO/app.txt"
+git -C "$REPO" add app.txt
+git -C "$REPO" commit -q -m "sequence change"
+
+if bash "$SCRIPT" --repo "$REPO" --source sequence/direct-promote --base origin/dev >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected sequence/* source preflight to be blocked\n' >&2
+  exit 1
+fi
+grep -q "Promotion may not start from sequence/\\*" "$OUTPUT"
+grep -q "Validate the accepted sequence state with the user" "$OUTPUT"
+
+git -C "$REPO" checkout -q dev
 git -C "$REPO" checkout -q -b stage
 git -C "$REPO" push -q origin stage
 

@@ -40,14 +40,8 @@ git -C "$PARENT_REPO/child" fetch -q origin
 git -C "$PARENT_REPO/child" checkout -q "$SUBMODULE_SHA_TWO"
 printf 'second normal file\n' >"$PARENT_REPO/NOTES.md"
 git -C "$PARENT_REPO" add NOTES.md
-if git -C "$PARENT_REPO" commit -m "normal file while gitlink drifts" >"$OUTPUT" 2>&1; then
-  cat "$OUTPUT"
-  printf 'expected commit with unstaged gitlink drift to be blocked\n' >&2
-  exit 1
-fi
-grep -q "Pipeline-Only Gitlink Commit Guard" "$OUTPUT"
-grep -q "Worktree gitlink paths:" "$OUTPUT"
-grep -q "child" "$OUTPUT"
+git -C "$PARENT_REPO" commit -q -m "normal file while gitlink drifts"
+test "$(git -C "$PARENT_REPO" rev-parse --verify HEAD:NOTES.md)" = "$(git -C "$PARENT_REPO" hash-object "$PARENT_REPO/NOTES.md")"
 
 git -C "$PARENT_REPO" reset -q HEAD NOTES.md
 
@@ -72,6 +66,8 @@ grep -q "child" "$OUTPUT"
 git -C "$PARENT_REPO/child" checkout -q "$SUBMODULE_SHA_ONE"
 git -C "$PARENT_REPO" add child
 git -C "$PARENT_REPO" reset -q HEAD child
+git -C "$PARENT_REPO" reset -q HEAD NOTES.md
+git -C "$PARENT_REPO" checkout -- NOTES.md
 git -C "$PARENT_REPO" checkout -- child
 
 printf 'install_pipeline_only_gitlink_commit_guard_test: OK\n'

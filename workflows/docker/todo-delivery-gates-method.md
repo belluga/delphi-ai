@@ -10,6 +10,7 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 ## Inputs
 - Implemented diff.
 - Governing TODO with DoD, validation steps, matrices, decisions, and audit-floor output.
+- Approved sequencing execution plan when the current TODO belongs to a `sequence/*` package wave.
 - Local CI-equivalent commands and runtime/topology evidence.
 
 ## Procedure
@@ -19,9 +20,10 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
    - For any manual/browser/device/runtime-visible validation row, record a runtime freshness attestation before interpreting the result: authoritative `branch@sha`, local build/publish artifact or fingerprint, served runtime target, and proof that the served target matched that exact build.
 2. Execute every in-scope row in the `Local CI-Equivalent Suite Matrix` locally and mark it `passed`, or record an explicit approved `n/a`/waiver.
    - Load `ci-equivalent-governance` before deciding whether a row truly satisfies `CI-Equivalent`, whether a reconcile-only wrapper is valid on the current branch family, or whether a broad local stage gate such as `stage-full` is parity-complete rather than diagnostic.
-  - A row is valid only when the executed evidence proves the row's declared behavior/scenario under its declared fixture/seed/runtime preconditions.
-  - A generic suite pass is invalid when the target behavior was not actually exercised because required seed data, user linkage, fixtures, runtime bootstrap, or publication state were missing.
-  - If the row depends on a real browser/device/manual runtime surface, do not run or interpret it until the runtime freshness attestation proves the served target is fresh for the current authoritative build. Missing or mismatched freshness keeps the row `blocked`.
+   - If the current TODO is part of an approved sequencing plan, obey that plan's recorded branch-state gate topology. Run the current sequencing unit's exact checkpoint gate now; when that gate is only a non-authoritative prefix from an isolated sequencing worktree, keep the delivery claim provisional and defer the authoritative broad local gate until replay onto the principal authoritative branch.
+   - A row is valid only when the executed evidence proves the row's declared behavior/scenario under its declared fixture/seed/runtime preconditions.
+   - A generic suite pass is invalid when the target behavior was not actually exercised because required seed data, user linkage, fixtures, runtime bootstrap, or publication state were missing.
+   - If the row depends on a real browser/device/manual runtime surface, do not run or interpret it until the runtime freshness attestation proves the served target is fresh for the current authoritative build. Missing or mismatched freshness keeps the row `blocked`.
    - When the declared scenario says navigation/browser or device runtime proof is the strongest available lane, do not close the row on backend-only, unit/widget-only, or aggregate suite evidence.
 3. Validate decision adherence and module decision consistency.
 4. Run security risk assessment.
@@ -63,6 +65,7 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 - Completed delivery evidence sections.
 - Audit/review evidence required by the derived floor.
 - Deterministic completion guard result.
+- Explicit provisional-status evidence whenever the current sequencing unit closes only on a non-authoritative checkpoint prefix.
 
 ## Non-Negotiables
 - Visible, interactive, or user-flow-impacting criteria require item-specific integration/device or navigation/browser evidence unless an approved structure-only rationale exists.
@@ -71,6 +74,8 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 - CRUD/mutation criteria require mutation-path evidence on the approved non-main target.
 - CI-equivalent rows must prove the intended behavior, not merely prove that the suite can run. Missing behavior-targeted data/fixtures/preconditions keep the row `blocked`, even if the command itself exits green.
 - A row that claims broad stage-pipeline parity is invalid whenever `ci-equivalent-governance` would reject its contract shape, branch topology, lifecycle-step coverage, or stale-precondition assumptions.
+- Do not relabel a non-authoritative sequencing prefix gate as `CI-Equivalent`, promotable `stage-full`, `local-public-web-build` completion, or authoritative browser/runtime freshness proof.
+- Do not run `browser-stage-full`, `local-public-web-build`, readonly smoke, or mutation smoke from an isolated sequencing worktree when the sequencing plan records only the pre-browser checkpoint prefix.
 - Backend producer surfaces cannot close on backend evidence alone when the `Frontend / Consumer Matrix` declares a consumer.
 - No delivery claim is valid while `todo_completion_guard.py` returns anything other than `Overall outcome: go`.
 - No delivery claim is valid while `todo_authority_guard.py --require-delivery-gates` returns anything other than `Overall outcome: go`.

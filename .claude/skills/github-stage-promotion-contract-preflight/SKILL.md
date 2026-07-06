@@ -21,7 +21,7 @@ Use after intake has classified the scenario and before opening or mutating any 
   - version/package source: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <source-branch> --base origin/dev --governing-todo <todo-path> --repo-key <key>`
     - when `<todo-path>` is a release-package TODO, this command now auto-runs `github_release_package_rollup_guard.py` before `github_promotion_source_authority_guard.py`
   - bot lane: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source origin/bot/next-version --base origin/dev --require-diff-shape submodule-only`
-- If the package was first integrated on `reconcile/*`, do not let preflight start from that branch. First record replay in the orchestration execution plan and require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan-path> --repo <authoritative-source-repo>` to return `Overall outcome: go`. Then run stage preflight from the canonical branch, preferably with `--orchestration-plan <plan-path>` so the preflight delegates to the replay guard before checking promotion lineage.
+- If the package is still sitting on a checkpoint-only execution branch such as `reconcile/*` or `sequence/*`, do not let preflight start from that branch. For `reconcile/*`, first record replay in the orchestration execution plan and require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan-path> --repo <authoritative-source-repo>` to return `Overall outcome: go`. For `sequence/*`, first record explicit user validation plus replay evidence in the sequencing execution plan, then run stage preflight from the canonical branch.
 - Discover existing PRs before creating new ones.
 - After preflight returns `Overall outcome: go` and before creating the first PR, run `copilot-pr-review` on each authoritative source repo/branch in scope.
 - After those findings are collected and deduplicated, run `review-finding-classification` before deciding blocker-vs-follow-up routing or updating the governing TODO ledger.
@@ -65,7 +65,7 @@ The wrappers enforce action/diff policy only. They do not prove PR checks, revie
 - A version/package promotion source is not authoritative unless the governing TODO's `Current Branch Authority` and exact `branch@sha` baseline both match the source branch under evaluation.
 - A release-package TODO is not authoritative unless its `Current Diff Child Owners` still matches the live version membership and every live child owner is already at a promotable delivery stage.
 - In that version/package case, a green `review/*` matrix without a prior green authoritative `*-rc` matrix is still `no-go`.
-- A promotion source branch named `reconcile/*` is always a blocker. Promotion resumes only after replay onto the canonical branch is proven.
+- A promotion source branch named `reconcile/*` or `sequence/*` is always a blocker. Promotion resumes only after replay onto the canonical branch is proven.
 - Do not open the first promotion PR while unresolved P1/P2 pre-promotion review findings remain.
 - Do not escalate Claude quota/rate-limit issues as a promotion blocker unless the mandatory internal no-context subagent sweep has already reached a locally clean state.
 - Do not let a bot finding outrank an approved TODO decision; the finding must be cross-checked before patching.

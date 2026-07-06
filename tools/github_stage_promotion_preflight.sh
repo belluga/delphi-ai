@@ -245,9 +245,13 @@ TOPOLOGY_ONLY_RECONCILIATION_REASON=""
 NORMALIZED_BASE_REF="$(normalize_lane_ref "$BASE_REF")"
 NORMALIZED_SOURCE_REF="$(normalize_lane_ref "$SOURCE_SHORT")"
 SOURCE_IS_RECONCILE_BRANCH=false
+SOURCE_IS_SEQUENCE_BRANCH=false
 case "$NORMALIZED_SOURCE_REF" in
   reconcile/*)
     SOURCE_IS_RECONCILE_BRANCH=true
+    ;;
+  sequence/*)
+    SOURCE_IS_SEQUENCE_BRANCH=true
     ;;
 esac
 if [ "$SOURCE_HAS_DIFF" = false ] && [ "$NORMALIZED_BASE_REF" = "dev" ]; then
@@ -284,12 +288,15 @@ if [ "$CURRENT_BRANCH" = "$SOURCE_SHORT" ] && [ "$WORKTREE_DIRTY" = true ]; then
 fi
 
 OVERALL_GO=true
-RECONCILE_POLICY_READY=true
+EXECUTION_ONLY_BRANCH_POLICY_READY=true
 if [ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
-  RECONCILE_POLICY_READY=false
+  EXECUTION_ONLY_BRANCH_POLICY_READY=false
+fi
+if [ "$SOURCE_IS_SEQUENCE_BRANCH" = true ]; then
+  EXECUTION_ONLY_BRANCH_POLICY_READY=false
 fi
 
-if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$RECONCILE_POLICY_READY" = false ]; then
+if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$EXECUTION_ONLY_BRANCH_POLICY_READY" = false ]; then
   OVERALL_GO=false
 fi
 
@@ -315,6 +322,12 @@ if [ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_
   RESOLUTION_PROMPTS+=("If this package came from orchestrated reconcile, record the replay in the orchestration plan and require python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan-path> --repo <authoritative-source-repo> to return Overall outcome: go before retrying promotion.")
 fi
 
+if [ "$SOURCE_IS_SEQUENCE_BRANCH" = true ]; then
+  VIOLATIONS+=("Source '$SOURCE_REF' is a sequencing branch. Promotion may not start from sequence/*.")
+  RESOLUTION_PROMPTS+=("Validate the accepted sequence state with the user, replay it onto the canonical version/source branch first, then rerun this preflight from that canonical branch.")
+  RESOLUTION_PROMPTS+=("If this package came from TODO sequencing, record the accepted checkpoint, final user validation, and replay evidence in the sequencing execution plan before retrying promotion.")
+fi
+
 if [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
   VIOLATIONS+=("Source '$SOURCE_REF' has no promotable diff beyond '$BASE_REF'.")
   RESOLUTION_PROMPTS+=("Do not open a promotion PR from '$SOURCE_REF' until it contains a real diff beyond '$BASE_REF'.")
@@ -338,7 +351,7 @@ printf '\n'
 printf 'Preflight summary\n'
 printf '  - worktree clean for source branch: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 printf '  - source contains base tip: %s\n' "$([ "$LINEAGE_READY" = true ] && printf yes || printf no)"
-printf '  - source is not reconcile/* (or approved topology-only replay): %s\n' "$([ "$RECONCILE_POLICY_READY" = true ] && printf yes || printf no)"
+printf '  - source is not sequence/* or reconcile/* (or approved topology-only replay): %s\n' "$([ "$EXECUTION_ONLY_BRANCH_POLICY_READY" = true ] && printf yes || printf no)"
 printf '  - source has promotable diff beyond base: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
 printf '  - topology-only reconciliation accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  - diff shape requirement (%s): %s\n' "$REQUIRE_DIFF_SHAPE" "$([ "$DIFF_SHAPE_READY" = true ] && printf pass || printf fail)"

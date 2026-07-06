@@ -7,6 +7,7 @@ mirrored_skills=(
   "test-creation-standard"
   "test-orchestration-suite"
   "wf-docker-subagent-worktree-reconciliation-method"
+  "wf-docker-todo-sequencing-method"
 )
 
 printf '%s\n' "${mirrored_skills[@]}"

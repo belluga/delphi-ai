@@ -112,6 +112,6 @@ Optional but recommended for canonical `foundation_documentation` clones:
 ```bash
 bash delphi-ai/tools/install_foundation_main_only_guard.sh --repo foundation_documentation
 ```
-This installs local Git hooks that keep `foundation_documentation` on the single writable canonical branch (`main`) and emit PACED guidance when a checkout or branch mutation tries to leave that model.
+This installs local Git hooks that keep `foundation_documentation` on the single writable canonical branch (`main`) and emit TEACH/PACED guidance when checkout, branch mutation, or linked-worktree usage tries to leave that model. Git does not expose a pre-hook for `git worktree add`, so the guard fail-closes every later writable operation until the linked-worktree artifact is removed. Do not create side branches, linked worktrees, copied writable mirrors, or alternate local authority folders for `foundation_documentation`.
 
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.

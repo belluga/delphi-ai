@@ -37,6 +37,14 @@ Baseline context.
 ## Decision Baseline (Frozen Before Implementation)
 - [x] `D-01` Scope remains the original bounded slice.
 
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** canonicalize one pagination envelope
+- **Deviation / debt being retired:** mixed list contracts
+- **Target steady-state after closeout:** one collection envelope for every targeted surface
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** all targeted consumers migrate
+
 ## Gate: Review Baseline Freeze
 - **Gate decision:** `required`
 - **Why this decision:** baseline must be pushed before review
@@ -82,6 +90,14 @@ Baseline context.
 ## Decision Baseline (Frozen Before Implementation)
 - [x] \`D-01\` Scope remains the original bounded slice.
 
+## Architecture Change Governance
+- **Applicability (\`required|not_needed\`):** \`required\`
+- **Why this applies:** canonicalize one pagination envelope
+- **Deviation / debt being retired:** mixed list contracts
+- **Target steady-state after closeout:** one collection envelope for every targeted surface
+- **Temporary exceptions allowed:** \`none\`
+- **Cutover / removal condition:** all targeted consumers migrate
+
 ## Gate: Review Baseline Freeze
 - **Gate decision:** \`required\`
 - **Why this decision:** baseline must be pushed before review
@@ -121,7 +137,11 @@ import sys
 
 path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
-text = text.replace("original scope", "expanded scope", 1)
+text = text.replace(
+    "one collection envelope for every targeted surface",
+    "several envelope families may still coexist",
+    1,
+)
 path.write_text(text, encoding="utf-8")
 PY
 
@@ -132,7 +152,7 @@ if python3 "$TOOL" --todo "$todo" >"$tmpdir/no_go.txt"; then
 fi
 
 grep -q "REVIEW-SCOPE-DRIFT-MATERIAL-CHANGE" "$tmpdir/no_go.txt"
-grep -q "Scope" "$tmpdir/no_go.txt"
+grep -q "Architecture Change Governance" "$tmpdir/no_go.txt"
 grep -q "not a hard rejection" "$tmpdir/no_go.txt"
 grep -q "revalidate the evolved scope with the user" "$tmpdir/no_go.txt"
 

@@ -36,7 +36,13 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
   - it must never touch production code, runtime/config/deploy surfaces, or canonical project docs outside TODO authoring;
   - it must record `red_reproduced|red_not_reproduced|blocked` and send the TODO back through reconvergence if the evidence invalidates the current path.
 - **Decision Baseline (Frozen)** must exist before implementation and must be refreshed with renewed approval if approval-material facts change.
+- **Architecture-correction governance** is mandatory when a TODO retires a recurring architectural deviation, intentionally supersedes canonical module decisions, standardizes competing shared patterns, or establishes a new shared steady-state contract:
+  - before approval, the TODO must declare the deviation being retired, the target steady-state, the patterns to enforce, the anti-patterns to prohibit, and the concrete protection harness that will defend the corrected architecture;
+  - protection harness rows must name the real lasting enforcement surfaces where applicable (for example rules, lint/analyzer commands, Pint/style guards, Laravel/Flutter guardrails, targeted tests, or dedicated audits), not just generic promises to "watch for regressions";
+  - any harness row marked for implementation in the current TODO must also be reflected into `Definition of Done`, `Validation Steps`, and the relevant execution/delivery evidence sections before approval;
+  - follow-up harness rows are acceptable only when they have an explicit approved follow-up reference instead of an implicit "we should remember this later".
 - **Review Baseline Freeze** must be committed and pushed before the first planning-side review or guard run, and its branch/commit/push evidence must be recorded in `Gate: Review Baseline Freeze`.
+- **Pre-freeze review packet prep** may be recorded before that gate is satisfied, but it must stay explicitly provisional (`prepared-pre-freeze` / `pending-freeze` or equivalent) and must not be labeled as a passed planning-side review/guard result.
 - **Post-review scope drift** must be checked before `APROVADO`:
   - `python3 delphi-ai/tools/review_scope_drift_guard.py <todo-path>`
   - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, and refresh the pushed baseline as required before approval resumes.
@@ -51,6 +57,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Completion Evidence Matrix** must contain criterion-specific evidence for every `Definition of Done` and `Validation Steps` item before delivery claims.
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
 - **Behavior-targeted CI validity** is mandatory: every CI-equivalent row must declare the exact scenario it proves plus the required fixture/seed/runtime preconditions, and a green suite is invalid when the intended behavior was never actually exercised.
+- **Sequencing topology inheritance** is mandatory when an approved sequencing plan governs the current TODO: the plan owns checkpoint granularity and branch-state gate topology, delivery gates must use the recorded checkpoint gate, and any TODO that closes only on a non-authoritative isolated-worktree prefix remains provisional until replay plus the deferred authoritative broad gate succeed.
 - **Decision Adherence** must be validated before delivery.
 - **Pipeline/Copilot P1/P2 Preflight** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected and deduplicated. Use `review-finding-classification`. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step recorded in the governing TODO's `Promotion Finding Routing Ledger`. Every finding must be classified as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root, and the governing TODO must record the exact follow-up path/reference before the delivery claim is clean.
@@ -73,7 +80,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - One explicit `Active Work State` whenever the governing TODO still lives under `foundation_documentation/todos/active/`.
 - Supporting feature brief only when needed.
 - Canonical module/doc updates when stable truth changed.
-- When package-level orchestration or pre-promotion review loops are in scope, the authoritative package-stage ledger lives in the orchestration execution plan, not in a parallel version-status file. Per-finding dispositions remain authoritative in the governing TODOs.
+- When package-level sequencing, orchestration, or pre-promotion review loops are in scope, the authoritative package-stage ledger lives in the active package execution plan (`sequencing_execution_plan` or `orchestration_execution_plan`), not in a parallel version-status file. Per-finding dispositions remain authoritative in the governing TODOs.
 
 ## Validation
 - The TODO records which phase workflow governed each major transition.

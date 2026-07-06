@@ -66,6 +66,8 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
    - Ensure positive path tests verify expected data presence when the scenario requires data presence.
    - Ensure negative path tests verify explicit failure/error states.
    - Ensure async UI coverage includes race-sensitive scenarios when the product flow can be retriggered or reordered in flight.
+   - Ensure release-gating tests do not choose proof subjects via ambient `rows[0]`, `hostCandidates[0]`, or similar registry/list fallbacks when a deterministic owned target is practical.
+   - Ensure exact-subject assertions do not depend on first-page/first-candidate assumptions from live list endpoints.
 9. **Confirm CI environment parity**
    - Laravel tests use local MongoDB with replica set (not Atlas).
    - Local/manual Laravel test execution uses `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh` (or equivalent local-safe env override) and never raw `php artisan test` with inherited environment.
@@ -97,6 +99,8 @@ Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regre
 - Assertions that ignore required UI state transitions (loading -> success/error).
 - Assertions coupled only to implementation details while missing user-visible or contract-visible outcomes.
 - Test harnesses that bypass navigation/entry flow while claiming end-to-end coverage.
+- Release-gating tests that choose proof subjects from ambient live data (`rows[0]`, `hostCandidates[0]`, ambient `candidates.slice(0, minimum)`) instead of deterministic self-owned fixtures or managed proof targets.
+- Exact-subject proofs that rely on first-page or first-candidate list assumptions instead of canonical pagination/ownership strategy.
 - Architectural changes claimed safe from unit/widget-only evidence.
 - Flaky-required gates accepted as pass in CI/promotion flow.
 - Runner fallback output dirs that hide ownership/permission defects.

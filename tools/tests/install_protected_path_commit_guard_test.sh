@@ -67,14 +67,8 @@ git -C "$PARENT_REPO/child" fetch -q origin
 git -C "$PARENT_REPO/child" checkout -q "$SUBMODULE_SHA_TWO"
 printf 'normal\n' >"$PARENT_REPO/README.md"
 git -C "$PARENT_REPO" add README.md
-if git -C "$PARENT_REPO" commit -m "normal file while gitlink drifts" >"$OUTPUT" 2>&1; then
-  cat "$OUTPUT"
-  printf 'expected gitlink drift commit to be blocked\n' >&2
-  exit 1
-fi
-grep -q "Pipeline-Only Gitlink Commit Guard" "$OUTPUT"
-grep -q "Worktree gitlink paths:" "$OUTPUT"
-grep -q "child" "$OUTPUT"
+git -C "$PARENT_REPO" commit -q -m "normal file while gitlink drifts"
+test "$(git -C "$PARENT_REPO" rev-parse --verify HEAD:README.md)" = "$(git -C "$PARENT_REPO" hash-object "$PARENT_REPO/README.md")"
 
 git -C "$PARENT_REPO" reset -q HEAD README.md
 git -C "$PARENT_REPO/child" checkout -q "$SUBMODULE_SHA_ONE"
@@ -85,7 +79,8 @@ if git -C "$PARENT_REPO" checkout feature/test >"$OUTPUT" 2>&1; then
   printf 'expected foundation main-only checkout to be blocked\n' >&2
   exit 1
 fi
-grep -q "Foundation Documentation Main-Only Guard" "$OUTPUT"
+grep -q "TEACH runtime response" "$OUTPUT"
+grep -q "outside the only approved writable branch 'main'" "$OUTPUT"
 test "$(git -C "$PARENT_REPO" branch --show-current)" = "main"
 
 printf 'install_protected_path_commit_guard_test: OK\n'

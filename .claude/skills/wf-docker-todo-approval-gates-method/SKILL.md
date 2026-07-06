@@ -10,6 +10,7 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 ## Responsibilities
 - Freeze or refresh `Decision Baseline (Frozen)`.
 - Freeze and push the review baseline before the first planning-side review or guard run.
+- If the review packet is being prepared before that freeze is satisfied or waived, keep those rows explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) instead of marking them `passed`.
 - Run module coherence, plan review, audit escalation, and required critique/triple-review lanes.
 - Run optional bounded pre-`APROVADO` RED evidence capture when the TODO explicitly authorizes it for bugfix/regression ambiguity reduction.
 - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. TODO approval/plan review and any gate-satisfying review subagents use the highest review-focused tier; keep review subagents stateless by default.
@@ -28,6 +29,7 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 - No tactical implementation before `APROVADO`.
 - Pre-`APROVADO` RED evidence capture is not implementation and may touch only the TODO-listed test/support surfaces.
 - No planning-side review or guard run before the review baseline freeze is satisfied or explicitly waived.
+- Do not mark planning-side review/guard rows `passed` while the review baseline freeze is still pending; use explicit provisional wording until the real freeze-backed run exists.
 - No tactical implementation before the assumption-vs-code coherence guard is clean or explicitly waived.
 - No tactical implementation before the post-review scope-drift guard is clean or explicitly waived.
 - Do not rely on chat memory alone after approval; the TODO must carry the approval evidence.

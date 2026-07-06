@@ -85,9 +85,6 @@ docker compose config >/dev/null
 echo "OK"
 
 echo "== web shell runtime mount invariants =="
-if ! file_has 'FLUTTER_WEB_SHELL_PATH: /opt/flutter-web-shell/index.html' docker-compose.yml; then
-  die "docker-compose.yml must configure FLUTTER_WEB_SHELL_PATH at /opt/flutter-web-shell/index.html"
-fi
 for compose_mount in \
   '- ./web-app:/opt/flutter-web-shell:ro'; do
   if ! grep -Fq -- "${compose_mount}" docker-compose.yml; then

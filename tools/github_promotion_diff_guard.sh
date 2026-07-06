@@ -99,6 +99,7 @@ esac
 
 declare -a CHANGED_PATHS=()
 declare -a GITLINK_PATHS=()
+declare -a GITLINK_CHECKOUT_DRIFT_CONTEXTS=()
 declare -a CI_SURFACE_PATHS=()
 declare -a CI_TEST_HARNESS_SURFACE_PATHS=()
 declare -a CI_CONTROL_PLANE_SURFACE_PATHS=()
@@ -136,6 +137,30 @@ classify_path() {
       append_unique PROMOTION_SURFACE_PATHS "$path"
       ;;
   esac
+}
+
+record_gitlink_checkout_drift_context() {
+  local path="$1"
+  local root_recorded_sha=""
+  local child_head_sha=""
+  local child_git_dir=""
+
+  root_recorded_sha="$(
+    git -C "$REPO_ROOT" rev-parse "HEAD:$path" 2>/dev/null | tr -d '[:space:]' || true
+  )"
+
+  child_git_dir="$(
+    git -C "$REPO_ROOT/$path" rev-parse --git-dir 2>/dev/null | tr -d '[:space:]' || true
+  )"
+  if [ -n "$child_git_dir" ]; then
+    child_head_sha="$(
+      git -C "$REPO_ROOT/$path" rev-parse HEAD 2>/dev/null | tr -d '[:space:]' || true
+    )"
+  fi
+
+  append_unique \
+    GITLINK_CHECKOUT_DRIFT_CONTEXTS \
+    "$path => root_recorded_sha=${root_recorded_sha:-missing}; child_head_sha=${child_head_sha:-missing}"
 }
 
 workflow_line_is_test_harness_safe() {
@@ -256,6 +281,12 @@ if [ "${#GITLINK_PATHS[@]}" -gt 0 ]; then
   local_gitlinks="${local_gitlinks%, }"
   teach_add_context "gitlink_paths: $local_gitlinks"
 
+  if [ "$MODE" = "worktree" ]; then
+    for path in "${GITLINK_PATHS[@]}"; do
+      record_gitlink_checkout_drift_context "$path"
+    done
+  fi
+
   gitlinks_allowed=false
   if [ "$PROMOTION_CONTRACT_GITLINK_POLICY" = "pipeline-only" ] && [ "$MODE" = "range" ]; then
     normalized_source_ref="${SOURCE_REF#refs/heads/}"
@@ -271,15 +302,30 @@ if [ "${#GITLINK_PATHS[@]}" -gt 0 ]; then
   fi
 
   if [ "$gitlinks_allowed" = false ]; then
-    teach_add_violation "Gitlink changes are present in the inspected diff."
-    case "$PROMOTION_CONTRACT_GITLINK_POLICY" in
-      forbidden)
-        teach_add_resolution "Remove the gitlink changes from this diff. Gitlinks are forbidden in the current promotion contract."
-        ;;
-      pipeline-only)
-        teach_add_resolution "Remove the manual gitlink changes from this diff. Gitlinks are pipeline-owned only and are allowed only for 'bot/next-version -> dev' or subsequent 'dev -> stage' lane propagation."
-        ;;
-    esac
+    if [ "$MODE" = "worktree" ]; then
+      if [ "${#GITLINK_CHECKOUT_DRIFT_CONTEXTS[@]}" -gt 0 ]; then
+        drift_context="$(printf '%s | ' "${GITLINK_CHECKOUT_DRIFT_CONTEXTS[@]}")"
+        drift_context="${drift_context% | }"
+        teach_add_context "gitlink_checkout_drift_paths: $drift_context"
+      fi
+
+      teach_add_context "gitlink_checkout_drift_advisory: present"
+      teach_add_resolution "Proceed only with normal-file changes. Do not treat the root gitlink as source authority for app repos; Flutter/Laravel authority stays on their canonical source branches."
+      teach_add_resolution "Do not create a manual root gitlink commit to 'realign' this state. Gitlink movement is pipeline-owned only and is allowed only for 'bot/next-version -> dev' or subsequent 'dev -> stage' lane propagation."
+      teach_add_resolution "If this action actually requires gitlink movement, stop and resume through the promotion lane instead of using checkout drift as proof."
+    else
+      teach_add_violation "Gitlink changes are present in the inspected diff. Gitlinks are promotion-lane artifacts, not source authority for app repos."
+      case "$PROMOTION_CONTRACT_GITLINK_POLICY" in
+        forbidden)
+          teach_add_resolution "Remove the gitlink changes from this diff. Gitlinks are forbidden in the current promotion contract."
+          teach_add_resolution "Do not use the root gitlink to reconstruct or validate Flutter/Laravel source state. Source authority remains on the canonical app branches."
+          ;;
+        pipeline-only)
+          teach_add_resolution "Remove the manual gitlink changes from this diff. Gitlink movement is pipeline-owned only and is allowed only for 'bot/next-version -> dev' or subsequent 'dev -> stage' lane propagation."
+          teach_add_resolution "Do not use the root gitlink to reconstruct or validate Flutter/Laravel source state. Source authority remains on the canonical app branches."
+          ;;
+      esac
+    fi
   fi
 fi
 

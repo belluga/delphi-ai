@@ -38,6 +38,7 @@ MATERIAL_HEADINGS = (
     "## Decisions (Resolved Before Freeze)",
     "## Module Decision Baseline Snapshot",
     "## Decision Baseline (Frozen Before Implementation)",
+    "## Architecture Change Governance",
     "## Questions To Close",
     "## Assumptions Preview",
     "## Execution Plan",

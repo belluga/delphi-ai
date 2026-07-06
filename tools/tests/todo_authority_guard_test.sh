@@ -74,6 +74,115 @@ TODO
 
 assert_go "$TMP_DIR/approved-no-delivery-claim.md"
 
+cat > "$TMP_DIR/architecture-supersede-missing-governance.md" <<'TODO'
+# TODO: Architecture Supersede Missing Governance
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** standardize the shared API envelope.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit architectural cutover. | Silent regressions. | Guard the architecture package. |
+
+## Module Decision Baseline Snapshot
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `accounts#D-03` | Legacy mixed envelopes remain tolerated. | `Supersede (Intentional)` | `foundation_documentation/modules/accounts.md#decision-d03` |
+TODO
+
+assert_no_go "$TMP_DIR/architecture-supersede-missing-governance.md"
+grep -q "ARCHITECTURE-GOVERNANCE-MISSING" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/architecture-required-incomplete.md" <<'TODO'
+# TODO: Architecture Required Incomplete
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** standardize the shared API envelope.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit architectural cutover. | Silent regressions. | Guard the architecture package. |
+
+## Module Decision Baseline Snapshot
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `accounts#D-03` | Legacy mixed envelopes remain tolerated. | `Supersede (Intentional)` | `foundation_documentation/modules/accounts.md#decision-d03` |
+
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** replace the mixed envelope family with one canonical contract
+- **Deviation / debt being retired:** exposing multiple envelope shapes for the same paginated discovery use case
+- **Target steady-state after closeout:** every paginated collection uses the same response envelope
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** all targeted consumers and producers use the canonical envelope
+
+### Patterns To Enforce
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| `canonical paginated envelope` | `accounts#D-07` | `account discovery surfaces` | `all consumers must decode one stable contract` |
+TODO
+
+assert_no_go "$TMP_DIR/architecture-required-incomplete.md"
+grep -q "ARCHITECTURE-ANTI-PATTERNS-MISSING" "$OUTPUT_FILE"
+grep -q "ARCHITECTURE-HARNESS-MISSING" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
+# TODO: Architecture Required Complete
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** standardize the shared API envelope.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit architectural cutover. | Silent regressions. | Guard the architecture package. |
+
+## Module Decision Baseline Snapshot
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `accounts#D-03` | Legacy mixed envelopes remain tolerated. | `Supersede (Intentional)` | `foundation_documentation/modules/accounts.md#decision-d03` |
+
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** replace the mixed envelope family with one canonical contract
+- **Deviation / debt being retired:** exposing multiple envelope shapes for the same paginated discovery use case
+- **Target steady-state after closeout:** every paginated collection uses the same response envelope
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** all targeted consumers and producers use the canonical envelope
+
+### Patterns To Enforce
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| `canonical paginated envelope` | `accounts#D-07` | `account discovery surfaces` | `all consumers must decode one stable contract` |
+
+### Prohibited Anti-Patterns
+| Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
+| --- | --- | --- | --- |
+| `raw paginator shape exposed at the API boundary` | `guard + contract review` | `reintroduces multi-envelope drift` | `none` |
+
+### Architecture Protection Harness
+| Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| `guard` | `shared TODO architecture contract` | `python3 delphi-ai/tools/todo_authority_guard.py foundation_documentation/todos/active/v0.2.5/TODO-canonical-envelope.md` | `missing architecture governance on future supersede TODOs` | `already-enforced` | `guard output` |
+| `test` | `API contract suite` | `php artisan test --filter CanonicalEnvelopeContractTest` | `legacy envelope emitted again` | `implement-in-this-todo` | `DOD + validation rows in the governing TODO` |
+TODO
+
+assert_go "$TMP_DIR/architecture-required-complete.md"
+
 cat > "$TMP_DIR/local-implemented-missing-gates.md" <<'TODO'
 # TODO: Local Implemented Missing Gates
 

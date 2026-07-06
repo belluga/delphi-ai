@@ -12,7 +12,7 @@ Freeze the meaning of `CI Equivalent` as current-branch local product proof on t
 
 ## Canonical Model
 - `CI Equivalent` is local proof, not published-lane proof.
-- It runs on the current authoritative branch under evaluation (`feature/*`, `review/*`, `reconcile/*`, version/package branch such as `v0.2.0+8-rc`, or equivalent).
+- It runs on the current authoritative branch under evaluation (`feature/*`, `review/*`, `sequence/*`, `reconcile/*`, version/package branch such as `v0.2.0+8-rc`, or equivalent).
 - It uses the project-owned local build/publish/runtime path and the same product-facing suites/jobs the pipeline uses for that scope on that branch.
 - It is scope-complete for the touched repo/job family. A targeted rerun, representative smoke path, or single happy path is diagnostic evidence unless the approved matrix explicitly says that narrower scope is complete.
 - Published `stage` or `main` probes are separate evidence. They never replace `CI Equivalent`.
@@ -25,6 +25,8 @@ Freeze the meaning of `CI Equivalent` as current-branch local product proof on t
 - In those package/version lanes, the first promotion-grade `CI Equivalent` run must pass on that authoritative `*-rc` branch before any derived `review/*` remediation branch is opened.
 - Reconcile-only wrappers are valid only on real `reconcile/*` states or an explicitly recorded same-commit reconcile alias.
 - In real orchestration, the consolidated `reconcile/*` branch is authoritative until green; after that, replay the accepted net effect onto the recorded canonical return branch before promotion or non-orchestration closeout resumes.
+- In TODO sequencing, a `sequence/*` branch may be authoritative for the per-TODO broad local gate only when that branch is the current principal-checkout authoritative branch under evaluation and owns the real local runtime/browser surface. The sequencing branch is checkpoint-only topology and is never itself a promotable source branch.
+- If `sequence/*` exists only inside an isolated linked worktree while the principal checkout is reserved for another lane, treat it as non-authoritative implementation topology only: it may run an explicitly narrower checkpoint prefix gate, but it must not run or claim the parity-complete broad local gate until the accepted net effect is replayed onto the principal authoritative branch.
 - Review/remediation branches may run `CI Equivalent` for their own validation loop, but they are evidence branches rather than promotable source authority.
 - A `review/*` pass never substitutes for the missing authoritative `*-rc` pass. It is an additional gate.
 - After replay from `review/*` back onto the authoritative `*-rc` branch, rerun `CI Equivalent` there whenever the replay was not a pure fast-forward or otherwise introduced branch-local change.
@@ -43,6 +45,8 @@ A local bundle is not valid `stage-full` parity when any of these are true:
 - it silently changes branch/topology semantics just to satisfy a reconcile-only wrapper.
 
 Narrower diagnostic bundles must use distinct names and must not be reported as the broad stage gate.
+
+If an isolated sequencing worktree uses a prefix derived from `stage-full`, that prefix must stop before `browser-stage-full`. That cutoff means the isolated state never enters `local-public-web-build`, readonly smoke, or mutation smoke, and it must not claim any of those surfaces. Any request to cross that cutoff from the isolated worktree is out of contract and must be refused until replay onto the principal authoritative branch.
 
 When a broad local gate such as `stage-full` cannot complete because the local runtime surface is unhealthy or non-responsive:
 - treat the gate as a blocking local infrastructure failure, not as a soft warning;
@@ -94,9 +98,10 @@ Browser/device evidence is invalid if it cannot prove the current build, bundle,
 4. If suite membership, wrapper ownership, lifecycle steps, or readonly/mutation rows changed, load `ci-equivalent-test-surface-admission` and complete that admission before claiming parity.
 5. Record any deliberate same-commit reconcile alias or waiver explicitly.
 6. Treat published-lane checks as additional evidence only.
-7. Before any manual/browser/device validation lane, produce or refresh the runtime freshness attestation and stop immediately if the served target cannot be proven fresh for the current authoritative build.
-8. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
-9. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
+7. When the current sequencing lane is an isolated worktree and the broad local gate is `stage-full`, record the exact pre-browser prefix that runs now, explicitly note that the skipped boundary starts at `local-public-web-build`, and record the deferred principal-authoritative broad gate that still remains mandatory after replay.
+8. Before any manual/browser/device validation lane, produce or refresh the runtime freshness attestation and stop immediately if the served target cannot be proven fresh for the current authoritative build.
+9. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
+10. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
 
 ## Done Criteria
 - The in-scope local matrix is current-branch local proof, not proxy evidence.

@@ -49,6 +49,11 @@ DELIVERY_STAGE_MARKERS = (
 APPROVAL_TOKENS = ("aprovado", "approved")
 APPROVAL_SECTION_NAMES = ("Approval", "Approval Evidence")
 RULES_SECTION = "Rules Acknowledgement / Ingestion"
+MODULE_DECISION_BASELINE_SECTION = "Module Decision Baseline Snapshot"
+ARCHITECTURE_GOVERNANCE_SECTION = "Architecture Change Governance"
+PATTERNS_TO_ENFORCE_SECTION = "Patterns To Enforce"
+PROHIBITED_ANTI_PATTERNS_SECTION = "Prohibited Anti-Patterns"
+ARCHITECTURE_PROTECTION_HARNESS_SECTION = "Architecture Protection Harness"
 CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
 PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
 RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
@@ -59,6 +64,13 @@ DELIVERY_GATE_SECTIONS = (
     (RULE_SPIRIT_HUNT_SECTION, 2),
 )
 PASSING_STATUSES = {"passed", "waived", "n/a"}
+ARCHITECTURE_GOVERNANCE_APPLICABILITY = {"required", "not_needed"}
+ARCHITECTURE_HARNESS_TIMINGS = {
+    "already-enforced",
+    "implement-in-this-todo",
+    "follow-up-approved",
+    "manual-only-with-rationale",
+}
 PROMOTION_BLOCKING_STATUSES = {"open", "pending", "planned", "blocked", "unresolved", "failing"}
 PROMOTION_SCOPE_CHANGE_TOKENS = (
     "split",
@@ -281,6 +293,208 @@ def validate_rules_ingestion(sections: dict[str, list[str]]) -> tuple[list[dict[
     return violations, context
 
 
+def architecture_supersede_trigger(sections: dict[str, list[str]]) -> bool:
+    rows = table_rows(find_section(sections, MODULE_DECISION_BASELINE_SECTION))
+    for row in rows:
+        if len(row) >= 3 and "supersede" in normalize(row[2]):
+            return True
+    return False
+
+
+def validate_architecture_governance(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    context: dict[str, Any] = {
+        "architecture_governance_section_present": False,
+        "architecture_governance_required": False,
+        "architecture_supersede_trigger": False,
+    }
+    violations: list[dict[str, str]] = []
+    supersede_trigger = architecture_supersede_trigger(sections)
+    context["architecture_supersede_trigger"] = supersede_trigger
+
+    section_lines = find_section(sections, ARCHITECTURE_GOVERNANCE_SECTION)
+    if not section_lines:
+        if supersede_trigger:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-GOVERNANCE-MISSING",
+                    "TODO intentionally supersedes module decisions but is missing `Architecture Change Governance`.",
+                    "Add the architecture governance contract covering the retired deviation, target steady-state, required patterns, prohibited anti-patterns, and protection harness.",
+                    ARCHITECTURE_GOVERNANCE_SECTION,
+                )
+            )
+        return violations, context
+
+    context["architecture_governance_section_present"] = True
+    applicability = first_field(section_lines, ("Applicability (`required|not_needed`)", "Applicability"))
+    normalized_applicability = normalize(applicability or "")
+
+    if normalized_applicability not in ARCHITECTURE_GOVERNANCE_APPLICABILITY:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-GOVERNANCE-APPLICABILITY-INVALID",
+                "Architecture Change Governance applicability is missing or invalid.",
+                "Set `Applicability` to `required` or `not_needed`.",
+                ARCHITECTURE_GOVERNANCE_SECTION,
+            )
+        )
+        return violations, context
+
+    required = normalized_applicability == "required" or supersede_trigger
+    context["architecture_governance_required"] = required
+
+    if normalized_applicability == "not_needed" and supersede_trigger:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-GOVERNANCE-CONTRADICTION",
+                "Architecture Change Governance says `not_needed` while the module baseline records an intentional supersede.",
+                "Mark the section `required` and document the architecture correction package.",
+                ARCHITECTURE_GOVERNANCE_SECTION,
+            )
+        )
+        return violations, context
+
+    if not required:
+        return violations, context
+
+    required_fields = (
+        "Why this applies",
+        "Deviation / debt being retired",
+        "Target steady-state after closeout",
+        "Temporary exceptions allowed",
+        "Cutover / removal condition",
+    )
+    for label in required_fields:
+        allow_na = label == "Temporary exceptions allowed"
+        value = extract_field(section_lines, label)
+        if value_is_missing(value, allow_na=allow_na):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-GOVERNANCE-FIELD-MISSING",
+                    f"Architecture Change Governance field `{label}` is missing or still placeholder.",
+                    f"Fill `{label}` with the concrete architecture-correction contract detail.",
+                    ARCHITECTURE_GOVERNANCE_SECTION,
+                )
+            )
+
+    pattern_rows = table_rows(find_section(sections, PATTERNS_TO_ENFORCE_SECTION))
+    if not pattern_rows:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-PATTERNS-MISSING",
+                "Required architecture-correction TODO is missing `Patterns To Enforce` rows.",
+                "Add at least one concrete pattern/decision row that must remain true after cutover.",
+                PATTERNS_TO_ENFORCE_SECTION,
+            )
+        )
+    for row in pattern_rows:
+        if len(row) < 4:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-PATTERN-ROW-INCOMPLETE",
+                    f"Patterns To Enforce row has fewer than four cells: {row_text(row)}",
+                    "Use columns: Pattern / Decision, Source / ID, Scope, Why It Must Hold After Cutover.",
+                    PATTERNS_TO_ENFORCE_SECTION,
+                )
+            )
+            continue
+        row_missing = [
+            value_is_missing(row[0]),
+            value_is_missing(row[1], allow_na=True),
+            value_is_missing(row[2]),
+            value_is_missing(row[3]),
+        ]
+        if any(row_missing):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-PATTERN-ROW-PLACEHOLDER",
+                    f"Patterns To Enforce row contains missing or placeholder cells: {row_text(row)}",
+                    "Replace placeholders with the concrete pattern, source, scope, and rationale.",
+                    PATTERNS_TO_ENFORCE_SECTION,
+                )
+            )
+
+    anti_pattern_rows = table_rows(find_section(sections, PROHIBITED_ANTI_PATTERNS_SECTION))
+    if not anti_pattern_rows:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-ANTI-PATTERNS-MISSING",
+                "Required architecture-correction TODO is missing `Prohibited Anti-Patterns` rows.",
+                "Add at least one concrete wrong-path row that becomes forbidden after cutover.",
+                PROHIBITED_ANTI_PATTERNS_SECTION,
+            )
+        )
+    for row in anti_pattern_rows:
+        if len(row) < 4:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-ANTI-PATTERN-ROW-INCOMPLETE",
+                    f"Prohibited Anti-Patterns row has fewer than four cells: {row_text(row)}",
+                    "Use columns: Anti-Pattern / Wrong Path, Detection Signal, Why It Is Forbidden After Cutover, Exception Policy.",
+                    PROHIBITED_ANTI_PATTERNS_SECTION,
+                )
+            )
+            continue
+        row_missing = [
+            value_is_missing(row[0]),
+            value_is_missing(row[1]),
+            value_is_missing(row[2]),
+            value_is_missing(row[3], allow_na=True),
+        ]
+        if any(row_missing):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-ANTI-PATTERN-ROW-PLACEHOLDER",
+                    f"Prohibited Anti-Patterns row contains missing or placeholder cells: {row_text(row)}",
+                    "Replace placeholders with the retired wrong path, detection signal, rationale, and exception policy.",
+                    PROHIBITED_ANTI_PATTERNS_SECTION,
+                )
+            )
+
+    harness_rows = table_rows(find_section(sections, ARCHITECTURE_PROTECTION_HARNESS_SECTION))
+    if not harness_rows:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-HARNESS-MISSING",
+                "Required architecture-correction TODO is missing `Architecture Protection Harness` rows.",
+                "Add the concrete lasting protection rows that will defend the corrected architecture from regression.",
+                ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+            )
+        )
+    for row in harness_rows:
+        if len(row) < 6:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-HARNESS-ROW-INCOMPLETE",
+                    f"Architecture Protection Harness row has fewer than six cells: {row_text(row)}",
+                    "Use columns: Harness Type, Surface, Command / Rule / Artifact, Regression It Must Catch, Adoption Timing, Evidence Plan / Follow-up.",
+                    ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+                )
+            )
+            continue
+        if any(value_is_missing(cell) for cell in row[:6]):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-HARNESS-ROW-PLACEHOLDER",
+                    f"Architecture Protection Harness row contains missing or placeholder cells: {row_text(row)}",
+                    "Replace placeholders with the real harness surface, command/rule, regression target, timing, and evidence/follow-up plan.",
+                    ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+                )
+            )
+            continue
+        timing = normalize(row[4])
+        if timing not in ARCHITECTURE_HARNESS_TIMINGS:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-HARNESS-TIMING-INVALID",
+                    f"Architecture Protection Harness row uses invalid adoption timing `{row[4]}`: {row_text(row)}",
+                    "Use one of: already-enforced, implement-in-this-todo, follow-up-approved, manual-only-with-rationale.",
+                    ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+                )
+            )
+
+    return violations, context
+
+
 def validate_delivery_gates(
     sections: dict[str, list[str]],
     delivery_claim: bool,
@@ -479,7 +693,7 @@ def validate_todo(
     delivery_claim = is_delivery_claim(todo_path, stage, require_delivery_gates)
     context["delivery_claim"] = delivery_claim
 
-    for validator in (validate_approval, validate_rules_ingestion, validate_promotion_routing):
+    for validator in (validate_approval, validate_rules_ingestion, validate_architecture_governance, validate_promotion_routing):
         section_violations, section_context = validator(sections)
         violations.extend(section_violations)
         context.update(section_context)

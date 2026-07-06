@@ -46,6 +46,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
    - For large or architectural changes, make the unit + widget + integration lanes explicit in the matrix for every affected critical path.
    - If behavior depends on legacy data shape, add fixture/backfill compatibility tests.
    - If the changed flow includes async UI/buttons/search/filter/pagination/retry behavior, add explicit race-condition scenarios (duplicate trigger, stale response, dispose/navigation mid-flight) or record why they are not applicable.
+   - If the test must locate one exact subject from a live list or registry, define a deterministic ownership strategy up front: self-seeded entity, managed fixture, or other canonically owned proof target. Do not rely on ambient `rows[0]`, `candidates[0]`, or registry-first fallbacks for release-gating evidence.
 6. **Define CI prerequisites**
    - Flutter: backend reachable by domain/scheme overrides.
    - Laravel: local MongoDB with replica set.
@@ -63,9 +64,12 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 9. **Implement tests with anti-bypass rules**
    - No silent mock fallback for compatibility/critical-user-journey scope.
    - No committed `skip`, `only`, or committed golden update bypass.
+   - No ambient live-data fallback for exact subject selection in release-gating tests. If a proof target matters, bootstrap or manage it deterministically.
+   - No first-page or first-candidate assumptions when the assertion depends on locating one exact registry/list subject.
    - No assertions that pass only on “no exception thrown” without business-state verification.
    - No success criteria based solely on HTTP status when payload semantics matter.
    - No retrofitted tests that only validate the post-fix implementation when a fail-first path was practical.
+   - Centralize reusable release-gating selector helpers instead of copying local dropdown/picker/actionability fallbacks across specs.
 10. **Run validation**
    - Execute required suites and CI-equivalent commands.
    - Capture evidence for each frozen decision.
