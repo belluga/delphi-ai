@@ -74,10 +74,11 @@ If the repository has submodule gitlink changes, review the affected submodule r
    - Rerun the internal sweep until you honestly judge the packet `clean` or only by-design / explicitly challenged findings remain.
    - If a reviewer re-raises a finding already recorded as resolved/challenged in the carry-forward packet, do not patch blindly. Reopen it only when the current bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
    - Do not replay accepted remediation back onto the authoritative source branch yet. First, make the active remediation branch pass the full in-scope local `CI-Equivalent Suite Matrix` for the package/TODO set under review.
-5. **Only after the internal sweep looks clean**, run the external Claude/Copilot-sim passes:
+5. **Only after the internal sweep looks clean**, run the external cross-model confirmation passes:
    - `low-effort`: common bugs, security issues, obvious CI/test problems.
    - `medium-effort`: cross-module logic, performance, contract, and coverage risks.
    - Add a `tooling` pass when workflows, test runners, or tooling changed.
+   - Use Claude when available for these passes. When Claude is unavailable, keep the bounded Copilot-style confirmation path instead of treating the missing Claude lane as an automatic blocker.
 6. Merge and deduplicate findings by locus.
 7. Run **post-review finding triage** through `review-finding-classification`.
    - Do this after reviewer output is collected.
@@ -106,7 +107,7 @@ For promotion, CI-equivalent, or readiness claims, the review order is mandatory
 
 1. no-context subagents
 2. local fixes, targeted validation, commit on the active review branch, and packet rebuild
-3. Claude/Copilot simulation as external confirmation
+3. external cross-model confirmation, with Claude preferred when available
 
 Do not report a lane blocked on Claude quota/rate limits if the internal no-context sweep has not already been run to a locally clean state.
 

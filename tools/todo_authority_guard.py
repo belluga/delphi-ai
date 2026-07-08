@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from agent_role_routing_guard import DEFAULT_CONTRACT_PATH, evaluate_routing, load_contract
 from orchestration_plan_completion_guard import (
     build_violation,
     extract_field,
@@ -49,6 +50,7 @@ DELIVERY_STAGE_MARKERS = (
 APPROVAL_TOKENS = ("aprovado", "approved")
 APPROVAL_SECTION_NAMES = ("Approval", "Approval Evidence")
 RULES_SECTION = "Rules Acknowledgement / Ingestion"
+ROUTING_SECTION = "Agent Routing Preflight"
 MODULE_DECISION_BASELINE_SECTION = "Module Decision Baseline Snapshot"
 ARCHITECTURE_GOVERNANCE_SECTION = "Architecture Change Governance"
 PATTERNS_TO_ENFORCE_SECTION = "Patterns To Enforce"
@@ -64,6 +66,17 @@ DELIVERY_GATE_SECTIONS = (
     (RULE_SPIRIT_HUNT_SECTION, 2),
 )
 PASSING_STATUSES = {"passed", "waived", "n/a"}
+ROUTING_ALLOWED_OUTCOMES = {
+    "go",
+    "delegate-required",
+    "review-required",
+    "waiver-required",
+    "blocked",
+}
+ROUTING_REQUIRED_SOURCE_TOKENS = (
+    "effort-selection-method",
+    "agent_role_routing_guard.py",
+)
 ARCHITECTURE_GOVERNANCE_APPLICABILITY = {"required", "not_needed"}
 ARCHITECTURE_HARNESS_TIMINGS = {
     "already-enforced",
@@ -287,6 +300,133 @@ def validate_rules_ingestion(sections: dict[str, list[str]]) -> tuple[list[dict[
                     f"Rule-ingestion source is not a concrete rule/workflow path: {row[0]}",
                     "Name the actual rule, workflow, or skill source that was loaded.",
                     RULES_SECTION,
+                )
+            )
+
+    return violations, context
+
+
+def routing_preflight_required(sections: dict[str, list[str]]) -> bool:
+    for row in table_rows(find_section(sections, RULES_SECTION)):
+        if not row:
+            continue
+        source = normalize(row[0])
+        if any(token in source for token in ROUTING_REQUIRED_SOURCE_TOKENS):
+            return True
+    return False
+
+
+def validate_agent_routing_preflight(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    required = routing_preflight_required(sections)
+    lines = find_section(sections, ROUTING_SECTION)
+    context: dict[str, Any] = {
+        "routing_preflight_required": required,
+        "routing_preflight_section_present": bool(lines),
+        "routing_preflight_outcome": "missing",
+    }
+    violations: list[dict[str, str]] = []
+
+    if not required and not lines:
+        return violations, context
+
+    if not lines:
+        violations.append(
+            build_violation(
+                "ROUTING-PREFLIGHT-MISSING",
+                "No `Agent Routing Preflight` section was found even though the touched rules/workflows require routing resolution.",
+                "Add the canonical routing preflight section and record the selected client, governed action, role, model, proof mode, and guard outcome before execution.",
+                ROUTING_SECTION,
+            )
+        )
+        return violations, context
+
+    client = extract_field(lines, "Client surface")
+    surface = extract_field(lines, "Current governed action")
+    role = extract_field(lines, "Selected role")
+    model = extract_field(lines, "Selected model")
+    effort = extract_field(lines, "Selected effort")
+    proof_mode = extract_field(lines, "Proof mode")
+    exception_reason = extract_field(lines, "Exception reason")
+    guard_outcome = extract_field(lines, "Guard outcome")
+    waiver_reference = extract_field(lines, "Waiver / exception reference")
+
+    required_fields = (
+        ("Client surface", client),
+        ("Current governed action", surface),
+        ("Selected role", role),
+        ("Proof mode", proof_mode),
+        ("Guard outcome", guard_outcome),
+    )
+    for label, value in required_fields:
+        if value_is_missing(value):
+            violations.append(
+                build_violation(
+                    "ROUTING-PREFLIGHT-FIELD-MISSING",
+                    f"`Agent Routing Preflight` is missing `{label}`.",
+                    f"Fill `{label}` with the concrete routing declaration before execution.",
+                    ROUTING_SECTION,
+                )
+            )
+
+    normalized_outcome = normalize(guard_outcome or "")
+    context["routing_preflight_outcome"] = normalized_outcome or "missing"
+    if normalized_outcome and normalized_outcome not in ROUTING_ALLOWED_OUTCOMES:
+        violations.append(
+            build_violation(
+                "ROUTING-PREFLIGHT-OUTCOME-INVALID",
+                f"`Agent Routing Preflight` uses invalid guard outcome `{guard_outcome}`.",
+                "Use one of: go, delegate-required, review-required, waiver-required, blocked.",
+                ROUTING_SECTION,
+            )
+        )
+
+    if violations:
+        return violations, context
+
+    try:
+        contract = load_contract(DEFAULT_CONTRACT_PATH)
+    except Exception as exc:  # pragma: no cover - defensive
+        violations.append(
+            build_violation(
+                "ROUTING-CONTRACT-LOAD-FAILED",
+                f"Unable to load the canonical routing contract: {exc}",
+                "Repair config/agent_role_routing.json before trusting routing preflight evidence.",
+                ROUTING_SECTION,
+            )
+        )
+        return violations, context
+
+    routing_result = evaluate_routing(
+        contract=contract,
+        client=strip_markup(client or ""),
+        surface=strip_markup(surface or ""),
+        role=strip_markup(role or ""),
+        model=strip_markup(model or "") or None,
+        effort=strip_markup(effort or "") or None,
+        proof_mode=strip_markup(proof_mode or ""),
+        exception_reason=strip_markup(exception_reason or "") or None,
+        waiver_reference=strip_markup(waiver_reference or "") or None,
+    )
+    context["routing_preflight_outcome"] = routing_result["outcome"]
+
+    if normalized_outcome != routing_result["outcome"]:
+        violations.append(
+            build_violation(
+                "ROUTING-PREFLIGHT-OUTCOME-MISMATCH",
+                f"`Agent Routing Preflight` records outcome `{guard_outcome}`, but the canonical guard evaluates to `{routing_result['outcome']}`.",
+                "Refresh the preflight section so the recorded outcome matches the canonical routing guard result.",
+                ROUTING_SECTION,
+            )
+        )
+
+    if routing_result["outcome"] != "go":
+        for violation in routing_result["violations"]:
+            violations.append(
+                build_violation(
+                    f"ROUTING-{violation['code']}",
+                    f"Agent routing preflight did not resolve to go: {violation['message']}",
+                    violation["resolution"],
+                    ROUTING_SECTION,
                 )
             )
 
@@ -693,7 +833,13 @@ def validate_todo(
     delivery_claim = is_delivery_claim(todo_path, stage, require_delivery_gates)
     context["delivery_claim"] = delivery_claim
 
-    for validator in (validate_approval, validate_rules_ingestion, validate_architecture_governance, validate_promotion_routing):
+    for validator in (
+        validate_approval,
+        validate_rules_ingestion,
+        validate_agent_routing_preflight,
+        validate_architecture_governance,
+        validate_promotion_routing,
+    ):
         section_violations, section_context = validator(sections)
         violations.extend(section_violations)
         context.update(section_context)

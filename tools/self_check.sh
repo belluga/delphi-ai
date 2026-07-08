@@ -32,6 +32,7 @@ PY
 python3 "$REPO_ROOT/tools/validate_stack_capabilities.py"
 bash "$REPO_ROOT/tools/sync_cline_skill_mirrors.sh"
 bash "$REPO_ROOT/tools/sync_claude_skill_mirrors.sh"
+python3 "$REPO_ROOT/tools/sync_claude_agent_routing.py"
 bash "$REPO_ROOT/tools/sync_clinerules_mirrors.sh"
 python3 "$REPO_ROOT/tools/validate_phase_surfaces.py"
 if [ -d "$HOME/.codex/skills/public" ]; then

@@ -91,6 +91,8 @@ EOF
 python3 "$SCRIPT" --governing-todo "$PACKAGE_TODO" > "$OUTPUT"
 grep -q "Overall outcome: go" "$OUTPUT"
 grep -q "recommended_opening_track: docker-bot-next-version" "$OUTPUT"
+grep -q "recommended_primary_surface: docker" "$OUTPUT"
+grep -q "recommended_docker_diff_shape: gitlink-only" "$OUTPUT"
 grep -q "root | branch=v9.9.9-rc .* state=gitlink-only" "$OUTPUT"
 grep -q "flutter-app | branch=v9.9.9-rc .* state=already-absorbed-by-dev" "$OUTPUT"
 

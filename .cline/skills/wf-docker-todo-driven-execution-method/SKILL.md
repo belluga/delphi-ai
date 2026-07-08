@@ -41,7 +41,7 @@ Load the phase skill that matches the current TODO state:
 - Any review-packet preparation recorded before that freeze is satisfied must stay explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) and must not be labeled as a passed planning-side review/guard result.
 - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` must return `Overall outcome: go` before `APROVADO` whenever the TODO used the review loop.
 - Complexity policy (`small|medium|big`) and `Plan Review Gate` before approval when required.
-- If the user/TODO/external reference asks for a `devil's advocate` loop, map it canonically to `wf-docker-independent-critique-method`; add `audit-protocol-triple-review` when the request also implies a persistent objection ledger, evidence-based reopening, or repeated no-context rounds until blocking objections are closed.
+- If the user/TODO/external reference asks for a `devil's advocate` loop, map it canonically to `wf-docker-independent-critique-method`; add `audit-protocol-triple-review` when the request also implies a persistent objection ledger, evidence-based reopening, or repeated no-context rounds until blocking objections are closed through the dedicated delivery-side multi-lane audit protocol.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` before implementation after approval/rule ingestion.
 - `Completion Evidence Matrix` before delivery claims.
 - `Local CI-Equivalent Suite Matrix` executed locally for in-scope CI jobs.

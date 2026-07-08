@@ -159,7 +159,7 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
     if high_risk:
         final_review_reason_codes.append("FINAL-EXPANDED-RISK-SIGNALS")
 
-    triple_required = explicit_three_lane or (
+    specialized_audit_required = explicit_three_lane or (
         release_sensitive
         and any(
             (
@@ -172,22 +172,26 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
             )
         )
     )
-    triple_recommended = (
-        not triple_required
+    specialized_audit_recommended = (
+        not specialized_audit_required
         and (
             (data["complexity"] == "big" and any((public_contract, critical_journey, runtime_sensitive, auth_sensitive)))
             or (release_sensitive and cross_module)
         )
     )
-    if triple_required:
+    if specialized_audit_required:
         triple_decision = "required"
-        triple_reason_codes = ["TRIPLE-EXPLICIT" if explicit_three_lane else "TRIPLE-HIGH-CRITICALITY"]
-    elif triple_recommended:
+        triple_reason_codes = [
+            "DEDICATED-AUDIT-EXPLICIT"
+            if explicit_three_lane
+            else "DEDICATED-AUDIT-HIGH-CRITICALITY"
+        ]
+    elif specialized_audit_recommended:
         triple_decision = "recommended"
-        triple_reason_codes = ["TRIPLE-EXPANDED-CHALLENGE-RECOMMENDED"]
+        triple_reason_codes = ["DEDICATED-AUDIT-EXPANDED-CHALLENGE-RECOMMENDED"]
     else:
         triple_decision = "not_needed"
-        triple_reason_codes = ["TRIPLE-NOT-TRIGGERED"]
+        triple_reason_codes = ["DEDICATED-AUDIT-NOT-TRIGGERED"]
 
     if test_quality_reason_codes:
         test_quality_decision = "required"
@@ -410,7 +414,7 @@ def render_text(result: dict[str, object]) -> str:
             lines.append(f"  - {violation['resolution']}")
     else:
         lines.append("  - Record the derived decisions into the TODO sections for critique, security, performance/concurrency, verification debt, test-quality audit, and final review.")
-        lines.append("  - Run the critique gate before `APROVADO`; do not treat the triple review as a replacement for critique.")
+        lines.append("  - Run the critique gate before `APROVADO`; do not treat the dedicated multi-lane audit as a replacement for critique.")
         lines.append("  - Do not downgrade any derived `required` decision. Manual escalation may be stricter, never looser, than this deterministic floor.")
         lines.append("  - Rerun this guard whenever trigger fields change after implementation, especially for tests, auth/tenant scope, runtime/infra scope, or release-critical scope.")
 

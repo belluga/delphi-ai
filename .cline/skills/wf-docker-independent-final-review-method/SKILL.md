@@ -28,7 +28,7 @@ Run the canonical delivery-side final review once `wf-docker-audit-escalation-me
 6. If a required final review still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy closure.
 7. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
    - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
-8. Treat `audit-protocol-triple-review` as additive only; it does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
+8. Treat `audit-protocol-triple-review` as additive only; it remains the compatibility id for the dedicated delivery-side multi-lane audit and does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
 
 ## Outputs
 - Final-review gate decision with rationale.

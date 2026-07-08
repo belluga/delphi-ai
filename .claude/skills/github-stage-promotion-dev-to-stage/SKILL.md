@@ -9,6 +9,7 @@ Use only when the user authorized `through-stage` and the required source/dev wo
 
 ## Responsibilities
 - Open or reuse PR `dev -> stage`.
+- Require the promotion action guard to return `Overall outcome: go`; for mixed Docker lanes this includes deterministic verification that every required Docker `-> dev` track recorded in the contract is already absorbed into `origin/dev`.
 - Include `- Expected SHA: <40-char-sha>` in the PR body when the repo enforces it.
 - Once `dev` is healthy on the intended SHA and no newly frozen finding has been classified as `release-blocker`, convert directly into `dev -> stage` PR action or remote wait state instead of reopening local source-lane investigation by precaution.
 - Wait for all checks, review comments, and deploy/smoke jobs.

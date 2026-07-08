@@ -5,9 +5,13 @@ INPUT=$(cat)
 WORKSPACE=$(echo "$INPUT" | jq -r '.workspacePath')
 
 # Check for project context file
-CONTEXT=""
+declare -a messages=()
 if [[ -f "$WORKSPACE/foundation_documentation/project_mandate.md" ]]; then
-  CONTEXT="Project mandate found. Remember to load context from foundation_documentation/"
+  messages+=("Project mandate found. Remember to load context from foundation_documentation/.")
 fi
+
+messages+=("Before implementation, implementation-side validation, monitoring, or formal review, resolve Agent Routing Preflight via workflows/docker/effort-selection-method.md and record it in the governing TODO.")
+
+CONTEXT="$(printf '%s ' "${messages[@]}" | sed 's/[[:space:]]*$//')"
 
 echo "{\"cancel\":false,\"contextModification\":\"$CONTEXT\"}"

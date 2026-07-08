@@ -1,0 +1,236 @@
+{
+  "contract_id": "delphi.agent-role-routing.v1",
+  "version": 1,
+  "clients": {
+    "codex": {
+      "display_name": "Codex",
+      "allowed_proof_modes": [
+        "declared",
+        "waiver"
+      ],
+      "requires_effort": true,
+      "preferred_models": {
+        "routine_executor": [
+          "gpt-5.4-mini"
+        ],
+        "strongest_review": [
+          "gpt-5.5"
+        ],
+        "monitoring": [
+          "gpt-5.4-mini"
+        ]
+      },
+      "notes": [
+        "Codex routing is currently enforced through declared preflight evidence plus explicit waiver handling.",
+        "Routine code and implementation-side execution should default to gpt-5.4-mini.",
+        "Formal review and approval-material judgment should default to gpt-5.5."
+      ]
+    },
+    "claude-code": {
+      "display_name": "Claude Code",
+      "allowed_proof_modes": [
+        "artifact",
+        "declared",
+        "waiver"
+      ],
+      "requires_effort": true,
+      "preferred_models": {
+        "routine_executor": [
+          "sonnet"
+        ],
+        "strongest_review": [
+          "opus"
+        ],
+        "monitoring": [
+          "haiku",
+          "sonnet"
+        ]
+      },
+      "notes": [
+        "Claude Code can use generated .claude/agents artifacts as first-class routing proof.",
+        "Routine implementation should default to Sonnet-class subagents.",
+        "Formal review should default to Opus-class review agents."
+      ]
+    },
+    "cline-ide": {
+      "display_name": "Cline IDE",
+      "allowed_proof_modes": [
+        "declared",
+        "waiver"
+      ],
+      "requires_effort": false,
+      "preferred_models": {
+        "routine_executor": [
+          "sonnet",
+          "sonnet-or-best-available-routine-coding-model"
+        ],
+        "strongest_review": [
+          "opus",
+          "opus-or-strongest-available-review-model"
+        ],
+        "monitoring": [
+          "haiku",
+          "haiku-or-best-available-cheap-monitoring-model"
+        ]
+      },
+      "notes": [
+        "Cline support is declarative/hook-level only in this first slice.",
+        "When the provider/model cannot be proven exactly, keep the declared routing visible and require waiver handling for real deviations."
+      ]
+    }
+  },
+  "effort_aliases": {
+    "medium": [
+      "medium"
+    ],
+    "low_or_medium": [
+      "low",
+      "medium",
+      "low-or-medium"
+    ],
+    "highest_review_tier": [
+      "xhigh",
+      "max",
+      "extra-high",
+      "extra high",
+      "highest-review-tier",
+      "extraright",
+      "extraright-or-closest-equivalent"
+    ]
+  },
+  "surfaces": {
+    "implementation": {
+      "required_lane": "executor",
+      "allowed_roles": [
+        "routine-executor"
+      ],
+      "preferred_model_family": "routine_executor",
+      "required_effort_key": "medium",
+      "failure_outcome": "delegate-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [
+        "bootstrap-guard-implementation",
+        "reconciliation",
+        "merge-conflict",
+        "minimal-integration-glue"
+      ],
+      "state_policy": "sticky-per-chat-or-todo-compact-state",
+      "goal_policy": "required-when-supported",
+      "notes": [
+        "Code writing and direct file-edit execution belong to the routine executor lane.",
+        "Primary-chat implementation is allowed only through an explicit approved exception."
+      ]
+    },
+    "implementation-validation": {
+      "required_lane": "executor",
+      "allowed_roles": [
+        "routine-executor"
+      ],
+      "preferred_model_family": "routine_executor",
+      "required_effort_key": "medium",
+      "failure_outcome": "delegate-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [
+        "bootstrap-guard-implementation",
+        "reconciliation",
+        "merge-conflict",
+        "minimal-integration-glue"
+      ],
+      "state_policy": "sticky-per-chat-or-todo-compact-state",
+      "goal_policy": "required-when-supported",
+      "notes": [
+        "Implementation-side test/build/command execution stays in the same lane as the owned implementation.",
+        "Do not pull implementation validation back into the primary chat by default."
+      ]
+    },
+    "monitoring": {
+      "required_lane": "monitor",
+      "allowed_roles": [
+        "deterministic-only",
+        "process-monitor",
+        "routine-executor"
+      ],
+      "preferred_model_family": "monitoring",
+      "required_effort_key": "low_or_medium",
+      "failure_outcome": "delegate-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "ephemeral-bounded-status-pass",
+      "goal_policy": "not-needed",
+      "notes": [
+        "Monitoring is deterministic first.",
+        "If an LLM is needed, keep the pass bounded and ephemeral instead of letting the primary chat watch verbose logs."
+      ]
+    },
+    "formal-review": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "stateless-no-context-review",
+      "goal_policy": "stateless-default",
+      "notes": [
+        "Formal critique, audit, and no-context review belong to the strongest review lane.",
+        "Review surfaces should stay stateless by default."
+      ]
+    },
+    "todo-approval": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "primary-chat-state-or-stateless-review",
+      "goal_policy": "not-needed",
+      "notes": [
+        "Approval and plan-review surfaces are review-material judgment lanes.",
+        "Use the strongest review model/tier that the client exposes."
+      ]
+    },
+    "delivery-review": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "primary-chat-state-or-stateless-review",
+      "goal_policy": "not-needed",
+      "notes": [
+        "Delivery/final-review/promotion-readiness adjudication is a strongest-review surface."
+      ]
+    },
+    "self-improvement": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "primary-chat-state-or-stateless-review",
+      "goal_policy": "not-needed",
+      "notes": [
+        "Delphi self-improvement and instruction changes are broad-impact review surfaces."
+      ]
+    }
+  }
+}

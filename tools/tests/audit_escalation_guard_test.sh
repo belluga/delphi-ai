@@ -33,7 +33,7 @@ cat > "$TODO_FILE" <<'TODO'
 | `critical_user_journey` | `yes` | Critical journey. |
 | `release_or_promotion_critical` | `yes` | Release-sensitive. |
 | `high_severity_plan_review_issue` | `yes` | Matches the high-severity issue. |
-| `explicit_three_lane_request` | `no` | No explicit three-lane request. |
+| `explicit_three_lane_request` | `no` | No explicit dedicated multi-lane audit request. |
 TODO
 
 python3 "$TOOL" --todo "$TODO_FILE" --json-output "$JSON_OUT" >/dev/null

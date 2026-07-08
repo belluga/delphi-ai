@@ -15,7 +15,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - Complexity classification.
 - Optional bounded pre-approval RED evidence capture plan when the TODO is a bugfix/regression and symptom reproduction is still materially ambiguous.
 - Audit trigger matrix when required.
-- Bounded review packages for critique/triple-review when triggered.
+- Bounded review packages for critique/dedicated multi-lane audit when triggered.
 - Assumption-vs-code coherence evidence for the still-live assumptions.
 
 ## Procedure
@@ -33,10 +33,11 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - `small`: abbreviated unless risk requires full review;
    - `medium|big`: full issue cards, failure modes, and residual unknowns.
    - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. TODO approval/plan review and any gate-satisfying review subagents use the highest review-focused tier; review subagents remain stateless by default unless the tool/client requires resumable reviewer state for a bounded package.
+   - When those controls apply, predeclare the planned implementation, monitoring, and review lanes so post-approval execution can record `Agent Routing Preflight` and run the deterministic routing guard fail-closed.
 6. Populate the TODO `Audit Trigger Matrix` and run:
    - `python3 delphi-ai/tools/audit_escalation_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before trusting audit decisions.
-7. Run the derived critique/triple-review lanes when required or recommended by the audit floor.
+7. Run the derived critique/dedicated multi-lane audit lanes when required or recommended by the audit floor.
 8. If the TODO records `Pre-APROVADO RED Evidence Capture = required|recommended`, run that bounded RED capture now:
    - allow edits only in the test/support surfaces explicitly listed in the TODO;
    - prohibit production/runtime/doc changes;
@@ -55,7 +56,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 
 ## Outputs
 - Plan Review Gate evidence.
-- Audit-floor evidence and required critique/triple-review evidence.
+- Audit-floor evidence and required critique/dedicated multi-lane audit evidence.
 - Optional bounded RED evidence capture results when used.
 - Frozen decision baseline.
 - Explicit approval record.
@@ -70,4 +71,4 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - Approval evidence must be recorded in the TODO; do not rely on chat memory alone after the gate has passed.
 - If approval-material scope, decision, validation, or architecture facts change, refresh the TODO, revalidate the new scope with the user, and request renewed `APROVADO`.
 - Do not treat post-review scope-drift `no-go` as terminal failure; it means the TODO must reconverge through renewed user scope validation before approval resumes.
-- Do not substitute ad hoc reviewer sequencing for the dedicated triple-review workflow when the derived floor requires or recommends it.
+- Do not substitute ad hoc reviewer sequencing for the dedicated multi-lane audit workflow when the derived floor requires or recommends it.

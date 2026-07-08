@@ -339,7 +339,7 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Why ambiguity remains:** <competing architectural paths, unresolved tradeoff, or `n/a`>
 - **Opinion count:** `<0|1|2>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent(s); if no, record constraint and proceed with bounded self-opinion)`
+- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent(s) when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
 - **Required lenses:** `<correctness|performance|elegance|structural-soundness|operational-fit>`
 
 | Reviewer | Recommendation | Performance view | Elegance view | Structural soundness view | Resolution | Evidence |
@@ -366,7 +366,7 @@ Use exact trigger names and exact enum values only.
 | `critical_user_journey` | `<yes|no>` | `yes` when the TODO covers a launch-critical or business-critical user flow. |
 | `release_or_promotion_critical` | `<yes|no>` | `yes` when release/promotion confidence materially matters to this TODO. |
 | `high_severity_plan_review_issue` | `<yes|no>` | `yes` when any current Plan Review issue card is `high`. |
-| `explicit_three_lane_request` | `<yes|no>` | `yes` when the user or TODO explicitly requires the dedicated three-lane external audit. |
+| `explicit_three_lane_request` | `<yes|no>` | Compatibility field name; use `yes` when the user or TODO explicitly requires the dedicated delivery-side multi-lane external audit protocol. |
 
 ## Independent No-Context Critique Gate (Deterministic Floor From Audit Escalation)
 - **Critique decision:** `<required|recommended|not_needed>` (minimum from `audit_escalation_guard.py`)
@@ -375,7 +375,7 @@ Use exact trigger names and exact enum values only.
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
 - **Critique isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
@@ -418,6 +418,23 @@ Complete this after the execution plan is approved and the touched surfaces are 
 | Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
 | --- | --- | --- | --- | --- |
 | `<rule/workflow path>` | <why it applies> | <non-negotiable constraints> | <forbidden shortcuts/regressions> | <what changes in execution/validation> |
+
+## Agent Routing Preflight (Required Before Execution When Effort/Model Routing Applies)
+Use the canonical routing contract from `config/agent_role_routing.json` plus `python3 delphi-ai/tools/agent_role_routing_guard.py ...` whenever the active client exposes model selection, named agents/subagents, or declared routing policy that must stay visible in the TODO.
+
+- **Client surface:** `<codex|claude-code|cline-ide>`
+- **Current governed action:** `<implementation|implementation-validation|monitoring|formal-review|todo-approval|delivery-review|self-improvement>`
+- **Selected role:** `<primary-chat|routine-executor|formal-reviewer|process-monitor|deterministic-only>`
+- **Selected model:** `<exact model or canonical family alias; use n/a only for deterministic-only monitoring>`
+- **Selected effort:** `<medium|xhigh|max|ExtraRight-or-closest-equivalent|n/a when the client exposes no named effort control>`
+- **Proof mode:** `<artifact|declared|waiver>`
+- **Exception reason:** `<bootstrap-guard-implementation|reconciliation|merge-conflict|minimal-integration-glue|n/a>`
+- **Guard outcome:** `<go|delegate-required|review-required|waiver-required|blocked>`
+- **Waiver / exception reference:** `<approval / waiver / TODO decision reference or n/a>`
+
+- Record the section only after the selected lane is actually known for the next governed action.
+- If the guard does not resolve to `go`, stop execution and repair the routing or record approved waiver evidence first.
+- `waiver` is an explicit visible exception path, not silent fallback for a missing model/role declaration.
 
 ## Decision Adherence Validation (Mandatory Before Delivery)
 | Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
@@ -549,8 +566,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded implementation diff|bounded test diff|validation evidence|expected behaviors/DoD|residual risks>`
 - **Canonical method:** `wf-docker-independent-test-quality-audit-method`
 - **Audit isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
-- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required external no-context audit for required gate|self-review is supporting-only when no subagent is available>`
+- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
+- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required external no-context audit for required gate|active-client reviewer slot must be recycled/opened when needed; only out-of-band provider absence is tolerated and does not waive the pass>`
 - **Audit focus:** `<product/test delta alignment|fail-first alignment|bypass detection|assertion efficacy|assertion efficiency|coverage sufficiency|brittle test-only shortcuts>`
 - **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
@@ -570,7 +587,7 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence from wf-docker-independent-test-quality-audit-method|residual risks|existing waivers|verification debt>`
 - **Review isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`

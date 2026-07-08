@@ -61,7 +61,7 @@ Skills are invocable via `/skill-name` in Claude Code. Key skills include:
 | `flutter-architecture-adherence` | Enforces Flutter architecture rules |
 | `test-creation-standard` | Test creation with baseline and gate controls |
 | `test-quality-audit` | Test integrity audit with bypass detection |
-| `audit-protocol-triple-review` | Triple-review audit protocol |
+| `audit-protocol-triple-review` | Dedicated multi-lane audit protocol (dual baseline + optional cutover-integrity) |
 | `bug-fix-evidence-loop` | Evidence-based bug fix workflow |
 | `github-main-promotion-orchestrator` | Main branch promotion workflow |
 | `github-stage-promotion-orchestrator` | Stage branch promotion workflow |

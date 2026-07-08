@@ -42,5 +42,11 @@
       "Write(CLAUDE.md)"
     ]
   },
-  "model": "claude-sonnet-4-6"
+  "model": "claude-sonnet-4-6",
+  "availableModels": [
+    "sonnet",
+    "opus",
+    "haiku"
+  ],
+  "enforceAvailableModels": true
 }

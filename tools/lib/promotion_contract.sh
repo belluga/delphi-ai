@@ -21,6 +21,22 @@ with open(path, "r", encoding="utf-8") as fh:
 def b(value):
     return "true" if bool(value) else "false"
 
+required_dev_tracks = data.get("required_dev_tracks", [])
+if not isinstance(required_dev_tracks, list):
+    raise SystemExit("required_dev_tracks must be a list")
+
+validated_required_dev_tracks = []
+for item in required_dev_tracks:
+    if not isinstance(item, dict):
+        raise SystemExit("required_dev_tracks entries must be objects")
+    kind = str(item.get("kind", ""))
+    ref = str(item.get("ref", ""))
+    if kind not in {"docker-bot-next-version", "docker-source"}:
+        raise SystemExit(f"unsupported required_dev_track kind: {kind}")
+    if not ref:
+        raise SystemExit(f"required_dev_track ref missing for kind: {kind}")
+    validated_required_dev_tracks.append({"kind": kind, "ref": ref})
+
 print("\t".join([
     str(data.get("schema_version", "")),
     str(data.get("scope", "")),
@@ -31,6 +47,7 @@ print("\t".join([
     b(data.get("ci_behavior_change_authorized", False)),
     b(data.get("ci_test_harness_change_authorized", False)),
     b(data.get("promotion_behavior_change_authorized", False)),
+    json.dumps(validated_required_dev_tracks, separators=(",", ":")),
 ]))
 PY
   )" || return 1
@@ -45,6 +62,7 @@ PY
     PROMOTION_CONTRACT_CI_BEHAVIOR_CHANGE_AUTHORIZED \
     PROMOTION_CONTRACT_CI_TEST_HARNESS_CHANGE_AUTHORIZED \
     PROMOTION_CONTRACT_PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED \
+    PROMOTION_CONTRACT_REQUIRED_DEV_TRACKS_JSON \
     <<< "$contract_values"
 
   case "$PROMOTION_CONTRACT_SCHEMA_VERSION" in

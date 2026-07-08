@@ -36,6 +36,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 - Required validation plan for worker-local and consolidated lanes.
 - Worker GOAL contract for each delegated executor when the active client supports persistent goals, including the bounded objective, owned workstream/traceability rows, minimum local validation before `complete`, and exact `blocked` condition.
 - Worker model/state contract for each delegated executor when the active client supports model selection or sticky/custom agents. Routine executor workers default to `gpt-5.4-mini`, `medium`, and sticky-per-chat/TODO compact state; high-risk executor escalation must be explicit in the orchestration plan.
+- Worker routing contract / guard evidence for each governed execution or review lane when the active client exposes deterministic routing controls.
 - Execution ownership ledger that assigns every implementation workstream to a worker/subagent and limits orchestrator code edits to reconciliation/merge-conflict scope.
 - Acceptance Traceability Matrix that maps every governing TODO DoD item, validation step, and literal UI/API/runtime marker to a non-orchestrator owner and planned implementation/test/runtime evidence.
 - Spec Deviation Ledger for any intentional substitution of a governing TODO artifact, UI control, navigation path, endpoint, schema term, or validation lane.
@@ -71,6 +72,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - The plan must include a `CI-Equivalent Local Suite Matrix` naming every repo-owned CI suite/job that will run for the touched repositories, the exact local command that mirrors it, and who must execute it on the authoritative branch state for that wave before delivery or promotion claims.
    - Load `workflows/docker/effort-selection-method.md` when assigning model routing, effort tiers, sticky executor state, or GOAL policy for the orchestrator and workers.
    - When the active client supports model selection or sticky/custom agents, the plan must record the executor model/state policy for each worker lane. Routine code workers default to `gpt-5.4-mini` at `medium` with sticky state scoped only to the current chat/TODO, compacted to owned files, implementation decisions, commands/tests, blockers, and last accepted patch state.
+   - The plan must also record one routing-contract row per governed workstream/review lane and each dispatch should satisfy `python3 delphi-ai/tools/agent_role_routing_guard.py ...` before code execution begins.
    - When the active client supports persistent goals, the plan must also record one worker GOAL contract per executor workstream so no-context resume is bounded by the same ownership and validation contract the orchestrator approved.
    - If a derived remediation branch will be used for pre-promotion review history, the plan must make explicit that the full in-scope `CI-Equivalent Local Suite Matrix` passes on the remediation branch before replay/consolidation back onto the authoritative source branch.
    - Partition the work into bounded slices with clear ownership and minimal overlap.

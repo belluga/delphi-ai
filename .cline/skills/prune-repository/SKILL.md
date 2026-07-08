@@ -52,7 +52,7 @@ This skill is the repository-level prune router. Branch/rebaseline mechanics del
    - If in doubt, report the residue instead of deleting it.
 6. **Route artifact handoff**
    - If large `artifacts/**`, `tmp/**`, review packets, or checkpoint folders are found, create a handoff note for `prune-artifacts`.
-   - Include repository state, active branches/TODOs, and any references that might protect those artifacts from deletion.
+   - Include repository state, active branches/TODOs, any references that might protect those artifacts from deletion, and whether the artifact looks like disposable temp noise versus a candidate that may need canonical consolidation before deletion.
 7. **Report repository readiness**
    - Summarize branch blockers, patch-equivalent false positives, safe local cleanup applied, remote cleanup candidates, worktree prune result, local residue handled, and artifact handoff items.
 

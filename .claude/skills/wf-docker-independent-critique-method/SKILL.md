@@ -32,7 +32,7 @@ Run the canonical planning-side critique lane once `wf-docker-audit-escalation-m
    - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
 9. After critique findings converge, run `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>` and record the result under `Gate: Assumption Code Coherence`.
 10. Before approval resumes, run `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` and return to the review loop if the guard reports material scope-governing drift against the pushed baseline.
-11. Treat `audit-protocol-triple-review` as additive only; it does not silently replace this planning critique gate.
+11. Treat `audit-protocol-triple-review` as additive only; it remains the compatibility id for the dedicated delivery-side multi-lane audit and does not silently replace this planning critique gate.
 
 ## Outputs
 - Critique gate decision with rationale.

@@ -19,7 +19,7 @@ The derived floor must be recorded into the correct TODO lifecycle sections:
 - critique before `APROVADO`
 - delivery-side audits after implementation and primary evidence
 - security/performance/debt in their canonical delivery gates
-- triple review as additive only unless a future canonical rule explicitly says otherwise
+- the dedicated delivery-side multi-lane audit (compatibility decision key: `triple_review`) as additive only unless a future canonical rule explicitly says otherwise
 
 See:
 - `workflows/docker/audit-escalation-method.md`

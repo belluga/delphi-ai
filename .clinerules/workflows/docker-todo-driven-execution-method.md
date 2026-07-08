@@ -25,7 +25,7 @@ Use this workflow as the TODO-driven **orchestrator**. It owns the state machine
 2. **Refine contract** with `todo-contract-refinement-method`.
 3. **Freeze baseline and approval gates** with `todo-approval-gates-method`.
 4. **Wait for explicit `APROVADO`** before implementation.
-5. **Execute within approved boundary** with `todo-execution-boundary-method`.
+5. **Resolve routing preflight and execute within approved boundary** with `todo-execution-boundary-method`.
 6. **Complete delivery gates** with `todo-delivery-gates-method`.
 7. **Close or promote** with `todo-closeout-promotion-method`.
 
@@ -50,12 +50,14 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
   - `python3 delphi-ai/tools/review_scope_drift_guard.py <todo-path>`
   - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, and refresh the pushed baseline as required before approval resumes.
 - **Approval and rule-ingestion evidence** must be recorded in the TODO after `APROVADO` and before implementation:
+  - `Agent Routing Preflight` must also be recorded whenever the active client exposes governed effort/model routing or declared routing policy that this TODO is using.
+  - `python3 delphi-ai/tools/agent_role_routing_guard.py ...`
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`
 - **Complexity policy (`small|medium|big`)** must be recorded during contract refinement.
 - **Plan Review Gate** must run according to the recorded complexity and risk.
 - **Devil's-Advocate alias mapping** is canonical at the TODO-driven umbrella:
   - when the user, TODO, or an external reference asks for a `devil's advocate` critique/review/loop, treat the canonical planning-side equivalent as `wf-docker-independent-critique-method`;
-  - when that request also expects a persistent objection/finding ledger, evidence-based reopening, or repeated no-context rounds until no blocking objection remains, layer `audit-protocol-triple-review` on top;
+  - when that request also expects a persistent objection/finding ledger, evidence-based reopening, or repeated no-context rounds until no blocking objection remains, layer `audit-protocol-triple-review` on top as the dedicated delivery-side multi-lane audit protocol;
   - `audit-protocol-triple-review` is additive and does not silently replace the required planning-side independent critique gate.
 - **Completion Evidence Matrix** must contain criterion-specific evidence for every `Definition of Done` and `Validation Steps` item before delivery claims.
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
@@ -90,5 +92,6 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - Any TODO that remains in `active/` records `Active Work State = implementation|review|blocked` plus an exact exit condition.
 - No phase-specific requirements are left only in chat.
 - Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
+- Governed execution is blocked unless `Agent Routing Preflight` resolves to `go` before `todo_authority_guard.py` is trusted.
 - Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.
 - Any waived or `n/a` gate has explicit rationale and approval evidence where required.

@@ -102,6 +102,13 @@ Derive workstreams from the Acceptance Traceability Matrix. A workstream may gro
 | --- | --- | --- | --- | --- |
 | `<WS-01>` | `<worker/subagent name>` | `<none|merge-conflict-only|reconciliation-only>` | `<checkpoint commit/evidence expected>` | `<merge/cherry-pick/test evidence expected>` |
 
+## Worker Routing Contracts
+Record one row per governed execution, monitoring, or review lane when the active client exposes model selection, named agents/subagents, or explicit routing policy that must stay visible. The row should match the same contract used by `python3 delphi-ai/tools/agent_role_routing_guard.py ...`.
+
+| Workstream / Surface | Worker / Subagent | Governed Action | Required Role | Selected Model | Selected Effort | Proof Mode | Guard Outcome | Waiver / Exception Reference |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `<WS-01>` | `<worker/subagent name>` | `<implementation|implementation-validation|monitoring|formal-review|todo-approval|delivery-review>` | `<routine-executor|formal-reviewer|process-monitor|deterministic-only>` | `<model>` | `<effort or n/a>` | `<artifact|declared|waiver>` | `<go>` | `<n/a or reference>` |
+
 ## Worker Goal Contracts
 Record one row per executor workstream when the active client exposes persistent goals. Derive the decision from `delphi-ai/workflows/docker/effort-selection-method.md`. Review-only/no-context subagents stay stateless by default and should not receive these goal contracts unless the client/tool requires resumable reviewer state for a bounded package.
 

@@ -61,9 +61,10 @@ It must also challenge whether the planned path is sound for performance, elegan
 3. Build the bounded critique package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 4. Run one fresh auxiliary critique with no inherited thread context.
-   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
-   - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
-   - In other environments, use the closest equivalent that guarantees no prior thread contamination.
+   - This critique pass must use an external no-context reviewer/subagent with `fork_context=false`.
+   - External no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review.
+   - Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this reviewer pass.
+   - In other environments, use the closest external equivalent that guarantees no prior thread contamination.
 5. Prompt the reviewer to return findings first, ordered by severity, and to avoid implementation.
    - Require explicit positions on:
      - performance acceptability;
@@ -93,6 +94,7 @@ It must also challenge whether the planned path is sound for performance, elegan
 12. If the critique, the assumption-vs-code guard, or the review-scope-drift guard reveals contract changes, module supersedes, or approval-material/significant plan changes, send the TODO back to the review loop, refresh it, revalidate the evolved scope with the user, and request renewed approval only after the updated direction reconverges.
 13. Treat `audit-protocol-triple-review` as additive only.
    - It may coexist with this critique lane.
+   - It remains the compatibility id for the dedicated delivery-side multi-lane audit.
    - It does not silently replace this planning challenge gate.
 
 ## Outputs

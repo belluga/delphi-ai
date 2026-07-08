@@ -158,8 +158,8 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- If a subagent is available in the execution environment, the critique must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
-- When the user or TODO explicitly requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), use `audit-protocol-triple-review` as the canonical orchestration surface instead of ad hoc reviewer sequencing.
+- Every critique pass must be delegated to an external no-context reviewer/subagent. External reviewer availability inside the active client is operationally mandatory: if no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review. Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this critique pass.
+- When the user or TODO explicitly requires the dedicated delivery-side multi-lane audit loop (`Performance`, `Test Quality`, plus conditional `cutover_integrity_audit`), use `audit-protocol-triple-review` as the canonical orchestration surface instead of ad hoc reviewer sequencing.
 - Record the audit session path plus the decisive round summary (`clean`, `needs_resolution`, or `needs_adjudication`) in the TODO evidence whenever that protocol is used.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
 - Ask for findings first, ordered by severity, with no implementation.
@@ -313,7 +313,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions below.
 - Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.
 - Use one fresh auxiliary reviewer with no inherited thread context.
-- If a subagent is available in the execution environment, the test audit must be delegated to that subagent (no-context). If no subagent is available, document the constraint and any bounded no-context self-review may only count as supporting evidence, not as satisfaction of a `required` audit gate.
+- Every test-audit pass must be delegated to an external no-context reviewer/subagent. External reviewer availability inside the active client is operationally mandatory: if no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review. Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this audit pass.
 - Require explicit answers on:
   - whether changed test logic reflects a real product/contract change
   - whether any changed test logic appears to be a pass-the-test workaround or other brittle test-only shortcut
@@ -340,8 +340,8 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- If a subagent is available in the execution environment, the final review must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
-- When the delivery requires the dedicated three-lane external audit loop (`Elegance`, `Performance`, `Test Quality`), run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
+- Every final-review pass must be delegated to an external no-context reviewer/subagent. External reviewer availability inside the active client is operationally mandatory: if no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review. Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this final-review pass.
+- When the delivery requires the dedicated delivery-side multi-lane audit loop (`Performance`, `Test Quality`, plus conditional `cutover_integrity_audit`), run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
 - Record the audit session path and the clean/latest round summary in the TODO before claiming the gate is satisfied.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
 - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.

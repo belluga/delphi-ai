@@ -12,7 +12,9 @@ Use after `github-stage-promotion-orchestrator` is explicitly triggered and befo
 - Confirm target repo(s), authoritative source branch/ref, and destination lane.
 - When the lane is governed by a version/package TODO, confirm that governing TODO path up front and record the matching repo-authority key (`root|flutter-app|laravel-app|web-app|foundation_documentation`) that preflight will validate.
 - Run `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence.
-- Classify one scenario from tool evidence plus explicit user authorization: `docker-normal`, `docker-bot-next-version`, `docker-mixed`, `flutter-only`, `laravel-only`, or `flutter-laravel`.
+- Record the primary promotable surface first: `docker`, `flutter`, `laravel`, or `flutter+laravel`.
+- For Docker, record the Docker diff shape as the secondary routing fact: `gitlink-only`, `source-only`, or `source+gitlinks`.
+- Keep the existing scenario id as a compatibility alias from tool evidence plus explicit user authorization: `docker-normal`, `docker-bot-next-version`, `docker-mixed`, `flutter-only`, `laravel-only`, or `flutter-laravel`.
 - Treat `web-app` only as derived artifact evidence; never classify or promote it.
 - Decide whether the request is blocked by missing source ref, unclear repo ownership, or ambiguous lane scope.
 

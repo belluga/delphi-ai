@@ -56,6 +56,25 @@ TODO
 assert_no_go "$TMP_DIR/missing-rules.md"
 grep -q "RULE-INGESTION-MISSING" "$OUTPUT_FILE"
 
+cat > "$TMP_DIR/missing-routing-preflight.md" <<'TODO'
+# TODO: Missing Routing Preflight
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/effort-selection-method.md` | Governed routing is in scope. | executor/reviewer split | silent fallback | require explicit routing |
+TODO
+
+assert_no_go "$TMP_DIR/missing-routing-preflight.md"
+grep -q "ROUTING-PREFLIGHT-MISSING" "$OUTPUT_FILE"
+
 cat > "$TMP_DIR/approved-no-delivery-claim.md" <<'TODO'
 # TODO: Approved No Delivery Claim
 
@@ -73,6 +92,35 @@ cat > "$TMP_DIR/approved-no-delivery-claim.md" <<'TODO'
 TODO
 
 assert_go "$TMP_DIR/approved-no-delivery-claim.md"
+
+cat > "$TMP_DIR/approved-with-routing-preflight.md" <<'TODO'
+# TODO: Approved With Routing Preflight
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/effort-selection-method.md` | Governed routing is in scope. | executor/reviewer split | silent fallback | require explicit routing |
+
+## Agent Routing Preflight
+- **Client surface:** `codex`
+- **Current governed action:** `implementation`
+- **Selected role:** `routine-executor`
+- **Selected model:** `gpt-5.4-mini`
+- **Selected effort:** `medium`
+- **Proof mode:** `declared`
+- **Exception reason:** `n/a`
+- **Guard outcome:** `go`
+- **Waiver / exception reference:** `n/a`
+TODO
+
+assert_go "$TMP_DIR/approved-with-routing-preflight.md"
 
 cat > "$TMP_DIR/architecture-supersede-missing-governance.md" <<'TODO'
 # TODO: Architecture Supersede Missing Governance

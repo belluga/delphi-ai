@@ -25,8 +25,9 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 - If a branch is not merged by ancestry but its non-merge commit set is patch-equivalent to content already in `origin/dev`, classify it as a `patch-equivalent false positive`, not as a real blocker.
 - Safe automatic cleanup is limited to local branches that:
   - are outside the promotion lane
-  - have no remote/upstream branch
+  - have no matching remote branch with the same name on `origin`
   - are already present in `origin/dev` by ancestry or validated patch-equivalence
+- A local branch that merely tracks `origin/dev` or `origin/stage` is not protected from safe cleanup by that tracking alone when no same-name remote branch exists.
 - If any non-lane branch still contains work not present in `origin/dev` after ancestry + patch-equivalence validation, do not continue with destructive rebaseline/reset behavior until the user decides how to treat it.
 
 ## Preferred Deterministic Helper
@@ -79,10 +80,10 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
    - `patch-equivalent false positives`
      - local or remote branches outside the lane that are not merged by ancestry but whose content is already present in `origin/dev`
    - `safe local cleanup`
-     - local branches outside the lane, without upstream remote, already present in `origin/dev` by ancestry or validated patch-equivalence
+     - local branches outside the lane, without a same-name remote branch on `origin`, already present in `origin/dev` by ancestry or validated patch-equivalence
    - `remote cleanup candidates`
      - remote branches outside the lane, already present in `origin/dev` by ancestry or validated patch-equivalence
-     - local branches with upstream remote that are already present in `origin/dev` should also point to the matching remote cleanup candidate
+     - local branches whose same-name remote branch exists and is already present in `origin/dev` should also point to that matching remote cleanup candidate
    - `local anomalies`
      - local `bot/next-version`
      - any unexpected local branch that looks like stale promotion-lane residue

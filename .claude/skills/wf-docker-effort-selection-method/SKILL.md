@@ -17,6 +17,7 @@ Use when the active client exposes named effort controls, model selection, custo
 - Treat material strategic ambiguity as the threshold for escalating strategic framing or exploratory review beyond the routine default.
 - Require explicit GOAL contracts for executor subagents when the client supports persistent goals.
 - Keep review subagents stateless by default unless resumable reviewer state is required by the client/tool.
+- Record `Agent Routing Preflight` and require `python3 delphi-ai/tools/agent_role_routing_guard.py ...` to resolve to `go` before governed execution/review begins.
 
 ## Advisory Helper
 - `python3 delphi-ai/tools/effort_selection_advisor.py --surface <surface> [--material-strategic-ambiguity] [--goals-supported]`

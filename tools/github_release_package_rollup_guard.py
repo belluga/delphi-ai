@@ -156,11 +156,11 @@ def classify_root_diff_shape(repo_root: Path, base_ref: str, source_ref: str) ->
         normal_paths.append(path)
 
     if gitlink_paths and normal_paths:
-        return "mixed"
+        return "source+gitlinks"
     if gitlink_paths:
         return "gitlink-only"
     if normal_paths:
-        return "normal-only"
+        return "source-only"
     return "no-diff"
 
 
@@ -231,11 +231,33 @@ def recommend_opening_track(repo_states: dict[str, dict[str, str]]) -> str:
         return "laravel-only"
     if root_state == "gitlink-only":
         return "docker-bot-next-version"
-    if root_state == "mixed":
+    if root_state == "source+gitlinks":
         return "docker-mixed"
-    if root_state == "normal-only":
+    if root_state == "source-only":
         return "docker-normal"
     return "no-promotable-opening-track"
+
+
+def opening_primary_surface(opening_track: str) -> str:
+    if opening_track.startswith("docker-"):
+        return "docker"
+    if opening_track == "flutter-only":
+        return "flutter"
+    if opening_track == "laravel-only":
+        return "laravel"
+    if opening_track == "flutter-laravel":
+        return "flutter+laravel"
+    return "unknown"
+
+
+def opening_docker_diff_shape(opening_track: str) -> str:
+    if opening_track == "docker-bot-next-version":
+        return "gitlink-only"
+    if opening_track == "docker-mixed":
+        return "source+gitlinks"
+    if opening_track == "docker-normal":
+        return "source-only"
+    return "n/a"
 
 
 def build_context_lines(
@@ -260,6 +282,8 @@ def build_context_lines(
         f"live_child_owner_fingerprint: {child_owner_fingerprint(live_paths)}",
         f"declared_package_repos: {', '.join(declared_repos) if declared_repos else 'none'}",
         f"recommended_opening_track: {opening_track}",
+        f"recommended_primary_surface: {opening_primary_surface(opening_track)}",
+        f"recommended_docker_diff_shape: {opening_docker_diff_shape(opening_track)}",
         "listed_child_owners:",
         *bulletize(listed_paths, "  "),
         "live_child_owners:",

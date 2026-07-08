@@ -75,9 +75,10 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 2. Build the bounded final-review package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
 3. Run one fresh auxiliary final review with no inherited thread context.
-   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
-   - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
-   - In other environments, use the closest equivalent that guarantees no prior thread contamination.
+   - This final-review pass must use an external no-context reviewer/subagent with `fork_context=false`.
+   - External no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review.
+   - Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this reviewer pass.
+   - In other environments, use the closest external equivalent that guarantees no prior thread contamination.
 4. Prompt the reviewer to return findings first, ordered by severity, focusing on:
    - bugs/regressions;
    - adherence breaks;
@@ -110,6 +111,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - a true approval-material scope/design change, refresh the TODO and request renewed `APROVADO` before continuing.
 10. Treat `audit-protocol-triple-review` as additive only.
    - It may coexist with this final-review lane.
+   - It remains the compatibility id for the dedicated delivery-side multi-lane audit.
    - It does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
 
 ## Outputs

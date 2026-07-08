@@ -14,6 +14,7 @@ Centralize how Delphi chooses effort tiers, model routing, executor state, and G
 - A session/operator needs to decide whether a surface should remain at the routine default or escalate to the highest review-focused tier.
 - A subagent is about to be dispatched and its effort/GOAL policy is not already obvious from the active workflow.
 - Code implementation, monitoring, or formal review is being routed between the chat/orchestrator and subagents.
+- A governed action is about to begin and the selected lane must be recorded fail-closed before execution.
 
 ## Inputs
 - The active profile and technical scope.
@@ -31,6 +32,7 @@ Centralize how Delphi chooses effort tiers, model routing, executor state, and G
 - Whether the active client supports persistent GOAL state.
 - Whether the active client supports a per-chat/TODO sticky executor state.
 - Whether the current judgment includes **material strategic ambiguity**.
+- Whether the selected lane will be proved by client artifact, declaration, or explicit waiver.
 
 ## Model Routing Defaults
 - If model selection is available, use `gpt-5.4-mini` as the default routine code executor model. Do not default routine code execution to older `gpt-4*-mini` models when `gpt-5.4-mini` is available.
@@ -39,6 +41,7 @@ Centralize how Delphi chooses effort tiers, model routing, executor state, and G
 - The chat/orchestrator plans, packages handoffs, reconciles evidence, and adjudicates gates. When executor subagents are available, it does not directly create implementation code for TODO slices except for workflow-authorized reconciliation, merge-conflict resolution, or minimal integration glue.
 - For high-risk implementation whose `HOW` still requires deep reasoning after planning (for example auth/payment/security-critical behavior, schema/contract migration, concurrency/race-sensitive behavior, or cross-module runtime wiring), keep the executor handoff but explicitly consider `gpt-5.4` or `gpt-5.5` instead of the routine mini default.
 - Monitoring is deterministic first. If an LLM is needed for process status, use an ephemeral low/medium mini pass over bounded output; do not create a standing watcher or let the main chat consume verbose logs continuously.
+- Before governed implementation, implementation-side validation, monitoring, approval, delivery review, or formal review begins, resolve the selected lane through `config/agent_role_routing.json` and require `python3 delphi-ai/tools/agent_role_routing_guard.py ...` to return `Overall outcome: go`.
 
 ## Sticky Executor State Policy
 - Sticky means per chat/TODO only, never global across unrelated work.
@@ -93,7 +96,10 @@ If none of those are true, prefer the routine default instead of escalation.
    - session note for standalone strategic reasoning;
    - TODO review/delivery gate notes when approval or closure depends on it;
    - orchestration execution plan when subagents are dispatched.
-9. If the effort/model decision is still disputed, use the advisory helper:
+9. For governed execution/review surfaces, run the deterministic routing guard before the action begins:
+   - `python3 delphi-ai/tools/agent_role_routing_guard.py --client <client> --surface <surface> --role <role> --model <model> --effort <effort-or-n/a> --proof-mode <artifact|declared|waiver> [--exception-reason <reason>] [--waiver-reference <ref>]`
+   - if the outcome is `delegate-required`, `review-required`, `waiver-required`, or `blocked`, stop and repair the routing instead of proceeding.
+10. If the effort/model decision is still disputed, use the advisory helper:
    - `python3 delphi-ai/tools/effort_selection_advisor.py --surface <surface> [--material-strategic-ambiguity] [--goals-supported]`
    - Treat its output as advisory only. It does not replace operator judgment.
 
@@ -102,6 +108,7 @@ If none of those are true, prefer the routine default instead of escalation.
 - Recommended model when selectable.
 - Recommended GOAL policy.
 - Recommended state policy.
+- Recommended proof mode and guard-ready routing declaration.
 - Short rationale tied to the current surface.
 - Explicit note when the choice depended on material strategic ambiguity.
 
@@ -115,3 +122,4 @@ If none of those are true, prefer the routine default instead of escalation.
 - Monitoring is deterministic first or ephemeral mini summarization, not continuous main-chat log watching.
 - Review subagents remain stateless by default unless resumable reviewer state is explicitly required by the client/tool.
 - The highest review-focused tier is reserved for approval-material or review-material judgment surfaces rather than routine execution.
+- Governed execution/review surfaces do not proceed unless `agent_role_routing_guard.py` resolves to `go` and the routing evidence is recorded in the governing TODO or orchestration plan.

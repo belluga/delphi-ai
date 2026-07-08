@@ -85,9 +85,10 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
 2. Build the bounded test-audit package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind test_quality_audit ...`.
 3. Run one fresh auxiliary audit with no inherited thread context.
-   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
-   - If no subagent is available, document the constraint and optionally run a bounded no-context self-review from the package only as supporting evidence; this does not satisfy a `required` independent audit gate by itself.
-   - In other environments, use the closest equivalent that guarantees no prior thread contamination.
+   - This audit pass must use an external no-context reviewer/subagent with `fork_context=false`.
+   - External no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review.
+   - Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this reviewer pass.
+   - In other environments, use the closest external equivalent that guarantees no prior thread contamination.
 4. Prompt the reviewer to return findings first, ordered by severity, and to stay focused on test quality rather than reopen the full architecture.
    - Require explicit positions on:
      - product/test delta alignment;

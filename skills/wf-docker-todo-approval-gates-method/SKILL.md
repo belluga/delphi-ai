@@ -1,6 +1,6 @@
 ---
 name: wf-docker-todo-approval-gates-method
-description: "Workflow phase: run plan review, audit-floor decisions, critique/triple-review gates, and obtain explicit APROVADO."
+description: "Workflow phase: run plan review, audit-floor decisions, critique/dedicated-multi-lane-audit gates, and obtain explicit APROVADO."
 ---
 
 # Method: TODO Approval Gates
@@ -11,7 +11,7 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 - Freeze or refresh `Decision Baseline (Frozen)`.
 - Freeze and push the review baseline before the first planning-side review or guard run.
 - If the review packet is being prepared before that freeze is satisfied or waived, keep those rows explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) instead of marking them `passed`.
-- Run module coherence, plan review, audit escalation, and required critique/triple-review lanes.
+- Run module coherence, plan review, audit escalation, and required critique/dedicated multi-lane audit lanes.
 - Run optional bounded pre-`APROVADO` RED evidence capture when the TODO explicitly authorizes it for bugfix/regression ambiguity reduction.
 - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. TODO approval/plan review and any gate-satisfying review subagents use the highest review-focused tier; keep review subagents stateless by default.
 - Run the assumption-vs-code coherence guard after critique convergence and before approval.

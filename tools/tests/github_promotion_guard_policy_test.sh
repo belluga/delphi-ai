@@ -84,6 +84,94 @@ fi
 grep -q "sequencing branch" "$OUTPUT"
 grep -q "Validate the accepted sequence state with the user" "$OUTPUT"
 
+STAGE_ADMISSION_REMOTE="$TMP_DIR/stage-admission-origin.git"
+STAGE_ADMISSION_REPO="$TMP_DIR/stage-admission-repo"
+git init --bare -q "$STAGE_ADMISSION_REMOTE"
+mkdir -p "$STAGE_ADMISSION_REPO"
+git -C "$STAGE_ADMISSION_REPO" init -q
+git -C "$STAGE_ADMISSION_REPO" config user.email test@example.test
+git -C "$STAGE_ADMISSION_REPO" config user.name "Test User"
+git -C "$STAGE_ADMISSION_REPO" remote add origin "$STAGE_ADMISSION_REMOTE"
+printf 'base\n' >"$STAGE_ADMISSION_REPO/README.md"
+git -C "$STAGE_ADMISSION_REPO" add README.md
+git -C "$STAGE_ADMISSION_REPO" commit -q -m initial
+git -C "$STAGE_ADMISSION_REPO" branch -M dev
+git -C "$STAGE_ADMISSION_REPO" push -q origin dev
+git -C "$STAGE_ADMISSION_REPO" checkout -q -b bot/next-version
+git -C "$STAGE_ADMISSION_REPO" update-index --add --cacheinfo 160000 3333333333333333333333333333333333333333 flutter-app
+git -C "$STAGE_ADMISSION_REPO" commit -q -m "Update flutter gitlink"
+BOT_COMMIT="$(git -C "$STAGE_ADMISSION_REPO" rev-parse HEAD)"
+git -C "$STAGE_ADMISSION_REPO" checkout -q dev
+git -C "$STAGE_ADMISSION_REPO" checkout -q -b feature/docker-source
+printf 'pipeline tweak\n' >"$STAGE_ADMISSION_REPO/docker-compose.yml"
+git -C "$STAGE_ADMISSION_REPO" add docker-compose.yml
+git -C "$STAGE_ADMISSION_REPO" commit -q -m "Docker source change"
+SOURCE_COMMIT="$(git -C "$STAGE_ADMISSION_REPO" rev-parse HEAD)"
+git -C "$STAGE_ADMISSION_REPO" checkout -q dev
+
+STAGE_CONTRACT="$TMP_DIR/stage-admission-contract.json"
+bash "$ROOT_DIR/tools/github_promotion_contract_init.sh" \
+  --output "$STAGE_CONTRACT" \
+  --scope through-stage \
+  --gitlink-policy pipeline-only \
+  --required-dev-track docker-bot-next-version=bot/next-version \
+  --required-dev-track docker-source=feature/docker-source \
+  >/dev/null
+
+if (
+  cd "$STAGE_ADMISSION_REPO"
+  bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+    --contract "$STAGE_CONTRACT" \
+    --action pr-create \
+    --repo-kind docker \
+    --repo-slug test/docker \
+    --head dev \
+    --base stage
+) >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected stage admission to block while required dev tracks are pending\n' >&2
+  exit 1
+fi
+grep -q "docker-bot-next-version=bot/next-version" "$OUTPUT"
+grep -q "First complete the lane-owned 'bot/next-version -> dev' movement" "$OUTPUT"
+
+git -C "$STAGE_ADMISSION_REPO" checkout -q dev
+git -C "$STAGE_ADMISSION_REPO" cherry-pick "$BOT_COMMIT" >/dev/null
+git -C "$STAGE_ADMISSION_REPO" push -q origin dev
+
+if (
+  cd "$STAGE_ADMISSION_REPO"
+  bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+    --contract "$STAGE_CONTRACT" \
+    --action pr-create \
+    --repo-kind docker \
+    --repo-slug test/docker \
+    --head dev \
+    --base stage
+) >"$OUTPUT" 2>&1; then
+  cat "$OUTPUT"
+  printf 'expected stage admission to stay blocked until docker source is absorbed into dev\n' >&2
+  exit 1
+fi
+grep -q "docker-source=feature/docker-source" "$OUTPUT"
+grep -q "Merge the authoritative Docker source branch 'feature/docker-source' into 'dev' first" "$OUTPUT"
+
+git -C "$STAGE_ADMISSION_REPO" checkout -q dev
+git -C "$STAGE_ADMISSION_REPO" cherry-pick "$SOURCE_COMMIT" >/dev/null
+git -C "$STAGE_ADMISSION_REPO" push -q origin dev
+
+(
+  cd "$STAGE_ADMISSION_REPO"
+  bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
+    --contract "$STAGE_CONTRACT" \
+    --action pr-create \
+    --repo-kind docker \
+    --repo-slug test/docker \
+    --head dev \
+    --base stage
+) >"$OUTPUT"
+grep -q "Overall outcome: go" "$OUTPUT"
+
 bash "$ROOT_DIR/tools/github_promotion_action_guard.sh" \
   --contract "$CONTRACT" \
   --action pr-create \
