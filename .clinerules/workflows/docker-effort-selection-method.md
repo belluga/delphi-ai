@@ -72,10 +72,10 @@ If none of those are true, prefer the routine default instead of escalation.
 | Delphi self-improvement / instruction change | contract-selected strongest review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Instruction mistakes have broad method impact. |
 | Strategic framing with material strategic ambiguity | contract-selected strongest review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Escalate only when first-pass planning did not resolve approval-material ambiguity. |
 | Strategic framing without material strategic ambiguity | active session/default model | `medium` | `not_needed` | primary chat state | Routine recommendation work stays at default. |
-| TODO approval / plan review | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes orchestrator-side approval reasoning. |
-| Delivery / final review / promotion-readiness adjudication | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes P1/P2 interpretation, waiver/debt acceptance, and close-claim judgment. |
-| Formal review subagent (`critique`, `final_review`, `test_quality_audit`, pre-promotion review) | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `stateless by default` | no-context stateless review | Review agents are judgment-first surfaces; keep them stateless unless resumable state is required by the client/tool. |
-| Exploratory second-opinion reviewer | `gpt-5.4-mini` or active session/default model; escalate only if material | `medium` | `stateless by default` | no-context stateless review | Escalate to the highest review-focused tier only when it becomes gate-satisfying or the ambiguity test is material. |
+| TODO approval / plan review | contract-selected governance review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes orchestrator-side approval reasoning. |
+| Delivery / final review / promotion-readiness adjudication | contract-selected review kind | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes P1/P2 interpretation, waiver/debt acceptance, and close-claim judgment. |
+| Formal review subagent | contract-selected review kind | highest review-focused tier (`ExtraRight` or closest equivalent) | `stateless by default` | no-context stateless review | Review agents are judgment-first surfaces; keep them stateless unless resumable state is required by the client/tool. |
+| Exploratory second-opinion reviewer | active session/default or contract-selected review kind | `medium` | `stateless by default` | no-context stateless review | Escalate to the highest review-focused tier only when it becomes gate-satisfying or the ambiguity test is material. |
 
 ## Procedure
 1. Confirm whether the active client actually exposes named effort controls, model selection, sticky/custom agent state, and/or persistent GOAL support.
@@ -116,9 +116,9 @@ If none of those are true, prefer the routine default instead of escalation.
 
 ## Validation
 - `medium` remains the default for ordinary chat/orchestrator turns and routine executor subagents.
-- Routine code executor subagents default to `gpt-5.4-mini` when model selection is available.
+- Routine code executor subagents use the contract-selected `routine_executor` model when model selection is available.
 - Chat/orchestrator turns do not create implementation code when executor subagents are available, except for workflow-authorized reconciliation/merge-conflict/integration glue.
-- Formal review subagents default to `gpt-5.5` or the strongest review model plus the highest review-focused tier, not the routine default.
+- Formal review subagents use the contract-selected family for their explicit review kind, not the routine default.
 - GOAL contracts are used for executor subagents when the client supports them.
 - Sticky executor state is per chat/TODO, compact, non-monitoring, and reset at closeout or material scope/context changes.
 - Monitoring is deterministic first or ephemeral mini summarization, not continuous main-chat log watching.
