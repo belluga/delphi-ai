@@ -40,15 +40,15 @@ review = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 ambiguity = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
 monitoring = json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))
 
-assert executor["recommended_model"] == "gpt-5.4-mini"
+assert executor["recommended_model"] == "gpt-5.6-luna"
 assert executor["recommended_effort"] == "medium"
 assert executor["goal_policy"] == "required"
 assert executor["execution_state_policy"] == "sticky-per-chat-or-todo-compact-state"
-assert review["recommended_model"] == "gpt-5.5-or-strongest-review-model"
+assert review["recommended_model"] == "gpt-5.6-sol"
 assert review["recommended_effort"] == "ExtraRight-or-closest-equivalent"
 assert review["goal_policy"] == "stateless-default"
 assert ambiguity["recommended_effort"] == "ExtraRight-or-closest-equivalent"
-assert ambiguity["recommended_model"] == "gpt-5.5-or-strongest-review-model"
+assert ambiguity["recommended_model"] == "gpt-5.6-sol"
 assert ambiguity["material_strategic_ambiguity"] is True
 assert monitoring["recommended_model"] == "deterministic-first-or-gpt-5.4-mini-if-llm-needed"
 assert monitoring["recommended_effort"] == "low-or-medium"

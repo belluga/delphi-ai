@@ -11,10 +11,16 @@
       "requires_effort": true,
       "preferred_models": {
         "routine_executor": [
-          "gpt-5.4-mini"
+          "gpt-5.6-luna"
         ],
         "strongest_review": [
-          "gpt-5.5"
+          "gpt-5.6-sol"
+        ],
+        "technical_review": [
+          "gpt-5.6-terra"
+        ],
+        "governance_review": [
+          "gpt-5.4"
         ],
         "monitoring": [
           "gpt-5.4-mini"
@@ -22,8 +28,8 @@
       },
       "notes": [
         "Codex routing is currently enforced through declared preflight evidence plus explicit waiver handling.",
-        "Routine code and implementation-side execution should default to gpt-5.4-mini.",
-        "Formal review and approval-material judgment should default to gpt-5.5."
+        "Routine code and implementation-side execution should default to gpt-5.6-luna.",
+        "Architecture decision/final/security review uses gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra; architecture adherence and adjudication use gpt-5.4."
       ]
     },
     "claude-code": {
@@ -40,6 +46,12 @@
         ],
         "strongest_review": [
           "opus"
+        ],
+        "technical_review": [
+          "sonnet"
+        ],
+        "governance_review": [
+          "sonnet"
         ],
         "monitoring": [
           "haiku",
@@ -67,6 +79,14 @@
         "strongest_review": [
           "opus",
           "opus-or-strongest-available-review-model"
+        ],
+        "technical_review": [
+          "sonnet",
+          "sonnet-or-best-available-routine-coding-model"
+        ],
+        "governance_review": [
+          "sonnet",
+          "sonnet-or-best-available-routine-coding-model"
         ],
         "monitoring": [
           "haiku",
@@ -97,6 +117,14 @@
       "extraright",
       "extraright-or-closest-equivalent"
     ]
+  },
+  "review_kind_model_families": {
+    "architecture_opinion": "strongest_review",
+    "architecture_adherence": "governance_review",
+    "critique": "governance_review",
+    "test_quality_audit": "technical_review",
+    "cutover_integrity_audit": "technical_review",
+    "final_review": "strongest_review"
   },
   "surfaces": {
     "implementation": {

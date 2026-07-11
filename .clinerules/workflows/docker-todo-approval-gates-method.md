@@ -37,22 +37,26 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 6. Populate the TODO `Audit Trigger Matrix` and run:
    - `python3 delphi-ai/tools/audit_escalation_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before trusting audit decisions.
-7. Run the derived critique/dedicated multi-lane audit lanes when required or recommended by the audit floor.
-8. If the TODO records `Pre-APROVADO RED Evidence Capture = required|recommended`, run that bounded RED capture now:
+7. If the TODO records `Pre-APROVADO RED Evidence Capture = required|recommended`, run that bounded RED capture now:
    - allow edits only in the test/support surfaces explicitly listed in the TODO;
    - prohibit production/runtime/doc changes;
    - record the outcome as `red_reproduced|red_not_reproduced|blocked`;
-   - if the RED result invalidates the current direction or widens the failure surface, refresh the TODO and rerun the affected review/critique lanes before approval resumes.
-9. After the planning reviews converge, including any bounded RED capture updates, run the assumption-vs-code coherence guard:
+   - if the RED result invalidates the current direction or widens the failure surface, refresh the TODO and rerun the audit floor before approval resumes.
+8. Run the derived architecture decision review when `architecture_decision_review = required`:
+   - only after the diagnosis (including any required RED capture) is closed and before the proposed solution is frozen;
+   - dispatch a fresh no-context reviewer with `review_kind=architecture_opinion` and a bounded package containing the diagnosis, viable paths, Architecture Change Governance contract, Decision Baseline draft, and material trade-offs;
+   - resolve material findings into the TODO before critique and `APROVADO` continue.
+9. Run the derived critique/dedicated multi-lane audit lanes when required or recommended by the audit floor.
+10. After the planning reviews converge, including any bounded RED capture updates, run the assumption-vs-code coherence guard:
    - `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before requesting `APROVADO`, unless the guard is explicitly waived by the current human approval authority.
    - if the guard surfaces a wrong code assumption or any approval-material/significant change, send the TODO back to the review loop: refresh the TODO and rerun the affected review/critique lane before approval.
-10. Run the post-review scope-drift guard:
+11. Run the post-review scope-drift guard:
    - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before requesting `APROVADO`, unless the current human approval authority explicitly waives the guard;
    - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes before approval; treat this as a reconvergence checkpoint, not a rigid rejection.
-11. Ask the user to reply with **`APROVADO`** for tactical and ephemeral TODO lanes.
-12. After approval, record the compact `Approval` evidence section in the TODO: approver/reference, exact approved scope, exclusions, and renewed-approval trigger.
+12. Ask the user to reply with **`APROVADO`** for tactical and ephemeral TODO lanes.
+13. After approval, record the compact `Approval` evidence section in the TODO: approver/reference, exact approved scope, exclusions, and renewed-approval trigger.
 
 ## Outputs
 - Plan Review Gate evidence.
@@ -68,6 +72,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - Pre-freeze packet preparation must not masquerade as authoritative review completion; use explicit provisional wording such as `prepared-pre-freeze` or `pending-freeze` until the freeze requirement is satisfied or waived and the actual review/guard has run.
 - The assumption-vs-code coherence guard must be clean or explicitly waived before `APROVADO`.
 - The post-review scope-drift guard must be clean or explicitly waived before `APROVADO`.
+- A required architecture decision review must be resolved or explicitly waived before `APROVADO`.
 - Approval evidence must be recorded in the TODO; do not rely on chat memory alone after the gate has passed.
 - If approval-material scope, decision, validation, or architecture facts change, refresh the TODO, revalidate the new scope with the user, and request renewed `APROVADO`.
 - Do not treat post-review scope-drift `no-go` as terminal failure; it means the TODO must reconverge through renewed user scope validation before approval resumes.

@@ -38,11 +38,10 @@ Centralize how Delphi chooses effort tiers, model routing, executor state, and G
 - Whether the selected lane will be proved by client artifact, declaration, or explicit waiver.
 
 ## Model Routing Defaults
-- If model selection is available, use `gpt-5.4-mini` as the default routine code executor model. Do not default routine code execution to older `gpt-4*-mini` models when `gpt-5.4-mini` is available.
-- Use `gpt-5.5` for formal review, approval-material adjudication, and broad-impact instruction changes.
+- Model identifiers and review-kind routing live only in `config/agent_role_routing.json`; this workflow must not duplicate them. Resolve the selected client, surface, and review kind through `agent_role_routing_guard.py` before governed work begins.
 - Keep ordinary chat/orchestrator turns at `medium` effort and on the active session/default model unless the turn itself becomes a governed review/adjudication surface.
 - The chat/orchestrator plans, packages handoffs, reconciles evidence, and adjudicates gates. When executor subagents are available, it does not directly create implementation code for TODO slices except for workflow-authorized reconciliation, merge-conflict resolution, or minimal integration glue.
-- For high-risk implementation whose `HOW` still requires deep reasoning after planning (for example auth/payment/security-critical behavior, schema/contract migration, concurrency/race-sensitive behavior, or cross-module runtime wiring), keep the executor handoff but explicitly consider `gpt-5.4` or `gpt-5.5` instead of the routine mini default.
+- For high-risk implementation whose `HOW` still requires deep reasoning after planning, keep the executor handoff but select the configured escalation model instead of changing authority boundaries.
 - Monitoring is deterministic first. If an LLM is needed for process status, use an ephemeral low/medium mini pass over bounded output; do not create a standing watcher or let the main chat consume verbose logs continuously.
 - Before governed implementation, implementation-side validation, monitoring, approval, delivery review, or formal review begins, resolve the selected lane through `config/agent_role_routing.json` and require `python3 delphi-ai/tools/agent_role_routing_guard.py ...` to return `Overall outcome: go`.
 
@@ -67,11 +66,11 @@ If none of those are true, prefer the routine default instead of escalation.
 | Surface | Recommended model | Recommended effort | GOAL policy | State policy | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Ordinary chat/orchestrator turn | active session/default model | `medium` | `not_needed` | primary chat state | Default for normal delivery turns; plans and packages handoffs but does not create implementation code when executor subagents are available. |
-| Routine code executor subagent | `gpt-5.4-mini` when available | `medium` | `required when supported` | sticky per chat/TODO, compact state | Use explicit bounded GOAL contracts and reset/recompact under the sticky executor policy. |
-| High-risk code executor subagent | consider `gpt-5.4` or `gpt-5.5` | `medium` or higher only when justified | `required when supported` | bounded executor state | Use when implementation reasoning itself remains unusually sensitive after planning; keep the code handoff rather than moving implementation into the chat. |
-| Process monitoring / log status | deterministic first; `gpt-5.4-mini` if LLM needed | `low` or `medium` | `not_needed` | ephemeral | Summarize bounded output only; no standing watcher and no verbose-log monitoring in the main chat. |
-| Delphi self-improvement / instruction change | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Instruction mistakes have broad method impact. |
-| Strategic framing with material strategic ambiguity | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Escalate only when first-pass planning did not resolve approval-material ambiguity. |
+| Routine code executor subagent | contract-selected `routine_executor` | `medium` | `required when supported` | sticky per chat/TODO, compact state | Use explicit bounded GOAL contracts and reset/recompact under the sticky executor policy. |
+| High-risk code executor subagent | contract-selected escalation | `medium` or higher only when justified | `required when supported` | bounded executor state | Keep the code handoff rather than moving implementation into the chat. |
+| Process monitoring / log status | deterministic first; contract-selected monitoring model if LLM needed | `low` or `medium` | `not_needed` | ephemeral | Summarize bounded output only; no standing watcher and no verbose-log monitoring in the main chat. |
+| Delphi self-improvement / instruction change | contract-selected strongest review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Instruction mistakes have broad method impact. |
+| Strategic framing with material strategic ambiguity | contract-selected strongest review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Escalate only when first-pass planning did not resolve approval-material ambiguity. |
 | Strategic framing without material strategic ambiguity | active session/default model | `medium` | `not_needed` | primary chat state | Routine recommendation work stays at default. |
 | TODO approval / plan review | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes orchestrator-side approval reasoning. |
 | Delivery / final review / promotion-readiness adjudication | `gpt-5.5` or strongest review model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes P1/P2 interpretation, waiver/debt acceptance, and close-claim judgment. |

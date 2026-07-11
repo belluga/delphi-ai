@@ -49,14 +49,18 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
    - For non-trivial diffs, prefer `--json-output <artifact>` so severity, finding keys, and allowlist status are reviewable.
    - Allowlists are temporary exceptions only: each entry needs an owner, expiration date, and reason; expired entries remain active findings.
    - Unresolved `P1|P2` blocks delivery.
-10. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
-11. Run:
+10. Run the derived architecture adherence review when `architecture_adherence_review = required`:
+    - dispatch a fresh no-context reviewer with `review_kind=architecture_adherence`;
+    - bound the package to the frozen Architecture Change Governance contract, Decision Baseline, delivered diff/touched surfaces, protection-harness evidence, and the decision-adherence/module-consistency evidence;
+    - block closure on an unresolved divergence from the approved target state, a missing required protection harness, or an unapproved architecture change.
+11. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
+12. Run:
     - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
     - require `Overall outcome: go`.
-12. Run:
+13. Run:
     - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
     - require `Overall outcome: go`.
-13. Treat the deterministic guards as necessary but not sufficient:
+14. Treat the deterministic guards as necessary but not sufficient:
     - the authority guard validates approval/rule-ingestion/gate-routing evidence;
     - the completion guard validates objective close-claim evidence tables;
     - they do not replace security/performance judgment, audit-floor execution, or canonical module consolidation.
@@ -80,4 +84,5 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 - No delivery claim is valid while `todo_completion_guard.py` returns anything other than `Overall outcome: go`.
 - No delivery claim is valid while `todo_authority_guard.py --require-delivery-gates` returns anything other than `Overall outcome: go`.
 - No `Overall outcome: go` result may be used to bypass approval, rule ingestion, or required review/audit lanes.
+- A required architecture adherence review must be resolved or explicitly waived before `Completed` or `Production-Ready`.
 - Follow-up/hardening findings are not blockers by default, but they are not disposable either: they must be fixed in-scope or split into an explicit post-version TODO with authoritative reference before delivery can be claimed cleanly.

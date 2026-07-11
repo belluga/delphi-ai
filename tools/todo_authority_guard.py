@@ -56,6 +56,7 @@ ARCHITECTURE_GOVERNANCE_SECTION = "Architecture Change Governance"
 PATTERNS_TO_ENFORCE_SECTION = "Patterns To Enforce"
 PROHIBITED_ANTI_PATTERNS_SECTION = "Prohibited Anti-Patterns"
 ARCHITECTURE_PROTECTION_HARNESS_SECTION = "Architecture Protection Harness"
+ARCHITECTURE_REVIEW_GATES_SECTION = "Architecture Review Gates"
 CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
 PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
 RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
@@ -402,6 +403,7 @@ def validate_agent_routing_preflight(sections: dict[str, list[str]]) -> tuple[li
         surface=strip_markup(surface or ""),
         role=strip_markup(role or ""),
         model=strip_markup(model or "") or None,
+        review_kind=None,
         effort=strip_markup(effort or "") or None,
         proof_mode=strip_markup(proof_mode or ""),
         exception_reason=strip_markup(exception_reason or "") or None,
@@ -711,6 +713,33 @@ def validate_delivery_gates(
     return violations, context
 
 
+def validate_architecture_review_gates(
+    sections: dict[str, list[str]], *, architecture_required: bool, delivery_claim: bool, allow_waivers: bool
+) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    context: dict[str, Any] = {"architecture_review_gates_required": architecture_required}
+    violations: list[dict[str, str]] = []
+    if not architecture_required:
+        return violations, context
+
+    lines = find_section(sections, ARCHITECTURE_REVIEW_GATES_SECTION)
+    if not lines:
+        return [build_violation("ARCHITECTURE-REVIEW-GATES-MISSING", "Required architecture TODO is missing Architecture Review Gates.", "Add the canonical Architecture Review Gates section and record both derived reviews.", ARCHITECTURE_REVIEW_GATES_SECTION)], context
+
+    checks = [("Architecture decision review", "Decision review status")]
+    if delivery_claim:
+        checks.append(("Architecture adherence review", "Adherence review status"))
+    for decision_label, status_label in checks:
+        decision = normalize(first_field(lines, (decision_label,)) or "")
+        status = normalize(first_field(lines, (status_label,)) or "")
+        if decision != "required":
+            violations.append(build_violation("ARCHITECTURE-REVIEW-DECISION-MISMATCH", f"{decision_label} must be `required` when Architecture Change Governance is required.", "Record the guard-derived required decision in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
+        if status not in PASSING_STATUSES:
+            violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
+        if status == "waived" and not allow_waivers and "approval" not in normalize("\n".join(lines)):
+            violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without explicit approval evidence.", "Record the human waiver/approval reference in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
+    return violations, context
+
+
 def validate_promotion_routing(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
     context: dict[str, Any] = {"promotion_routing_rows": 0}
     violations: list[dict[str, str]] = []
@@ -851,6 +880,14 @@ def validate_todo(
     )
     violations.extend(delivery_violations)
     context.update(delivery_context)
+    architecture_review_violations, architecture_review_context = validate_architecture_review_gates(
+        sections,
+        architecture_required=bool(context.get("architecture_governance_required")),
+        delivery_claim=delivery_claim,
+        allow_waivers=allow_waivers,
+    )
+    violations.extend(architecture_review_violations)
+    context.update(architecture_review_context)
 
     return {
         "blocked": bool(violations),

@@ -139,6 +139,7 @@ def evaluate_routing(
     surface: str,
     role: str,
     model: str | None,
+    review_kind: str | None,
     effort: str | None,
     proof_mode: str,
     exception_reason: str | None,
@@ -189,7 +190,19 @@ def evaluate_routing(
 
     client_cfg = contract["clients"][client]
     surface_cfg = contract["surfaces"][surface]
-    expected_models = list(client_cfg["preferred_models"][surface_cfg["preferred_model_family"]])
+    model_family = surface_cfg["preferred_model_family"]
+    if review_kind:
+        review_families = contract.get("review_kind_model_families", {})
+        if review_kind not in review_families:
+            return {
+                "blocked": True,
+                "outcome": OUTCOME_BLOCKED,
+                "context": context,
+                "violations": [build_violation("REVIEW-KIND-UNKNOWN", f"Unknown review kind `{review_kind}`.", "Use a review kind declared in config/agent_role_routing.json.")],
+            }
+        model_family = review_families[review_kind]
+        context["review_kind"] = review_kind
+    expected_models = list(client_cfg["preferred_models"][model_family])
     expected_efforts = list(contract["effort_aliases"][surface_cfg["required_effort_key"]])
     allowed_roles = list(surface_cfg["allowed_roles"])
     allowed_proof_modes = list(client_cfg["allowed_proof_modes"])
@@ -365,6 +378,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--surface", required=True, help="Governed surface from config/agent_role_routing.json.")
     parser.add_argument("--role", required=True, help="Selected routing role.")
     parser.add_argument("--model", help="Selected model or declared model family alias.")
+    parser.add_argument("--review-kind", help="Optional formal-review kind used to select its model family.")
     parser.add_argument("--effort", help="Selected effort tier or alias.")
     parser.add_argument(
         "--proof-mode",
@@ -402,6 +416,7 @@ def main(argv: list[str] | None = None) -> int:
         surface=args.surface,
         role=args.role,
         model=args.model,
+        review_kind=args.review_kind,
         effort=args.effort,
         proof_mode=args.proof_mode,
         exception_reason=args.exception_reason,

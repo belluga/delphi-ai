@@ -45,10 +45,13 @@ This workflow decides the minimum required path. Operators may escalate to stric
    - `test_quality_audit` -> `Independent Test Quality Audit Gate`
    - `final_review` -> `Independent No-Context Final Review Gate`
    - `triple_review` -> the `Canonical multi-lane audit protocol` field inside the applicable review sections (compatibility decision key for the dedicated delivery-side multi-lane external audit)
+   - `architecture_decision_review` and `architecture_adherence_review` -> `Architecture Review Gates`, derived from the existing `Architecture Change Governance` applicability instead of a duplicate matrix trigger.
 4. Place each audit in the lifecycle exactly where it belongs.
    - `critique` is the planning challenge lane and must run before `APROVADO`.
    - `security_review`, `performance_concurrency`, and `verification_debt` stay in their own delivery gates and deadlines.
+   - `architecture_decision_review` runs after diagnosis is closed and before the solution is frozen or `APROVADO`; it uses `review_kind=architecture_opinion`.
    - `test_quality_audit`, `final_review`, and any `triple_review` run after implementation and after primary validation/adherence evidence exist.
+   - `architecture_adherence_review` runs after implementation and before `Completed`; it uses `review_kind=architecture_adherence` and compares the delivery package against the frozen architectural decision.
 5. Treat the dedicated delivery-side multi-lane external audit as additive only.
    - `audit-protocol-triple-review` never replaces the mandatory planning critique.
    - Unless a future canonical rule says otherwise, it also does not silently waive required test-quality or final-review gates.

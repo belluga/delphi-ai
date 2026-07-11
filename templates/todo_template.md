@@ -165,7 +165,7 @@ For any criterion that includes user-flow CRUD or mutation behavior (create, edi
 ## Decision Baseline (Frozen Before Implementation)
 - [ ] `D-01` <Expected outcome that implementation must adhere to>
 
-## Architecture Change Governance (Required When This TODO Corrects or Supersedes Architecture)
+## Architecture Change Governance (Required When This TODO Establishes, Corrects, or Supersedes Architecture)
 - **Applicability (`required|not_needed`):** `<not_needed>`
 - **Why this applies:** `<why this TODO is or is not architecture-corrective>`
 - **Deviation / debt being retired:** `<n/a or exact wrong path being removed>`
@@ -189,6 +189,21 @@ Plan the concrete protections that keep the corrected architecture from regressi
 | Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
 | --- | --- | --- | --- | --- | --- |
 | `<rule|linter|analyzer|pint|guard|test|audit>` | `<surface>` | `<real command/rule/artifact>` | `<what regression this blocks>` | `<timing>` | `<how this becomes real or exact follow-up reference>` |
+
+## Architecture Review Gates (Deterministically Derived From Architecture Change Governance)
+- **Architecture decision review:** `<required|not_needed>` (from `audit_escalation_guard.py`)
+- **Decision review lifecycle:** `<after diagnosis is closed and before APROVADO|n/a>`
+- **Decision review kind:** `<architecture_opinion|n/a>`
+- **Decision review package:** `<bounded-file-set|bounded-summary|n/a>`
+- **Decision review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived|n/a>`
+- **Decision review evidence / resolution:** `<dispatch/merge path or n/a>`
+- **Architecture adherence review:** `<required|not_needed>` (from `audit_escalation_guard.py`)
+- **Adherence review lifecycle:** `<after implementation and before Completed|n/a>`
+- **Adherence review kind:** `<architecture_adherence|n/a>`
+- **Adherence review package:** `<bounded-file-set|bounded-summary|n/a>`
+- **Adherence review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived|n/a>`
+- **Adherence review evidence / resolution:** `<dispatch/merge path or n/a>`
+- **No-go handling:** `when either required review is absent, blocked, or exposes an unresolved approval-breaking divergence, return to the affected diagnosis/decision or delivery-evidence loop; do not claim APROVADO or Completed.`
 
 ## Gate: Review Baseline Freeze
 - **Gate decision:** `required`

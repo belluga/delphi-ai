@@ -42,7 +42,7 @@ assert_outcome delegate-required \
   --client codex \
   --surface implementation \
   --role primary-chat \
-  --model gpt-5.4-mini \
+  --model gpt-5.6-luna \
   --effort medium \
   --proof-mode declared
 
@@ -50,7 +50,7 @@ assert_outcome go \
   --client codex \
   --surface implementation \
   --role routine-executor \
-  --model gpt-5.4-mini \
+  --model gpt-5.6-luna \
   --effort medium \
   --proof-mode declared
 
@@ -58,7 +58,7 @@ assert_outcome go \
   --client codex \
   --surface implementation \
   --role primary-chat \
-  --model gpt-5.4-mini \
+  --model gpt-5.6-luna \
   --effort medium \
   --proof-mode waiver \
   --exception-reason bootstrap-guard-implementation \
@@ -75,7 +75,7 @@ assert_outcome review-required \
   --client codex \
   --surface formal-review \
   --role formal-reviewer \
-  --model gpt-5.4-mini \
+  --model gpt-5.6-luna \
   --effort ExtraRight-or-closest-equivalent \
   --proof-mode declared
 
@@ -83,7 +83,16 @@ assert_outcome go \
   --client codex \
   --surface formal-review \
   --role formal-reviewer \
-  --model gpt-5.5 \
+  --model gpt-5.6-sol \
+  --effort ExtraRight-or-closest-equivalent \
+  --proof-mode declared
+
+assert_outcome go \
+  --client codex \
+  --surface formal-review \
+  --role formal-reviewer \
+  --review-kind architecture_adherence \
+  --model gpt-5.4 \
   --effort ExtraRight-or-closest-equivalent \
   --proof-mode declared
 
@@ -112,7 +121,7 @@ assert_outcome blocked \
   --client codex \
   --surface implementation \
   --role routine-executor \
-  --model gpt-5.4-mini \
+  --model gpt-5.6-luna \
   --effort medium \
   --proof-mode artifact
 

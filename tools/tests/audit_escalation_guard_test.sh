@@ -20,6 +20,9 @@ cat > "$TODO_FILE" <<'TODO'
 - **Issue ID:** `ARCH-01`
   - **Severity:** `high`
 
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+
 ## Audit Trigger Matrix (Required Before Audit Decisions Are Trusted)
 | Trigger | Value | Notes |
 | --- | --- | --- |
@@ -49,5 +52,9 @@ assert payload["outcome"] == "go"
 assert payload["trigger_matrix"]["complexity"] == "medium"
 assert payload["decisions"]["critique"]["decision"] == "required"
 assert payload["decisions"]["triple_review"]["decision"] == "required"
+assert payload["decisions"]["architecture_decision_review"]["decision"] == "required"
+assert payload["decisions"]["architecture_decision_review"]["review_kind"] == "architecture_opinion"
+assert payload["decisions"]["architecture_adherence_review"]["decision"] == "required"
+assert payload["decisions"]["architecture_adherence_review"]["review_kind"] == "architecture_adherence"
 print("audit_escalation_guard_test: OK")
 PY

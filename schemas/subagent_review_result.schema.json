@@ -31,6 +31,7 @@
     "review_kind": {
       "enum": [
         "architecture_opinion",
+        "architecture_adherence",
         "critique",
         "test_quality_audit",
         "final_review",

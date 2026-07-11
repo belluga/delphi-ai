@@ -3,14 +3,24 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 from typing import List
 
 
 HIGHEST_REVIEW_TIER = "ExtraRight-or-closest-equivalent"
 ROUTINE_TIER = "medium"
 LOW_OR_MEDIUM_TIER = "low-or-medium"
-ROUTINE_EXECUTOR_MODEL = "gpt-5.4-mini"
-FORMAL_REVIEW_MODEL = "gpt-5.5-or-strongest-review-model"
+ROUTING_CONTRACT = Path(__file__).resolve().parent.parent / "config" / "agent_role_routing.json"
+
+
+def model_family(family: str) -> str:
+    contract = json.loads(ROUTING_CONTRACT.read_text(encoding="utf-8"))
+    return contract["clients"]["codex"]["preferred_models"][family][0]
+
+
+ROUTINE_EXECUTOR_MODEL = model_family("routine_executor")
+FORMAL_REVIEW_MODEL = model_family("strongest_review")
+MONITORING_MODEL = model_family("monitoring")
 ACTIVE_SESSION_MODEL = "active-session-default"
 
 
@@ -49,11 +59,11 @@ def build_decision(surface: str, material_ambiguity: bool, goals_supported: bool
         recommended_model = ROUTINE_EXECUTOR_MODEL
         goal_policy = "required" if goals_supported else "required-but-client-lacks-goals"
         execution_state_policy = "sticky-per-chat-or-todo-compact-state"
-        reasons.append("Routine executor subagents use gpt-5.4-mini at the routine default when model selection is available.")
+        reasons.append("Routine executor subagents use the central routing contract's routine-executor model when model selection is available.")
         reasons.append("Executor subagents rely on bounded GOAL contracts instead of higher effort by default.")
         reasons.append("Sticky executor state is scoped to the current chat/TODO and must retain summaries only, not raw logs, full diffs, transcripts, or artifacts.")
     elif surface == "monitoring":
-        recommended_model = "deterministic-first-or-gpt-5.4-mini-if-llm-needed"
+        recommended_model = f"deterministic-first-or-{MONITORING_MODEL}-if-llm-needed"
         recommended_effort = LOW_OR_MEDIUM_TIER
         execution_state_policy = "ephemeral-bounded-status-pass"
         reasons.append("Monitoring should be deterministic first; if an LLM is needed, summarize bounded output with an ephemeral mini pass.")
@@ -78,9 +88,9 @@ def build_decision(surface: str, material_ambiguity: bool, goals_supported: bool
         raise ValueError(f"Unsupported surface: {surface}")
 
     if recommended_model == ROUTINE_EXECUTOR_MODEL:
-        model_notes.append("Use gpt-5.4-mini only when model selection is available; otherwise record the closest available efficient coding/subagent model.")
+        model_notes.append("Use the model selected by config/agent_role_routing.json when model selection is available; otherwise record the closest available efficient coding/subagent model.")
     elif recommended_model == FORMAL_REVIEW_MODEL:
-        model_notes.append("Use gpt-5.5 when available; otherwise use the strongest available review/reasoning model.")
+        model_notes.append("Use the strongest-review model selected by config/agent_role_routing.json, or record the closest available review/reasoning model.")
     elif recommended_model == ACTIVE_SESSION_MODEL:
         model_notes.append("Keep the active session/default model unless this turn becomes a governed review, adjudication, or executor surface.")
 

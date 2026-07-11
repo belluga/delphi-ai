@@ -28,6 +28,8 @@ REQUIRED_TRIGGERS = {
 
 TRIGGER_ORDER = list(REQUIRED_TRIGGERS.keys())
 AUDIT_TRIGGER_HEADING = "## Audit Trigger Matrix"
+ARCHITECTURE_GOVERNANCE_HEADING = "## Architecture Change Governance"
+ARCHITECTURE_APPLICABILITY = {"required", "not_needed"}
 
 
 def extract_heading_section(text: str, heading: str) -> str | None:
@@ -95,6 +97,14 @@ def extract_complexity_from_todo(text: str) -> str | None:
     return match.group(1).lower()
 
 
+def extract_architecture_applicability(text: str) -> str | None:
+    section = extract_heading_section(text, ARCHITECTURE_GOVERNANCE_HEADING)
+    if section is None:
+        return None
+    match = re.search(r"Applicability.*?:\*{0,2}\s*`?(required|not_needed)`?", section, re.IGNORECASE)
+    return match.group(1).lower() if match else None
+
+
 def detect_high_severity_issue(text: str) -> bool:
     return bool(
         re.search(
@@ -125,7 +135,7 @@ def any_high_risk_signal(data: dict[str, str]) -> bool:
     )
 
 
-def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
+def derive_decisions(data: dict[str, str], architecture_applicability: str) -> dict[str, dict[str, object]]:
     high_risk = any_high_risk_signal(data)
     release_sensitive = yes(data, "release_or_promotion_critical")
     critical_journey = yes(data, "critical_user_journey")
@@ -232,6 +242,8 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
         verification_debt_decision = "not_needed"
         verification_debt_reason_codes = ["VDA-NOT-TRIGGERED"]
 
+    architecture_required = architecture_applicability == "required"
+
     return {
         "critique": {
             "decision": "required",
@@ -278,6 +290,20 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
             "lifecycle_gate": "before_completed",
             "workflow": "verification-debt-audit",
             "reason_codes": verification_debt_reason_codes,
+        },
+        "architecture_decision_review": {
+            "decision": "required" if architecture_required else "not_needed",
+            "lifecycle_gate": "after_diagnosis_before_aprovado",
+            "review_kind": "architecture_opinion",
+            "workflow": "wf-docker-subagent-orchestration-method",
+            "reason_codes": ["ARCHITECTURE-GOVERNANCE-REQUIRED"] if architecture_required else ["ARCHITECTURE-GOVERNANCE-NOT-TRIGGERED"],
+        },
+        "architecture_adherence_review": {
+            "decision": "required" if architecture_required else "not_needed",
+            "lifecycle_gate": "after_implementation_before_completed",
+            "review_kind": "architecture_adherence",
+            "workflow": "wf-docker-subagent-orchestration-method",
+            "reason_codes": ["ARCHITECTURE-GOVERNANCE-REQUIRED"] if architecture_required else ["ARCHITECTURE-GOVERNANCE-NOT-TRIGGERED"],
         },
     }
 
@@ -366,6 +392,18 @@ def build_result(todo_path: Path, text: str) -> dict[str, object]:
             }
         )
 
+    architecture_applicability = extract_architecture_applicability(text)
+    if architecture_applicability is None:
+        architecture_applicability = "not_needed"
+    elif architecture_applicability not in ARCHITECTURE_APPLICABILITY:
+        violations.append(
+            {
+                "code": "ARCHITECTURE-GOVERNANCE-APPLICABILITY-INVALID",
+                "message": "Architecture Change Governance applicability is missing or invalid.",
+                "resolution": "Set Architecture Change Governance Applicability to `required` or `not_needed` before rerunning the audit guard.",
+            }
+        )
+
     if violations:
         return {
             "blocked": True,
@@ -378,11 +416,12 @@ def build_result(todo_path: Path, text: str) -> dict[str, object]:
     fingerprint = hashlib.sha256(
         json.dumps(matrix, sort_keys=True).encode("utf-8")
     ).hexdigest()[:12]
-    decisions = derive_decisions(matrix)
+    decisions = derive_decisions(matrix, architecture_applicability)
     return {
         "blocked": False,
         "violations": [],
         "trigger_matrix": matrix,
+        "architecture_governance_applicability": architecture_applicability,
         "decisions": decisions,
         "fingerprint": fingerprint,
         "todo_path": str(todo_path),

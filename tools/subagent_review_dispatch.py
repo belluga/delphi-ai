@@ -38,6 +38,28 @@ CONFIG = {
             "findings[]"
         ],
     },
+    "architecture_adherence": {
+        "axes": ["adherence", "structural_soundness", "operational_fit", "performance", "elegance"],
+        "focus": [
+            "Compare the delivered bounded package against the frozen Architecture Change Governance contract and Decision Baseline.",
+            "Identify any implementation path, temporary exception, or missing protection harness that diverges from the approved target steady-state.",
+            "Do not redesign the approved architecture unless the delivered evidence exposes a material defect or an approval-breaking divergence.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
+        ],
+        "result_fields": [
+            "overall_assessment",
+            "recommended_path",
+            "performance_position",
+            "elegance_position",
+            "structural_soundness_position",
+            "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
+            "findings[]",
+        ],
+    },
     "critique": {
         "axes": ["adherence", "performance", "elegance", "structural_soundness", "operational_fit"],
         "focus": [

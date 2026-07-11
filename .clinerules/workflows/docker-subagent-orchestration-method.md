@@ -19,7 +19,7 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
 
 ## Inputs
 - Bounded review package (`bounded-summary` or `bounded-file-set`).
-- Review kind: `architecture_opinion|critique|test_quality_audit|final_review`.
+- Review kind: `architecture_opinion|architecture_adherence|critique|test_quality_audit|final_review`.
 - Expected reviewer count.
 
 ## Preferred Deterministic Helpers
