@@ -112,13 +112,34 @@ fi
 REPO_ROOT="$(git -C "$REPO_INPUT" rev-parse --show-toplevel 2>/dev/null || true)"
 [ -n "$REPO_ROOT" ] || die "path is not inside a git repository: $REPO_INPUT"
 
+RELEASE_PACKAGE_OPENING_TRACK=""
+RELEASE_PACKAGE_PRIMARY_SURFACE=""
+RELEASE_PACKAGE_OPENING_TRACK_READY=true
+
 if [ -n "$GOVERNING_TODO" ]; then
   if [[ "$(basename "$GOVERNING_TODO")" == *release-package.md ]]; then
-    if python3 "$SCRIPT_DIR/github_release_package_rollup_guard.py" --governing-todo "$GOVERNING_TODO" --base-ref "$BASE_REF" --workspace-root "$REPO_ROOT"; then
+    ROLLUP_OUTPUT_FILE="$(mktemp)"
+    trap 'rm -f "${ROLLUP_OUTPUT_FILE:-}"' EXIT
+    if python3 "$SCRIPT_DIR/github_release_package_rollup_guard.py" --governing-todo "$GOVERNING_TODO" --base-ref "$BASE_REF" | tee "$ROLLUP_OUTPUT_FILE"; then
       :
     else
       exit $?
     fi
+    RELEASE_PACKAGE_OPENING_TRACK="$(sed -n 's/^  - recommended opening track: //p' "$ROLLUP_OUTPUT_FILE" | head -n 1)"
+    RELEASE_PACKAGE_PRIMARY_SURFACE="$(sed -n 's/^  recommended_primary_surface: //p' "$ROLLUP_OUTPUT_FILE" | head -n 1)"
+    case "$REPO_KEY:$RELEASE_PACKAGE_OPENING_TRACK" in
+      root:docker-*|root:no-promotable-opening-track|belluga_now_docker:docker-*|belluga_now_docker:no-promotable-opening-track)
+        ;;
+      flutter-app:flutter-only|flutter-app:flutter-laravel)
+        ;;
+      laravel-app:laravel-only|laravel-app:flutter-laravel)
+        ;;
+      foundation_documentation:*|web-app:*)
+        ;;
+      *)
+        RELEASE_PACKAGE_OPENING_TRACK_READY=false
+        ;;
+    esac
   fi
   if python3 "$SCRIPT_DIR/github_promotion_source_authority_guard.py" --repo "$REPO_ROOT" --source-ref "$SOURCE_REF" --governing-todo "$GOVERNING_TODO" --repo-key "$REPO_KEY"; then
     :
@@ -296,7 +317,7 @@ if [ "$SOURCE_IS_SEQUENCE_BRANCH" = true ]; then
   EXECUTION_ONLY_BRANCH_POLICY_READY=false
 fi
 
-if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$EXECUTION_ONLY_BRANCH_POLICY_READY" = false ]; then
+if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$EXECUTION_ONLY_BRANCH_POLICY_READY" = false ] || [ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = false ]; then
   OVERALL_GO=false
 fi
 
@@ -338,6 +359,12 @@ if [ "$DIFF_SHAPE_READY" = false ]; then
   RESOLUTION_PROMPTS+=("Recreate or repair the branch so the diff matches '$REQUIRE_DIFF_SHAPE' before promotion.")
 fi
 
+if [ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = false ]; then
+  VIOLATIONS+=("Release-package opening track '$RELEASE_PACKAGE_OPENING_TRACK' does not authorize repo key '$REPO_KEY' as the first promotion source.")
+  RESOLUTION_PROMPTS+=("Start the package lane from the rollup-authorized opening track instead of '$REPO_KEY'.")
+  RESOLUTION_PROMPTS+=("For app-first opening tracks, promote the authoritative app source branches into dev before resuming root/docker promotion.")
+fi
+
 printf 'GitHub Stage Promotion Preflight\n'
 printf 'Repository root: %s\n' "$REPO_ROOT"
 printf 'Current branch: %s\n' "$CURRENT_BRANCH"
@@ -355,6 +382,9 @@ printf '  - source is not sequence/* or reconcile/* (or approved topology-only r
 printf '  - source has promotable diff beyond base: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
 printf '  - topology-only reconciliation accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  - diff shape requirement (%s): %s\n' "$REQUIRE_DIFF_SHAPE" "$([ "$DIFF_SHAPE_READY" = true ] && printf pass || printf fail)"
+if [ -n "$RELEASE_PACKAGE_OPENING_TRACK" ]; then
+  printf '  - release-package opening track authorizes repo key: %s\n' "$([ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = true ] && printf yes || printf no)"
+fi
 printf '  - base-only commits missing from source: %s\n' "$BASE_ONLY_COUNT"
 printf '  - source-only commits beyond base: %s\n' "$SOURCE_ONLY_COUNT"
 printf '\n'
@@ -396,6 +426,10 @@ if [ "$OVERALL_GO" = true ]; then
   if [ -n "$GOVERNING_TODO" ]; then
     printf '  governing_todo: %s\n' "$GOVERNING_TODO"
     printf '  repo_key: %s\n' "$REPO_KEY"
+    if [ -n "$RELEASE_PACKAGE_OPENING_TRACK" ]; then
+      printf '  release_package_opening_track: %s\n' "$RELEASE_PACKAGE_OPENING_TRACK"
+      printf '  release_package_primary_surface: %s\n' "${RELEASE_PACKAGE_PRIMARY_SURFACE:-unknown}"
+    fi
   fi
   if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then
     printf '  topology_only_reconciliation_reason: %s\n' "$TOPOLOGY_ONLY_RECONCILIATION_REASON"
@@ -440,6 +474,11 @@ fi
 if [ -n "$GOVERNING_TODO" ]; then
   printf '  governing_todo: %s\n' "$GOVERNING_TODO"
   printf '  repo_key: %s\n' "$REPO_KEY"
+  if [ -n "$RELEASE_PACKAGE_OPENING_TRACK" ]; then
+    printf '  release_package_opening_track: %s\n' "$RELEASE_PACKAGE_OPENING_TRACK"
+    printf '  release_package_primary_surface: %s\n' "${RELEASE_PACKAGE_PRIMARY_SURFACE:-unknown}"
+    printf '  release_package_opening_track_authorizes_repo_key: %s\n' "$([ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = true ] && printf yes || printf no)"
+  fi
 fi
 printf '  base_only_commits_missing_from_source_count: %s\n' "$BASE_ONLY_COUNT"
 printf '  source_only_commits_beyond_base_count: %s\n' "$SOURCE_ONLY_COUNT"
