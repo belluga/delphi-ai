@@ -16,6 +16,7 @@ Use only when the user authorized `through-stage` and the required source/dev wo
 - Merge only when checks are green and pertinent comments are resolved.
 - Wait for post-merge `stage` runs to finish green.
 - Treat the post-merge `push` run on branch `stage` as the authoritative remote completion evidence for this phase. If the same SHA also synchronizes an already-open `stage -> main` PR and triggers `pull_request` checks there, route that evidence through failure review as next-lane/main-readiness evidence; it does not by itself reopen or block `through-stage` completion.
+- During those remote waits, prefer `github_status_wait.py` or another silent wait path and keep manual rechecks at or above 60-second cadence unless a human explicitly authorizes a faster incident-time loop.
 
 ## Gitlink Handling
 Gitlinks that reached `dev` through `bot/next-version -> dev` may travel with `dev -> stage`. Do not strip, rewrite, or hand-edit them during lane-to-lane promotion.

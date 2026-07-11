@@ -38,6 +38,12 @@ Load the phase skill that matches the current lane state:
 8. **Failure review**: when CI/Copilot/checks fail or are ambiguous, classify and resolve root cause before retrying.
 9. **Closeout report**: run completion evidence and update the governing TODO/promotion status.
 
+## Remote Wait Cadence
+- Promotion-lane remote waits must be low-noise by default.
+- When waiting on GitHub Actions, PR checks, branch creation, or bot follow-through, use `github_status_wait.py` or an equivalent silent wait path instead of tight manual polling.
+- The minimum manual recheck cadence is 60 seconds. Do not poll GitHub repeatedly in sub-minute loops unless a human explicitly authorizes an exception for an active incident.
+- If nothing actionable changed, stay in wait state instead of re-running broader promotion logic.
+
 ## Classification
 The intake phase must classify exactly one scenario before mutation. Use `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence, then record the human-authorized primary surface plus compatibility scenario:
 - primary surfaces: `docker`, `flutter`, `laravel`, `flutter+laravel`
