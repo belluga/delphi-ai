@@ -74,6 +74,15 @@ Before claiming `CI Equivalent`, record:
 
 Browser/device evidence is invalid if it cannot prove the current build, bundle, or runtime state was what the runner exercised. Freshness must be proven before the test result is trusted, not reconstructed afterward from assumption.
 
+## Promotable Documentation Preflight
+For a promotable broad gate, validate required delivery documentation before starting the expensive execution contract. This is a precondition of execution, not a second kind of post-execution CI-equivalent proof.
+
+- The preflight must fail closed when a TODO or delivery record that should already describe completed implementation/evidence remains `Pending`, `Open`, or otherwise stale.
+- The preflight must allow the one explicitly declared pending item that the current broad gate itself will produce (for example, the pending `promotable-stage-full` evidence row). It must not require future execution evidence before the execution that creates it.
+- Correcting a scope-neutral documentation drift found by this preflight happens before `stage-full`; after the correction, run the preflight again and then run `stage-full` once on the final documented state.
+- Do not make a completed `stage-full` rerun merely because a later promotion guard exposed a scope-neutral documentation omission that the preflight should have caught. Harden the preflight and correct the documentation instead.
+- If the documentation correction changes declared scope, behavior, acceptance criteria, runtime contract, or another execution-relevant claim, it is no longer documentation-only: reassess the execution evidence and rerun the broad gate when the project-owned invalidation policy requires it.
+
 ## Evidence Reuse And Invalidation
 - Exact `branch@sha` remains the traceability anchor for CI-equivalent and promotion claims. Do not stop recording it.
 - SHA drift alone is not the canonical rerun trigger once a passed CI-equivalent artifact already exists.
@@ -100,8 +109,9 @@ Browser/device evidence is invalid if it cannot prove the current build, bundle,
 6. Treat published-lane checks as additional evidence only.
 7. When the current sequencing lane is an isolated worktree and the broad local gate is `stage-full`, record the exact pre-browser prefix that runs now, explicitly note that the skipped boundary starts at `local-public-web-build`, and record the deferred principal-authoritative broad gate that still remains mandatory after replay.
 8. Before any manual/browser/device validation lane, produce or refresh the runtime freshness attestation and stop immediately if the served target cannot be proven fresh for the current authoritative build.
-9. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
-10. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
+9. For a promotable broad gate, run the documentation preflight before the execution contract. It must reject stale prerequisite delivery documentation while allowing only the explicitly designated future-evidence row for this exact gate.
+10. Before rerunning or reusing an already-passed broad local gate such as `stage-full`, run the project-owned evidence invalidation/reuse guard and record whether the outcome was `reusable`, `rerun-required`, or `manual-admission-required`.
+11. If the required broad local gate is unavailable, hung, or fails for local runtime-health reasons, stop the lane and report it as a blocked local infrastructure surface. Do not convert to remote-lane progression or completion claims without an explicit human waiver.
 
 ## Done Criteria
 - The in-scope local matrix is current-branch local proof, not proxy evidence.

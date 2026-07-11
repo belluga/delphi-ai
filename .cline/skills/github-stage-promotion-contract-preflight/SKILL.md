@@ -27,6 +27,7 @@ Use after intake has classified the scenario and before opening or mutating any 
 - After preflight returns `Overall outcome: go` and before creating the first PR, run `copilot-pr-review` on each authoritative source repo/branch in scope.
 - After those findings are collected and deduplicated, run `review-finding-classification` before deciding blocker-vs-follow-up routing or updating the governing TODO ledger.
 - Load `ci-equivalent-governance` before deciding which local matrix or stage-parity contract satisfies the pre-promotion `CI-Equivalent` requirement.
+- Before invoking a promotable broad local gate such as `stage-full`, run its documentation preflight. It must reject stale `Pending`/equivalent delivery documentation for work that is already complete, but it must allow the explicitly declared pending evidence row that this exact gate is about to generate. Correct a scope-neutral documentation drift and rerun this preflight before the first broad-gate execution; do not spend a full gate run only to discover that drift later.
 - If accepted remediation changes any stage-facing test row, wrapper, lifecycle step, or readonly/mutation coverage row, load `ci-equivalent-test-surface-admission` before claiming the authoritative source branch is pre-promotion ready.
 - For package/version lanes, explicitly record the authoritative `*-rc` branch name in the orchestration execution plan or equivalent review ledger before opening the remediation branch.
 - The order is mandatory:
@@ -65,6 +66,7 @@ The wrappers enforce action/diff policy only. They do not prove PR checks, revie
 - Any `Overall outcome: no-go` from preflight or guards blocks mutation.
 - A version/package promotion source is not authoritative unless the governing TODO's `Current Branch Authority` and exact `branch@sha` baseline both match the source branch under evaluation.
 - A release-package TODO is not authoritative unless its `Current Diff Child Owners` still matches the live version membership and every live child owner is already at a promotable delivery stage.
+- A promotable broad gate must not begin while prerequisite delivery documentation is stale. The only permitted pending documentation is the gate's own declared future evidence row.
 - In that version/package case, a green `review/*` matrix without a prior green authoritative `*-rc` matrix is still `no-go`.
 - A promotion source branch named `reconcile/*` or `sequence/*` is always a blocker. Promotion resumes only after replay onto the canonical branch is proven.
 - Do not open the first promotion PR while unresolved P1/P2 pre-promotion review findings remain.
