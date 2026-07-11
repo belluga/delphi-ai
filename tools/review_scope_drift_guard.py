@@ -31,7 +31,6 @@ MATERIAL_HEADINGS = (
     "## Bounded But Elastic Guardrails",
     "## Definition of Done",
     "## Validation Steps",
-    "## Completion Evidence Matrix",
     "## Execution Lane Tracking",
     "## Complexity",
     "## Canonical Module Anchors",
@@ -43,12 +42,10 @@ MATERIAL_HEADINGS = (
     "## Assumptions Preview",
     "## Execution Plan",
     "## Flow Evidence Planning Matrix",
-    "## Local CI-Equivalent Suite Matrix",
     "## Runtime / Rollout Notes",
     "## Security Risk Assessment",
     "## Performance & Concurrency Risk Assessment",
 )
-MATERIAL_HEADING_SET = set(MATERIAL_HEADINGS)
 H2_RE = re.compile(r"^##\s+.+$")
 
 

@@ -34,6 +34,16 @@ Baseline context.
 ## Definition of Done
 - [ ] keep original scope stable during review
 
+## Completion Evidence Matrix
+| Scope / Criterion | Evidence | Status | Notes |
+| --- | --- | --- | --- |
+| `baseline` | `initial proof` | `pending` | `operational row` |
+
+## Local CI-Equivalent Suite Matrix
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `sample-surface` | baseline proof row | `run-sample` | `before closeout` | `pending` | `none yet` | `operational row` |
+
 ## Decision Baseline (Frozen Before Implementation)
 - [x] `D-01` Scope remains the original bounded slice.
 
@@ -86,6 +96,16 @@ Baseline context.
 
 ## Definition of Done
 - [ ] keep original scope stable during review
+
+## Completion Evidence Matrix
+| Scope / Criterion | Evidence | Status | Notes |
+| --- | --- | --- | --- |
+| \`baseline\` | \`initial proof\` | \`passed\` | \`operational row updated\` |
+
+## Local CI-Equivalent Suite Matrix
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| \`sample-surface\` | baseline proof row | \`run-sample --refreshed\` | \`before closeout\` | \`passed\` | \`captured sample run\` | \`operational row updated\` |
 
 ## Decision Baseline (Frozen Before Implementation)
 - [x] \`D-01\` Scope remains the original bounded slice.
