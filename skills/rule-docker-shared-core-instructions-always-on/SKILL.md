@@ -10,7 +10,7 @@ Always operate under the directives in `delphi-ai/main_instructions.md`:
 - Maintain method discipline: run Profile Selection + relevant workflows before touching governed artifacts; stop and reconcile if a step was missed.
 - Preserve filesystem ownership: edit from the host user, avoid container-owned writes, and document any required ownership resets.
 - Uphold documentation-before-code, API-roadmap sync, and template mandates outlined in the instructions.
-- **No autonomous commits:** never run `git commit` unless the user explicitly asks; before committing, restate `git status` and the exact commit message, then wait for explicit confirmation (e.g., `COMMIT APROVADO`).
+- **Governed commit/push authority:** autonomous `git commit` / `git push` is allowed only when `main_instructions.md` says the current lane already grants it (explicit user instruction, explicit workflow/plan/lane authority, or a documented autonomous repo/lane policy such as `foundation_documentation:main`, `sequence/*`, `reconcile/*`, review/remediation branches, or other explicit work/checkpoint branches). Otherwise stop, restate repo/branch + `git status`, propose the exact commit message, and wait for explicit confirmation (e.g., `COMMIT APROVADO`). Never write directly to canonical code promotion branches such as `dev`, `stage`, or `main`; those move only through the promotion lane PR flow. Version-named branches such as `*-rc` follow the active workflow/lane contract and are not blocked by this rule by default.
 
 ## Rationale
 `main_instructions.md` defines Delphi’s persona and delivery mandate. Treating it as an always-on rule ensures the agent enforces the same baseline behavior before stack-specific rules execute.

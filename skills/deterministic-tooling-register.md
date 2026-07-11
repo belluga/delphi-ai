@@ -39,7 +39,7 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 | `rule-docker-documentation-migration-model-decision` | `skill-only` | Governance trigger; keep as rule, not tool. |
 | `rule-docker-flutter-architecture` | `skill-only` | Governance trigger; keep as rule, not tool. |
 | `rule-docker-shared-audit-escalation-model-decision` | `skill-only` | Governance trigger for deterministic audit-floor enforcement; the tool belongs to the workflow, not the rule itself. |
-| `rule-docker-shared-core-instructions-always-on` | `skill-only` | Always-on baseline; deterministic tooling would be fake authority. |
+| `rule-docker-shared-core-instructions-always-on` | `partial-tool` | Always-on baseline remains governance-first, but the git-write subset is now backed by [`git_write_authority_guard.py`](../tools/git_write_authority_guard.py), which deterministically blocks protected promotion branches, detached-HEAD ambiguity, and non-`main` writes in `foundation_documentation` while allowing documented work-branch/direct-doc surfaces. |
 | `rule-docker-shared-delphi-project-setup-model-decision` | `skill-only` | Setup trigger belongs in governance; setup reporting is backed by workflow helpers. The rule now points to `config/stack_capabilities.yaml` as available-capability context only, while project-active topology remains foundation/project-owned. |
 | `rule-docker-shared-environment-topology-contract-model-decision` | `partial-tool` | Governance remains rule-level, but topology draft creation is supported by [`environment_topology_contract_scaffold.py`](../tools/environment_topology_contract_scaffold.py), which pre-fills project evidence, redacts secrets, and marks inferred runtime/domain/tenant/active-stack values for user validation. |
 | `rule-docker-shared-foundation-docs-sync-model-decision` | `skill-only` | Canonical sync requirement; not a direct tool target. |
@@ -67,7 +67,7 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
 | `rule-laravel-shared-ability-catalog-sync-model-decision` | `skill-only` | Catalog sync is governance-first; static checks can support later. |
-| `rule-laravel-shared-core-instructions-always-on` | `skill-only` | Always-on baseline; deterministic tooling would be fake authority. |
+| `rule-laravel-shared-core-instructions-always-on` | `partial-tool` | Always-on baseline remains governance-first, but the git-write subset is now backed by [`git_write_authority_guard.py`](../tools/git_write_authority_guard.py), which deterministically blocks protected promotion branches, detached-HEAD ambiguity, and non-`main` writes in `foundation_documentation` while allowing documented work-branch/direct-doc surfaces. |
 | `rule-laravel-shared-domain-resolution-testing-model-decision` | `skill-only` | Decision trigger belongs in governance; route/test scanning belongs in workflow support. |
 | `rule-laravel-shared-foundation-docs-sync-model-decision` | `skill-only` | Canonical sync requirement; not a direct tool target. |
 | `rule-laravel-shared-initialization-readiness-model-decision` | `skill-only` | Governance shell around readiness checks; keep rule-level. |

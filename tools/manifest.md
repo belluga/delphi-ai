@@ -34,6 +34,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/flutter_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Flutter controller, domain, repository, and screen workflows. |
 | `tools/gate_finding_resolution_extract.py` | python | Extract a derived machine-checkable gate-finding resolution packet from the authoritative tactical TODO. |
 | `tools/gate_finding_resolution_scaffold.py` | python | Render a TODO-ready markdown resolution table scaffold from a merged subagent review packet. |
+| `tools/git_write_authority_guard.py` | python | Emit a TEACH runtime decision for whether a direct `git commit` / `git push` is allowed on the current repo/branch surface, blocking protected promotion branches, detached HEAD ambiguity, and non-`main` writes in `foundation_documentation`. |
 | `tools/laravel_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Laravel endpoint and domain workflows. |
 | `tools/list_public_codex_skill_mirrors.sh` | shell | Emit the canonical list of Delphi skills that must remain mirrored into `~/.codex/skills/public`. |
 | `tools/metrics_consolidation_trigger.py` | python | Extract formalizable gate findings from a completed TODO and append PACED rule events for the metrics pipeline. |

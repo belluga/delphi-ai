@@ -19,7 +19,7 @@ Use this workflow when the package risk is execution order and rework, not paral
 - When that later authoritative broad local gate is `stage-full`, require the isolated-worktree prefix to stop before `browser-stage-full`, so the skipped boundary starts at `local-public-web-build` and all later readonly/mutation browser proof stays deferred until replay onto the principal authoritative branch.
 - Require any TODO delivered under that non-authoritative prefix to remain explicitly provisional until replay onto the principal authoritative branch and the deferred broad local gate both succeed.
 - Require a checkpoint-time scan for newly appeared follow-up TODOs in the governed package folder, and refresh sequencing when that inventory changes.
-- Record functional checkpoint commits/pushes only from green states and only when the sequencing plan records explicit commit/push authority.
+- Record functional checkpoint commits/pushes only from green states and only when the sequencing plan records an explicit commit/push authority source.
 - Pause for explicit user validation before replaying the accepted net effect onto the canonical branch.
 
 ## Deterministic Support Boundary
@@ -43,6 +43,6 @@ Use this workflow when the package risk is execution order and rework, not paral
 - Do not claim `local-public-web-build`, browser readonly, browser mutation, or authoritative runtime freshness proof from an isolated sequencing worktree when those surfaces are reserved for the authoritative branch.
 - Do not run `browser-stage-full`, `local-public-web-build`, or any downstream readonly/mutation browser step from an isolated sequencing worktree when the checkpoint gate is only the pre-browser prefix of `stage-full`.
 - Treat any request to cross that cutoff from the isolated sequencing worktree as out of contract and refuse it until replay onto the principal authoritative branch.
-- Do not create checkpoint commits/pushes without explicit recorded user authority for that behavior.
+- Do not create checkpoint commits/pushes without an explicit recorded commit/push authority source allowed by the governed-commit rule.
 - Do not mark `sequence/*` as the promotion source branch.
 - Do not replay onto the canonical branch before explicit user validation of the sequencing branch result.

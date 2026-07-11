@@ -21,7 +21,8 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 ## Procedure
 1. Freeze or refresh the `Decision Baseline (Frozen)` before execution.
 2. Freeze a pushed review baseline before the first planning-side review or guard:
-   - commit and push the governing TODO package in its authoritative repo (normally `foundation_documentation`);
+   - commit and push the governing TODO package in its authoritative repo (normally `foundation_documentation`); when that authoritative documentation lane is documented as autonomous for baseline refresh/freeze writes, no extra per-action confirmation is required unless the user set a stricter boundary;
+   - before those direct writes, run `python3 delphi-ai/tools/git_write_authority_guard.py --repo <authoritative-repo-path> --action <git-commit|git-push>` and require `Overall outcome: go`;
    - record `Gate: Review Baseline Freeze` with the baseline branch, commit SHA, push reference, and evidence;
    - if the baseline-evidence update itself changes any scope-governing section, refresh the freeze so the recorded baseline matches the package that will actually enter review.
    - if the TODO is still drafting its review packet before this gate is satisfied or waived, record that work only as packet preparation using explicit provisional wording such as `prepared-pre-freeze` or `pending-freeze`; do **not** mark planning-side review/guard rows as `passed` until the freeze requirement is satisfied or explicitly waived and the authoritative review/guard actually ran.

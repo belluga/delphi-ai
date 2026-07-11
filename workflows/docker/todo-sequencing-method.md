@@ -11,7 +11,7 @@ Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Eq
 
 The sequencing branch is execution topology only. It is not a second TODO authority, not a promotion lane, and not a replacement for the normal TODO delivery/closeout guards. Prefer the branch family `sequence/*` so the lane is visibly distinct from orchestration-only `reconcile/*`.
 
-Checkpoint commits/pushes still obey the canonical no-autonomous-commits rule. The sequencing plan must record the explicit user approval or governing approval artifact that authorizes checkpoint commits/pushes on the sequencing branch before any checkpoint commit is created.
+Checkpoint commits/pushes still obey the canonical governed-commit rule. The sequencing plan must record the exact authority source that authorizes checkpoint commits/pushes on the sequencing branch before any checkpoint commit is created. Valid sources include explicit user instruction, explicit workflow/plan lane authority, or another governing approval artifact that makes the sequencing checkpoint write-path autonomous.
 
 ## Triggers
 - The user explicitly asks for TODO sequencing, package sequencing, or execution ordering that minimizes rework.
@@ -50,7 +50,8 @@ Checkpoint commits/pushes still obey the canonical no-autonomous-commits rule. T
    - If the sequencing branch is the current authoritative local surface, that checkpoint gate should be the project's broad local stage gate (`stage-full` or an exact equivalent broad local gate).
    - If the sequencing branch is an isolated worktree or other non-authoritative surface, record instead the exact narrower checkpoint prefix gate, state what it must not claim (for example `CI-Equivalent`, promotable parity, browser/runtime freshness, readonly completion, mutation completion, or web-build proof), and also record the later authoritative broad local gate that still remains mandatory after replay.
   - If that later broad local gate is `stage-full`, the recorded isolated prefix must explicitly stop before `browser-stage-full`; that means the isolated lane never enters `local-public-web-build`, readonly smoke, or mutation smoke from the isolated worktree, and the plan must not describe the prefix vaguely as "the first part of stage-full" without naming that cutoff.
-   - Record the explicit checkpoint commit/push authorization evidence before any checkpoint commit is created.
+   - Record the explicit checkpoint commit/push authority source before any checkpoint commit is created.
+   - Before any direct sequencing checkpoint commit/push, run `python3 delphi-ai/tools/git_write_authority_guard.py --repo <repo-path> --action <git-commit|git-push>` and require `Overall outcome: go`.
    - Record that `sequence/*` is a checkpoint lane only and may never be treated as the promotion source branch.
 4. **Execute one sequencing unit at a time**
    - Run the current sequencing unit through the normal TODO-driven execution flow on the sequencing branch.
@@ -108,7 +109,7 @@ Checkpoint commits/pushes still obey the canonical no-autonomous-commits rule. T
 - No checkpoint manifest or TODO claim treats a non-authoritative sequencing worktree as `CI-Equivalent`, promotable, browser-readonly complete, browser-mutation complete, web-build complete, or authoritative runtime-fresh.
 - When the broad gate is `stage-full`, the recorded isolated prefix explicitly stops before `browser-stage-full`; the isolated lane therefore skips `local-public-web-build` and all later readonly/mutation browser proof until replay onto the principal authoritative branch.
 - Delivered/checkpointed TODOs are not reopened solely to absorb newly discovered follow-up work; new scope is routed as fresh sequencing work when the natural parent owner is already closed or checkpointed.
-- Checkpoint commits/pushes occur only after a green branch state and explicit recorded commit/push authority.
+- Checkpoint commits/pushes occur only after a green branch state and an explicit recorded commit/push authority source.
 - The sequencing branch is never treated as a promotion source branch.
 - Final replay onto the canonical branch happens only after explicit user validation of the sequencing branch result.
 - The sequencing plan is refreshed whenever the required order, checkpoint granularity, or package boundaries change materially.
