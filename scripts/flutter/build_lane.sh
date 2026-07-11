@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/build_lane.sh [lane] <target> [flutter build args...]
+  ./script/build_lane.sh [lane] <target> [flutter build args...]
 
 Args:
   lane      Optional. dev|stage|main. When omitted, resolves from current branch:
@@ -17,13 +17,16 @@ Args:
             - web
 
 Examples:
-  ./scripts/build_lane.sh apk --debug --flavor <flavor> --dart-define=FLAVOR=<flavor>
-  ./scripts/build_lane.sh stage apk --release --flavor <flavor>
-  ./scripts/build_lane.sh main appbundle --release --flavor <flavor>
+  ./script/build_lane.sh apk --debug --flavor <flavor> --dart-define=FLAVOR=<flavor>
+  ./script/build_lane.sh stage apk --release --flavor <flavor>
+  ./script/build_lane.sh main appbundle --release --flavor <flavor>
 
 Notes:
   - config/defines/local.override.json is applied only when the resolved lane is dev.
   - The script validates the effective bootstrap origin before building.
+  - Android flavor builds validate the committed public flavor file before building.
+  - Android release/appbundle builds validate either the local signing file + keystore
+    or the official Codemagic Android signing environment variables.
   - The script validates the expected build artifact after the build completes.
 EOF
 }
@@ -162,6 +165,119 @@ validate_target_supported() {
       exit 1
       ;;
   esac
+}
+
+extract_flutter_flavor() {
+  local args=("$@")
+  local idx=0
+  while [[ $idx -lt ${#args[@]} ]]; do
+    case "${args[$idx]}" in
+      --flavor)
+        idx=$((idx + 1))
+        if [[ $idx -ge ${#args[@]} ]]; then
+          log_error "missing value for --flavor"
+          exit 1
+        fi
+        printf '%s\n' "${args[$idx]}"
+        return 0
+        ;;
+      --flavor=*)
+        printf '%s\n' "${args[$idx]#*=}"
+        return 0
+        ;;
+    esac
+    idx=$((idx + 1))
+  done
+
+  return 1
+}
+
+resolve_android_build_mode() {
+  local target="$1"
+  shift
+  local args=("$@")
+
+  for arg in "${args[@]}"; do
+    case "$arg" in
+      --debug) printf 'debug\n'; return 0 ;;
+      --profile) printf 'profile\n'; return 0 ;;
+      --release) printf 'release\n'; return 0 ;;
+    esac
+  done
+
+  case "$target" in
+    apk|appbundle) printf 'release\n' ;;
+    *) printf 'unknown\n' ;;
+  esac
+}
+
+validate_android_flavor_contract() {
+  local flutter_app_dir="$1"
+  local flavor="$2"
+  local build_mode="$3"
+
+  local public_file="${flutter_app_dir}/android/flavors/${flavor}.public.properties"
+  local signing_file="${flutter_app_dir}/android/keystores/${flavor}.signing.properties"
+  local keystore_file="${flutter_app_dir}/android/keystores/${flavor}.jks"
+
+  if [[ ! -f "$public_file" ]]; then
+    log_error "missing committed public flavor properties: ${public_file}"
+    exit 1
+  fi
+
+  grep -q '^applicationId=' "$public_file" || {
+    log_error "${public_file} must declare applicationId"
+    exit 1
+  }
+  grep -q '^appLinkHosts=' "$public_file" || {
+    log_error "${public_file} must declare appLinkHosts"
+    exit 1
+  }
+
+  log_info "validated Android public flavor contract: ${public_file}"
+
+  if [[ "$build_mode" != "release" ]]; then
+    return 0
+  fi
+
+  if [[ -f "$signing_file" ]]; then
+    if [[ ! -f "$keystore_file" ]]; then
+      log_error "missing Android keystore for release flavor ${flavor}: ${keystore_file}"
+      exit 1
+    fi
+
+    log_info "validated Android release signing inputs: ${signing_file} and ${keystore_file}"
+    return 0
+  fi
+
+  local cm_keystore_path="${CM_KEYSTORE_PATH:-}"
+  local cm_keystore_password="${CM_KEYSTORE_PASSWORD:-}"
+  local cm_key_alias="${CM_KEY_ALIAS:-}"
+  local cm_key_password="${CM_KEY_PASSWORD:-}"
+
+  if [[ -n "$cm_keystore_path" || -n "$cm_keystore_password" || -n "$cm_key_alias" || -n "$cm_key_password" ]]; then
+    local missing_envs=()
+    [[ -n "$cm_keystore_path" ]] || missing_envs+=("CM_KEYSTORE_PATH")
+    [[ -n "$cm_keystore_password" ]] || missing_envs+=("CM_KEYSTORE_PASSWORD")
+    [[ -n "$cm_key_alias" ]] || missing_envs+=("CM_KEY_ALIAS")
+    [[ -n "$cm_key_password" ]] || missing_envs+=("CM_KEY_PASSWORD")
+
+    if [[ ${#missing_envs[@]} -gt 0 ]]; then
+      log_error "incomplete Codemagic Android signing environment for release flavor ${flavor}: missing ${missing_envs[*]}"
+      exit 1
+    fi
+
+    if [[ ! -f "$cm_keystore_path" ]]; then
+      log_error "missing Codemagic Android keystore for release flavor ${flavor}: ${cm_keystore_path}"
+      exit 1
+    fi
+
+    log_info "validated Codemagic Android release signing inputs: ${cm_keystore_path} via CM_KEYSTORE_PATH"
+    return 0
+  fi
+
+  log_error "missing Android signing properties for release flavor ${flavor}: ${signing_file}. Alternatively, provide Codemagic signing environment variables CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, and CM_KEY_PASSWORD."
+  exit 1
 }
 
 extract_web_output_dir() {
@@ -335,6 +451,13 @@ BUILD_CMD=(
   "$@"
   --dart-define-from-file="$LANE_FILE"
 )
+
+if [[ "$TARGET" == "apk" || "$TARGET" == "appbundle" ]]; then
+  if FLAVOR="$(extract_flutter_flavor "$@")"; then
+    BUILD_MODE="$(resolve_android_build_mode "$TARGET" "$@")"
+    validate_android_flavor_contract "$FLUTTER_APP_DIR" "$FLAVOR" "$BUILD_MODE"
+  fi
+fi
 
 if [[ "$LANE" == "dev" && -f "$LOCAL_OVERRIDE_FILE" ]]; then
   BUILD_CMD+=(--dart-define-from-file="$LOCAL_OVERRIDE_FILE")
