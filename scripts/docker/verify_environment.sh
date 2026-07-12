@@ -86,18 +86,18 @@ echo "OK"
 
 echo "== web shell runtime mount invariants =="
 for compose_mount in \
-  '- ./web-app:/opt/web-shell:ro'; do
+  '- ./web-app:/opt/flutter-web-shell:ro'; do
   if ! grep -Fq -- "${compose_mount}" docker-compose.yml; then
     die "docker-compose.yml missing required web shell mount '${compose_mount}'"
   fi
 done
 if grep -Fq -- './web-app:/var/www/flutter:ro' docker-compose.yml; then
-  die "docker-compose.yml must not mount web-app into /var/www/flutter; use /opt/web-shell to avoid nested bind-mount drift"
+  die "docker-compose.yml must not mount web-app into /var/www/flutter; use /opt/flutter-web-shell to avoid nested bind-mount drift"
 fi
 for nginx_template in docker/nginx/local.conf.template docker/nginx/prod.conf.template; do
   [[ -f "${nginx_template}" ]] || die "missing ${nginx_template}"
-  if ! grep -Fq 'root /opt/web-shell;' "${nginx_template}"; then
-    die "${nginx_template} must serve web assets from /opt/web-shell"
+  if ! grep -Fq 'root /opt/flutter-web-shell;' "${nginx_template}"; then
+    die "${nginx_template} must serve web assets from /opt/flutter-web-shell"
   fi
   if grep -Fq 'root /var/www/flutter;' "${nginx_template}"; then
     die "${nginx_template} must not serve Flutter web assets from /var/www/flutter"
