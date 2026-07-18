@@ -32,7 +32,24 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
      --json-output foundation_documentation/artifacts/tmp/subagent-critique-dispatch.json \
      --markdown-output foundation_documentation/artifacts/tmp/subagent-critique-dispatch.md
    ```
-2. After reviewers return JSON compatible with `schemas/subagent_review_result.schema.json`, merge them:
+2. Run the fresh internal reviewer through the canonical runner. It embeds the bounded package in a closed stdin prompt, records JSONL/stderr, requires `turn.completed`, and falls back to the final streamed message only when `--output-last-message` is absent:
+   ```bash
+   python3 delphi-ai/tools/subagent_review_run.py \
+     --model gpt-5.6-sol \
+     --dispatch foundation_documentation/artifacts/tmp/subagent-critique-dispatch.md \
+     --package foundation_documentation/artifacts/tmp/critique-package.md \
+     --raw-output foundation_documentation/artifacts/tmp/reviewer-a.raw.json \
+     --events-output foundation_documentation/artifacts/tmp/reviewer-a.events.jsonl \
+     --stderr-output foundation_documentation/artifacts/tmp/reviewer-a.stderr.log \
+     --workdir "$PWD"
+   ```
+3. When a reviewer uses a documented historical category alias, normalize it before validation; the normalizer is not a permissive parser and rejects every unlisted field/value:
+   ```bash
+   python3 delphi-ai/tools/subagent_review_normalize.py \
+     --input foundation_documentation/artifacts/tmp/reviewer-a.raw.json \
+     --output foundation_documentation/artifacts/tmp/reviewer-a.normalized.json
+   ```
+4. Merge the canonical or normalized reviewer JSON only after strict schema validation:
    ```bash
    python3 delphi-ai/tools/subagent_review_merge.py \
      --dispatch foundation_documentation/artifacts/tmp/subagent-critique-dispatch.json \
@@ -52,6 +69,9 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
    - Generate the dispatch packet and give the markdown form to the orchestration harness or operator.
 3. **Collect structured reviewer results**
    - Each reviewer must answer in JSON compatible with `schemas/subagent_review_result.schema.json`.
+   - The dispatch markdown must enumerate the canonical top-level field allowlist, position enum, and finding-category enum from that schema; do not rely on a vague compatibility instruction.
+   - Use `subagent_review_run.py` for internal Codex gates. It must receive the dispatch and bounded package as files, embed both in the initial closed stdin prompt, and record the raw result, JSONL stream, and stderr. A missing `turn.completed` or both a missing output-last-message and final streamed agent message is retryable collection failure, not review evidence.
+   - If an otherwise structured result uses a documented historical alias, run `subagent_review_normalize.py` and merge only its schema-valid derived output. The normalizer must remain review-kind-specific and closed: it must never repair prose, unknown fields, unknown categories, or invalid position values.
    - When the dispatch packet records `review_result_dispatch_path`, the reviewer result's `dispatch_path` must equal that exact JSON dispatch path. It must never point to the bounded package, governing TODO, or reviewer-output file; merge rejects those substitutions.
    - Reject prose-only feedback when deterministic merge is the chosen path.
 4. **Merge and interpret**

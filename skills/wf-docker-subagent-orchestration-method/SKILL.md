@@ -12,7 +12,9 @@ Required Delphi review gates use fresh internal no-context reviewers only. A dis
 
 ## Preferred Deterministic Helpers
 1. Build the dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py ...`.
-2. Merge reviewer JSON outputs with `python3 delphi-ai/tools/subagent_review_merge.py ...`.
+2. Run fresh internal Codex reviews with `python3 delphi-ai/tools/subagent_review_run.py ...`; it embeds the bounded packet, records JSONL/stderr, and requires `turn.completed` before a result can be considered collected.
+3. If a structured result uses a documented historical alias, normalize it with `python3 delphi-ai/tools/subagent_review_normalize.py ...`; unknown fields/categories/positions must still fail.
+4. Merge only canonical-schema-valid reviewer JSON outputs with `python3 delphi-ai/tools/subagent_review_merge.py ...`.
 
 ## Procedure
 1. Freeze a bounded review package.
@@ -20,8 +22,10 @@ Required Delphi review gates use fresh internal no-context reviewers only. A dis
    - If the matrix is missing for a triggered package, stop package dispatch and return to TODO preparation. The valid package states are `consumer implemented + evidenced` or `consumer intentionally absent + approved waiver`; reviewers should not be expected to infer absent frontend/admin consumers from a code diff.
    - If the package participates in a multi-TODO orchestration or a pre-promotion review loop, summarize package stage in the orchestration execution plan rather than creating a new version-status file. Package-level stage belongs to the plan; per-finding authority remains in the governing TODOs.
 2. Generate the dispatch packet for the chosen review kind.
-3. Require reviewer outputs in JSON compatible with `schemas/subagent_review_result.schema.json`.
-4. Merge the results and fold the authoritative resolution back into the governing TODO/gate.
+3. Require reviewer outputs in JSON compatible with `schemas/subagent_review_result.schema.json`; the dispatch must enumerate the canonical top-level allowlist plus position/category enums rather than merely naming the schema.
+4. Use the internal runner for Codex gates; missing `turn.completed` is retryable collection failure, not a valid review result.
+5. Normalize only documented review-kind-specific historical aliases before strict validation; never repair arbitrary prose or contract violations.
+6. Merge the results and fold the authoritative resolution back into the governing TODO/gate.
    - When the review participates in delivery or promotion gates, run `review-finding-classification` before reconciling every deduplicated finding into the governing TODO's `Promotion Finding Routing Ledger` as `release-blocker | follow-up-fast-follow | follow-up-hardening | by-design/no-action`.
    - Real non-blocking findings must be routed to explicit follow-up TODOs before the package can be considered clean.
-5. Keep every packet derived and non-authoritative.
+7. Keep every packet derived and non-authoritative.

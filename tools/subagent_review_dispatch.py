@@ -14,6 +14,7 @@ from finding_carry_forward_extract import build_carry_forward_packet
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
+RESULT_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_result.schema.json"
 
 CONFIG = {
     "architecture_opinion": {
@@ -165,6 +166,58 @@ def validate_schema(payload: dict) -> None:
     raise SystemExit("subagent review dispatch failed schema validation:\n" + "\n".join(rendered))
 
 
+def result_contract_lines(payload: dict) -> list[str]:
+    """Render the canonical reviewer contract from the merge-validator schema."""
+    schema = json.loads(RESULT_SCHEMA_PATH.read_text(encoding="utf-8"))
+    properties = schema["properties"]
+    finding = schema["$defs"]["finding"]
+    finding_properties = finding["properties"]
+
+    lines = [
+        "## Result Contract",
+        "Return exactly one JSON object and no Markdown fence or prose.",
+        "Do not emit `null`; omit optional fields that do not apply.",
+        "No top-level fields other than the following are allowed:",
+    ]
+    for field in schema["required"]:
+        field_schema = properties[field]
+        if "const" in field_schema:
+            lines.append(f"- `{field}`: `{field_schema['const']}`")
+        elif field == "dispatch_path":
+            lines.append(f"- `{field}`: the exact binding shown above")
+        elif field == "review_kind":
+            lines.append(f"- `{field}`: `{payload['review_kind']}`")
+        else:
+            lines.append(f"- `{field}`")
+
+    position_values = ", ".join(f"`{value}`" for value in schema["$defs"]["position"]["enum"])
+    category_values = ", ".join(f"`{value}`" for value in finding_properties["category"]["enum"])
+    severity_values = ", ".join(f"`{value}`" for value in finding_properties["severity"]["enum"])
+    formalizable_values = ", ".join(
+        f"`{value}`" for value in finding_properties["formalizable_hint"]["enum"]
+    )
+    candidate_rule_level_values = ", ".join(
+        f"`{value}`" for value in finding_properties["candidate_rule_level"]["enum"]
+    )
+    optional_finding_fields = ", ".join(
+        f"`{field}`" for field in finding_properties if field not in finding["required"]
+    )
+    lines.extend(
+        [
+            "",
+            f"Every `*_position` value must be one of: {position_values}.",
+            "Each finding may contain only these fields:",
+            f"- required: {', '.join(f'`{field}`' for field in finding['required'])}",
+            f"- optional: {optional_finding_fields}",
+            f"- `severity` values: {severity_values}",
+            f"- `category` values: {category_values}",
+            f"- `formalizable_hint` values: {formalizable_values}",
+            f"- `candidate_rule_level` values: {candidate_rule_level_values}",
+        ]
+    )
+    return lines
+
+
 def render_markdown(payload: dict) -> str:
     lines = [
         f"# PACED Subagent Dispatch: {payload['review_kind']}",
@@ -226,14 +279,7 @@ def render_markdown(payload: dict) -> str:
                     f"  - Reference: {entry['reference']}",
                 ]
             )
-    lines.extend(
-        [
-            "",
-            "## Result Contract",
-            "Each reviewer should answer in JSON compatible with `schemas/subagent_review_result.schema.json`.",
-            "",
-        ]
-    )
+    lines.extend(["", *result_contract_lines(payload), ""])
     return "\n".join(lines)
 
 
