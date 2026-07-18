@@ -48,7 +48,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
    - Note repository availability in the affected module docs and `foundation_documentation/system_roadmap.md` if it unlocks new behavior.
    - Update `foundation_documentation/system_roadmap.md` with the new capability or technical debt payoff when it affects planned work.
 10. **Verification**
-   - Run `fvm flutter analyze`; add/re-run unit tests covering the repository/user of it.
+   - Capture the stable full-workspace VS Code Problems snapshot; add/re-run unit tests covering the repository/user of it. Do not start a concurrent CLI analyzer.
    - When the debt program requires branch-delta enforcement for disabled rules, run the branch guard command (example: `bash ${PACED_GLOBAL_ANALYZER_PLUGIN_DIR:-tool/belluga_analysis_plugin}/bin/check_branch_delta_raw_payload_map.sh`).
    - When exact-lookup paths were touched, run `bash delphi-ai/tools/exact_lookup_anti_pattern_audit.sh --path <touched-path>` and classify every finding before delivery.
 
@@ -59,7 +59,7 @@ Establish domain-aligned data access for Flutter features, keeping DTO knowledge
 - Documentation/roadmap notes if scope changed.
 
 ## Validation
-- Analyzer/tests pass.
+- Stable full-workspace Problems snapshot and tests pass.
 - Controllers/widgets import only the contract, not DTOs.
 - DTO handling remains infrastructure-only.
 - Repository methods do not own raw payload maps (`Map<String, Object?>`) for transport parsing/building.

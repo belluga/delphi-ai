@@ -1,11 +1,11 @@
 ---
-description: Sequence multiple approved tactical TODOs through one checkpoint branch, defaulting to one checkpoint gate per TODO and deferring the parity-complete broad local gate to the authoritative branch whenever the sequencing lane is isolated.
+description: Sequence multiple approved tactical TODOs through explicit affected-area checkpoint gates, then run the parity-complete broad local gate once at integrated package closeout.
 ---
 
 # Workflow: TODO Sequencing
 
 ## Purpose
-Coordinate one execution lane across multiple approved TODOs when the main risk is rework, not parallelism. This workflow creates a sequencing plan that decides the safest order and checkpoint granularity, defaults the checkpoint unit to one TODO, allows a shared micro-batch unit only when that exception is explicitly admitted in the plan, runs each sequencing unit to its own local-delivery bar, records whether the lane uses an authoritative broad local gate or only a non-authoritative checkpoint prefix gate, requires the recorded checkpoint gate after every completed sequencing unit before the next begins, defers the parity-complete broad local gate to the canonical replay branch whenever the sequencing lane is isolated from the authoritative runtime/browser surface, records functional checkpoints on a dedicated sequencing branch, and pauses for explicit user validation before replaying the accepted net effect onto the canonical branch. When that later broad gate is `stage-full`, the isolated checkpoint prefix must stop before `browser-stage-full`, so the skipped boundary starts at `local-public-web-build` and all later readonly/mutation browser proof remains deferred until replay onto the principal authoritative branch. Any TODO that closes only on that non-authoritative prefix remains explicitly provisional until replay onto the principal authoritative branch and the deferred broad gate both succeed.
+Coordinate one execution lane across multiple approved TODOs when the main risk is rework, not parallelism. This workflow creates a sequencing plan that decides the safest order and checkpoint granularity, defaults the checkpoint unit to one TODO, allows a shared micro-batch unit only when that exception is explicitly admitted in the plan, and requires an exact affected-area checkpoint bundle after every unit before the next begins. A unit bundle contains only the focused tests, builds, deterministic guards, and runtime proof that the unit changes or consumes. Flutter-changing units additionally capture a stable full-workspace live VS Code Problems snapshot and matching rule review at every checkpoint; that static gate is mandatory but is not `stage-full`, `CI-Equivalent`, promotable, package-complete, or a substitute for the broad local gate. The agent must not start a concurrent CLI analyzer to recreate the editor-owned evidence. The parity-complete broad local gate runs once when the full sequencing/orchestration package is ready for integrated closeout: directly on the principal canonical state, or after replay when the sequencing lane is isolated. The workflow records functional checkpoints on a dedicated sequencing branch when that topology is used and pauses for explicit user validation before replaying the accepted net effect onto the canonical branch. When the package-closeout gate is `stage-full`, isolated worktrees must stop before `browser-stage-full`, so the skipped boundary starts at `local-public-web-build` and all later readonly/mutation browser proof remains deferred until replay onto the principal authoritative branch.
 
 Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Equivalent`, decide whether a named broad local gate such as `stage-full` is truly parity-complete, or judge whether a narrower local bundle is merely diagnostic.
 
@@ -21,7 +21,7 @@ Checkpoint commits/pushes still obey the canonical governed-commit rule. The seq
 ## Inputs
 - Governing TODO set with approval evidence (`APROVADO`) or an explicitly approved package plan that covers the same TODO set.
 - Stable base branch or base commit for the sequencing wave.
-- Project-owned checkpoint-gate topology for each sequencing unit: either the authoritative broad local stage gate (`stage-full` or an exact equivalent broad local gate) or an explicit non-authoritative prefix gate plus the later authoritative broad local gate that remains mandatory after replay.
+- Project-owned checkpoint-gate topology: an exact affected-area checkpoint bundle for every sequencing unit plus one parity-complete broad local gate (`stage-full` or an exact equivalent) for integrated package closeout.
 - Sequencing execution plan under `foundation_documentation/artifacts/execution-plans/`.
 - Checkpoint manifest path under `foundation_documentation/artifacts/checkpoints/`.
 - Governing package TODO folder inventory (typically `foundation_documentation/todos/active/<version>/`) so checkpoint-time follow-up discovery can be compared against the current sequencing plan.
@@ -38,35 +38,35 @@ Checkpoint commits/pushes still obey the canonical governed-commit rule. The seq
    - Evaluate dependency direction, shared files/modules, migration/contract risk, generated artifact coupling, runtime invalidation, and rollback cost.
    - Prefer an order that establishes shared contracts and shared plumbing first when later TODOs depend on them.
    - Prefer an order that groups hot validation surfaces together when doing so reduces repeated runtime/bootstrap churn without weakening proof quality.
-   - Default the checkpoint unit to one approved TODO plus one broad local stage gate.
-   - Admit a multi-TODO micro-batch only when every member TODO is already bounded and approved, the members share one repository family or one validation surface, no member still depends on an unresolved external decision or audit-perimeter freeze, the combined diff is still small enough for unambiguous failure triage, and every TODO-specific local evidence bundle will still run before the shared broad gate.
+   - Default the checkpoint unit to one approved TODO plus one exact affected-area checkpoint bundle.
+   - Admit a multi-TODO micro-batch only when every member TODO is already bounded and approved, the members share one repository family or one validation surface, no member still depends on an unresolved external decision or audit-perimeter freeze, the combined diff is still small enough for unambiguous failure triage, and every TODO-specific local evidence bundle will still run before the shared affected-area checkpoint bundle.
    - Record each admitted sequencing unit explicitly in the plan, including why that unit size is safe, what the shared validation surface is, and whether user granularity review is still pending.
    - If the chosen order or granularity changes later, refresh the plan before continuing.
 3. **Establish sequencing topology**
    - Freeze one base branch or base commit for the sequencing wave.
    - Create one sequencing branch from that base, preferably `sequence/<slug>`.
    - Record the canonical return branch that will receive the accepted net effect after final user validation.
-   - Record the exact checkpoint gate command that must pass after each sequencing unit checkpoint.
-   - If the sequencing branch is the current authoritative local surface, that checkpoint gate should be the project's broad local stage gate (`stage-full` or an exact equivalent broad local gate).
-   - If the sequencing branch is an isolated worktree or other non-authoritative surface, record instead the exact narrower checkpoint prefix gate, state what it must not claim (for example `CI-Equivalent`, promotable parity, browser/runtime freshness, readonly completion, mutation completion, or web-build proof), and also record the later authoritative broad local gate that still remains mandatory after replay.
-  - If that later broad local gate is `stage-full`, the recorded isolated prefix must explicitly stop before `browser-stage-full`; that means the isolated lane never enters `local-public-web-build`, readonly smoke, or mutation smoke from the isolated worktree, and the plan must not describe the prefix vaguely as "the first part of stage-full" without naming that cutoff.
+   - Record the exact affected-area checkpoint bundle that must pass after each sequencing unit. It must contain the direct touched/consumed test, guard, build, or runtime surfaces; it must not default to `stage-full`, a promotable wrapper, or another parity-complete broad gate. For every Flutter-changing unit, record the separate mandatory stable full-workspace live Problems snapshot and matching architecture/rule review; never replace it with an edited-file or directory subset, and never start a concurrent CLI analyzer.
+   - Record one later package-closeout broad local gate and the state where it runs. If the sequencing branch is isolated, that state is the principal canonical branch after replay; if the sequencing branch is principal, it runs there after the final unit only.
+   - State what each unit gate must not claim: `CI-Equivalent`, promotable parity, package completeness, browser/runtime freshness, readonly completion, mutation completion, or web-build proof.
+   - If the later package-closeout broad gate is `stage-full`, the recorded isolated lane must explicitly stop before `browser-stage-full`; that means it never enters `local-public-web-build`, readonly smoke, or mutation smoke from the isolated worktree.
    - Record the explicit checkpoint commit/push authority source before any checkpoint commit is created.
    - Before any direct sequencing checkpoint commit/push, run `python3 delphi-ai/tools/git_write_authority_guard.py --repo <repo-path> --action <git-commit|git-push>` and require `Overall outcome: go`.
    - Record that `sequence/*` is a checkpoint lane only and may never be treated as the promotion source branch.
 4. **Execute one sequencing unit at a time**
    - Run the current sequencing unit through the normal TODO-driven execution flow on the sequencing branch.
-   - When the current sequencing unit reaches delivery gates, the sequencing plan still owns the branch-state gate for that unit: use the recorded checkpoint gate, not an ad hoc broader substitute chosen from habit.
-   - For a single-TODO unit, that means one governing TODO. For an admitted micro-batch, finish each member TODO's own local evidence and close-claim prerequisites before running the shared broad local stage gate.
+   - When the current sequencing unit reaches delivery gates, the sequencing plan still owns the branch-state gate for that unit: use the recorded affected-area checkpoint bundle, not an ad hoc broader substitute chosen from habit.
+   - For a single-TODO unit, that means one governing TODO. For an admitted micro-batch, finish each member TODO's own local evidence and close-claim prerequisites before running the shared affected-area checkpoint bundle.
    - Do not start the next sequencing unit while the current sequencing unit still lacks its required delivery evidence or deterministic close-claim guards.
-   - Run the recorded checkpoint gate on the current sequencing branch state after the current sequencing unit's TODO-specific delivery gates are green.
+   - Run the recorded affected-area checkpoint bundle on the current sequencing branch state after the current sequencing unit's TODO-specific delivery gates are green. For Flutter-changing units, complete the mandatory stable full-workspace live Problems snapshot and matching architecture/rule review before treating the checkpoint as green; this does not escalate the test/runtime bundle into `stage-full`.
    - If that recorded checkpoint gate fails, fix the current unit or record a blocker before proceeding. Do not defer the breakage to a later TODO.
    - If a micro-batch grows beyond its recorded safe boundary mid-execution, stop, split the batch back into smaller units, and refresh the plan before continuing.
 5. **Checkpoint only from green states**
    - After the current sequencing unit and the recorded checkpoint gate are both green, update every affected TODO status/evidence/next exact step.
-   - If final package user validation and canonical replay still remain, record each completed TODO as locally delivered but still package-pending. Prefer `Current delivery stage: Local-Implemented` with `Qualifiers: Provisional` unless the governing TODO's own closeout path requires a different still-open state. This provisional qualifier is mandatory when the passed checkpoint gate is only a non-authoritative prefix and the later authoritative broad local gate still remains.
+   - If final package broad-gate validation and canonical replay still remain, record each completed TODO as checkpointed with the package-closeout dependency explicit. Do not claim `CI-Equivalent`, package-complete, or promotion-ready from the targeted checkpoint.
    - Create and push the checkpoint commit only after the sequencing plan's commit/push authority is satisfied.
    - Create or update the checkpoint manifest from `delphi-ai/templates/sequencing_checkpoint_manifest_template.md`.
-   - Each checkpoint must represent a functional branch state that already passed the recorded checkpoint gate on the sequencing branch. If that gate is non-authoritative, the manifest must say so explicitly and keep the TODO/package state provisional. No TODO inside an admitted micro-batch may be checkpointed before the shared checkpoint gate passes.
+   - Each checkpoint must represent a functional branch state that already passed the recorded affected-area checkpoint bundle. The manifest must state that the package-closeout broad gate remains pending. No TODO inside an admitted micro-batch may be checkpointed before the shared checkpoint bundle passes.
 6. **Run the checkpoint-time follow-up discovery scan**
    - Before activating the next sequencing unit, rescan the governed package folder for newly appeared TODOs or follow-up owners that are not already represented in the sequencing plan.
    - For each newly discovered TODO, classify it explicitly:
@@ -79,16 +79,16 @@ Checkpoint commits/pushes still obey the canonical governed-commit rule. The seq
    - Mark the current sequencing unit as checkpointed in the sequencing plan.
    - Move the next TODO or next admitted micro-batch into the active position only after the previous unit's checkpoint has been recorded.
    - If execution discovers that the order, checkpoint granularity, or package boundary is now wrong or incomplete, stop and refresh the sequencing plan before starting the next unit.
-8. **Finish on explicit user validation**
-   - When the last sequencing unit and its final recorded checkpoint gate are green, record a package-ready checkpoint on the sequencing branch.
-   - If the package has been running under a non-authoritative checkpoint prefix gate, do not imply that the parity-complete broad local gate is done yet; that authoritative gate still belongs to the canonical replay branch.
-   - Ask the user to validate the sequencing branch result before replaying anything onto the canonical return branch.
-   - Do not treat the sequencing branch itself as promotable or complete beyond the package-local checkpoint claim.
-9. **Replay only after validation**
+8. **Finish targeted checkpoints before package closeout**
+   - When the last sequencing unit and its final affected-area checkpoint bundle are green, record a package-ready-for-integration checkpoint.
+   - Do not run the broad local gate earlier merely because an individual unit completed. It is now required exactly once for the integrated package.
+   - If the sequencing branch is isolated, ask the user to validate the sequencing branch result before replaying anything onto the canonical return branch.
+   - Do not treat the sequencing branch itself as promotable or complete beyond the targeted package checkpoint claim.
+9. **Replay and run the single broad package gate**
    - After the user validates the sequencing branch, replay the accepted net effect onto the canonical return branch.
-   - If the sequencing lane used only a non-authoritative checkpoint prefix gate, the authoritative broad local stage gate is still required on the canonical branch before promotion or closeout resumes.
-   - If the replay is a pure fast-forward or conflict-free curated replay, run at least a bounded sanity pass on the canonical branch unless the governing package requires the authoritative broad local gate immediately.
-   - If the replay introduces conflicts, manual reconciliation, dropped hunks, or other non-trivial source-branch-only change, rerun the in-scope authoritative broad local gate on the canonical branch before promotion or closeout resumes.
+   - Run the recorded parity-complete broad local gate once on the resulting principal canonical package state before `Local-Implemented`, package-complete, or promotion-ready claims.
+   - If the sequencing lane is already principal, omit replay and run that one broad gate after the final targeted checkpoint.
+   - If replay introduces conflicts, manual reconciliation, dropped hunks, or other non-trivial source-branch-only change, resolve them before the single broad gate; do not create a second per-unit broad run.
 
 ## Outputs
 - Sequencing execution plan under `foundation_documentation/artifacts/execution-plans/`.
@@ -96,18 +96,19 @@ Checkpoint commits/pushes still obey the canonical governed-commit rule. The seq
 - A deliberate TODO order plus an explicit checkpoint-granularity board that keeps micro-batch exceptions reviewable.
 - A functional checkpoint commit/push after each completed sequencing unit that already passed its recorded checkpoint gate.
 - Checkpoint manifests under `foundation_documentation/artifacts/checkpoints/`.
+- One parity-complete broad local gate result for the fully integrated package before promotion closeout.
 - Explicit final user validation before replay onto the canonical return branch.
 
 ## Validation
 - No TODO starts on the package before the sequencing plan records the order, the checkpoint granularity, and the governing TODO authority.
 - Every sequencing unit defaults to one TODO unless an admitted micro-batch is explicitly recorded in the plan with shared-surface rationale and user-review status.
-- Every sequencing unit passes its required delivery/closeout guards plus its recorded checkpoint gate before the next sequencing unit starts.
-- When the sequencing lane is non-authoritative, the plan explicitly records the narrower checkpoint prefix gate, the claims that gate must not make, and the later authoritative broad local gate required after replay.
-- Delivery gates on isolated sequencing lanes inherit the plan's recorded checkpoint gate and do not silently substitute the deferred authoritative broad gate before replay.
+- Every sequencing unit passes its required delivery guards plus its recorded affected-area checkpoint bundle before the next sequencing unit starts.
+- The plan records the exact touched/consumed validation bundle for every unit and one later parity-complete broad local gate for the integrated package.
+- Delivery gates do not silently substitute the package-closeout broad gate into a per-unit checkpoint.
 - Every checkpoint includes a fresh governed-folder scan for newly appeared follow-up TODOs, plus an explicit classification of whether each new item is already contemplated, should merge into an open owner, or must become fresh sequencing work.
-- No TODO inside an admitted micro-batch is checkpointed or marked delivered before the shared broad local gate passes.
-- No checkpoint manifest or TODO claim treats a non-authoritative sequencing worktree as `CI-Equivalent`, promotable, browser-readonly complete, browser-mutation complete, web-build complete, or authoritative runtime-fresh.
-- When the broad gate is `stage-full`, the recorded isolated prefix explicitly stops before `browser-stage-full`; the isolated lane therefore skips `local-public-web-build` and all later readonly/mutation browser proof until replay onto the principal authoritative branch.
+- No TODO inside an admitted micro-batch is checkpointed before the shared affected-area checkpoint bundle passes.
+- No checkpoint manifest or TODO claim treats a per-unit gate as `CI-Equivalent`, promotable, package-complete, browser-readonly complete, browser-mutation complete, web-build complete, or authoritative runtime-fresh.
+- The broad local gate runs once only after all admitted units' targeted checkpoints are green, on the principal canonical state; when that gate is `stage-full` and the lane was isolated, the isolated lane stops before `browser-stage-full` and all later browser proof waits for replay.
 - Delivered/checkpointed TODOs are not reopened solely to absorb newly discovered follow-up work; new scope is routed as fresh sequencing work when the natural parent owner is already closed or checkpointed.
 - Checkpoint commits/pushes occur only after a green branch state and an explicit recorded commit/push authority source.
 - The sequencing branch is never treated as a promotion source branch.

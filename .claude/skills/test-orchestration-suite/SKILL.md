@@ -40,6 +40,8 @@ If runtime freshness cannot be proven for a target, stop at `blocked` before lau
 - Browser CRUD/mutation validation must use the approved non-`main` mutation lane.
 - Respect wrapper branch-family contracts. CI-Equivalent remains current-branch local product proof. If a project-owned wrapper explicitly requires `reconcile/*`, do not cite it as the executor for a non-reconciliation gate unless you intentionally use a same-commit reconcile alias and record that equivalence. In real subagent orchestration, the authoritative branch under test is the consolidated reconciliation branch until that run is green; after that, replay the accepted net effect onto the plan's authoritative return branch before promotion or non-orchestration closeout resumes. Otherwise run the project-owned local build/publish path and the same product-facing suites directly on the active branch and record them with `test_orchestration_status_report.sh`.
 - Use `ci-equivalent-governance` as the authority for broad stage-gate naming, stage-pipeline parity, lifecycle-step inclusion, and stale-precondition invalidation.
+- In an approved sequential/orchestration plan, each unit checkpoint runs only its recorded affected-area test/build/runtime bundle. It must not run or claim `stage-full` by default.
+- The narrow checkpoint test bundle does not waive static architecture enforcement: Flutter-changing units still require the stable full-workspace live Problems snapshot under `flutter-architecture-adherence` before the next unit starts. This static-analysis gate is not a broad test/runtime gate and must not start a concurrent CLI analyzer.
 
 ## Default Sequence
 1. Environment/topology preflight.

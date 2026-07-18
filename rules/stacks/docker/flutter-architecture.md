@@ -22,21 +22,21 @@ Apply these Flutter architectural tenets on every task:
 - Align repos/contracts with documented pagination/filtering expectations and mirror them in Laravel roadmaps.
 - Any large or architectural Flutter change must carry a multi-lane test matrix for the affected critical paths: unit + widget + integration. Routing/navigation/shell/guard changes are examples, not the only trigger.
 - Compatibility-critical or backend-coupled architectural changes must additionally prove real-backend integration on the required platform matrix; analyzer or widget-only confidence is insufficient.
-- Analyzer/tests are mandatory: `fvm flutter analyze` must be clean; add targeted unit/widget tests when behaviour changes and do not treat them as a substitute for required integration evidence on architectural scope.
+- Static-analysis/tests are mandatory: use the project-declared live VS Code Problems bridge for a stable full-workspace snapshot with no `Error` or `Warning` diagnostic; classify retained `Information` diagnostics in the governing TODO. Do not start a competing CLI analyzer from the agent. Add targeted unit/widget tests when behaviour changes and do not treat them as a substitute for required integration evidence on architectural scope.
 - For device integration tests, run with `--dds-port=0` to avoid DDS port conflicts.
 
 ## Analyzer Plugin Topology
 - `tool/belluga_analysis_plugin` is the PACED ecosystem-global analyzer plugin default. It evolves for reusable architecture and quality rules that should help multiple projects.
 - Project-local analyzer plugins are allowed only for project-specific rules. They must be declared in `foundation_documentation` and in the project's analyzer configuration before use.
 - Do not promote a project-local rule into the global plugin without evidence of reuse across projects or an explicit architecture decision.
-- The official analyzer gate remains the project analyzer command; global plugin fixture validation is regression coverage for rule activation.
+- The agent-readable local analyzer gate is the project-declared live VS Code Problems bridge; global plugin fixture validation is regression coverage for rule activation. Any pipeline-owned analyzer command remains CI evidence and must not be recreated locally by the agent.
 
 ## Rationale
 These tenets keep the Flutter client aligned with backend contracts, maintain purity of presentation, and prevent coupling DTOs to UI. AutoRoute governance and analyzer discipline guard navigation integrity and code quality.
 
 ## Enforcement
 - Structure checks during PR/code review; ensure routes/controllers follow ModuleScope and AutoRoute rules.
-- Analyzer: `fvm flutter analyze` must be clean.
+- Static analysis: stable full-workspace Problems snapshot has no `Error` or `Warning`; informational diagnostics are explicitly classified.
 - Tests: add/maintain unit/widget tests where impacted flows change, and require integration evidence for any large/architectural change before delivery closure.
 
 ## Notes

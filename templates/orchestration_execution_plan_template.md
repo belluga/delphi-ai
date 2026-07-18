@@ -29,7 +29,7 @@ This artifact belongs to the downstream project's `foundation_documentation/arti
 ## Acceptance Traceability Matrix
 Every governing TODO `Definition of Done`, `Validation Steps`, and accepted decision marker must appear here as an exact or clearly quoted criterion before approval. During execution, workers update implementation/test evidence fields for their owned rows; the orchestrator only reconciles and validates final runtime evidence.
 
-Implementation evidence can include code, analyzer, unit, widget, package, repository, feature/API, and targeted tests. Runtime/Web evidence is the final acceptance lane for visible behavior. For Flutter visible behavior, write `shared-android-web`, `android-only`, `web-only`, or `divergent-android-web` in the Runtime / Web Evidence plan. Shared behavior can close with either ADB integration or Playwright navigation; divergent Android/Web behavior requires both.
+Implementation evidence can include code, static-analysis snapshot, unit, widget, package, repository, feature/API, and targeted tests. Flutter local static evidence is the stable full-workspace VS Code Problems bridge snapshot plus static-rule review, not a CLI analyzer run. Runtime/Web evidence is the final acceptance lane for visible behavior. For Flutter visible behavior, write `shared-android-web`, `android-only`, `web-only`, or `divergent-android-web` in the Runtime / Web Evidence plan. Shared behavior can close with either ADB integration or Playwright navigation; divergent Android/Web behavior requires both.
 
 | Requirement ID | Source TODO / Criterion | Implementation Owner | Required Artifact / UI Marker | Implementation Evidence | Test Evidence | Runtime / Web Evidence | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -114,7 +114,7 @@ Record one row per executor workstream when the active client exposes persistent
 
 | Workstream | Worker / Subagent | Goal Objective | Must Pass Before `complete` | `blocked` Condition |
 | --- | --- | --- | --- | --- |
-| `<WS-01>` | `<worker/subagent name>` | `<single bounded objective tied to owned rows/artifacts>` | `<official analyzer/lint + targeted tests + applicable build/publish gates>` | `<exact condition that returns ownership/blocker to the orchestrator>` |
+| `<WS-01>` | `<worker/subagent name>` | `<single bounded objective tied to owned rows/artifacts>` | `<Flutter: stable full-workspace Problems bridge snapshot + static-rule review; otherwise named lint/static gate; targeted tests; applicable build/publish gates>` | `<exact condition that returns ownership/blocker to the orchestrator>` |
 
 ## Execution Waves
 Waves are orchestrator-owned control checkpoints. They are not user feedback gates and must not stop execution by default. Stop only for a mandatory user decision, scope change, conflict with the governing TODO set, real blocker, or explicit validation waiver.

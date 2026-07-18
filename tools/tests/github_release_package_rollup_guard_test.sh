@@ -31,7 +31,9 @@ printf 'root-base\n' > "$ROOT_REPO/README.md"
 git -C "$ROOT_REPO" add README.md
 git -C "$ROOT_REPO" commit -q -m "root base"
 git -C "$ROOT_REPO" branch dev
+git -C "$ROOT_REPO" branch stage
 git -C "$ROOT_REPO" push -q origin dev
+git -C "$ROOT_REPO" push -q origin stage
 git -C "$ROOT_REPO" checkout -q -b v9.9.9-rc
 git -C "$ROOT_REPO" update-index --add --cacheinfo 160000 1111111111111111111111111111111111111111 flutter-app
 git -C "$ROOT_REPO" commit -q -m "pin flutter gitlink"
@@ -50,8 +52,17 @@ EOF_PUB
 git -C "$FLUTTER_REPO" add pubspec.yaml
 git -C "$FLUTTER_REPO" commit -q -m "flutter base"
 git -C "$FLUTTER_REPO" branch dev
+git -C "$FLUTTER_REPO" branch stage
 git -C "$FLUTTER_REPO" push -q origin dev
+git -C "$FLUTTER_REPO" push -q origin stage
 git -C "$FLUTTER_REPO" checkout -q -b v9.9.9-rc dev
+printf '\nrc-only-change: true\n' >> "$FLUTTER_REPO/pubspec.yaml"
+git -C "$FLUTTER_REPO" add pubspec.yaml
+git -C "$FLUTTER_REPO" commit -q -m "flutter rc only"
+git -C "$FLUTTER_REPO" checkout -q dev
+git -C "$FLUTTER_REPO" merge --ff-only -q v9.9.9-rc
+git -C "$FLUTTER_REPO" push -q origin dev
+git -C "$FLUTTER_REPO" checkout -q v9.9.9-rc
 FLUTTER_SHA="$(git -C "$FLUTTER_REPO" rev-parse HEAD)"
 
 cat > "$CHILD_ONE" <<'EOF'
@@ -93,8 +104,9 @@ grep -q "Overall outcome: go" "$OUTPUT"
 grep -q "recommended_opening_track: docker-bot-next-version" "$OUTPUT"
 grep -q "recommended_primary_surface: docker" "$OUTPUT"
 grep -q "recommended_docker_diff_shape: gitlink-only" "$OUTPUT"
+grep -q "pending_stage_repos: flutter-app" "$OUTPUT"
 grep -q "root | branch=v9.9.9-rc .* state=gitlink-only" "$OUTPUT"
-grep -q "flutter-app | branch=v9.9.9-rc .* state=already-absorbed-by-dev" "$OUTPUT"
+grep -q "flutter-app | branch=v9.9.9-rc .* state=already-absorbed-by-dev .* pending_stage=yes" "$OUTPUT"
 
 cat > "$ACTIVE_DIR/TODO-v9.9.9-late-hotfix.md" <<'EOF'
 # TODO (v9.9.9): Late Hotfix

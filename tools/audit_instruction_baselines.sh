@@ -229,6 +229,8 @@ check_cline_counterparts() {
     slug="${skill_name#wf-}"
 
     case "$slug" in
+      flutter-create-controller-method) expected="$DEL_ROOT/.clinerules/workflows/create-controller.md" ;;
+      flutter-create-screen-method) expected="$DEL_ROOT/.clinerules/workflows/create-screen.md" ;;
       docker-*) expected="$DEL_ROOT/.clinerules/workflows/docker-${slug#docker-}.md" ;;
       flutter-*) expected="$DEL_ROOT/.clinerules/workflows/${slug#flutter-}.md" ;;
       laravel-*) expected="$DEL_ROOT/.clinerules/workflows/laravel-${slug#laravel-}.md" ;;

@@ -85,19 +85,42 @@ docker compose config >/dev/null
 echo "OK"
 
 echo "== web shell runtime mount invariants =="
-for compose_mount in \
-  '- ./web-app:/opt/flutter-web-shell:ro'; do
-  if ! grep -Fq -- "${compose_mount}" docker-compose.yml; then
-    die "docker-compose.yml missing required web shell mount '${compose_mount}'"
-  fi
-done
-if grep -Fq -- './web-app:/var/www/flutter:ro' docker-compose.yml; then
-  die "docker-compose.yml must not mount web-app into /var/www/flutter; use /opt/flutter-web-shell to avoid nested bind-mount drift"
+# The project's Compose file owns the container destination; Nginx must match it.
+web_shell_mount_paths=()
+while IFS= read -r web_shell_mount_path; do
+  [[ -n "${web_shell_mount_path}" ]] && web_shell_mount_paths+=("${web_shell_mount_path}")
+done < <(
+  while IFS= read -r compose_line; do
+    if [[ "${compose_line}" =~ ^[[:space:]]*-[[:space:]]*(.+[^[:space:]])[[:space:]]*$ ]]; then
+      compose_mount_spec="${BASH_REMATCH[1]}"
+      if [[ "${compose_mount_spec}" == \"*\" || "${compose_mount_spec}" == \'*\' ]]; then
+        compose_mount_spec="${compose_mount_spec:1:-1}"
+      fi
+      if [[ "${compose_mount_spec}" =~ ^\./web-app:([^:[:space:]]+):ro$ ]]; then
+        printf '%s\n' "${BASH_REMATCH[1]}"
+      fi
+    fi
+  done < docker-compose.yml | sort -u
+)
+
+if [[ "${#web_shell_mount_paths[@]}" -eq 0 ]]; then
+  die "docker-compose.yml must mount ./web-app read-only at one absolute runtime path"
+fi
+if [[ "${#web_shell_mount_paths[@]}" -ne 1 ]]; then
+  die "docker-compose.yml must mount ./web-app at exactly one runtime path; found: ${web_shell_mount_paths[*]}"
+fi
+
+web_shell_mount_path="${web_shell_mount_paths[0]}"
+if [[ "${web_shell_mount_path}" != /* ]]; then
+  die "docker-compose.yml web shell mount destination must be absolute: ${web_shell_mount_path}"
+fi
+if [[ "${web_shell_mount_path}" == "/var/www/flutter" ]]; then
+  die "docker-compose.yml must not mount web-app into /var/www/flutter; use a dedicated read-only web-shell path to avoid nested bind-mount drift"
 fi
 for nginx_template in docker/nginx/local.conf.template docker/nginx/prod.conf.template; do
   [[ -f "${nginx_template}" ]] || die "missing ${nginx_template}"
-  if ! grep -Fq 'root /opt/flutter-web-shell;' "${nginx_template}"; then
-    die "${nginx_template} must serve web assets from /opt/flutter-web-shell"
+  if ! grep -Fq "root ${web_shell_mount_path};" "${nginx_template}"; then
+    die "${nginx_template} must serve web assets from ${web_shell_mount_path} to match docker-compose.yml"
   fi
   if grep -Fq 'root /var/www/flutter;' "${nginx_template}"; then
     die "${nginx_template} must not serve Flutter web assets from /var/www/flutter"

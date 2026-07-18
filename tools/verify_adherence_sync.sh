@@ -134,6 +134,8 @@ map_workflow_skill_to_cline_workflow() {
   fi
 
   case "$slug" in
+    flutter-create-controller-method) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/create-controller.md" ;;
+    flutter-create-screen-method) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/create-screen.md" ;;
     docker-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/docker-${slug#docker-}.md" ;;
     flutter-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/${slug#flutter-}.md" ;;
     laravel-*) echo "$REPO_ROOT/delphi-ai/.clinerules/workflows/laravel-${slug#laravel-}.md" ;;

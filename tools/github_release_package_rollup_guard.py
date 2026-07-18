@@ -167,6 +167,14 @@ def classify_root_diff_shape(repo_root: Path, base_ref: str, source_ref: str) ->
 def compute_repo_state(repo_root: Path, repo_key: str, base_ref: str, source_ref: str) -> dict[str, str]:
     source_sha = git(repo_root, "rev-parse", "--verify", f"{source_ref}^{{commit}}")
     base_sha = git(repo_root, "rev-parse", "--verify", f"{base_ref}^{{commit}}")
+    stage_ref = "origin/stage"
+    stage_ref_available = "yes"
+    stage_sha = ""
+
+    try:
+        stage_sha = git(repo_root, "rev-parse", "--verify", f"{stage_ref}^{{commit}}")
+    except RuntimeError:
+        stage_ref_available = "no"
 
     contains_base = "yes"
     result = subprocess.run(
@@ -190,6 +198,34 @@ def compute_repo_state(repo_root: Path, repo_key: str, base_ref: str, source_ref
     if result.returncode == 0:
         has_diff = "no"
 
+    stage_contains = "unknown"
+    stage_has_diff = "unknown"
+    pending_stage = "unknown"
+    if stage_ref_available == "yes":
+        stage_contains = "yes"
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "merge-base", "--is-ancestor", stage_sha, source_sha],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if result.returncode != 0:
+            stage_contains = "no"
+
+        stage_has_diff = "yes"
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "diff", "--quiet", "--ignore-submodules=none", f"{stage_ref}..{source_ref}", "--"],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if result.returncode == 0:
+            stage_has_diff = "no"
+
+        pending_stage = "yes" if stage_has_diff == "yes" else "no"
+
     state = "promotable"
     detail = "diff-present"
     if has_diff == "no":
@@ -210,6 +246,11 @@ def compute_repo_state(repo_root: Path, repo_key: str, base_ref: str, source_ref
         "base_sha": base_sha,
         "contains_base": contains_base,
         "has_diff": has_diff,
+        "stage_ref_available": stage_ref_available,
+        "stage_sha": stage_sha,
+        "stage_contains": stage_contains,
+        "stage_has_diff": stage_has_diff,
+        "pending_stage": pending_stage,
         "state": state,
         "detail": detail,
     }
@@ -271,6 +312,7 @@ def build_context_lines(
     declared_repos: list[str],
     repo_state_lines: list[str],
     opening_track: str,
+    pending_stage_repos: list[str],
 ) -> list[str]:
     context = [
         f"version_key: {version_key}",
@@ -284,6 +326,7 @@ def build_context_lines(
         f"recommended_opening_track: {opening_track}",
         f"recommended_primary_surface: {opening_primary_surface(opening_track)}",
         f"recommended_docker_diff_shape: {opening_docker_diff_shape(opening_track)}",
+        f"pending_stage_repos: {', '.join(pending_stage_repos) if pending_stage_repos else 'none'}",
         "listed_child_owners:",
         *bulletize(listed_paths, "  "),
         "live_child_owners:",
@@ -360,6 +403,7 @@ def main() -> int:
     repo_states: dict[str, dict[str, str]] = {}
     repo_state_lines: list[str] = []
     live_stage_rows: list[str] = []
+    pending_stage_repos: list[str] = []
     violations: list[str] = []
     resolutions: list[str] = []
 
@@ -503,8 +547,10 @@ def main() -> int:
                 continue
 
             repo_states[repo_key] = repo_state
+            if repo_key in {"flutter-app", "laravel-app"} and repo_state.get("pending_stage") == "yes":
+                pending_stage_repos.append(repo_key)
             repo_state_lines.append(
-                f"{repo_key} | branch={baseline_branch} | baseline_sha={baseline_sha} | state={repo_state['state']} | contains_base={repo_state['contains_base']} | has_diff={repo_state['has_diff']}"
+                f"{repo_key} | branch={baseline_branch} | baseline_sha={baseline_sha} | state={repo_state['state']} | contains_base={repo_state['contains_base']} | has_diff={repo_state['has_diff']} | pending_stage={repo_state['pending_stage']}"
             )
 
     opening_track = recommend_opening_track(repo_states)
@@ -532,6 +578,7 @@ def main() -> int:
     print(f"  - membership drift: {'yes' if missing_from_package or stale_in_package else 'no'}")
     print(f"  - declared package repos: {', '.join(declared_repos) if declared_repos else 'none'}")
     print(f"  - recommended opening track: {opening_track}")
+    print(f"  - pending stage repos: {', '.join(pending_stage_repos) if pending_stage_repos else 'none'}")
     print("")
     print("TEACH runtime response")
     print(f"status: {'blocked' if violations else 'ready'}")
@@ -564,6 +611,7 @@ def main() -> int:
         declared_repos=declared_repos,
         repo_state_lines=repo_state_lines,
         opening_track=opening_track,
+        pending_stage_repos=pending_stage_repos,
     ):
         print(f"  {line}")
     print("")

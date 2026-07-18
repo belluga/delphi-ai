@@ -23,4 +23,4 @@ Explain the architectural reason for this method. Tie it back to the foundationa
 - Enumerate the deliverables (docs updated, code artefacts, TODO comments, branch notes).
 
 ## Validation
-- Analyzer/tests, reviews, or confirmations needed before declaring the method complete.
+- Required static-analysis snapshot/tests, reviews, or confirmations before declaring the method complete. Flutter local static evidence is the stable full-workspace VS Code Problems bridge snapshot, not a CLI analyzer run.

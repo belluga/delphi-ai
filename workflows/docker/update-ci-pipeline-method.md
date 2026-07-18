@@ -21,7 +21,8 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 1. **Profile alignment** – select `Operational / DevOps` with `docker` scope and review roadmap context only when strategic sequencing is affected.
 2. **Plan changes** – list affected workflows/jobs, required secrets, and target environments.
 3. **Edit workflow**
-   - Add/update jobs to run required commands (e.g., `fvm flutter analyze`, `composer test`, Docker build/push).
+   - Add/update remote CI jobs to run required commands (e.g., `fvm flutter analyze`, `composer test`, Docker build/push).
+   - A remote pipeline analyzer is separate from local agent diagnostics. Flutter agents must read the stable VS Code Problems bridge snapshot locally and must not start `dart analyze` or `flutter analyze` themselves.
    - Ensure caching and matrix strategies keep runtimes lean.
    - Load `ci-equivalent-governance` before changing any stage-facing suite/job family or named broad local stage contract/profile such as `stage-full`.
    - When the repo exposes a named broad local stage contract/profile, update that local contract in the same change and keep it aligned with the parity rules from `ci-equivalent-governance`. Do not leave the pipeline broader than the named local parity gate.

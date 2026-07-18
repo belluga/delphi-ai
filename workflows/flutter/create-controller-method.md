@@ -37,7 +37,7 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 9. **Realtime delta handling (when applicable)** – if the feature has SSE delta streams:
    - Maintain a paginated cache in the controller and apply delta updates by `id`.
    - On stream reconnect, re-fetch the first page to resync.
-10. **Tests/analyzer** – add controller tests if behaviour is complex; run `fvm flutter analyze`.
+10. **Tests/static analysis** – add controller tests if behaviour is complex; capture the stable full-workspace VS Code Problems snapshot. Do not start a concurrent CLI analyzer.
 11. **Race-condition validation (when applicable)** – if the controller owns async actions that can be retriggered or reordered in flight, pair the work with `frontend-race-condition-validation`.
 
 ## Outputs
@@ -46,5 +46,5 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
 - Updated docs/roadmap.
 
 ## Validation
-- Analyzer/test suite passes.
+- Stable full-workspace Problems snapshot and test suite pass.
 - Widgets consume controller streams/controllers via GetIt without owning state themselves.

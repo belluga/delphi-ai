@@ -157,7 +157,7 @@ fvm flutter pub run build_runner build --delete-conflicting-outputs
 - When Section `1.5` is triggered, run the required unit + widget + integration flows for the affected critical paths
 - When Section `1.5` is triggered and the flow is compatibility-critical or backend-coupled, run the required real-backend web + mobile integration flows
 - When Section `1.5` is triggered, treat `blocked` required test evidence as a delivery blocker, not as a pass
-- Ensure `fvm flutter analyze` passes
+- Capture a stable full-workspace VS Code Problems snapshot with no `Error` or `Warning`; do not start a concurrent CLI analyzer
 - Record route contract audit result in PR/TODO notes (including explicit "no new required non-URL args" when applicable)
 
 ## Architecture Principles
