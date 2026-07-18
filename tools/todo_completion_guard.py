@@ -1230,7 +1230,9 @@ def validate_todo(
                     )
                 )
 
-            if criterion_requires_mutation_coverage(requirement["section"], criterion) and not row_has_mutation_coverage(row):
+            # The criterion can correctly require rejection with "no mutation".
+            # Only evidence-bearing cells determine whether a mutation was exercised.
+            if criterion_requires_mutation_coverage(requirement["section"], criterion) and not row_has_mutation_coverage(row[3:]):
                 violations.append(
                     build_violation(
                         "FLOW-CRUD-MUTATION-EVIDENCE-MISSING",
