@@ -18,8 +18,9 @@ Deterministic depth: already-backed for invocation mechanics through the bundled
 3. Use `--allowedTools` whenever tool access should be bounded.
 4. Use `--permission-mode bypassPermissions` only in trusted local workspaces.
 5. For large diffs or large packets, shrink the packet before retrying.
-6. When diagnosing whether a run is alive versus truly stuck, prefer `--output-format stream-json` plus `--include-partial-messages` and `--verbose`.
-7. If a `claude -p` run is slow or stalls, first determine whether the chosen output mode is simply silent-until-finish before changing scope, permissions, or tools.
+6. Tool-using reviews that require a parseable final answer must use `--structured-result-output <path>`. It forces `stream-json`, captures the complete tool lifecycle, and fails unless a terminal successful result is extracted.
+7. When diagnosing whether a run is alive versus truly stuck, prefer an explicit `--output-format stream-json` run plus `--include-partial-messages` and `--verbose`. Structured-result runs capture their verbose stream privately to avoid truncating the caller's output channel.
+8. If a `claude -p` run is slow or stalls, first determine whether the chosen output mode is simply silent-until-finish before changing scope, permissions, or tools.
 
 ## `--bare` authentication caveat
 
@@ -48,7 +49,11 @@ Use the bundled runner instead of hand-writing `claude` invocations:
 bash /home/elton/.codex/skills/claude-cli-calling/scripts/run_claude_print.sh \
   --workdir <dir> \
   [--add-dir <dir> ...] \
+  [--tools "Bash,Read"] \
   [--allowed-tools "Bash(cat:*) Bash(rg:*)"] \
+  [--model sonnet --effort max --no-session-persistence] \
+  [--json-schema-file <schema.json>] \
+  [--structured-result-output <result.json>] \
   [--output-format text|json|stream-json] \
   [--include-partial-messages] \
   [--verbose] \
@@ -78,6 +83,9 @@ The runner always feeds Claude through stdin, even when `--prompt` is provided, 
 ## Liveness and diagnostic mode
 
 - `--output-format text` and `--output-format json` may remain silent until the run completes. Silence alone is not evidence of a hang.
+- Current Claude CLI print sessions can end after a read-only tool call without emitting a usable `text`/`json` terminal answer. Do not count an empty redirected output as a completed review.
+- For any tool-using review whose result feeds `subagent_review_merge.py` or another parser, invoke the runner with `--structured-result-output <result-path>` and `--json-schema-file <schema-path>`. The runner forces the stream-json path, captures it privately, accepts exactly one direct or fenced terminal JSON object, validates it against the schema, and fails on absent, ambiguous, unsuccessful, or schema-invalid output.
+- A structured run emits only concise lifecycle messages to its caller. If it fails, it preserves the raw stream at `<result-path>.stream.jsonl`; inspect that artifact before retrying. Use a separate explicit stream-json diagnostic run when live event output is the goal.
 - In current Claude CLI builds, `--print` + `--output-format stream-json` requires `--verbose`. Treat that as part of the canonical diagnostic shape, not an optional extra.
 - When verifying that Claude is progressing, use:
 
@@ -98,8 +106,9 @@ bash /home/elton/.codex/skills/claude-cli-calling/scripts/run_claude_print.sh \
 - If the task is a packet-only reasoning pass that genuinely does not need filesystem inspection, toolless runs are acceptable. Otherwise, prefer the minimum read-only tool set above.
 - If a streamed run starts emitting pseudo-command or pseudo-shell plans instead of findings/results, treat that as a bad invocation shape:
   1. abort the run;
-  2. relaunch with the minimum read-only tool set if files must be inspected;
-  3. or shrink the packet if the model is over-scoping.
+    2. relaunch with the minimum read-only tool set if files must be inspected;
+    3. or shrink the packet if the model is over-scoping.
+- If a structured run fails after a tool call, retain the emitted stream transcript for diagnosis, fix the invocation/tool boundary, and rerun once. Never synthesize a reviewer JSON result or merge an empty response.
 
 ## Large-review fallback
 
@@ -121,6 +130,7 @@ When a review packet is too large or slow:
 ## Output expectations
 
 - Ask for a rigid output shape when downstream parsing or comparison matters.
+- Use the CLI `--json-schema-file` plus `--structured-result-output` for schema-bound review results. Prompt wording remains responsible for the review's substantive scope; the schema/result extractor normalizes and validates only the delivered result shape.
 - For review simulations, prefer one-line structured findings:
   - `severity | locus | finding | fix`
 - For streamed diagnostics, expect status/assistant chunks before the final answer. Judge liveness from continued chunk emission, not only from final findings.
