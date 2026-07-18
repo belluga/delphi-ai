@@ -20,7 +20,7 @@
           "gpt-5.6-terra"
         ],
         "governance_review": [
-          "gpt-5.4"
+          "gpt-5.6-sol"
         ],
         "monitoring": [
           "gpt-5.4-mini"
@@ -29,7 +29,7 @@
       "notes": [
         "Codex routing is currently enforced through declared preflight evidence plus explicit waiver handling.",
         "Routine code and implementation-side execution should default to gpt-5.6-luna.",
-        "Architecture decision/final/security review uses gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra; architecture adherence and adjudication use gpt-5.4."
+        "Architecture decision, governance, final, and security review use gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra."
       ]
     },
     "claude-code": {
