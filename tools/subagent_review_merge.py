@@ -222,7 +222,11 @@ def main() -> int:
         if result["review_kind"] != dispatch["review_kind"]:
             raise SystemExit("subagent review result kind does not match dispatch kind")
         if Path(result["dispatch_path"]).resolve() != dispatch_path:
-            raise SystemExit("subagent review result dispatch_path does not match the merge dispatch")
+            raise SystemExit(
+                "subagent review result dispatch_path does not match the merge dispatch: "
+                f"expected `{dispatch_path}`, received `{Path(result['dispatch_path']).resolve()}`. "
+                "Review results must bind dispatch_path to the dispatch JSON, not the bounded package or TODO."
+            )
 
     reviewer_labels = [item["reviewer_label"] for item in results]
     recommended_paths = sorted({item["recommended_path"] for item in results})

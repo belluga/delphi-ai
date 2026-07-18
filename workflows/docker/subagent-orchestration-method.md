@@ -50,6 +50,7 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
    - Generate the dispatch packet and give the markdown form to the orchestration harness or operator.
 3. **Collect structured reviewer results**
    - Each reviewer must answer in JSON compatible with `schemas/subagent_review_result.schema.json`.
+   - When the dispatch packet records `review_result_dispatch_path`, the reviewer result's `dispatch_path` must equal that exact JSON dispatch path. It must never point to the bounded package, governing TODO, or reviewer-output file; merge rejects those substitutions.
    - Reject prose-only feedback when deterministic merge is the chosen path.
 4. **Merge and interpret**
    - Merge reviewer outputs into a derived summary packet.

@@ -188,6 +188,17 @@ def render_markdown(payload: dict) -> str:
     lines.extend(["", "## Required Result Fields"])
     for field in payload["result_contract_fields"]:
         lines.append(f"- `{field}`")
+    result_dispatch_path = payload.get("review_result_dispatch_path")
+    if result_dispatch_path:
+        lines.extend(
+            [
+                "",
+                "## Required Result Binding",
+                "The reviewer result's `dispatch_path` must equal this exact dispatch JSON path:",
+                f"`{result_dispatch_path}`",
+                "Do not substitute the bounded package path, governing TODO path, or reviewer output path.",
+            ]
+        )
     if payload.get("goal"):
         lines.extend(["", "## Goal", payload["goal"]])
     if payload.get("todo_path"):
@@ -261,6 +272,8 @@ def main() -> int:
         payload["historical_dispositions"] = historical["entries"]
     if args.goal:
         payload["goal"] = args.goal
+    if args.json_output:
+        payload["review_result_dispatch_path"] = str(Path(args.json_output).resolve())
 
     validate_schema(payload)
     rendered_json = json.dumps(payload, indent=2) + "\n"

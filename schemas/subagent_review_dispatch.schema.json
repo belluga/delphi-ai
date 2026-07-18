@@ -71,6 +71,10 @@
       },
       "minItems": 1
     },
+    "review_result_dispatch_path": {
+      "type": "string",
+      "minLength": 1
+    },
     "todo_path": {
       "type": "string"
     },
