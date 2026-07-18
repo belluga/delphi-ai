@@ -354,7 +354,7 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Why ambiguity remains:** <competing architectural paths, unresolved tradeoff, or `n/a`>
 - **Opinion count:** `<0|1|2>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
-- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent(s) when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent(s) when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
 - **Required lenses:** `<correctness|performance|elegance|structural-soundness|operational-fit>`
 
 | Reviewer | Recommendation | Performance view | Elegance view | Structural soundness view | Resolution | Evidence |
@@ -381,7 +381,7 @@ Use exact trigger names and exact enum values only.
 | `critical_user_journey` | `<yes|no>` | `yes` when the TODO covers a launch-critical or business-critical user flow. |
 | `release_or_promotion_critical` | `<yes|no>` | `yes` when release/promotion confidence materially matters to this TODO. |
 | `high_severity_plan_review_issue` | `<yes|no>` | `yes` when any current Plan Review issue card is `high`. |
-| `explicit_three_lane_request` | `<yes|no>` | Compatibility field name; use `yes` when the user or TODO explicitly requires the dedicated delivery-side multi-lane external audit protocol. |
+| `explicit_three_lane_request` | `<yes|no>` | Compatibility field name; use `yes` when the user or TODO explicitly requires the dedicated delivery-side multi-lane internal audit protocol. |
 
 ## Independent No-Context Critique Gate (Deterministic Floor From Audit Escalation)
 - **Critique decision:** `<required|recommended|not_needed>` (minimum from `audit_escalation_guard.py`)
@@ -389,8 +389,8 @@ Use exact trigger names and exact enum values only.
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
-- **Critique isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
+- **Critique isolation mode:** `<fresh internal no-context reviewer>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
@@ -492,7 +492,7 @@ Every deduplicated finding must be classified as `release-blocker`, `follow-up-f
 
 | Finding ID | Finding Source | Severity | Classification | Required Action | Status | Rationale / Follow-up Reference |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<PR/check/comment id>` | `<Copilot|Claude|no-context audit|CI check|manual review>` | `<P1|P2|P3|P4|high|medium|low|n/a>` | `<release-blocker|follow-up-fast-follow|follow-up-hardening|by-design/no-action>` | `<fix in current TODO|split fast-follow TODO|split hardening TODO|no action>` | `<open|fixed|routed|accepted|blocked>` | `<why this classification is correct, plus exact TODO path or approval rationale>` |
+| `<PR/check/comment id>` | `<internal no-context audit|CI check|remote platform comment|manual review>` | `<P1|P2|P3|P4|high|medium|low|n/a>` | `<release-blocker|follow-up-fast-follow|follow-up-hardening|by-design/no-action>` | `<fix in current TODO|split fast-follow TODO|split hardening TODO|no action>` | `<open|fixed|routed|accepted|blocked>` | `<why this classification is correct, plus exact TODO path or approval rationale>` |
 
 ## TODO Closeout Disposition
 - **Disposition:** `<keep-active|move-promotion-lane|move-completed|blocked>`
@@ -580,9 +580,9 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded implementation diff|bounded test diff|validation evidence|expected behaviors/DoD|residual risks>`
 - **Canonical method:** `wf-docker-independent-test-quality-audit-method`
-- **Audit isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
-- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required external no-context audit for required gate|active-client reviewer slot must be recycled/opened when needed; only out-of-band provider absence is tolerated and does not waive the pass>`
+- **Audit isolation mode:** `<fresh internal no-context reviewer>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
+- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required fresh internal no-context audit for required gate|active-client reviewer slot must be recycled/opened when needed; external providers do not satisfy the pass>`
 - **Audit focus:** `<product/test delta alignment|fail-first alignment|bypass detection|assertion efficacy|assertion efficiency|coverage sufficiency|brittle test-only shortcuts>`
 - **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
@@ -601,8 +601,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence from wf-docker-independent-test-quality-audit-method|residual risks|existing waivers|verification debt>`
-- **Review isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **External reviewer mandate:** `<required|recommended|not_needed> (name the no-context external reviewer/subagent when applicable; active-client external reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another subagent and open a fresh reviewer; only out-of-band providers/tools such as Claude may be unavailable, and that does not waive the pass)>`
+- **Review isolation mode:** `<fresh internal no-context reviewer>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`

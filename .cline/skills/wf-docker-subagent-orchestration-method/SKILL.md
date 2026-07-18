@@ -1,12 +1,14 @@
 ---
 name: wf-docker-subagent-orchestration-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Package, dispatch, and merge no-context subagent reviews through derived packets so PACED can orchestrate bounded external opinions without creating hidden authority."
+description: "Workflow: MUST use whenever the scope matches this purpose: Package, dispatch, and merge no-context internal subagent reviews through derived packets so PACED can orchestrate bounded independent opinions without creating hidden authority."
 ---
 
 # Method: No-Context Subagent Orchestration
 
 ## Purpose
 Provide a portable orchestration layer for PACED review subagents using derived dispatch and merge packets.
+
+Required Delphi review gates use fresh internal no-context reviewers only. A dispatched reviewer must not be the implementing agent, and an external provider cannot satisfy the gate.
 
 ## Preferred Deterministic Helpers
 1. Build the dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py ...`.

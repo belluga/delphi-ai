@@ -50,7 +50,7 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
    - Allowlists are temporary exceptions only: each entry needs an owner, expiration date, and reason; expired entries remain active findings.
    - Unresolved `P1|P2` blocks delivery.
 10. Run the derived architecture adherence review when `architecture_adherence_review = required`:
-    - dispatch a fresh no-context reviewer with `review_kind=architecture_adherence`;
+    - dispatch a fresh internal no-context reviewer with `review_kind=architecture_adherence`; the reviewer cannot be the implementing agent and external providers do not satisfy the gate;
     - bound the package to the frozen Architecture Change Governance contract, Decision Baseline, delivered diff/touched surfaces, protection-harness evidence, and the decision-adherence/module-consistency evidence;
     - block closure on an unresolved divergence from the approved target state, a missing required protection harness, or an unapproved architecture change.
 11. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.

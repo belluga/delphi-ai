@@ -5,7 +5,7 @@
 
 ## Context
 Recent Delphi self-improvement decisions changed two operational canons that must now be made mechanical and consistent across the promotion and review surfaces:
-1. delivery-side dedicated audit baseline is `Performance` + `Test Quality`, with `cutover-integrity` conditional and `Elegance` kept in critique/final review rather than as a dedicated audit lane;
+1. delivery-side dedicated audit baseline is `Performance` + `Test Quality`, with `cutover-integrity` conditional and `Elegance` kept in critique/final review rather than as a dedicated audit lane; every Delphi review gate uses fresh internal no-context reviewers only;
 2. Docker promotion must be surface-first, with mixed Docker lanes requiring deterministic `dev` admission checks so `dev -> stage` cannot proceed while required `-> dev` tracks are still pending.
 
 ## Framing Source & Story Slice
@@ -34,20 +34,20 @@ Recent Delphi self-improvement decisions changed two operational canons that mus
 - [x] Block `dev -> stage` promotion actions when required Docker `-> dev` tracks are still pending or not yet absorbed into `origin/dev`.
 - [x] Align stage-promotion skills/docs with the approved Docker mixed ordering: `bot/next-version -> dev` first, Docker source branch `-> dev` second, `dev -> stage` only after both are clear.
 - [x] Reframe promotion guidance around primary surfaces `docker|flutter|laravel`, with Docker diff shape as secondary routing evidence.
-- [x] Normalize review wording so the dedicated delivery-side audit baseline stays dual-lane (`Performance` + `Test Quality`), `cutover-integrity` stays conditional, `Elegance` stays outside the baseline audit, and Claude is described only as an optional cross-model reviewer when available.
+- [x] Normalize review wording so the dedicated delivery-side audit baseline stays dual-lane (`Performance` + `Test Quality`), `cutover-integrity` stays conditional, `Elegance` stays outside the baseline audit, and required review gates use fresh internal no-context reviewers only.
 - [x] Add focused regression coverage for the new deterministic promotion behavior and any touched classifiers/helpers.
 
 ## Out of Scope
 - [ ] Redesign of main-promotion semantics.
 - [ ] Broad replacement of the current promotion workflow with a new process.
 - [ ] Downstream Belluga project code or live promotion execution.
-- [ ] Any claim that Claude is always available or is the canonical second reviewer in all clients.
+- [ ] Any use of an external provider as critique, audit, final-review, or promotion-review gate evidence.
 
 ## Definition of Done
 - [x] Promotion contracts can declare required Docker `dev` tracks for `through-stage` lanes.
 - [x] `github_promotion_action_guard.sh` blocks `dev -> stage` when the contract still requires unresolved Docker `dev` tracks.
 - [x] Stage-promotion skills/docs consistently describe the mixed Docker order and the surface-first authority model.
-- [x] Review skills/docs consistently describe the dual-lane audit baseline, conditional `cutover-integrity`, retained `Elegance` role, and Claude-as-optional cross-model reviewer.
+- [x] Review skills/docs consistently describe the dual-lane audit baseline, conditional `cutover-integrity`, retained `Elegance` role, and internal-only gate review policy.
 - [x] Touched deterministic tests pass and Delphi self-check remains green.
 
 ## Validation Steps
@@ -99,7 +99,7 @@ Recent Delphi self-improvement decisions changed two operational canons that mus
 
 ## Decisions (Resolved Before Freeze)
 - [x] `D-01` Keep the dedicated delivery-side audit baseline as `Performance` + `Test Quality`; `cutover-integrity` is conditional and `Elegance` remains outside the dedicated audit baseline.
-- [x] `D-02` Treat Claude as an optional cross-model reviewer when available, not as the canonical second reviewer.
+- [x] `D-02` Require every Delphi review gate to use a fresh internal no-context reviewer who is not the implementing agent; external providers do not satisfy the gate.
 - [x] `D-03` Model promotion around primary surfaces `docker|flutter|laravel`; keep Docker diff shape as secondary routing evidence.
 - [x] `D-04` For mixed Docker promotion, require `bot/next-version -> dev` first, Docker source `-> dev` second, and permit `dev -> stage` only after both are absorbed into `origin/dev`.
 - [x] `D-05` Enforce mixed Docker stage admission deterministically through the local promotion contract and action guard rather than prose-only guidance.
@@ -107,7 +107,7 @@ Recent Delphi self-improvement decisions changed two operational canons that mus
 ## Decision Baseline (Frozen Before Implementation)
 - [x] `D-01` This slice preserves the existing promotion/review process shape and only tightens coherence and enforcement.
 - [x] `D-02` `dev -> stage` must be blocked when the required Docker `-> dev` tracks are still pending under the current promotion contract.
-- [x] `D-03` Release/promotion docs must not imply Claude is always available or always mandatory.
+- [x] `D-03` Release/promotion docs must not imply that an external provider is available, mandatory, or gate-satisfying.
 
 ## Assumptions Preview
 | Assumption ID | Assumption | Evidence | If False | Confidence (`High|Medium|Low`) | Handling (`Keep as Assumption|Promote to Decision|Block`) |
@@ -137,7 +137,7 @@ Recent Delphi self-improvement decisions changed two operational canons that mus
 1. Extend the promotion contract schema and loader to carry required Docker `dev` tracks for `through-stage` lanes.
 2. Enforce the contract in the action guard so `dev -> stage` cannot proceed while required Docker `dev` tracks are still pending.
 3. Align promotion classifier/rollup wording and stage-promotion skill docs with the surface-first model and mixed Docker ordering.
-4. Normalize review wording around dual-lane baseline audits and optional Claude cross-model review.
+4. Normalize review wording around dual-lane baseline audits and fresh internal no-context review gates.
 5. Add or refresh focused regression coverage and run Delphi self-maintenance validation.
 
 ### Test Strategy

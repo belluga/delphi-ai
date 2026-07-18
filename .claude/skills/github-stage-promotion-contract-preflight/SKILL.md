@@ -1,6 +1,6 @@
 ---
 name: github-stage-promotion-contract-preflight
-description: "Phase skill for GitHub stage promotion contract creation, source preflight, clean-status checks, guarded wrapper setup, mandatory internal no-context subagent review loop, and final cross-model pre-promotion confirmation before the first PR."
+description: "Phase skill for GitHub stage promotion contract creation, source preflight, clean-status checks, guarded wrapper setup, and mandatory internal no-context pre-promotion review before the first PR."
 ---
 
 # GitHub Stage Promotion: Contract and Preflight
@@ -33,7 +33,7 @@ Use after intake has classified the scenario and before opening or mutating any 
 - The order is mandatory:
   1. internal no-context subagent sweep
   2. local fix/rerun loop until locally clean
-  3. external cross-model confirmation; use Claude when available and otherwise keep the bounded Copilot-style confirmation path
+  3. fresh internal no-context confirmation by a reviewer not used in the preceding sweep
 - Published `stage` probes remain separate evidence; they do not replace the local `CI-Equivalent` requirement.
 - Use the orchestration execution plan as the package-stage ledger for this loop. Record current round, authoritative source branch, active remediation branch, open blockers, and next exact step there. Do not create a separate manual version-status file for promotion readiness.
 - For every review finding, compare it against the governing TODO before classifying it:
@@ -58,7 +58,7 @@ The wrappers enforce action/diff policy only. They do not prove PR checks, revie
 - Clean/dirty status per repo.
 - Governing TODO source-authority result when package/version authority applies.
 - Preflight result and existing PR discovery.
-- Copilot-style review disposition per authoritative source repo.
+- Internal review disposition per authoritative source repo.
 - Next phase route.
 - Updated package-stage review-loop state in the orchestration execution plan when promotion-readiness review is in scope.
 
@@ -70,8 +70,7 @@ The wrappers enforce action/diff policy only. They do not prove PR checks, revie
 - In that version/package case, a green `review/*` matrix without a prior green authoritative `*-rc` matrix is still `no-go`.
 - A promotion source branch named `reconcile/*` or `sequence/*` is always a blocker. Promotion resumes only after replay onto the canonical branch is proven.
 - Do not open the first promotion PR while unresolved P1/P2 pre-promotion review findings remain.
-- Do not escalate Claude quota/rate-limit issues as a promotion blocker unless the mandatory internal no-context subagent sweep has already reached a locally clean state.
-- Do not treat Claude availability as a hard prerequisite for the lane. Claude is an optional cross-model reviewer when available; the internal no-context sweep remains the mandatory first review floor.
+- Do not invoke or treat an external provider as gate-satisfying pre-promotion review evidence. If internal reviewer capacity is unavailable, recycle an internal review lane or record the required gate as blocked pending a human waiver.
 - Do not let a bot finding outrank an approved TODO decision; the finding must be cross-checked before patching.
 - Do not treat the current checkout branch as authoritative without confirmation.
 - Do not hide CI/promotion-tooling behavior changes inside the promotion diff.

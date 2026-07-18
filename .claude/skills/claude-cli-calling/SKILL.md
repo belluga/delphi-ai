@@ -1,11 +1,15 @@
 ---
 name: claude-cli-calling
-description: "Use when calling Claude CLI non-interactively from the terminal. Covers the canonical invocation contract for `claude -p`, safe prompt transport via stdin, correct handling of `--add-dir`, constrained tool access, liveness diagnostics via streaming output, long-running print sessions, and compact-packet fallback for large reviews."
+description: "Use only for explicitly user-directed non-review Claude CLI terminal work. Covers the invocation contract for `claude -p`, safe prompt transport via stdin, constrained tool access, and liveness diagnostics."
 ---
 
 # Claude CLI Calling
 
-Use this skill whenever the task requires invoking `claude` from shell scripts or terminal commands.
+Use this skill only when the user explicitly requires a non-review `claude` terminal task.
+
+## Delphi Review Boundary
+
+Delphi reviews use fresh internal no-context reviewers only. Do not use this skill for critique, test-quality audit, architecture review, final review, promotion review, or supporting review evidence. An external-provider result is not a substitute for an internal reviewer and must not unblock a required review gate.
 
 Deterministic depth: already-backed for invocation mechanics through the bundled runner. Prompt design, review focus, and output interpretation remain judgment-led.
 
@@ -144,4 +148,4 @@ When a review packet is too large or slow:
 
 ## Related skills
 
-- `copilot-pr-review`: use this skill’s runner for its Claude review passes.
+- This skill is not a review-gate dependency under Delphi's internal-review policy.

@@ -58,7 +58,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - Before implementation dispatch, create or update an orchestration execution plan from `delphi-ai/templates/orchestration_execution_plan_template.md` when the wave coordinates multiple TODOs, multiple workstreams, or a user-requested approval plan.
    - Save that plan in the downstream project at `foundation_documentation/artifacts/execution-plans/<short-slug>.md`.
    - Treat the plan as derived execution topology: governing TODOs retain `WHAT` and done-criteria authority, while the plan records `HOW` the orchestrator will sequence, parallelize, reconcile, and validate.
-   - When the package enters a Copilot-mimic / Claude / pre-promotion review loop, the same plan must also carry:
+   - When the package enters an internal no-context pre-promotion review loop, the same plan must also carry:
      - a package-level pre-promotion review-loop ledger;
      - a **Review Coverage Board** that classifies every governing TODO as `not-reviewed | in-review | reopened-fixed | clean-no-reopen | blocked` with the latest evidence round/commit;
      - anti-loop exit criteria that state when the loop may stop instead of reopening the same findings indefinitely.

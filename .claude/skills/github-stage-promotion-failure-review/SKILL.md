@@ -17,7 +17,7 @@ Use whenever CI, Copilot, checks, deploy/smoke jobs, or local reproduction produ
 6. Attempt local reproduction in the closest materially similar setup when possible.
 7. If local reproduction is blocked by harness/environment limitations, mark that attempt invalid evidence instead of treating it as product proof.
 8. If classification or fix is ambiguous, architectural, cross-module, or high-blast-radius, run `wf-docker-independent-critique-method` with a bounded package.
-9. If the blocker originated in the pre-promotion review flow, preserve the review order on replay: internal no-context subagents first, Claude/Copilot-style confirmation second.
+9. If the blocker originated in the pre-promotion review flow, preserve the review order on replay: fresh internal no-context subagents first, then a fresh internal no-context confirmation pass.
 10. Fix root cause on the authoritative source branch for the scenario, then replay the lane.
 11. Record promotion routing in the governing TODO when findings exist:
    - same-scope remediation stays in the same TODO/lane;

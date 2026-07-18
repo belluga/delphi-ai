@@ -1,6 +1,6 @@
 ---
 name: "docker-subagent-orchestration-method"
-description: "Package, dispatch, and merge no-context subagent reviews through derived packets so PACED can orchestrate bounded external opinions without creating hidden authority."
+description: "Package, dispatch, and merge no-context internal subagent reviews through derived packets so PACED can orchestrate bounded independent opinions without creating hidden authority."
 ---
 
 <!-- Generated from `workflows/docker/subagent-orchestration-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
@@ -9,6 +9,8 @@ description: "Package, dispatch, and merge no-context subagent reviews through d
 
 ## Purpose
 Provide a portable orchestration layer for PACED review subagents. This method packages bounded review work, standardizes what each subagent must assess, and merges reviewer output back into a derived summary packet.
+
+Required Delphi review gates use fresh internal no-context reviewers only. A dispatched reviewer must not be the implementing agent, and an external provider cannot satisfy the gate.
 
 The packets remain assistive only. Authority still lives in the tactical TODO, the gate decision, and human approval.
 
@@ -58,7 +60,7 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
 4. **Merge and interpret**
    - Merge reviewer outputs into a derived summary packet.
    - Record the actual authoritative resolution back in the TODO/gate as `Integrated|Challenged|Deferred` plus usefulness/formalizable classification using the machine-checkable resolution table from the tactical TODO template.
-   - When the review feeds delivery, promotion, Copilot-mimic, or no-context release scrutiny, run `review-finding-classification` and then reconcile each deduplicated finding into the governing TODO's `Promotion Finding Routing Ledger` with one of: `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
+   - When the review feeds delivery, promotion, or no-context release scrutiny, run `review-finding-classification` and then reconcile each deduplicated finding into the governing TODO's `Promotion Finding Routing Ledger` with one of: `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
    - Non-blocking real findings are not disposable. Before the delivery claim can be called clean, route them to an explicit follow-up TODO and record that path in the governing TODO.
    - If you want a ready-to-paste table, render it from the merge packet:
      ```bash

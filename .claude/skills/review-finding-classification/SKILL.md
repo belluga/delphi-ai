@@ -1,6 +1,6 @@
 ---
 name: review-finding-classification
-description: "Canonical post-review triage for Copilot real/mimic, Codex/Claude/no-context, CI, and promotion findings using the repo taxonomy and Promotion Finding Routing Ledger."
+description: "Canonical post-review triage for internal no-context, CI, remote-check, and promotion findings using the repo taxonomy and Promotion Finding Routing Ledger."
 ---
 
 # Review Finding Classification
@@ -8,7 +8,7 @@ description: "Canonical post-review triage for Copilot real/mimic, Codex/Claude/
 Use this skill after findings have already been collected and deduplicated from:
 - Copilot real
 - Copilot mimic / `copilot-pr-review`
-- Codex / Claude / no-context audits
+- internal no-context audits
 - CI checks
 - promotion preflight or promotion PR reviews
 

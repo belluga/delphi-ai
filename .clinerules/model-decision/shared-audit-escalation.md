@@ -26,7 +26,7 @@ The TODO must contain an `Audit Trigger Matrix` section with exactly these trigg
 - `explicit_three_lane_request`
 
 Each row must use the canonical enum domain defined by the tactical TODO template and the guard. Free-text substitutes are not acceptable.
-`explicit_three_lane_request` is a compatibility field name; use `yes` when the TODO explicitly requires the dedicated delivery-side multi-lane external audit protocol.
+`explicit_three_lane_request` is a compatibility field name; use `yes` when the TODO explicitly requires the dedicated delivery-side multi-lane internal audit protocol.
 
 ### Deterministic Floor Policy
 - The guard defines the **minimum** required audit path.
@@ -40,11 +40,11 @@ The derived floor must be recorded into the correct TODO gate sections:
 - delivery-side test-quality audit before closure when triggered
 - delivery-side final review before closure
 - security/performance/debt lanes in their own canonical delivery sections
-- dedicated delivery-side multi-lane external audit only where the TODO lifecycle already has evidence to review
+- dedicated delivery-side multi-lane internal audit only where the TODO lifecycle already has evidence to review
 
-The dedicated delivery-side multi-lane external audit currently uses a baseline of `Performance` + `Test Quality`, with `cutover_integrity_audit` added only when the bounded package includes cutover/compatibility risk. `Elegance` remains mandatory in planning critique and delivery-side final review; it is no longer a dedicated baseline audit lane.
+The dedicated delivery-side multi-lane internal audit currently uses a baseline of `Performance` + `Test Quality`, with `cutover_integrity_audit` added only when the bounded package includes cutover/compatibility risk. `Elegance` remains mandatory in planning critique and delivery-side final review; it is no longer a dedicated baseline audit lane.
 
-The dedicated delivery-side multi-lane external audit is additive unless a future canonical rule explicitly authorizes replacement semantics.
+The dedicated delivery-side multi-lane internal audit is additive unless a future canonical rule explicitly authorizes replacement semantics.
 
 ### Rerun Requirement
 Delphi must rerun the guard whenever any trigger changes materially after implementation starts, especially when:
@@ -59,13 +59,13 @@ Execute the policy through:
 - `delphi-ai/workflows/docker/audit-escalation-method.md`
 
 ## Rationale
-PACED should not depend on fuzzy memory to decide whether external critique, final review, or specialized assurance lanes are required. This rule makes the audit floor explicit, repeatable, and teachable while still allowing the operator to be more conservative.
+PACED should not depend on fuzzy memory to decide whether internal critique, final review, or specialized assurance lanes are required. This rule makes the audit floor explicit, repeatable, and teachable while still allowing the operator to be more conservative.
 
 ## Enforcement
 - Block audit decisions that do not come from a successful guard run.
 - Block TODOs that omit the canonical `Audit Trigger Matrix`.
 - Block attempts to downgrade a guard-derived `required` lane without rerunning the guard on an updated matrix.
-- Block silent use of the dedicated multi-lane external audit as an implicit replacement for critique, final review, or test-quality audit.
+- Block silent use of the dedicated multi-lane internal audit as an implicit replacement for critique, final review, or test-quality audit.
 
 ## Workflow Reference
 

@@ -65,11 +65,11 @@ Use this only when the implementation intentionally diverges from a governing TO
 - **Build artifact policy:** generated deploy bundles such as `web-app` are excluded unless the plan explicitly owns deploy-artifact promotion.
 
 ## Pre-Promotion Review Loop Ledger
-Use this section when the package enters a Copilot-mimic / Claude / pre-promotion review loop. This is the package-stage ledger for the loop. Do not create a separate manual version-status file for the same purpose. Accepted/challenged/resolved findings remain authoritative in the governing TODOs and their carry-forward packets.
+Use this section when the package enters an internal no-context pre-promotion review loop. This is the package-stage ledger for the loop. Do not create a separate manual version-status file for the same purpose. Accepted/challenged/resolved findings remain authoritative in the governing TODOs and their carry-forward packets.
 
 - **Loop in scope?:** `<yes|no>`
 - **Authoritative source branch:** `<source branch intended for promotion; if the package was first integrated on reconcile, this is the post-replay canonical branch, not the reconcile branch itself>`
-- **Active remediation branch:** `<review/<slug>-copilot-mimic-YYYYMMDD>|n/a>`
+- **Active remediation branch:** `<review/<slug>-internal-YYYYMMDD>|n/a>`
 - **Current round:** `<round identifier>`
 - **Last clean internal round:** `<round identifier|none yet>`
 - **Open package blockers:** `<TODO ids / short reasons>`

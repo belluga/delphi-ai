@@ -11,7 +11,7 @@ Provide a repeatable, restartable no-context audit loop with two baseline specia
 `Elegance` remains mandatory in planning-side critique and delivery-side final review. It is not a dedicated baseline lane in this protocol.
 
 ## When to Use
-- The user requests a structured external audit loop with dedicated specialized reviewers.
+- The user requests a structured internal audit loop with dedicated specialized reviewers.
 - A delivery gate requires the dedicated delivery-side multi-lane audit before finalization.
 - The package includes hard-cut/cutover/compatibility semantics where a dedicated reviewer must verify that the chosen path is not a disguised shim.
 - In a multi-TODO orchestration run: trigger one independent audit per TODO delivery. Complete the current audit (reach `clean` or record `accepted-debt`) before advancing to the next TODO in the sequence.

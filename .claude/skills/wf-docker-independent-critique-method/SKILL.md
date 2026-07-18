@@ -24,7 +24,7 @@ Run the canonical planning-side critique lane once `wf-docker-audit-escalation-m
 3. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen decisions, approved scope boundary, assumptions preview, execution plan summary, material issue cards, residual risks, and existing waivers/blockers.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
-4. Use a fresh auxiliary reviewer with no inherited thread context.
+4. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence.
 5. Ask for findings first, ordered by severity, with no implementation.
 6. Retry once with a tighter package if the first attempt fails or times out.
 7. If a required critique still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy the gate.

@@ -27,7 +27,7 @@ It must also challenge whether the planned path is sound for performance, elegan
   - or a concise structured summary of the relevant review package.
 
 ## Package Hygiene
-- The critique package must be bounded. Do not hand the full session transcript or diffuse conversational history to the external reviewer.
+- The critique package must be bounded. Do not hand the full session transcript or diffuse conversational history to the internal reviewer.
 - Prefer one of these package shapes:
   - `bounded-file-set`: only the canonical files or diffs needed to critique the current decision package;
   - `bounded-summary`: a concise structured summary containing frozen decisions, assumptions, plan, issue cards, and residual risks.
@@ -60,11 +60,11 @@ It must also challenge whether the planned path is sound for performance, elegan
    - If that gate is missing or unresolved, block the critique lane instead of treating an unpushed worktree snapshot as canonical review input.
 3. Build the bounded critique package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
-4. Run one fresh auxiliary critique with no inherited thread context.
-   - This critique pass must use an external no-context reviewer/subagent with `fork_context=false`.
-   - External no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review.
-   - Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this reviewer pass.
-   - In other environments, use the closest external equivalent that guarantees no prior thread contamination.
+4. Run one fresh internal critique with no inherited thread context.
+   - This critique pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
+   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review.
+   - Do not invoke or treat an external provider as gate-satisfying review evidence.
+   - In other environments, use the closest internal equivalent that guarantees no prior thread contamination.
 5. Prompt the reviewer to return findings first, ordered by severity, and to avoid implementation.
    - Require explicit positions on:
      - performance acceptability;
@@ -105,5 +105,5 @@ It must also challenge whether the planned path is sound for performance, elegan
 - A blocker or waiver record if a required no-context critique could not be executed.
 
 ## Non-Authority Rule
-- Fresh auxiliary critiques are intentionally independent, but they do not own the decision.
+- Fresh internal critiques are intentionally independent, but they do not own the decision.
 - Implementation authority remains the tactical TODO, explicit `APROVADO`, and the normal decision-adherence gates.

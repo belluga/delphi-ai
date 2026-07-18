@@ -43,7 +43,7 @@ Report:
 ## TODO Closeout
 Keep the same governing TODO authoritative:
 - keep in `active/` while implementation evidence, package-wide review, decisions, or promotion preparation remain open; when it stays in `active/`, record `Active Work State` as `implementation`, `review`, or `blocked`;
-- during package-wide review or Copilot-mimic loops, move TODOs progressively to `promotion_lane/` as each individual TODO becomes `Local-Complete` and explicitly clean in the current loop; do not hold already-clean TODOs in `active/` only because sibling TODOs are still under review;
+- during package-wide internal review loops, move TODOs progressively to `promotion_lane/` as each individual TODO becomes `Local-Complete` and explicitly clean in the current loop; do not hold already-clean TODOs in `active/` only because sibling TODOs are still under review;
 - move to `promotion_lane/` when local implementation is complete and only authorized lane follow-through remains;
 - once a current-head authoritative green local gate exists and only promotion follow-through remains, do not keep the TODO/package in open-ended local review without an explicit reopen trigger;
 - move to `completed/` only after the final required lane threshold for that TODO is complete.

@@ -74,11 +74,11 @@ If the repository has submodule gitlink changes, review the affected submodule r
    - Rerun the internal sweep until you honestly judge the packet `clean` or only by-design / explicitly challenged findings remain.
    - If a reviewer re-raises a finding already recorded as resolved/challenged in the carry-forward packet, do not patch blindly. Reopen it only when the current bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
    - Do not replay accepted remediation back onto the authoritative source branch yet. First, make the active remediation branch pass the full in-scope local `CI-Equivalent Suite Matrix` for the package/TODO set under review.
-5. **Only after the internal sweep looks clean**, run the external cross-model confirmation passes:
-   - `low-effort`: common bugs, security issues, obvious CI/test problems.
-   - `medium-effort`: cross-module logic, performance, contract, and coverage risks.
-   - Add a `tooling` pass when workflows, test runners, or tooling changed.
-   - Use Claude when available for these passes. When Claude is unavailable, keep the bounded Copilot-style confirmation path instead of treating the missing Claude lane as an automatic blocker.
+5. **After the internal sweep looks clean**, run one fresh internal no-context confirmation pass with the highest-risk applicable lens:
+   - `correctness/contract`: common bugs, security issues, and obvious CI/test problems.
+   - `cross-module`: performance, contract, and coverage risks.
+   - `tooling`: workflows, test runners, or tooling changes.
+   - The confirming reviewer must not be an implementing agent or a reviewer from the preceding sweep.
 6. Merge and deduplicate findings by locus.
 7. Run **post-review finding triage** through `review-finding-classification`.
    - Do this after reviewer output is collected.
@@ -105,11 +105,11 @@ If the repository has submodule gitlink changes, review the affected submodule r
 
 For promotion, CI-equivalent, or readiness claims, the review order is mandatory:
 
-1. no-context subagents
+1. fresh internal no-context subagents
 2. local fixes, targeted validation, commit on the active review branch, and packet rebuild
-3. external cross-model confirmation, with Claude preferred when available
+3. a fresh internal no-context confirmation pass
 
-Do not report a lane blocked on Claude quota/rate limits if the internal no-context sweep has not already been run to a locally clean state.
+Do not invoke an external provider as a promotion review gate. If the internal reviewer capacity is unavailable, recycle an internal review lane or record the required gate as blocked pending a human waiver.
 
 ## Promotion-lane constraint
 
@@ -128,7 +128,7 @@ If the finding matches a previously adjudicated carry-forward item and the curre
 
 This is especially important for compatibility/cutover findings: do not patch away an explicitly approved bounded compatibility construct just because a reviewer flags it. Cross-check the TODO first, then decide whether the finding identifies real drift, unclear temporary scope, or a by-design exception.
 
-The same scrutiny rule applies to internal subagent findings. Internal reviewers are not patch authority; they are the pre-Claude defect sieve.
+The same scrutiny rule applies to internal subagent findings. Internal reviewers are not patch authority; they are the independent defect sieve.
 
 Reviewers do not decide blocker-vs-follow-up by themselves. They surface likely issues. The release/process triage happens afterward against the governing TODO and current promotion goal.
 That triage must run through `review-finding-classification`, including when the findings came from real GitHub Copilot/Codex review surfaces rather than only local mimic passes.
@@ -139,19 +139,19 @@ When this review is part of promotion-readiness or pre-promotion preflight, pref
 
 - Freeze the authoritative source branch that is intended for promotion.
 - Do not open the derived remediation branch yet if that authoritative source branch has not already passed the current in-scope CI-equivalent matrix for its codebase on that same branch. If the source branch changed after its last green CI-equivalent pass, rerun CI-Equivalent on that changed source branch first.
-- Before the first review-loop commit, create a derived remediation branch from that source branch. Recommended naming: `review/<source-branch-slug>-copilot-mimic-YYYYMMDD>`.
+- Before the first review-loop commit, create a derived remediation branch from that source branch. Recommended naming: `review/<source-branch-slug>-internal-YYYYMMDD>`.
 - Run the iterative fix/validate/commit loop only on that derived remediation branch.
 - Once the review branch is locally clean, compare `source-branch..review-branch` and decide the accepted net effect.
 - Before replaying anything, run the full in-scope local `CI-Equivalent Suite Matrix` on the **review branch**. Consolidation/replay is allowed only after that matrix is green or has explicit approved waivers.
 - Validation-surface rule for that gate: the remediation history branch remains `review/*`, and `ci-equivalent-governance` decides what qualifies as valid current-branch local proof there, including reconcile-wrapper exceptions and broad stage-gate naming.
 - Replay the accepted net effect onto the authoritative source branch as one or a few curated commits only after the review-branch CI-equivalent run is green.
-- Rebuild the bounded packet on the authoritative source branch after the replay and run a final confirmation pass there before claiming CI-equivalent or promotion readiness.
+- Rebuild the bounded packet on the authoritative source branch after the replay and run a fresh internal no-context final confirmation pass there before claiming CI-equivalent or promotion readiness.
 
 Authoritative-source post-replay validation policy:
 - If the replay is a pure fast-forward or conflict-free curated cherry-pick/rebase with no semantic divergence from the validated review branch, a bounded sanity pass is sufficient:
   - clean worktree / expected diff check;
   - packet rebuild against the authoritative source branch;
-  - final no-context / Claude confirmation on that rebuilt packet.
+  - final fresh internal no-context confirmation on that rebuilt packet.
 - If the replay introduced conflicts, manual reconciliation, dropped hunks, reordered commits with non-trivial overlap, or any source-branch-only edits, rerun the full in-scope local `CI-Equivalent Suite Matrix` on the authoritative source branch before claiming readiness.
 
 The derived remediation branch is evidence and working history. The authoritative source branch remains the promotable lane.
@@ -169,7 +169,7 @@ This simulation must be run on a stable diff baseline, not on an ever-growing un
 - Once that commit exists, rebuild the packet and restart review from the new `base...HEAD`.
 - If promotion-readiness is using a derived remediation branch, do not open PRs or claim readiness from that branch. Replay the accepted net effect onto the authoritative source branch first, then rebuild/reconfirm there.
 - If a reviewer comments on an older baseline that no longer matches the current committed `HEAD`, classify it as stale review evidence instead of reopening the same fix blindly.
-- Do not spin additional no-context or Claude/Copilot-sim passes against pre-commit state once you have already decided the fixes are real and should stay.
+- Do not spin additional no-context review passes against pre-commit state once you have already decided the fixes are real and should stay.
 
 ## Expected output shape
 
@@ -194,18 +194,7 @@ bash /home/elton/.codex/skills/copilot-pr-review/scripts/build_copilot_review_pa
   [--output-dir <dir>]
 ```
 
-Run one Claude review pass:
-
-```bash
-bash /home/elton/.codex/skills/copilot-pr-review/scripts/run_claude_review_pass.sh \
-  --repo-root <repo_root> \
-  --packet <review-packet.md> \
-  --repo-label <root|flutter-app|laravel-app> \
-  --mode <low|medium|tooling> \
-  --focus "<focus text>"
-```
-
-When the diff is large, review the generated packet first and only open raw diffs for files implicated by the reviewers.
+When the diff is large, review the generated packet first and only open raw diffs for files implicated by the internal reviewers.
 
 ## Subagent Execution Note
 
@@ -214,4 +203,4 @@ When the active client exposes subagent tools, prefer real no-context subagents 
 - `fork_context=false`
 - pass only the bounded packet and the exact reviewer lens
 - keep reviewer write scopes empty; this stage is review-only
-- merge their outputs before deciding whether Claude should run
+- merge their outputs before the fresh internal confirmation pass and finding triage

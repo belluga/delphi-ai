@@ -1,11 +1,11 @@
 ---
-description: Define the canonical no-context external final-review gate for implemented tactical TODOs, including trigger rules, bounded review packages, retry discipline, and resolution handling.
+description: Define the canonical no-context internal final-review gate for implemented tactical TODOs, including trigger rules, bounded review packages, retry discipline, and resolution handling.
 ---
 
 # Method: Independent No-Context Final Review
 
 ## Purpose
-Provide the canonical delivery-side external review lane for an implemented tactical TODO once `wf-docker-audit-escalation-method` has derived the final-review floor.
+Provide the canonical delivery-side internal review lane for an implemented tactical TODO once `wf-docker-audit-escalation-method` has derived the final-review floor.
 
 This method critiques the delivered implementation and its evidence. It is not a late-stage redesign gate unless the reviewer finds a material defect or approval-breaking divergence.
 
@@ -71,11 +71,11 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - If implementation changed any trigger materially, rerun the audit-escalation guard before trusting the old final-review decision.
 2. Build the bounded final-review package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
-3. Run one fresh auxiliary final review with no inherited thread context.
-   - This final-review pass must use an external no-context reviewer/subagent with `fork_context=false`.
-   - External no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another subagent and open a fresh reviewer instead of downgrading to self-review.
-   - Only additional out-of-band tools/providers (for example Claude) may be unavailable; that does not waive this reviewer pass.
-   - In other environments, use the closest external equivalent that guarantees no prior thread contamination.
+3. Run one fresh internal final review with no inherited thread context.
+   - This final-review pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
+   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review.
+   - Do not invoke or treat an external provider as gate-satisfying review evidence.
+   - In other environments, use the closest internal equivalent that guarantees no prior thread contamination.
 4. Prompt the reviewer to return findings first, ordered by severity, focusing on:
    - bugs/regressions;
    - adherence breaks;
@@ -118,5 +118,5 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 - A blocker or waiver record if a required no-context final review could not be executed.
 
 ## Non-Authority Rule
-- Fresh auxiliary final reviews are intentionally independent, but they do not own the delivery decision.
+- Fresh internal final reviews are intentionally independent, but they do not own the delivery decision.
 - Closure authority remains the tactical TODO, explicit approvals, and the normal adherence/risk gates.

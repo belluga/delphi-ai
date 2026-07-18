@@ -42,7 +42,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - if the RED result invalidates the current direction or widens the failure surface, refresh the TODO and rerun the audit floor before approval resumes.
 8. Run the derived architecture decision review when `architecture_decision_review = required`:
    - only after the diagnosis (including any required RED capture) is closed and before the proposed solution is frozen;
-   - dispatch a fresh no-context reviewer with `review_kind=architecture_opinion` and a bounded package containing the diagnosis, viable paths, Architecture Change Governance contract, Decision Baseline draft, and material trade-offs;
+   - dispatch a fresh internal no-context reviewer with `review_kind=architecture_opinion`; the reviewer cannot be the implementing agent and external providers do not satisfy the gate. Use a bounded package containing the diagnosis, viable paths, Architecture Change Governance contract, Decision Baseline draft, and material trade-offs;
    - resolve material findings into the TODO before critique and `APROVADO` continue.
 9. Run the derived critique/dedicated multi-lane audit lanes when required or recommended by the audit floor.
 10. After the planning reviews converge, including any bounded RED capture updates, run the assumption-vs-code coherence guard:

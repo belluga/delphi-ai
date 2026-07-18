@@ -1,6 +1,6 @@
 ---
 name: wf-docker-independent-final-review-method
-description: "Workflow: MUST use whenever a tactical TODO needs an independent no-context external review of the implemented result before closure because complexity or impact is materially high."
+description: "Workflow: MUST use whenever a tactical TODO needs an independent no-context internal review of the implemented result before closure because complexity or impact is materially high."
 ---
 
 # Method: Independent No-Context Final Review
@@ -10,7 +10,7 @@ Run the canonical delivery-side final review once `wf-docker-audit-escalation-me
 
 ## Triggers
 - `wf-docker-audit-escalation-method` marks `final_review` as `required|recommended`.
-- The user explicitly asks for an external final review.
+- The user explicitly asks for an independent final review.
 
 ## Inputs
 - Tactical TODO under `foundation_documentation/todos/active/`.
@@ -22,7 +22,7 @@ Run the canonical delivery-side final review once `wf-docker-audit-escalation-me
 2. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, Pipeline/Copilot P1/P2 Preflight status, Rule-Spirit Anti-Pattern Hunt status, residual risks, existing waivers, and unresolved verification debt.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
-3. Use a fresh auxiliary reviewer with no inherited thread context.
+3. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence.
 4. Ask for findings first, ordered by severity, focusing on regressions, adherence, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, pipeline/Copilot-style P1/P2 defects, rule-spirit anti-patterns, performance or elegance regressions, structural regressions, and residual risk rather than redesign.
 5. Retry once with a tighter package if the first attempt fails or times out.
 6. If a required final review still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy closure.
