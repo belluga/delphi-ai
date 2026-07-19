@@ -43,6 +43,7 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
      --stderr-output foundation_documentation/artifacts/tmp/reviewer-a.stderr.log \
      --workdir "$PWD"
    ```
+   - When an embedded bounded package is fully self-contained and the project context prevents a fresh reviewer from reaching `turn.completed` (for example, skill-context exhaustion), add `--isolate-project-context`. This starts the reviewer in `/tmp` with user config and project rules disabled, while retaining the closed stdin package. Do not use it for a reviewer that must inspect repository files beyond that package.
 3. When a reviewer uses a documented historical category alias, normalize it before validation; the normalizer is not a permissive parser and rejects every unlisted field/value:
    ```bash
    python3 delphi-ai/tools/subagent_review_normalize.py \

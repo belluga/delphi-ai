@@ -19,6 +19,10 @@ cat > "$TMP_DIR/fake-codex" <<'SH'
 set -euo pipefail
 
 output_file=""
+args_file="${FAKE_CODEX_ARGS_FILE:-}"
+if [[ -n "$args_file" ]]; then
+  printf '%s\n' "$@" > "$args_file"
+fi
 while (($#)); do
   case "$1" in
     --output-last-message)
@@ -65,6 +69,21 @@ FAKE_CODEX_SKIP_OUTPUT=1 python3 "$RUNNER" \
   --stderr-output "$TMP_DIR/fallback.stderr.log" \
   --workdir "$TMP_DIR"
 grep -q '"review":"result"' "$TMP_DIR/fallback.raw.json"
+
+FAKE_CODEX_ARGS_FILE="$TMP_DIR/isolated.args" python3 "$RUNNER" \
+  --codex-bin "$TMP_DIR/fake-codex" \
+  --dispatch "$TMP_DIR/dispatch.md" \
+  --package "$TMP_DIR/package.md" \
+  --raw-output "$TMP_DIR/isolated.raw.json" \
+  --events-output "$TMP_DIR/isolated.events.jsonl" \
+  --stderr-output "$TMP_DIR/isolated.stderr.log" \
+  --workdir "$ROOT_DIR" \
+  --isolate-project-context \
+  --isolation-workdir "$TMP_DIR"
+grep -Fx -- '--ignore-user-config' "$TMP_DIR/isolated.args"
+grep -Fx -- '--ignore-rules' "$TMP_DIR/isolated.args"
+grep -Fx -- '--skip-git-repo-check' "$TMP_DIR/isolated.args"
+grep -Fx -- "$TMP_DIR" "$TMP_DIR/isolated.args"
 
 if FAKE_CODEX_WITH_TURN_COMPLETED=0 python3 "$RUNNER" \
   --codex-bin "$TMP_DIR/fake-codex" \

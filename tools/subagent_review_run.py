@@ -19,6 +19,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workdir", required=True, help="Codex working directory.")
     parser.add_argument("--codex-bin", default="codex", help="Codex executable (default: codex).")
     parser.add_argument("--model", help="Optional explicit internal-review model.")
+    parser.add_argument(
+        "--isolate-project-context",
+        action="store_true",
+        help=(
+            "Run the reviewer from a scratch directory with user config and project rules disabled. "
+            "Use only when the embedded package is self-contained and the project context prevents a fresh review."
+        ),
+    )
+    parser.add_argument(
+        "--isolation-workdir",
+        default="/tmp",
+        help="Scratch workdir used with --isolate-project-context (default: /tmp).",
+    )
     return parser.parse_args()
 
 
@@ -71,6 +84,7 @@ def main() -> int:
     events_output_path = Path(args.events_output).resolve()
     stderr_output_path = Path(args.stderr_output).resolve()
     workdir = Path(args.workdir).resolve()
+    isolation_workdir = Path(args.isolation_workdir).resolve()
 
     for path in (raw_output_path, events_output_path, stderr_output_path):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -84,11 +98,26 @@ def main() -> int:
         "--color",
         "never",
         "--json",
-        "-C",
-        str(workdir),
         "--output-last-message",
         str(raw_output_path),
     ]
+    if args.isolate_project_context:
+        if not isolation_workdir.is_dir():
+            raise SystemExit(
+                "isolated review workdir does not exist or is not a directory: "
+                f"{isolation_workdir}"
+            )
+        command.extend(
+            [
+                "--ignore-user-config",
+                "--ignore-rules",
+                "--skip-git-repo-check",
+                "-C",
+                str(isolation_workdir),
+            ]
+        )
+    else:
+        command.extend(["-C", str(workdir)])
     if args.model:
         command.extend(["-m", args.model])
     command.append("-")
