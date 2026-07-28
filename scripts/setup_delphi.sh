@@ -266,6 +266,12 @@ setup_script_links() {
   else
     warn "Submodule flutter-app not found; skipping Delphi Flutter script link."
   fi
+
+  if [[ -d "${REPO_ROOT}/tools/ci" ]]; then
+    ensure_symlink "../../delphi-ai/tools/verify_stage_full_promotable_state.sh" "${REPO_ROOT}/tools/ci/verify_stage_full_promotable_state.sh"
+  else
+    warn "Root tools/ci not found; skipping promotable stage-full guard link."
+  fi
 }
 
 # --- Setup Claude Code artifacts ---

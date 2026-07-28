@@ -107,5 +107,6 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/lib/teach_runtime.sh` | shell-lib | Emit a consistent TEACH runtime response envelope for deterministic guard tools. |
 | `tools/verification_debt_audit.sh` | shell | Audit a target TODO for waiver/blocker/unchecked-item signals and scan selected paths for inline verification debt markers. |
 | `tools/verify_adherence_sync.sh` | shell | Verify downstream adherence-sync surfaces after Delphi-managed setup. |
+| `tools/verify_stage_full_promotable_state.sh` | shell | Validate whether the current principal checkout is an authorized promotable `stage-full` source before delegating to the direct-promotion wrapper, including TEACH blocking for non-authoritative replay branches. |
 | `tools/verify_context.sh` | shell | Verify Delphi installation/readiness surfaces and optionally repair Delphi-managed links/artifacts. |
 | `tools/vscode_diagnostics_bridge/` | VS Code extension | Read-only loopback bridge for the active VS Code diagnostic collection, used as agent-readable local static-analysis evidence without starting a CLI analyzer. It requires a stable full-workspace snapshot and explicit classification of informational diagnostics; it remains snapshot-only and does not claim Dart Analysis Server completion. |

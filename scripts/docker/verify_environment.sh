@@ -54,7 +54,7 @@ if [[ -z "$COMPOSE_PROFILES_EFFECTIVE" ]]; then
 fi
 DELPHI_COMPOSE_CONFIG_PROFILES="${DELPHI_COMPOSE_CONFIG_PROFILES:-local-db}"
 DELPHI_DERIVED_ARTIFACT_SUBMODULES="${DELPHI_DERIVED_ARTIFACT_SUBMODULES:-web-app}"
-DELPHI_SCRIPT_LINK_SPECS="${DELPHI_SCRIPT_LINK_SPECS:-flutter-app/scripts:../delphi-ai/scripts/flutter}"
+DELPHI_SCRIPT_LINK_SPECS="${DELPHI_SCRIPT_LINK_SPECS:-flutter-app/scripts:../delphi-ai/scripts/flutter tools/ci/verify_stage_full_promotable_state.sh:../../delphi-ai/tools/verify_stage_full_promotable_state.sh}"
 DELPHI_LOCAL_DB_ENV_FILE="${DELPHI_LOCAL_DB_ENV_FILE:-laravel-app/.env}"
 DELPHI_LOCAL_DB_REQUIRED_PATTERN="${DELPHI_LOCAL_DB_REQUIRED_PATTERN:-^(DB_URI|DB_URI_LANDLORD|DB_URI_TENANTS)=}"
 DELPHI_LOCAL_DB_HOST_PATTERN="${DELPHI_LOCAL_DB_HOST_PATTERN:-mongo:27017}"
