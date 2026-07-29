@@ -10,7 +10,11 @@
       ],
       "requires_effort": true,
       "preferred_models": {
+        "chat_orchestrator": [
+          "gpt-5.4"
+        ],
         "routine_executor": [
+          "gpt-5.6-terra",
           "gpt-5.6-luna"
         ],
         "strongest_review": [
@@ -28,8 +32,9 @@
       },
       "notes": [
         "Codex routing is currently enforced through declared preflight evidence plus explicit waiver handling.",
-        "Routine code and implementation-side execution should default to gpt-5.6-luna.",
-        "Architecture decision, governance, final, and security review use gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra."
+        "Ordinary Codex chat/orchestrator work should default to gpt-5.4 when the active session model is configurable.",
+        "Routine code and implementation-side execution should default to gpt-5.6-terra, with gpt-5.6-luna kept as the bounded cheaper fallback.",
+        "OpenAI strongest-review lanes use gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra."
       ]
     },
     "claude-code": {
@@ -39,11 +44,14 @@
         "declared",
         "waiver"
       ],
-      "requires_effort": true,
-      "preferred_models": {
-        "routine_executor": [
-          "sonnet"
-        ],
+            "requires_effort": true,
+            "preferred_models": {
+                "chat_orchestrator": [
+                    "opus"
+                ],
+                "routine_executor": [
+                    "sonnet"
+                ],
         "strongest_review": [
           "opus"
         ],
@@ -70,11 +78,15 @@
         "declared",
         "waiver"
       ],
-      "requires_effort": false,
-      "preferred_models": {
-        "routine_executor": [
-          "sonnet",
-          "sonnet-or-best-available-routine-coding-model"
+            "requires_effort": false,
+            "preferred_models": {
+                "chat_orchestrator": [
+                    "opus",
+                    "opus-or-strongest-available-review-model"
+                ],
+                "routine_executor": [
+                    "sonnet",
+                    "sonnet-or-best-available-routine-coding-model"
         ],
         "strongest_review": [
           "opus",
@@ -215,16 +227,19 @@
         "formal-reviewer"
       ],
       "preferred_model_family": "strongest_review",
+      "role_model_family_overrides": {
+        "primary-chat": "chat_orchestrator"
+      },
       "required_effort_key": "highest_review_tier",
       "failure_outcome": "review-required",
       "waiver_allowed": true,
       "allowed_exception_reasons": [],
       "state_policy": "primary-chat-state-or-stateless-review",
       "goal_policy": "not-needed",
-      "notes": [
-        "Approval and plan-review surfaces are review-material judgment lanes.",
-        "Use the strongest review model/tier that the client exposes."
-      ]
+            "notes": [
+                "Approval and plan-review surfaces are review-material judgment lanes.",
+                "Primary-chat approval stays on the client's chat/orchestrator model; separately dispatched formal reviewers use the strongest-review model."
+            ]
     },
     "delivery-review": {
       "required_lane": "review",
@@ -233,15 +248,18 @@
         "formal-reviewer"
       ],
       "preferred_model_family": "strongest_review",
+      "role_model_family_overrides": {
+        "primary-chat": "chat_orchestrator"
+      },
       "required_effort_key": "highest_review_tier",
       "failure_outcome": "review-required",
       "waiver_allowed": true,
       "allowed_exception_reasons": [],
       "state_policy": "primary-chat-state-or-stateless-review",
       "goal_policy": "not-needed",
-      "notes": [
-        "Delivery/final-review/promotion-readiness adjudication is a strongest-review surface."
-      ]
+            "notes": [
+                "Primary-chat delivery adjudication stays on the client's chat/orchestrator model; separately dispatched final reviewers use the strongest-review model."
+            ]
     },
     "self-improvement": {
       "required_lane": "review",

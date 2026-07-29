@@ -190,6 +190,7 @@ def evaluate_routing(
 
     client_cfg = contract["clients"][client]
     surface_cfg = contract["surfaces"][surface]
+    role_value = normalize_token(role)
     model_family = surface_cfg["preferred_model_family"]
     if review_kind:
         review_families = contract.get("review_kind_model_families", {})
@@ -202,6 +203,11 @@ def evaluate_routing(
             }
         model_family = review_families[review_kind]
         context["review_kind"] = review_kind
+    role_overrides = surface_cfg.get("role_model_family_overrides", {})
+    for declared_role, declared_family in role_overrides.items():
+        if normalize_token(declared_role) == role_value:
+            model_family = declared_family
+            break
     expected_models = list(client_cfg["preferred_models"][model_family])
     expected_efforts = list(contract["effort_aliases"][surface_cfg["required_effort_key"]])
     allowed_roles = list(surface_cfg["allowed_roles"])
@@ -210,10 +216,10 @@ def evaluate_routing(
 
     context["required_lane"] = surface_cfg["required_lane"]
     context["allowed_roles"] = ", ".join(allowed_roles)
+    context["selected_model_family"] = model_family
     context["expected_models"] = ", ".join(expected_models)
     context["expected_efforts"] = ", ".join(expected_efforts)
 
-    role_value = normalize_token(role)
     proof_mode_value = normalize_token(proof_mode)
     exception_value = normalize_token(exception_reason or "")
     waiver_present = not is_missing(waiver_reference)

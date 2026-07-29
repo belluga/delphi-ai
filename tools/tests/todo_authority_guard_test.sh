@@ -3,9 +3,25 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 GUARD="$ROOT_DIR/tools/todo_authority_guard.py"
+CONTRACT="$ROOT_DIR/config/agent_role_routing.json"
+ROUTINE_EXECUTOR_MODEL="$(
+  python3 - "$CONTRACT" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(contract["clients"]["codex"]["preferred_models"]["routine_executor"][0])
+PY
+)"
 
 TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"' EXIT
+cleanup() {
+  local status=$?
+  rm -rf "$TMP_DIR"
+  exit "$status"
+}
+trap cleanup EXIT
 
 OUTPUT_FILE="$TMP_DIR/todo-authority-guard.out"
 
@@ -23,7 +39,10 @@ assert_no_go() {
 assert_go() {
   local todo_file="$1"
   shift || true
-  python3 "$GUARD" "$todo_file" "$@" > "$OUTPUT_FILE" 2>&1
+  if ! python3 "$GUARD" "$todo_file" "$@" > "$OUTPUT_FILE" 2>&1; then
+    cat "$OUTPUT_FILE"
+    return 1
+  fi
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
 }
 
@@ -112,13 +131,24 @@ cat > "$TMP_DIR/approved-with-routing-preflight.md" <<'TODO'
 - **Client surface:** `codex`
 - **Current governed action:** `implementation`
 - **Selected role:** `routine-executor`
-- **Selected model:** `gpt-5.4-mini`
+- **Selected model:** `__ROUTINE_EXECUTOR_MODEL__`
 - **Selected effort:** `medium`
 - **Proof mode:** `declared`
 - **Exception reason:** `n/a`
 - **Guard outcome:** `go`
 - **Waiver / exception reference:** `n/a`
 TODO
+
+python3 - "$TMP_DIR/approved-with-routing-preflight.md" "$ROUTINE_EXECUTOR_MODEL" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.write_text(
+    path.read_text(encoding="utf-8").replace("__ROUTINE_EXECUTOR_MODEL__", sys.argv[2]),
+    encoding="utf-8",
+)
+PY
 
 assert_go "$TMP_DIR/approved-with-routing-preflight.md"
 
@@ -227,9 +257,41 @@ cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
 | --- | --- | --- | --- | --- | --- |
 | `guard` | `shared TODO architecture contract` | `python3 delphi-ai/tools/todo_authority_guard.py foundation_documentation/todos/active/v0.2.5/TODO-canonical-envelope.md` | `missing architecture governance on future supersede TODOs` | `already-enforced` | `guard output` |
 | `test` | `API contract suite` | `php artisan test --filter CanonicalEnvelopeContractTest` | `legacy envelope emitted again` | `implement-in-this-todo` | `DOD + validation rows in the governing TODO` |
+
+## Architecture Review Gates
+- **Architecture decision review:** `required`
+- **Decision review status:** `passed`
+- **Architecture adherence review:** `required`
+- **Adherence review status:** `n/a`
 TODO
 
 assert_go "$TMP_DIR/architecture-required-complete.md"
+
+cat > "$TMP_DIR/architecture-not-needed.md" <<'TODO'
+# TODO: Architecture Not Needed
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** correct a bounded screen layout regression.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit authority gate. | Silent scope expansion. | Guard the bounded correction. |
+
+## Architecture Change Governance
+- **Applicability:** `not_needed`
+- **Why this applies:** no architecture is established or superseded.
+- **Deviation / debt being retired:** `n/a`
+- **Target steady-state after closeout:** `n/a`
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** `n/a`
+TODO
+
+assert_go "$TMP_DIR/architecture-not-needed.md"
 
 cat > "$TMP_DIR/local-implemented-missing-gates.md" <<'TODO'
 # TODO: Local Implemented Missing Gates

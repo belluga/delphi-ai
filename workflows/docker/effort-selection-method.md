@@ -36,7 +36,7 @@ Centralize how Delphi chooses effort tiers, model routing, executor state, and G
 
 ## Model Routing Defaults
 - Model identifiers and review-kind routing live only in `config/agent_role_routing.json`; this workflow must not duplicate them. Resolve the selected client, surface, and review kind through `agent_role_routing_guard.py` before governed work begins.
-- Keep ordinary chat/orchestrator turns at `medium` effort and on the active session/default model unless the turn itself becomes a governed review/adjudication surface.
+- Keep ordinary chat/orchestrator turns at `medium` effort and on the contract-selected chat/orchestrator model when the active session model is configurable; otherwise stay on the active session/default model unless the turn itself becomes a governed review/adjudication surface.
 - The chat/orchestrator plans, packages handoffs, reconciles evidence, and adjudicates gates. When executor subagents are available, it does not directly create implementation code for TODO slices except for workflow-authorized reconciliation, merge-conflict resolution, or minimal integration glue.
 - For high-risk implementation whose `HOW` still requires deep reasoning after planning, keep the executor handoff but select the configured escalation model instead of changing authority boundaries.
 - Monitoring is deterministic first. If an LLM is needed for process status, use an ephemeral low/medium mini pass over bounded output; do not create a standing watcher or let the main chat consume verbose logs continuously.
@@ -62,15 +62,15 @@ If none of those are true, prefer the routine default instead of escalation.
 ## Matrix
 | Surface | Recommended model | Recommended effort | GOAL policy | State policy | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Ordinary chat/orchestrator turn | active session/default model | `medium` | `not_needed` | primary chat state | Default for normal delivery turns; plans and packages handoffs but does not create implementation code when executor subagents are available. |
+| Ordinary chat/orchestrator turn | contract-selected chat/orchestrator model, else active session/default model | `medium` | `not_needed` | primary chat state | Default for normal delivery turns; plans and packages handoffs but does not create implementation code when executor subagents are available. |
 | Routine code executor subagent | contract-selected `routine_executor` | `medium` | `required when supported` | sticky per chat/TODO, compact state | Use explicit bounded GOAL contracts and reset/recompact under the sticky executor policy. |
 | High-risk code executor subagent | contract-selected escalation | `medium` or higher only when justified | `required when supported` | bounded executor state | Keep the code handoff rather than moving implementation into the chat. |
 | Process monitoring / log status | deterministic first; contract-selected monitoring model if LLM needed | `low` or `medium` | `not_needed` | ephemeral | Summarize bounded output only; no standing watcher and no verbose-log monitoring in the main chat. |
 | Delphi self-improvement / instruction change | contract-selected strongest review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Instruction mistakes have broad method impact. |
 | Strategic framing with material strategic ambiguity | contract-selected strongest review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Escalate only when first-pass planning did not resolve approval-material ambiguity. |
-| Strategic framing without material strategic ambiguity | active session/default model | `medium` | `not_needed` | primary chat state | Routine recommendation work stays at default. |
-| TODO approval / plan review | contract-selected governance review | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes orchestrator-side approval reasoning. |
-| Delivery / final review / promotion-readiness adjudication | contract-selected review kind | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Includes P1/P2 interpretation, waiver/debt acceptance, and close-claim judgment. |
+| Strategic framing without material strategic ambiguity | contract-selected chat/orchestrator model, else active session/default model | `medium` | `not_needed` | primary chat state | Routine recommendation work stays at the orchestrator default. |
+| TODO approval / plan review | contract-selected `todo-approval` surface model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Primary-chat approval stays on the orchestrator lane when the contract says so; separately dispatched reviewers remain strongest-review. |
+| Delivery / final review / promotion-readiness adjudication | contract-selected `delivery-review` surface model | highest review-focused tier (`ExtraRight` or closest equivalent) | `not_needed` | primary chat state | Primary-chat adjudication uses the orchestrator lane when the contract says so; separately dispatched reviewers remain strongest-review. |
 | Formal review subagent | contract-selected review kind | highest review-focused tier (`ExtraRight` or closest equivalent) | `stateless by default` | no-context stateless review | Review agents are judgment-first surfaces; keep them stateless unless resumable state is required by the client/tool. |
 | Exploratory second-opinion reviewer | active session/default or contract-selected review kind | `medium` | `stateless by default` | no-context stateless review | Escalate to the highest review-focused tier only when it becomes gate-satisfying or the ambiguity test is material. |
 
@@ -113,6 +113,7 @@ If none of those are true, prefer the routine default instead of escalation.
 
 ## Validation
 - `medium` remains the default for ordinary chat/orchestrator turns and routine executor subagents.
+- Ordinary chat/orchestrator turns use the contract-selected chat/orchestrator model when the active session model is configurable; otherwise they stay on the active session/default model.
 - Routine code executor subagents use the contract-selected `routine_executor` model when model selection is available.
 - Chat/orchestrator turns do not create implementation code when executor subagents are available, except for workflow-authorized reconciliation/merge-conflict/integration glue.
 - Formal review subagents use the contract-selected family for their explicit review kind, not the routine default.

@@ -78,7 +78,7 @@ ROUTING_REQUIRED_SOURCE_TOKENS = (
     "effort-selection-method",
     "agent_role_routing_guard.py",
 )
-ARCHITECTURE_GOVERNANCE_APPLICABILITY = {"required", "not_needed"}
+ARCHITECTURE_GOVERNANCE_APPLICABILITY = {"required", "not needed"}
 ARCHITECTURE_HARNESS_TIMINGS = {
     "already-enforced",
     "implement-in-this-todo",
@@ -484,7 +484,7 @@ def validate_architecture_governance(sections: dict[str, list[str]]) -> tuple[li
     required = normalized_applicability == "required" or supersede_trigger
     context["architecture_governance_required"] = required
 
-    if normalized_applicability == "not_needed" and supersede_trigger:
+    if normalized_applicability == "not needed" and supersede_trigger:
         violations.append(
             build_violation(
                 "ARCHITECTURE-GOVERNANCE-CONTRADICTION",

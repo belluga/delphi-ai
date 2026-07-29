@@ -3,9 +3,30 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TOOL="$ROOT_DIR/tools/agent_role_routing_guard.py"
+CONTRACT="$ROOT_DIR/config/agent_role_routing.json"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
+
+contract_model() {
+  python3 - "$CONTRACT" "$1" "$2" "$3" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(contract["clients"][sys.argv[2]]["preferred_models"][sys.argv[3]][int(sys.argv[4])])
+PY
+}
+
+CODEX_CHAT_MODEL="$(contract_model codex chat_orchestrator 0)"
+CODEX_ROUTINE_MODEL="$(contract_model codex routine_executor 0)"
+CODEX_ROUTINE_FALLBACK="$(contract_model codex routine_executor 1)"
+CODEX_REVIEW_MODEL="$(contract_model codex strongest_review 0)"
+CLAUDE_CHAT_MODEL="$(contract_model claude-code chat_orchestrator 0)"
+CLAUDE_REVIEW_MODEL="$(contract_model claude-code strongest_review 0)"
+CLINE_CHAT_MODEL="$(contract_model cline-ide chat_orchestrator 1)"
+CLINE_ROUTINE_MODEL="$(contract_model cline-ide routine_executor 1)"
 
 assert_outcome() {
   local expected="$1"
@@ -42,7 +63,7 @@ assert_outcome delegate-required \
   --client codex \
   --surface implementation \
   --role primary-chat \
-  --model gpt-5.6-luna \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
   --proof-mode declared
 
@@ -50,7 +71,15 @@ assert_outcome go \
   --client codex \
   --surface implementation \
   --role routine-executor \
-  --model gpt-5.6-luna \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium \
+  --proof-mode declared
+
+assert_outcome go \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_FALLBACK" \
   --effort medium \
   --proof-mode declared
 
@@ -58,7 +87,7 @@ assert_outcome go \
   --client codex \
   --surface implementation \
   --role primary-chat \
-  --model gpt-5.6-luna \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
   --proof-mode waiver \
   --exception-reason bootstrap-guard-implementation \
@@ -75,15 +104,64 @@ assert_outcome review-required \
   --client codex \
   --surface formal-review \
   --role formal-reviewer \
-  --model gpt-5.6-luna \
+  --model "$CODEX_ROUTINE_FALLBACK" \
   --effort ExtraRight-or-closest-equivalent \
+  --proof-mode declared
+
+assert_outcome go \
+  --client codex \
+  --surface todo-approval \
+  --role primary-chat \
+  --model "$CODEX_CHAT_MODEL" \
+  --effort ExtraRight-or-closest-equivalent \
+  --proof-mode declared
+
+assert_outcome go \
+  --client codex \
+  --surface delivery-review \
+  --role primary-chat \
+  --model "$CODEX_CHAT_MODEL" \
+  --effort ExtraRight-or-closest-equivalent \
+  --proof-mode declared
+
+assert_outcome go \
+  --client codex \
+  --surface delivery-review \
+  --role primary-chat \
+  --review-kind final_review \
+  --model "$CODEX_CHAT_MODEL" \
+  --effort ExtraRight-or-closest-equivalent \
+  --proof-mode declared
+
+assert_outcome go \
+  --client codex \
+  --surface delivery-review \
+  --role formal-reviewer \
+  --review-kind final_review \
+  --model "$CODEX_REVIEW_MODEL" \
+  --effort ExtraRight-or-closest-equivalent \
+  --proof-mode declared
+
+assert_outcome go \
+  --client claude-code \
+  --surface todo-approval \
+  --role primary-chat \
+  --model "claude-${CLAUDE_CHAT_MODEL}-5" \
+  --effort xhigh \
+  --proof-mode declared
+
+assert_outcome go \
+  --client cline-ide \
+  --surface delivery-review \
+  --role primary-chat \
+  --model "$CLINE_CHAT_MODEL" \
   --proof-mode declared
 
 assert_outcome go \
   --client codex \
   --surface formal-review \
   --role formal-reviewer \
-  --model gpt-5.6-sol \
+  --model "$CODEX_REVIEW_MODEL" \
   --effort ExtraRight-or-closest-equivalent \
   --proof-mode declared
 
@@ -92,7 +170,7 @@ assert_outcome go \
   --surface formal-review \
   --role formal-reviewer \
   --review-kind architecture_adherence \
-  --model gpt-5.4 \
+  --model "$CODEX_REVIEW_MODEL" \
   --effort ExtraRight-or-closest-equivalent \
   --proof-mode declared
 
@@ -100,7 +178,7 @@ assert_outcome go \
   --client claude-code \
   --surface formal-review \
   --role formal-reviewer \
-  --model opus \
+  --model "$CLAUDE_REVIEW_MODEL" \
   --effort xhigh \
   --proof-mode artifact
 
@@ -108,7 +186,7 @@ assert_outcome go \
   --client cline-ide \
   --surface implementation \
   --role routine-executor \
-  --model sonnet-or-best-available-routine-coding-model \
+  --model "$CLINE_ROUTINE_MODEL" \
   --proof-mode declared
 
 assert_outcome go \
@@ -121,7 +199,7 @@ assert_outcome blocked \
   --client codex \
   --surface implementation \
   --role routine-executor \
-  --model gpt-5.6-luna \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
   --proof-mode artifact
 

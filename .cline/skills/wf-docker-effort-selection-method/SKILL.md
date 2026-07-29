@@ -10,10 +10,10 @@ Use when the active client exposes named effort controls, model selection, custo
 ## Responsibilities
 - Keep `medium` as the routine default for ordinary chat/orchestrator turns and routine executor subagents.
 - Keep the chat/orchestrator out of implementation-code creation when executor subagents are available; it plans, packages handoffs, reconciles evidence, and adjudicates gates.
-- Prefer `gpt-5.4-mini` for routine code executor subagents, with one sticky compact executor per chat/TODO when supported.
+- Prefer the contract-selected `routine_executor` model for routine code executor subagents, with one sticky compact executor per chat/TODO when supported.
 - Reset/recompact sticky executor state at TODO closeout, major scope/module change, high-volume context ingestion, stale/confused state, or material branch/worktree authority change.
 - Use deterministic monitoring first; if an LLM is needed, use ephemeral low/medium mini summarization over bounded output instead of continuous main-chat log watching.
-- Escalate to `gpt-5.5` plus the highest review-focused tier for self-improvement, approval/plan review, delivery/final-review/promotion-readiness adjudication, and formal review subagents.
+- Escalate to the contract-selected strongest-review model plus the highest review-focused tier for self-improvement and formal review subagents. Primary-chat approval and delivery adjudication use the contract-selected chat/orchestrator model at the highest review-focused tier unless a separate formal reviewer is dispatched.
 - Treat material strategic ambiguity as the threshold for escalating strategic framing or exploratory review beyond the routine default.
 - Require explicit GOAL contracts for executor subagents when the client supports persistent goals.
 - Keep review subagents stateless by default unless resumable reviewer state is required by the client/tool.
