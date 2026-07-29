@@ -17,6 +17,9 @@ collection without starting a second analyzer process.
   diagnostics snapshot is stable for the full declared workspace, but it must
   be labeled `live Problems snapshot`, never a completed CLI analyzer or a
   public-API proof of Analysis Server completion.
+- When the user asks for current Flutter `Problems`, diagnostics, or analyzer
+  errors/warnings, the agent must read this extension snapshot rather than
+  inferring from screenshots or launching `dart analyze` / `flutter analyze`.
 - A clean local gate contains no `Error` or `Warning` diagnostic. `Information`
   diagnostics remain visible and need explicit owner/classification rather than
   being discarded. Query `/health` before and after the scoped snapshot and
