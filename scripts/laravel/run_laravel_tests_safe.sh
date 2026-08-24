@@ -45,6 +45,7 @@ LOCAL_APP_HOST="${LOCAL_APP_HOST:-nginx}"
 LOCAL_DB_URI="${LOCAL_DB_URI:-mongodb://mongo:27017/paced_tests}"
 LOCAL_DB_URI_LANDLORD="${LOCAL_DB_URI_LANDLORD:-mongodb://mongo:27017/paced_tests_landlord}"
 LOCAL_DB_URI_TENANTS="${LOCAL_DB_URI_TENANTS:-mongodb://mongo:27017/paced_tests_tenant}"
+TENANT_DATABASE_PREFIX="${TENANT_DATABASE_PREFIX:-tenant_}"
 
 ALLOWED_HTTP_HOSTS=("nginx" "localhost" "127.0.0.1" "::1")
 ALLOWED_MONGO_HOSTS=("mongo" "localhost" "127.0.0.1" "::1")
@@ -128,6 +129,11 @@ validate_mongo_uri "LOCAL_DB_URI" "$LOCAL_DB_URI"
 validate_mongo_uri "LOCAL_DB_URI_LANDLORD" "$LOCAL_DB_URI_LANDLORD"
 validate_mongo_uri "LOCAL_DB_URI_TENANTS" "$LOCAL_DB_URI_TENANTS"
 
+if [[ ! "$TENANT_DATABASE_PREFIX" =~ ^[A-Za-z0-9_]+$ ]]; then
+  echo "ERROR: TENANT_DATABASE_PREFIX must contain only letters, digits, and underscores." >&2
+  exit 1
+fi
+
 mkdir -p "$LOCK_DIR"
 
 if command -v flock >/dev/null 2>&1; then
@@ -150,5 +156,6 @@ docker compose exec -T \
   -e DB_URI="$LOCAL_DB_URI" \
   -e DB_URI_LANDLORD="$LOCAL_DB_URI_LANDLORD" \
   -e DB_URI_TENANTS="$LOCAL_DB_URI_TENANTS" \
+  -e TENANT_DATABASE_PREFIX="$TENANT_DATABASE_PREFIX" \
   "$APP_CONTAINER" \
   php artisan test "$@"
