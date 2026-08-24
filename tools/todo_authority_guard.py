@@ -350,6 +350,9 @@ def validate_agent_routing_preflight(sections: dict[str, list[str]]) -> tuple[li
     exception_reason = extract_field(lines, "Exception reason")
     guard_outcome = extract_field(lines, "Guard outcome")
     waiver_reference = extract_field(lines, "Waiver / exception reference")
+    execution_topology = extract_field(lines, "Execution topology")
+    worktree_authorization = extract_field(lines, "Worktree authorization")
+    worktree_authorization_reference = extract_field(lines, "Worktree authorization reference")
 
     required_fields = (
         ("Client surface", client),
@@ -408,6 +411,9 @@ def validate_agent_routing_preflight(sections: dict[str, list[str]]) -> tuple[li
         proof_mode=strip_markup(proof_mode or ""),
         exception_reason=strip_markup(exception_reason or "") or None,
         waiver_reference=strip_markup(waiver_reference or "") or None,
+        execution_topology=strip_markup(execution_topology or "") or None,
+        worktree_authorization=strip_markup(worktree_authorization or "") or None,
+        worktree_authorization_reference=strip_markup(worktree_authorization_reference or "") or None,
     )
     context["routing_preflight_outcome"] = routing_result["outcome"]
 
