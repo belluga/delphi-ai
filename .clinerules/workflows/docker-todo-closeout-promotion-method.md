@@ -35,8 +35,8 @@ Move a delivered TODO to the right next state, promote stable truth to canonical
 6. Route post-review findings explicitly:
    - Run `review-finding-classification` before changing the routing ledger or splitting follow-up owners.
    - `release-blocker` stays with the current governing TODO/package and must be fixed or explicitly re-approved before promotion continues;
-   - `follow-up-fast-follow` becomes an explicit TODO under `foundation_documentation/todos/active/fast_follow_required/followup/`;
-   - `follow-up-hardening` becomes an explicit TODO under `foundation_documentation/todos/active/post_release_hardening/hardening/`;
+   - `follow-up-fast-follow` and `follow-up-hardening` become explicit TODOs under the project-approved active classification/version topology rather than ad hoc notes;
+   - when the project uses both classification families and version packages, classification chooses the family root and the governing version package decides whether the follow-up is admitted into an immediate delivery wave or remains outside the current package;
    - `by-design/no-action` stays only as authoritative rationale/evidence in the governing TODO.
    The originating release/package version belongs in the split TODO title/body and routing ledger, not in the directory name.
 7. During a package-wide review / Copilot-mimic loop, move TODOs to `promotion_lane/` progressively as soon as each one individually satisfies all of the following:

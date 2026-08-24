@@ -5,9 +5,19 @@ description: "Before any implementation work (code/docs) that changes the projec
 
 
 ## Rule
+Subagent/delegation authorization and Git-isolation authorization are independent. Generic `APROVADO`, subagent approval, delegation, or parallelism never authorizes `git worktree`, auxiliary checkouts/copies, `worker/*`, or `reconcile/*`. Default to `primary-checkout-single-writer`: one active writer, serialized additional writers, and parallel read-only reviewers. Use `worktree-isolated` only after separate human authorization explicitly names worktrees or auxiliary checkouts; otherwise stop and ask if simultaneous writers require isolation. Authoritative Docker, browser, device, and CI-Equivalent validation remains on the consolidated principal checkout.
+
 Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
 
 For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
+
+### Classification vs Versioned Delivery
+- Classification family roots (for example `active/bugs-performance/<severity>/`, `active/features/`, or analogous project-defined intake families) classify work, triage admission, and help decide which delivery conversation the owner belongs to.
+- Those family roots do not automatically replace version-based delivery. When a project also uses active version-package folders plus a governing release-package TODO, treat the version folder as live delivery authority rather than as stale or historical by default.
+- The interpretation is orthogonal:
+  - classification answers "what kind of owner is this and which intake/follow-up family should govern it?"
+  - version packaging answers "which approved owners are admitted into this concrete delivery wave and therefore share package/promotion authority?"
+- Do not infer from the presence of classification families that version folders are deprecated. Read the project-owned constitution, roadmap, and governing package TODO to determine whether classification and version packaging are active together.
 
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
@@ -158,13 +168,14 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh internal reviewer with no inherited thread context.
-- Every critique pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review. An external provider is neither required nor gate-satisfying evidence.
+- Apply the reviewer lifecycle invariant to every delegated review gate: reviewer lifecycle is status-based rather than elapsed-time-based; while a reviewer is `pending_init` or `running`, wait without a rigid deadline; a polling timeout is not reviewer failure; do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review; retry only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default; change a retry package only to repair a concrete proven package defect while preserving the full rubric; recycle only terminal inactive reviewer lanes.
+- Every critique pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
 - When the user or TODO explicitly requires the dedicated delivery-side multi-lane audit loop (`Performance`, `Test Quality`, plus conditional `cutover_integrity_audit`), use `audit-protocol-triple-review` as the canonical orchestration surface instead of ad hoc reviewer sequencing.
 - Record the audit session path plus the decisive round summary (`clean`, `needs_resolution`, or `needs_adjudication`) in the TODO evidence whenever that protocol is used.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
 - Ask for findings first, ordered by severity, with no implementation.
 - Every critique must state whether the recommended path is acceptable for performance, whether it is elegant relative to the available alternatives, and whether it preserves structural soundness rather than relying on brittle workarounds or structural shortcuts.
-- Retry once with a tighter package if the first attempt fails or times out.
+- If the first attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. A polling timeout while the reviewer remains live requires continued waiting, not retry or package reduction.
 - If a required critique still cannot be obtained, record blocker/waiver handling before approval.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
@@ -313,14 +324,14 @@ If the change restores previously documented or verifiably working behavior (inc
 - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions below.
 - Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.
 - Use one fresh internal reviewer with no inherited thread context.
-- Every test-audit pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review. An external provider is neither required nor gate-satisfying evidence.
+- Every test-audit pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
 - Require explicit answers on:
   - whether changed test logic reflects a real product/contract change
   - whether any changed test logic appears to be a pass-the-test workaround or other brittle test-only shortcut
   - whether assertions are effective enough to catch the intended regression/behavior break
   - whether assertions and coverage are efficient rather than bloated, redundant, or brittle
   - whether changed and nearby tests actually cover the required behaviors and failure modes
-- Retry once with a tighter package if the first attempt fails or times out.
+- If the first attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. A polling timeout while the reviewer remains live requires continued waiting, not retry or package reduction.
 - If a required audit still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required test-audit gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
@@ -340,12 +351,12 @@ If the change restores previously documented or verifiably working behavior (inc
   - `recommended` for other `medium`
   - `not_needed` only for low-risk `small`
 - Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh internal reviewer with no inherited thread context.
-- Every final-review pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review. An external provider is neither required nor gate-satisfying evidence.
+- Every final-review pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
 - When the delivery requires the dedicated delivery-side multi-lane audit loop (`Performance`, `Test Quality`, plus conditional `cutover_integrity_audit`), run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
 - Record the audit session path and the clean/latest round summary in the TODO before claiming the gate is satisfied.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
 - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
-- Retry once with a tighter package if the first attempt fails or times out.
+- If the first attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. A polling timeout while the reviewer remains live requires continued waiting, not retry or package reduction.
 - If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
 - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.

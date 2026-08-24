@@ -244,6 +244,29 @@ repo_slug_from_gitmodules_path() {
   repo_slug_from_url "$url"
 }
 
+local_checkout_path_for_repo() {
+  local repo="$1"
+  local candidate=""
+  local url=""
+  local slug=""
+
+  for candidate in \
+    "$WORKSPACE_ROOT" \
+    "$WORKSPACE_ROOT/$DOCKER_FLUTTER_PATH" \
+    "$WORKSPACE_ROOT/$DOCKER_LARAVEL_PATH" \
+    "$WORKSPACE_ROOT/web-app"
+  do
+    [ -d "$candidate" ] || continue
+    url="$(git -C "$candidate" remote get-url origin 2>/dev/null || true)"
+    [ -n "$url" ] || continue
+    slug="$(repo_slug_from_url "$url" || true)"
+    if [ "$slug" = "$repo" ]; then
+      printf '%s' "$candidate"
+      return
+    fi
+  done
+}
+
 require_argument_teach() {
   local condition="$1"
   local violation="$2"
@@ -279,9 +302,41 @@ compare_summary() {
   local source_sha="$2"
   local target_sha="$3"
   local output=""
+  local checkout_path=""
+  local left_only=""
+  local right_only=""
+  local status=""
 
   if output="$(gh api "repos/$repo/compare/$source_sha...$target_sha" --jq '[.status // "", (.behind_by | tostring), (.ahead_by | tostring)] | @tsv' 2>/dev/null)"; then
     printf '%s' "$output"
+    return
+  fi
+
+  checkout_path="$(local_checkout_path_for_repo "$repo")"
+  [ -n "$checkout_path" ] || return 0
+
+  git -C "$checkout_path" fetch origin "$SOURCE_BRANCH" "$TARGET_BRANCH" --quiet >/dev/null 2>&1 || true
+
+  if ! git -C "$checkout_path" cat-file -e "$source_sha^{commit}" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if ! git -C "$checkout_path" cat-file -e "$target_sha^{commit}" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if output="$(git -C "$checkout_path" rev-list --left-right --count "$source_sha...$target_sha" 2>/dev/null)"; then
+    read -r left_only right_only <<< "$output"
+    if [ "${left_only:-}" = "0" ] && [ "${right_only:-}" = "0" ]; then
+      status="identical"
+    elif [ "${left_only:-}" = "0" ]; then
+      status="ahead"
+    elif [ "${right_only:-}" = "0" ]; then
+      status="behind"
+    else
+      status="diverged"
+    fi
+    printf '%s\t%s\t%s' "$status" "${left_only:-}" "${right_only:-}"
   fi
 }
 

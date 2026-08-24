@@ -18,6 +18,12 @@ find_environment_root() {
 }
 
 ROOT_DIR="$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$ROOT_DIR" ]; then
+  if [[ ! -f "$ROOT_DIR/docker-compose.yml" ]] || [[ ! -d "$ROOT_DIR/laravel-app" ]] || [[ ! -d "$ROOT_DIR/delphi-ai" ]]; then
+    ROOT_DIR=""
+  fi
+fi
+
 if [ -z "$ROOT_DIR" ]; then
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   ROOT_DIR="$(find_environment_root "$SCRIPT_DIR" || true)"
@@ -31,6 +37,8 @@ fi
 cd "$ROOT_DIR"
 
 APP_CONTAINER="${APP_CONTAINER:-app}"
+LOCK_DIR="${LARAVEL_TESTS_SAFE_LOCK_DIR:-$ROOT_DIR/.delphi-locks}"
+LOCK_FILE="${LARAVEL_TESTS_SAFE_LOCK_FILE:-$LOCK_DIR/laravel-tests-safe.lock}"
 
 LOCAL_APP_URL="${LOCAL_APP_URL:-http://nginx}"
 LOCAL_APP_HOST="${LOCAL_APP_HOST:-nginx}"
@@ -120,12 +128,22 @@ validate_mongo_uri "LOCAL_DB_URI" "$LOCAL_DB_URI"
 validate_mongo_uri "LOCAL_DB_URI_LANDLORD" "$LOCAL_DB_URI_LANDLORD"
 validate_mongo_uri "LOCAL_DB_URI_TENANTS" "$LOCAL_DB_URI_TENANTS"
 
-if ! docker compose ps "$APP_CONTAINER" >/dev/null 2>&1; then
+mkdir -p "$LOCK_DIR"
+
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$LOCK_FILE"
+  flock 9
+else
+  echo "WARN: flock is unavailable; concurrent local-safe Laravel runs may collide on shared test databases." >&2
+fi
+
+if ! docker compose ps --services --status running | grep -Fxq "$APP_CONTAINER"; then
   echo "ERROR: docker compose service '$APP_CONTAINER' is not available." >&2
   exit 1
 fi
 
 echo "INFO: running Laravel tests with forced local-safe environment."
+echo "INFO: local-safe Laravel runner lock acquired at '$LOCK_FILE'."
 docker compose exec -T \
   -e APP_URL="$LOCAL_APP_URL" \
   -e APP_HOST="$LOCAL_APP_HOST" \

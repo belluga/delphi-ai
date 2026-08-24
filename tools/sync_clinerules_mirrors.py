@@ -57,7 +57,7 @@ MIRRORS: tuple[Mirror, ...] = (
         source="rules/core/session-lifecycle-model-decision.md",
         destination=".clinerules/model-decision/shared-session-lifecycle.md",
         title="Session Lifecycle (Model Decision)",
-        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-session-lifecycle.md`\n",
+        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/docker-session-lifecycle-method.md`\n",
     ),
     Mirror(
         key="shared-todo-driven-execution",
@@ -284,7 +284,15 @@ MIRRORS: tuple[Mirror, ...] = (
         workflow_name="docker-profile-selection-method",
     ),
     Mirror(
-        key="docker-session-lifecycle",
+        key="docker-session-lifecycle-method",
+        kind="workflow",
+        source="workflows/docker/session-lifecycle-method.md",
+        destination=".clinerules/workflows/docker-session-lifecycle-method.md",
+        title="Workflow: Session Lifecycle",
+        workflow_name="docker-session-lifecycle-method",
+    ),
+    Mirror(
+        key="docker-session-lifecycle-compat",
         kind="workflow",
         source="workflows/docker/session-lifecycle-method.md",
         destination=".clinerules/workflows/docker-session-lifecycle.md",

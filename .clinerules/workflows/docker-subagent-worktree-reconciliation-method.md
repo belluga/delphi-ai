@@ -10,6 +10,13 @@ description: "Coordinate parallel implementation subagents through isolated work
 ## Purpose
 Coordinate parallel implementation subagents without surrendering integration ownership. This method keeps each delegated slice in its own worktree, requires checkpoint commits from workers, and makes the orchestrator responsible for merging those checkpoints into one reconciliation branch where delivery evidence is collected. Worker and orchestrator checkpoints may be autonomous only when the orchestration plan or worker contract records the commit/push authority source allowed by the governed-commit rule.
 
+## Worktree-Specific Authorization Gate
+- This workflow is default-deny. Do not load it merely because subagents, delegation, or parallelism were approved.
+- Before planning or creating any topology, require separate human authorization that explicitly mentions `worktree`/`worktrees` or auxiliary checkouts. Record the exact authorization reference in the orchestration plan.
+- Generic approval such as “use subagents”, “delegate”, “parallelize”, or `APROVADO` without worktree-specific wording is not sufficient.
+- Without worktree-specific authorization, return to `subagent-orchestration-method.md` and use `primary-checkout-single-writer`: one active writer, parallel read-only reviewers, serialized additional writers, no auxiliary checkout/branch/copy, and no `reconcile/*`.
+- If multiple concurrent writers genuinely require isolation and authorization is absent, stop and ask for worktree-specific authorization instead of inferring it.
+
 Worker-local success is necessary but insufficient. Workers/subagents may close their implementation slice only when their owned code is architecture-clean and compile/build-clean for every applicable local gate named in the plan. Flutter code changes require the stable full-workspace VS Code Problems bridge snapshot and static-rule review, never a locally launched CLI analyzer; other stacks use their named lint/static gates. Missing that static gate, an applicable build/publish gate, or targeted tests is a blocker to checkpoint acceptance. Delivery only counts when the orchestrator validates the consolidated branch with the final runtime lane(s) required for the merged behavior, including any browser/device flows served from the principal local checkout. Final orchestrator acceptance also requires every in-scope repo-owned CI suite/job from the plan's `CI-Equivalent Local Suite Matrix` to have been executed locally and passed on the reconciliation state; targeted reruns do not substitute for that matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat that matrix as the minimum validation floor rather than the ceiling and run the broader local suites that are cheaper to fail here than later in CI or promotion.
 Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Equivalent`, reconcile-wrapper validity, or broad stage-gate parity.
 CI-Equivalent is a generic current-branch local product-proof concept, not a reconciliation-specific concept. This workflow uses reconciliation topology only when work is actually being reconciled from worker worktrees/branches.
@@ -24,7 +31,7 @@ Implementation ownership belongs to workers/subagents. The orchestrator must not
 When consolidated CI-Equivalent or runtime validation fails on the reconciliation state, the default routing is back to the worker/subagent or TODO owner that owns the failing workstream or traceability row. The orchestrator only patches locally when the fix is strictly reconciliation/merge-conflict/integration-glue scope.
 
 ## Triggers
-- The user explicitly asks for subagents, delegation, or parallel implementation work.
+- The user explicitly authorizes worktrees or auxiliary checkouts for parallel implementation; subagent/delegation approval alone does not trigger this workflow.
 - The active tactical TODO can be partitioned into multiple bounded slices with mostly disjoint ownership.
 - Consolidated validation on a merged branch is materially safer than trusting isolated worker branches.
 
@@ -57,7 +64,8 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 
 ## Procedure
 1. **Confirm authorization and bound the slice**
-   - Use this workflow only when the user has explicitly approved subagent/delegated implementation.
+   - Use this workflow only when the user has separately approved subagent/delegated implementation and explicitly authorized worktrees or auxiliary checkouts.
+   - Record `Worktree/auxiliary-checkout authorization: explicit` plus the concrete human authorization reference. If either is missing, stop before creating branches/checkouts and use principal-checkout single-writer orchestration instead.
    - Before implementation dispatch, create or update an orchestration execution plan from `delphi-ai/templates/orchestration_execution_plan_template.md` when the wave coordinates multiple TODOs, multiple workstreams, or a user-requested approval plan.
    - Save that plan in the downstream project at `foundation_documentation/artifacts/execution-plans/<short-slug>.md`.
    - Treat the plan as derived execution topology: governing TODOs retain `WHAT` and done-criteria authority, while the plan records `HOW` the orchestrator will sequence, parallelize, reconcile, and validate.

@@ -7,6 +7,7 @@ description: "Workflow: MUST use whenever the scope matches this purpose: Coordi
 
 ## Purpose
 Provide a portable orchestration layer for parallel implementation subagents that keeps worker edits isolated while the orchestrator owns integration, the principal reconciliation checkout, and final validation.
+This skill is default-deny: subagent/delegation/parallelism approval never authorizes worktrees. Invoke it only after separate human authorization explicitly mentions worktrees or auxiliary checkouts and is recorded in the orchestration plan. Otherwise use `wf-docker-subagent-orchestration-method` with one writer at a time in the principal checkout; do not create `worker/*`, `reconcile/*`, auxiliary checkouts, or repository copies.
 The orchestrator's evidence bar is the same confidence threshold required before a hypothetical `main` promotion of the reconciled result, even when the actual request stops at local delivery or a lower promotion lane.
 The reconciliation branch/worktree is execution topology only. It does not create a new tactical TODO, a second approval conversation, or a separate backlog authority from the governing TODO set.
 Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Equivalent`, reconcile-wrapper validity, or broad stage-gate parity.
@@ -29,7 +30,7 @@ Worker/subagent closure requires the owned slice to be architecture-clean and co
 8. When browser validation depends on a local Docker/browser-facing domain and the current authoritative branch is a real reconciliation branch, `./scripts/delphi/run_navigation_reconcile_validation.sh <readonly|mutation>` may be used to enforce reconciliation-specific branch discipline, configured runtime bind mounts, and navigation env preflight before the Playwright runner starts. This helper is not the generic definition of CI-Equivalent.
 
 ## Procedure
-1. Bound the execution slice and confirm the user explicitly wants subagents or parallel implementation.
+1. Bound the execution slice and confirm both subagent/delegation authority and separate worktree-specific human authorization. Generic subagent or parallelism approval is insufficient.
 2. For multi-TODO, multi-workstream, or user-requested approval waves, write the orchestration execution plan before dispatching workers. The plan must name governing TODOs, dependencies, acceptance traceability matrix, spec deviation ledger, workstreams, execution ownership ledger, branch/worktree topology, execution waves, consolidated validation, and a `CI-Equivalent Local Suite Matrix`.
    - Load `workflows/docker/effort-selection-method.md` when assigning model routing, effort tiers, sticky executor state, or GOAL policy for the orchestrator and workers.
    - When the active client supports model selection or sticky/custom agents, record the executor model/state policy for each worker lane. Routine code workers default to the contract-selected `routine_executor` model at `medium` with sticky state scoped only to the current chat/TODO and compacted to owned files, implementation decisions, commands/tests, blockers, and last accepted patch state.

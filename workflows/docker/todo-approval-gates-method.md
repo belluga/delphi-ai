@@ -32,6 +32,8 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - `medium|big`: full issue cards, failure modes, and residual unknowns.
    - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. TODO approval/plan review and any gate-satisfying review subagents use the highest review-focused tier; review subagents remain stateless by default unless the tool/client requires resumable reviewer state for a bounded package.
    - When those controls apply, predeclare the planned implementation, monitoring, and review lanes so post-approval execution can record `Agent Routing Preflight` and run the deterministic routing guard fail-closed.
+   - Record two independent decisions: `Subagent / delegation authorization` and `Git isolation authorization`. `APROVADO`, subagent approval, delegation, or parallelism never satisfies the second decision unless the human authorization explicitly names worktrees or auxiliary checkouts.
+   - Default the execution topology to `primary-checkout-single-writer`. If the plan proposes `worktree-isolated`, require a concrete worktree-specific authorization reference before approval can authorize execution.
 6. Populate the TODO `Audit Trigger Matrix` and run:
    - `python3 delphi-ai/tools/audit_escalation_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before trusting audit decisions.
@@ -72,6 +74,7 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - The post-review scope-drift guard must be clean or explicitly waived before `APROVADO`.
 - A required architecture decision review must be resolved or explicitly waived before `APROVADO`.
 - Approval evidence must be recorded in the TODO; do not rely on chat memory alone after the gate has passed.
+- Approval for subagents does not authorize Git isolation. Missing worktree-specific authorization keeps `git worktree`, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` out of scope.
 - If approval-material scope, decision, validation, or architecture facts change, refresh the TODO, revalidate the new scope with the user, and request renewed `APROVADO`.
 - Do not treat post-review scope-drift `no-go` as terminal failure; it means the TODO must reconverge through renewed user scope validation before approval resumes.
 - Do not substitute ad hoc reviewer sequencing for the dedicated multi-lane audit workflow when the derived floor requires or recommends it.

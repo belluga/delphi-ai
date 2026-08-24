@@ -278,7 +278,8 @@ setup_script_links() {
 # Per Claude Code documentation:
 # - Rules: .claude/rules/ (markdown files with YAML frontmatter, auto-loaded)
 # - Skills: .claude/skills/ (directories with SKILL.md)
-# - Settings: .claude/settings.json (permissions configuration)
+# - Settings: .claude/settings.json (permissions + hook configuration)
+# - Hooks: .claude/hooks/ (command hooks)
 # - Bootloader: CLAUDE.md (entry point in project root)
 setup_claude_code_artifacts() {
   local module="$1"
@@ -336,6 +337,15 @@ setup_claude_code_artifacts() {
     settings_target="${rel_prefix}/.claude/settings.json"
   fi
   ensure_symlink "$settings_target" "${base_path}/.claude/settings.json"
+
+  # Symlink .claude/hooks/
+  local hooks_target
+  if [[ -z "$module" ]]; then
+    hooks_target="../delphi-ai/.claude/hooks"
+  else
+    hooks_target="${rel_prefix}/.claude/hooks"
+  fi
+  ensure_symlink "$hooks_target" "${base_path}/.claude/hooks"
 
   # Symlink CLAUDE.md bootloader
   ensure_symlink "${rel_prefix}/CLAUDE.md" "${base_path}/CLAUDE.md"
@@ -450,5 +460,5 @@ if [[ ${#setup_errors[@]} -gt 0 ]]; then
 fi
 
 info "Delphi setup complete. Review 'git status' and commit the updated submodule references if needed."
-info "Configured agent surfaces: AGENTS.md, CLINE.md/.clinerules/.cline, CLAUDE.md/.claude/{rules,skills,settings.json}, .codex/skills, GEMINI.md + .agents/skills, and .agents/{rules,workflows} where possible."
+info "Configured agent surfaces: AGENTS.md, CLINE.md/.clinerules/.cline, CLAUDE.md/.claude/{rules,skills,hooks,settings.json}, .codex/skills, GEMINI.md + .agents/skills, and .agents/{rules,workflows} where possible."
 info "Next step: run 'bash delphi-ai/verify_context.sh' to validate downstream wiring."

@@ -10,7 +10,7 @@ This artifact belongs to the downstream project's `foundation_documentation/arti
 - **Artifact type:** `orchestration_execution_plan`
 - **Status:** `<Draft|Pending Approval|Approved|Superseded|Canceled>`
 - **Created:** `<YYYY-MM-DD>`
-- **Governing workflow / skill:** `delphi-ai/workflows/docker/subagent-worktree-reconciliation-method.md`
+- **Governing workflow / skill:** `<delphi-ai/workflows/docker/subagent-orchestration-method.md|delphi-ai/workflows/docker/subagent-worktree-reconciliation-method.md>`
 - **Approval token required before execution:** `APROVADO`
 
 ## Authority Boundary
@@ -20,6 +20,7 @@ This artifact belongs to the downstream project's `foundation_documentation/arti
 - This plan does not create a new backlog authority, tactical TODO, or approval conversation.
 - Requirement wording in governing TODOs is literal. Replacing a named artifact, UI control, navigation path, runtime target, or validation lane requires an approved row in the Spec Deviation Ledger before execution or delivery can proceed.
 - Workstreams must be derived from acceptance criteria and validation requirements, not broad implementation themes. Every criterion must have a non-orchestrator implementation owner and planned evidence before dispatch.
+- Subagent/delegation authorization and Git-isolation authorization are independent. Generic subagent, delegation, parallelism, or plan approval never authorizes worktrees or auxiliary topology.
 
 ## Governing TODO Set
 | ID | TODO | Role in Plan | Start Eligibility |
@@ -47,14 +48,20 @@ Use this only when the implementation intentionally diverges from a governing TO
 - `<PLAN-C>` is independent from `<PLAN-A>` because `<reason>`.
 
 ## Orchestration Topology
+- **Execution topology:** `<primary-checkout-single-writer|worktree-isolated>`
+- **Subagent / delegation authorization:** `<explicit human reference|not-requested>`
+- **Worktree / auxiliary-checkout authorization:** `<not-authorized|explicit>`
+- **Worktree authorization evidence:** `<n/a for primary-checkout-single-writer|exact human authorization that explicitly names worktrees or auxiliary checkouts>`
+- **Writer scheduling policy:** `<single-writer-serialized|isolated-parallel-writers>`
+- **Auxiliary topology policy:** `<forbidden: no worktrees, auxiliary checkouts/copies, worker/*, or reconcile/*|explicitly authorized worktree topology>`
 - **Base branch / commit:** `<origin/dev|commit sha>`
-- **Orchestrator reconciliation branch:** `<orchestrator/<slug>|n/a until approved>`
-- **Principal checkout policy:** `<principal checkout stays on reconciliation branch when runtime/browser/device validation depends on it>`
-- **Runtime-facing source checkouts:** `<root + mounted source repos/submodules that must be on reconcile/* before authoritative local validation>`
-- **Authoritative return branch after reconcile:** `<canonical version branch that receives the accepted net effect before promotion or non-orchestration closeout resumes>`
-- **Reconcile failure routing rule:** `<CI-Equivalent/runtime failures on reconcile return to the owning worker/subagent or TODO owner; orchestrator patches stay reconciliation-only>`
-- **Promotion source after reconcile:** `<authoritative return branch only; reconcile branch itself is never the promotable lane>`
-- **Worker branches / worktrees:** `<worker branch names or creation policy>`
+- **Orchestrator reconciliation branch:** `<n/a for primary-checkout-single-writer|reconcile/<slug> for explicitly worktree-authorized topology>`
+- **Principal checkout policy:** `<authoritative validation runs on the consolidated principal checkout; name its branch/state>`
+- **Runtime-facing source checkouts:** `<principal source checkouts used by runtime; reconcile/* only for explicitly worktree-authorized topology>`
+- **Authoritative return branch after reconcile:** `<n/a for primary-checkout-single-writer|canonical branch that receives accepted reconcile net effect>`
+- **Reconcile failure routing rule:** `<n/a for primary-checkout-single-writer|failures return to owning worker/subagent; orchestrator patches stay reconciliation-only>`
+- **Promotion source after reconcile:** `<current authoritative branch for primary-checkout-single-writer|authoritative return branch for worktree-isolated>`
+- **Worker branches / worktrees:** `<forbidden for primary-checkout-single-writer|explicit worker branch/worktree policy>`
 - **Derived artifact repos:** `<web-app or equivalent derived bundle repos that are not branch-authority sources>`
 
 ## Checkpoint / Branch Accumulation Control
@@ -98,6 +105,7 @@ Derive workstreams from the Acceptance Traceability Matrix. A workstream may gro
 | `<WS-01>` | `<files/modules/packages>` | `<dependencies>` | `<commit/evidence expected>` | `<tests/checks>` |
 
 ## Execution Ownership Ledger
+For `primary-checkout-single-writer`, every implementation owner may be a subagent, but only the currently scheduled owner may edit; additional writers are serialized. For `worktree-isolated`, use worker checkpoints and reconciliation evidence under the explicitly authorized topology.
 | Workstream | Implementation Owner | Orchestrator Code Scope | Worker Checkpoint Evidence | Reconciliation Evidence |
 | --- | --- | --- | --- | --- |
 | `<WS-01>` | `<worker/subagent name>` | `<none|merge-conflict-only|reconciliation-only>` | `<checkpoint commit/evidence expected>` | `<merge/cherry-pick/test evidence expected>` |
@@ -123,7 +131,7 @@ Waves are orchestrator-owned control checkpoints. They are not user feedback gat
 - <No-code/readiness actions before execution>
 
 ### Wave 1 - <Name>
-- <Parallel or sequential work items>
+- <Serialized writer work items for primary-checkout-single-writer, or isolated parallel work items only when worktrees are explicitly authorized>
 - **Gate to next wave:** <objective gate>
 
 ### Wave 2 - <Name>
@@ -138,7 +146,7 @@ Every row must be traceable to one or more Acceptance Traceability Matrix rows. 
 | `<area>` | `<test/build/navigation evidence>` | `<worker|reconciliation|device|browser>` | `<worker|orchestrator>` |
 
 ## CI-Equivalent Local Suite Matrix
-Every repo-owned CI suite/job that the touched repositories will execute for this wave must be represented here before approval. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. For package/version promotion lanes, that authoritative branch is usually the governing-TODO version branch such as `v0.2.0+8-rc`, and this matrix must pass there before any derived `review/*` remediation branch can substitute additional evidence. If the project exposes a named broad local stage profile such as `stage-full`, that profile must be the parity-complete local mirror of the stage pipeline for the touched scope on that branch; narrower diagnostic bundles must use distinct names and must not be reported as that broad stage gate. In a reconciliation workflow that authoritative branch is often the reconciliation branch, but reconcile topology is not what makes the run CI-Equivalent. The orchestrator may run targeted reruns diagnostically, but local delivery and promotion readiness are blocked until every in-scope row has been executed locally and passed on the authoritative branch state for this wave. Once the reconciliation state is green, replay the accepted net effect onto the `Authoritative return branch after reconcile` before promotion resumes. Published `stage`/`main` probes are separate evidence and do not replace this matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat this matrix as the minimum floor and add the broader local suites that are cheaper to fail here than later in CI or promotion.
+Every repo-owned CI suite/job that the touched repositories will execute for this wave must be represented here before approval. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. For package/version promotion lanes, that authoritative branch is usually the governing-TODO version branch such as `v0.2.0+8-rc`, and this matrix must pass there before any derived `review/*` remediation branch can substitute additional evidence. If the project exposes a named broad local stage profile such as `stage-full`, that profile must be the parity-complete local mirror of the stage pipeline for the touched scope on that branch; narrower diagnostic bundles must use distinct names and must not be reported as that broad stage gate. In `primary-checkout-single-writer`, run directly on the current authoritative principal-checkout branch and do not manufacture reconcile/replay requirements. In an explicitly worktree-authorized reconciliation workflow, the authoritative branch is often `reconcile/*`, but reconcile topology is not what makes the run CI-Equivalent. The orchestrator may run targeted reruns diagnostically, but local delivery and promotion readiness are blocked until every in-scope row has been executed locally and passed on the authoritative principal-checkout state for this wave. Only after an explicitly worktree-authorized reconciliation state is green must its accepted net effect be replayed onto the `Authoritative return branch after reconcile` before promotion resumes. Published `stage`/`main` probes are separate evidence and do not replace this matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat this matrix as the minimum floor and add the broader local suites that are cheaper to fail here than later in CI or promotion.
 
 | Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Applies To (`worker-local|reconciliation|pre-promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -151,9 +159,9 @@ Fill this section only after execution, before claiming local implementation or 
 | --- | --- | --- | --- | --- |
 
 ## Post-Reconcile Replay Evidence
-Fill this section once the reconciliation branch is green and the accepted net effect has been replayed onto the canonical branch that promotion or non-orchestration closeout will resume from.
+Fill this section only for `worktree-isolated` plans once the reconciliation branch is green and replayed. For `primary-checkout-single-writer`, record `Replay required?: no` and `Replay status: n/a`; do not invoke the replay guard.
 
-- **Replay required?:** `<yes when this package was first integrated on reconcile/*>`
+- **Replay required?:** `<no for primary-checkout-single-writer|yes when worktree-isolated package was first integrated on reconcile/*>`
 - **Replay status:** `<pending|passed|blocked|waived|n/a>`
 - **Accepted reconcile branch:** `<reconcile/<slug>>`
 - **Accepted reconcile commit:** `<git sha for the accepted integrated state>`
@@ -194,6 +202,8 @@ Fill this when browser/device/runtime validation is in scope.
 
 ## Approval Request
 - **Requested approval:** Reply `APROVADO` to authorize this orchestration plan.
+- **Subagent / delegation authority requested:** `<yes|no; exact scope>`
+- **Worktree / auxiliary-checkout authority requested:** `<no|yes, with explicit worktree-specific wording>`
 - **Execution authorized by approval:** <exact first wave that will start after approval>
 - **Execution not authorized by approval:** <explicit exclusions>
 - **Autonomy rule:** once approved, the orchestrator advances through waves without requesting feedback between waves unless a mandatory decision/blocker/waiver condition appears.
@@ -209,5 +219,5 @@ Fill this when browser/device/runtime validation is in scope.
 
 ## Post-Reconcile Replay Guard
 - **Command:** `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md --repo <authoritative-source-repo>`
-- **Required before promotion or non-orchestration closeout resumes from a package first integrated on reconcile:** `Overall outcome: go`
+- **Required only for explicitly worktree-authorized packages first integrated on reconcile before promotion or non-orchestration closeout resumes:** `Overall outcome: go`
 - **Blocks advancement when:** the accepted reconcile state was not replayed onto the canonical return branch, replay evidence is incomplete, the promotion source still points at `reconcile/*`, or a curated replay skipped the required canonical-branch CI-equivalent rerun.

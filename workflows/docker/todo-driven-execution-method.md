@@ -7,6 +7,12 @@ description: Execute work through a tactical TODO by routing each state to the c
 ## Purpose
 Use this workflow as the TODO-driven **orchestrator**. It owns the state machine, phase order, and non-negotiable gates. Phase-specific instructions live in supporting workflows so the active context stays small and the model loads only the current phase details.
 
+## Classification and Version Package Topology
+- Classification families and version packages are orthogonal when the project uses both.
+- Classification families (`bugs-performance`, `features`, severity buckets, and analogous project-defined roots) help decide intake, ownership family, and follow-up routing.
+- Version-package folders (`active/<version>/`, `promotion_lane/<version>/`, and analogous project-defined package buckets) remain valid live delivery surfaces when backed by a governing release-package TODO; they freeze the admitted child-owner set for that delivery wave.
+- Do not collapse version folders into "legacy" merely because classification families exist. Use project authority to determine whether both surfaces are active simultaneously.
+
 ## Phase Workflows
 | Phase | Use When | Supporting Workflow |
 | --- | --- | --- |
@@ -50,6 +56,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
   - `Agent Routing Preflight` must also be recorded whenever the active client exposes governed effort/model routing or declared routing policy that this TODO is using.
   - `python3 delphi-ai/tools/agent_role_routing_guard.py ...`
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`
+- **Subagent and Git-topology authority are independent:** record subagent/delegation authority separately from Git-isolation authority. Default to `primary-checkout-single-writer`; load `subagent-worktree-reconciliation-method.md` and permit worktrees/`worker/*`/`reconcile/*` only after explicit human authorization naming worktrees or auxiliary checkouts.
 - **Complexity policy (`small|medium|big`)** must be recorded during contract refinement.
 - **Plan Review Gate** must run according to the recorded complexity and risk.
 - **Devil's-Advocate alias mapping** is canonical at the TODO-driven umbrella:
@@ -57,6 +64,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
   - when that request also expects a persistent objection/finding ledger, evidence-based reopening, or repeated no-context rounds until no blocking objection remains, layer `audit-protocol-triple-review` on top as the dedicated delivery-side multi-lane audit protocol;
   - `audit-protocol-triple-review` is additive and does not silently replace the required planning-side independent critique gate.
 - **Completion Evidence Matrix** must contain criterion-specific evidence for every `Definition of Done` and `Validation Steps` item before delivery claims.
+- **Diff Expectation Contract** must be completed before approval and must enumerate each repository baseline, expected changed file/folder/type pattern, and explicitly not-expected pattern. Any unclassified or forbidden real diff is an analysis blocker: classify it as scope deviation, necessary/justifiable need, or noise; do not automatically regress implementation merely because the policy is strict.
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
 - **Behavior-targeted CI validity** is mandatory: every CI-equivalent row must declare the exact scenario it proves plus the required fixture/seed/runtime preconditions, and a green suite is invalid when the intended behavior was never actually exercised.
 - **Sequencing topology inheritance** is mandatory when an approved sequencing plan governs the current TODO: the plan owns checkpoint granularity and branch-state gate topology, delivery gates must use the recorded checkpoint gate, and any TODO that closes only on a non-authoritative isolated-worktree prefix remains provisional until replay plus the deferred authoritative broad gate succeed.
@@ -65,6 +73,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected and deduplicated. Use `review-finding-classification`. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step recorded in the governing TODO's `Promotion Finding Routing Ledger`. Every finding must be classified as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root, and the governing TODO must record the exact follow-up path/reference before the delivery claim is clean.
 - **Rule-Spirit Anti-Pattern Hunt** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Final Deterministic Guards** must return `Overall outcome: go`:
+  - `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>`
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
 - **Closeout Disposition** must be explicit before pausing after a delivery claim:
@@ -88,7 +97,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - The TODO records which phase workflow governed each major transition.
 - Any TODO that remains in `active/` records `Active Work State = implementation|review|blocked` plus an exact exit condition.
 - No phase-specific requirements are left only in chat.
-- Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
+- Delivery claims are blocked unless `todo_diff_expectation_guard.py`, `todo_authority_guard.py --require-delivery-gates`, and `todo_completion_guard.py` all return `Overall outcome: go`.
 - Governed execution is blocked unless `Agent Routing Preflight` resolves to `go` before `todo_authority_guard.py` is trusted.
 - Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.
 - Any waived or `n/a` gate has explicit rationale and approval evidence where required.

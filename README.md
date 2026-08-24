@@ -40,7 +40,8 @@ The core thesis is that **accumulated system complexity should accelerate correc
 - **Profile before task work:** declare the active profile and technical scope via `delphi-ai/workflows/docker/profile-selection-method.md`.
 - **TODO authority:** planning is advisory; implementation authority requires a tactical TODO, explicit `APROVADO`, and delivery-gate evidence.
 - **CI Equivalent:** local product proof on the current authoritative branch using the same product-facing suites/jobs the pipeline runs for that scope.
-- **Reconcile topology:** `reconcile/*` is reserved for real orchestrator-led multi-worktree reconciliation. It is not a generic prerequisite for CI Equivalent.
+- **Independent authorization dimensions:** approval for subagents, delegation, or parallelism never authorizes worktrees, auxiliary checkouts/copies, `worker/*`, `reconcile/*`, or other Git-isolation topology. Default to one writer at a time in the principal checkout; additional writers are serialized and parallel readers/reviewers do not edit.
+- **Reconcile topology:** `reconcile/*` is reserved for explicitly worktree-authorized orchestrator-led reconciliation. It is not a generic consequence of subagents or a prerequisite for CI Equivalent.
 - **Promotion boundary:** after a green reconcile, replay the accepted net effect onto the canonical version/source branch, then continue promotion from that canonical branch. Promotion may not start from `reconcile/*`.
 - **Post-reconcile proof:** for reconcile-origin packages, record replay evidence in the orchestration plan, require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan> --repo <authoritative-source-repo>` to return `Overall outcome: go`, and then run `github_stage_promotion_preflight.sh --orchestration-plan <plan>` from the canonical source branch.
 

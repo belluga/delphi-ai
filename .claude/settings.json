@@ -29,18 +29,7 @@
       "Write(docker/**)",
       "Write(docker-compose.yml)"
     ],
-    "deny": [
-      "Write(delphi-ai/**)",
-      "Write(main_instructions.md)",
-      "Write(config/**)",
-      "Write(rules/**)",
-      "Write(tools/**)",
-      "Write(workflows/**)",
-      "Write(.claude/rules/**)",
-      "Write(.claude/skills/**)",
-      "Write(.claude/settings.json)",
-      "Write(CLAUDE.md)"
-    ]
+    "deny": []
   },
   "model": "claude-sonnet-4-6",
   "availableModels": [
@@ -48,5 +37,51 @@
     "opus",
     "haiku"
   ],
-  "enforceAvailableModels": true
+  "enforceAvailableModels": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session_start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pre_tool_use.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Read|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/post_tool_use.sh"
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "project_settings",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/config_change.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

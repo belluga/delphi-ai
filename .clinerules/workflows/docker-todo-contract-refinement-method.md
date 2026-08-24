@@ -44,6 +44,7 @@ Turn a tactical TODO into an executable contract before approval. The TODO defin
    - For multi-TODO packages, use the active package execution plan as the package-stage ledger (`sequencing_execution_plan` for ordered single-lane packages, `orchestration_execution_plan` for delegated/reconciliation packages). Record wave/order state, current blockers, active review/remediation branches when applicable, and next exact step there instead of creating a parallel version-status artifact.
    - Keep per-finding accepted/challenged/resolved dispositions in the governing TODOs so carry-forward extraction remains authoritative.
 8. Add planning matrices before approval when triggered:
+   - `Diff Expectation Contract` for every repository in the implementation boundary. Record the exact pre-implementation baseline, the expected changed file/folder/type patterns, and the file/folder/type patterns that are not expected. Use `working_tree` comparison so tracked and non-ignored untracked changes are visible. The contract must be strict and must state that any unclassified or forbidden path requires user validation and renewed approval before the TODO or implementation changes.
    - `Flow Evidence Planning Matrix` for user-visible, interactive, or user-flow-impacting surfaces, including non-visual refactors that feed screens or journeys.
    - `Local CI-Equivalent Suite Matrix` for repo-owned CI suites/jobs that will run for the touched slice.
      - For each row, record the exact behavior/scenario the row is intended to prove.

@@ -21,49 +21,54 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
    - Add one concrete row for every `Definition of Done` and `Validation Steps` criterion.
    - Evidence must be criterion-specific, not aggregate or representative.
    - For any manual/browser/device/runtime-visible validation row, record a runtime freshness attestation before interpreting the result: authoritative `branch@sha`, local build/publish artifact or fingerprint, served runtime target, and proof that the served target matched that exact build.
-2. Execute every in-scope row in the `Local CI-Equivalent Suite Matrix` locally and mark it `passed`, or record an explicit approved `n/a`/waiver.
+2. Run the diff expectation guard before interpreting any delivery evidence:
+   - `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>`
+   - The guard must return `Overall outcome: go`.
+   - It compares each repository baseline in the TODO against the real tracked and non-ignored untracked diff. A forbidden or unclassified path, an incompatible change type, an empty implementation diff, or an invalid baseline is a delivery blocker.
+   - On any deviation, stop delivery and complete the TODO's `Diff Deviation Analysis`: classify each item as an actual scope deviation, a necessary/justifiable need, or noise. This is an analysis gate, not an automatic rollback. The agent may defend retaining a necessary change with concrete evidence; clean/remove noise, revert an unnecessary deviation, or—when the change is necessary—validate it with the user, update the contract, renew approval, and rerun the guard before continuing.
+3. Execute every in-scope row in the `Local CI-Equivalent Suite Matrix` locally and mark it `passed`, or record an explicit approved `n/a`/waiver.
    - Load `ci-equivalent-governance` before deciding whether a row truly satisfies `CI-Equivalent`, whether a reconcile-only wrapper is valid on the current branch family, or whether a broad local stage gate such as `stage-full` is parity-complete rather than diagnostic.
    - If the current TODO is part of an approved sequencing plan, obey that plan's recorded branch-state gate topology. Run the current sequencing unit's exact checkpoint gate now; when that gate is only a non-authoritative prefix from an isolated sequencing worktree, keep the delivery claim provisional and defer the authoritative broad local gate until replay onto the principal authoritative branch.
+   - Regardless of topology, authoritative Docker/browser/device/CI-Equivalent evidence comes from the consolidated principal checkout. In `primary-checkout-single-writer`, validate the current authoritative branch directly and do not require `reconcile/*` or replay evidence. In explicitly authorized `worktree-isolated` orchestration, validate the consolidated `reconcile/*` state from the principal checkout and apply the replay guard before promotion resumes.
    - A row is valid only when the executed evidence proves the row's declared behavior/scenario under its declared fixture/seed/runtime preconditions.
    - A generic suite pass is invalid when the target behavior was not actually exercised because required seed data, user linkage, fixtures, runtime bootstrap, or publication state were missing.
    - If the row depends on a real browser/device/manual runtime surface, do not run or interpret it until the runtime freshness attestation proves the served target is fresh for the current authoritative build. Missing or mismatched freshness keeps the row `blocked`.
    - When the declared scenario says navigation/browser or device runtime proof is the strongest available lane, do not close the row on backend-only, unit/widget-only, or aggregate suite evidence.
-3. Validate decision adherence and module decision consistency.
-4. Run security risk assessment.
-5. Run performance/concurrency assessment.
-6. Execute validation steps and map results back to the evidence matrix.
-7. Run `Pipeline/Copilot P1/P2 Preflight`.
+4. Validate decision adherence and module decision consistency.
+5. Run security risk assessment.
+6. Run performance/concurrency assessment.
+7. Execute validation steps and map results back to the evidence matrix.
+8. Run `Pipeline/Copilot P1/P2 Preflight`.
    - Review implemented diff, CI-equivalent evidence, and likely CI/Copilot failure modes.
    - Unresolved `P1|P2` blocks delivery.
    - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. Delivery/final-review/promotion-readiness judgment and any gate-satisfying review subagents use the highest review-focused tier; review subagents remain stateless by default unless the tool/client requires resumable reviewer state for a bounded package.
-8. Run `Review Finding Classification`.
+9. Run `Review Finding Classification`.
    - Do this **after** Copilot/audit/reviewer findings are collected and deduplicated.
    - Do **not** weaken reviewer prompts or detection behavior to reduce findings.
    - Use `review-finding-classification` as the canonical triage surface before writing ledger routing.
    - Classify each finding as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
    - Only `release-blocker` findings block the current release/promotion claim.
-   - If a non-blocking finding still needs real work, split it into an explicit TODO under:
-     - `foundation_documentation/todos/active/fast_follow_required/followup/`, or
-     - `foundation_documentation/todos/active/post_release_hardening/hardening/`
-     and record the originating release/package version in the split TODO plus the governing TODO routing ledger.
-9. Run `Rule-Spirit Anti-Pattern Hunt`.
+   - If a non-blocking finding still needs real work, split it into an explicit follow-up TODO under the project-approved active classification/version topology.
+   - When the project uses both classification families and version packages, classification chooses the family root while the governing version package decides whether that follow-up is admitted into a concrete delivery wave immediately or remains outside the current package.
+   - Record the originating release/package version in the split TODO plus the governing TODO routing ledger.
+10. Run `Rule-Spirit Anti-Pattern Hunt`.
    - Search direct violations and disguised bypasses against ingested rules and architecture principles.
    - Use `bash delphi-ai/tools/rule_spirit_anti_pattern_scan.sh --repo <repo-root> --stack <stack>` when applicable.
    - For non-trivial diffs, prefer `--json-output <artifact>` so severity, finding keys, and allowlist status are reviewable.
    - Allowlists are temporary exceptions only: each entry needs an owner, expiration date, and reason; expired entries remain active findings.
    - Unresolved `P1|P2` blocks delivery.
-10. Run the derived architecture adherence review when `architecture_adherence_review = required`:
+11. Run the derived architecture adherence review when `architecture_adherence_review = required`:
     - dispatch a fresh internal no-context reviewer with `review_kind=architecture_adherence`; the reviewer cannot be the implementing agent and external providers do not satisfy the gate;
     - bound the package to the frozen Architecture Change Governance contract, Decision Baseline, delivered diff/touched surfaces, protection-harness evidence, and the decision-adherence/module-consistency evidence;
     - block closure on an unresolved divergence from the approved target state, a missing required protection harness, or an unapproved architecture change.
-11. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
-12. Run:
+12. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
+13. Run:
     - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
     - require `Overall outcome: go`.
-13. Run:
+14. Run:
     - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
     - require `Overall outcome: go`.
-14. Treat the deterministic guards as necessary but not sufficient:
+15. Treat the deterministic guards as necessary but not sufficient:
     - the authority guard validates approval/rule-ingestion/gate-routing evidence;
     - the completion guard validates objective close-claim evidence tables;
     - they do not replace security/performance judgment, audit-floor execution, or canonical module consolidation.
@@ -83,9 +88,12 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
 - A row that claims broad stage-pipeline parity is invalid whenever `ci-equivalent-governance` would reject its contract shape, branch topology, lifecycle-step coverage, or stale-precondition assumptions.
 - Do not relabel a non-authoritative sequencing prefix gate as `CI-Equivalent`, promotable `stage-full`, `local-public-web-build` completion, or authoritative browser/runtime freshness proof.
 - Do not run `browser-stage-full`, `local-public-web-build`, readonly smoke, or mutation smoke from an isolated sequencing worktree when the sequencing plan records only the pre-browser checkpoint prefix.
+- Do not manufacture or require worktree/reconcile topology merely because subagents were used.
 - Backend producer surfaces cannot close on backend evidence alone when the `Frontend / Consumer Matrix` declares a consumer.
 - No delivery claim is valid while `todo_completion_guard.py` returns anything other than `Overall outcome: go`.
 - No delivery claim is valid while `todo_authority_guard.py --require-delivery-gates` returns anything other than `Overall outcome: go`.
+- No delivery claim is valid while `todo_diff_expectation_guard.py` returns anything other than `Overall outcome: go`.
+- A diff deviation requires explicit classification: noise is cleaned or explained, an unnecessary deviation is reverted, and a necessary/justifiable change may be defended with evidence. Scope expansion still requires user validation and renewed TODO approval; the strict guard must never trigger an automatic regression by itself.
 - No `Overall outcome: go` result may be used to bypass approval, rule ingestion, or required review/audit lanes.
 - A required architecture adherence review must be resolved or explicitly waived before `Completed` or `Production-Ready`.
 - Follow-up/hardening findings are not blockers by default, but they are not disposable either: they must be fixed in-scope or split into an explicit post-version TODO with authoritative reference before delivery can be claimed cleanly.

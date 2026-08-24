@@ -85,6 +85,36 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Out of Scope
 - [ ] <What will NOT be done>
 
+## Diff Expectation Contract (Required Before Delivery)
+The TODO must describe the implementation diff shape before delivery. The guard compares the recorded baseline with tracked and non-ignored untracked changes. Any path that is not classified as expected, or that matches a `Not Expected Changed Paths` row, is a deviation and blocks delivery for analysis. A `no-go` is not an automatic rollback: classify each item as an actual scope deviation, a necessary/justifiable need, or noise. The agent may defend a necessary change with evidence; unnecessary deviations must be reverted, noise must be cleaned or explained, and necessary scope expansion requires user validation plus renewed approval.
+
+- **Contract status:** `required`
+- **Policy:** `strict; unclassified or forbidden paths block delivery`
+- **User validation:** `required on deviation`
+- **Comparison mode:** `working_tree`
+
+### Repository Baselines
+| Repository | Path | Baseline ref | Comparison mode |
+| --- | --- | --- | --- |
+| `<root or submodule label>` | `<path relative to checkout root>` | `<branch@sha or commit>` | `working_tree` |
+
+### Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `<repository label>` | `<folder/**, file.ext, or file type glob>` | `<M|A|D|R|any>` | `<why this path/type is expected>` |
+
+### Not Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `<repository label>` | `<folder/**, file.ext, generated artifact, secret, or unrelated type>` | `<A|M|D|R|any>` | `<why this path/type must not appear>` |
+
+### Diff Deviation Analysis (Required Only When the Guard Returns `no-go`)
+| Diff item | Classification (`scope deviation|necessary need|noise`) | Evidence / agent defense | Decision (`revert|clean noise|retain with renewed approval`) | User validation / renewed approval |
+| --- | --- | --- | --- | --- |
+| `<repository:path and change type>` | `<classification>` | `<why the classification is justified>` | `<decision>` | `<evidence or pending>` |
+
+Do not regress implementation automatically merely because the contract is strict. The delivery stop exists to force this analysis and an explicit decision; rerun the guard after the decision is recorded and applied.
+
 ## Bounded But Elastic Guardrails
 - **May stay inside this TODO:** <local refinement, blocker resolution, or small concretization that stays within the same objective and approval conversation, even if secondary modules are touched in service of that slice>
 - **Must update or split the TODO:** <new primary objective, new independently testable story slice, or new approval/risk conversation>
@@ -354,7 +384,7 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Why ambiguity remains:** <competing architectural paths, unresolved tradeoff, or `n/a`>
 - **Opinion count:** `<0|1|2>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
-- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent(s) when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent(s) when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
 - **Required lenses:** `<correctness|performance|elegance|structural-soundness|operational-fit>`
 
 | Reviewer | Recommendation | Performance view | Elegance view | Structural soundness view | Resolution | Evidence |
@@ -390,7 +420,7 @@ Use exact trigger names and exact enum values only.
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
 - **Critique isolation mode:** `<fresh internal no-context reviewer>`
-- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
@@ -444,12 +474,18 @@ Use the canonical routing contract from `config/agent_role_routing.json` plus `p
 - **Selected effort:** `<medium|xhigh|max|ExtraRight-or-closest-equivalent|n/a when the client exposes no named effort control>`
 - **Proof mode:** `<artifact|declared|waiver>`
 - **Exception reason:** `<bootstrap-guard-implementation|reconciliation|merge-conflict|minimal-integration-glue|n/a>`
+- **Subagent / delegation authorization:** `<not-requested|explicit human reference>`
+- **Execution topology:** `<primary-checkout-single-writer|worktree-isolated>`
+- **Worktree / auxiliary-checkout authorization:** `<not-authorized|explicit>`
+- **Worktree authorization evidence:** `<n/a|exact human authorization explicitly naming worktrees or auxiliary checkouts>`
+- **Writer scheduling policy:** `<single-writer-serialized|isolated-parallel-writers>`
 - **Guard outcome:** `<go|delegate-required|review-required|waiver-required|blocked>`
 - **Waiver / exception reference:** `<approval / waiver / TODO decision reference or n/a>`
 
 - Record the section only after the selected lane is actually known for the next governed action.
 - If the guard does not resolve to `go`, stop execution and repair the routing or record approved waiver evidence first.
 - `waiver` is an explicit visible exception path, not silent fallback for a missing model/role declaration.
+- Subagent/delegation authority never implies Git-isolation authority. Default to `primary-checkout-single-writer`: one writer edits in the principal checkout, additional writers are serialized, and parallel readers/reviewers do not edit. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate worktree-specific human authorization.
 
 ## Decision Adherence Validation (Mandatory Before Delivery)
 | Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
@@ -581,8 +617,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded implementation diff|bounded test diff|validation evidence|expected behaviors/DoD|residual risks>`
 - **Canonical method:** `wf-docker-independent-test-quality-audit-method`
 - **Audit isolation mode:** `<fresh internal no-context reviewer>`
-- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
-- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required fresh internal no-context audit for required gate|active-client reviewer slot must be recycled/opened when needed; external providers do not satisfy the pass>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
+- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required fresh internal no-context audit for required gate|live reviewers must be awaited without a rigid deadline and only terminal inactive reviewer lanes may be recycled; external providers do not satisfy the pass>`
 - **Audit focus:** `<product/test delta alignment|fail-first alignment|bypass detection|assertion efficacy|assertion efficiency|coverage sufficiency|brittle test-only shortcuts>`
 - **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
@@ -602,7 +638,7 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence from wf-docker-independent-test-quality-audit-method|residual risks|existing waivers|verification debt>`
 - **Review isolation mode:** `<fresh internal no-context reviewer>`
-- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; active-client internal reviewer availability is operationally mandatory, so if no free reviewer slot exists recycle another review lane and open a fresh reviewer; external providers do not satisfy the pass)>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`
@@ -658,8 +694,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - Query the project-declared stable full-workspace VS Code Problems snapshot
 - <Any manual steps>
 
-## Files Expected (Optional)
-- `<path>`
+## Files Expected (Compatibility Note)
+- Use `Diff Expectation Contract` above as the authoritative expected-file/folder/type inventory. This legacy note is only for human navigation and is not used by the delivery guard.
 
 ## COMENTÁRIO:
 - <Contextual question about the section below>

@@ -70,7 +70,7 @@ The wrappers enforce action/diff policy only. They do not prove PR checks, revie
 - In that version/package case, a green `review/*` matrix without a prior green authoritative `*-rc` matrix is still `no-go`.
 - A promotion source branch named `reconcile/*` or `sequence/*` is always a blocker. Promotion resumes only after replay onto the canonical branch is proven.
 - Do not open the first promotion PR while unresolved P1/P2 pre-promotion review findings remain.
-- Do not invoke or treat an external provider as gate-satisfying pre-promotion review evidence. If internal reviewer capacity is unavailable, recycle an internal review lane or record the required gate as blocked pending a human waiver.
+- Do not invoke or treat an external provider as gate-satisfying pre-promotion review evidence. Reviewer lifecycle is status-based, not elapsed-time-based: while an internal reviewer is `pending_init` or `running`, wait without a rigid deadline, and treat polling timeout only as an incomplete poll. Never interrupt, close, recycle, replace, duplicate, or shrink/repackage a live review. If reviewer capacity is unavailable, recycle only a terminal inactive review lane or record the required gate as blocked pending a human waiver. Retry only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default; change the package only to repair a concrete proven defect while preserving the full rubric.
 - Do not let a bot finding outrank an approved TODO decision; the finding must be cross-checked before patching.
 - Do not treat the current checkout branch as authoritative without confirmation.
 - Do not hide CI/promotion-tooling behavior changes inside the promotion diff.

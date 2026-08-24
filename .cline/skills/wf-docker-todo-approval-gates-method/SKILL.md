@@ -18,6 +18,7 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 - Run the post-review scope-drift guard before approval.
 - Ask for explicit `APROVADO`.
 - Record compact `Approval` evidence in the TODO after approval: approver/reference, authorized scope, exclusions, and renewal trigger.
+- Record subagent/delegation authorization independently from Git-isolation authorization. Default to `primary-checkout-single-writer`; a `worktree-isolated` plan requires separate human evidence explicitly naming worktrees or auxiliary checkouts.
 
 ## Outputs
 - Approval-ready TODO with review/audit evidence.

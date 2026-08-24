@@ -18,6 +18,7 @@ Use when the active client exposes named effort controls, model selection, custo
 - Require explicit GOAL contracts for executor subagents when the client supports persistent goals.
 - Keep review subagents stateless by default unless resumable reviewer state is required by the client/tool.
 - Record `Agent Routing Preflight` and require `python3 delphi-ai/tools/agent_role_routing_guard.py ...` to resolve to `go` before governed execution/review begins.
+- Keep role routing and Git topology independent: executor subagents default to `primary-checkout-single-writer`; `worktree-isolated` requires separate explicit human authorization naming worktrees or auxiliary checkouts.
 
 ## Advisory Helper
 - `python3 delphi-ai/tools/effort_selection_advisor.py --surface <surface> [--material-strategic-ambiguity] [--goals-supported]`

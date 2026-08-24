@@ -24,6 +24,7 @@ from typing import Any
 RULE_ID = "paced.orchestration-plan.completion"
 ALLOWED_STATUSES = {"Draft", "Pending Approval", "Approved", "Superseded", "Canceled"}
 READY_STATUSES = {"Pending Approval", "Approved"}
+EXECUTION_TOPOLOGIES = {"primary-checkout-single-writer", "worktree-isolated"}
 REQUIRED_SECTIONS = (
     "Artifact Identity",
     "Authority Boundary",
@@ -490,15 +491,126 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
             )
         )
 
-    if workflow is None or "subagent-worktree-reconciliation-method.md" not in workflow:
+    topology_lines = sections.get("Orchestration Topology", [])
+    execution_topology = extract_field(topology_lines, "Execution topology")
+    worktree_authorization = extract_field(topology_lines, "Worktree / auxiliary-checkout authorization")
+    worktree_authorization_evidence = extract_field(topology_lines, "Worktree authorization evidence")
+    writer_scheduling_policy = extract_field(topology_lines, "Writer scheduling policy")
+    auxiliary_topology_policy = extract_field(topology_lines, "Auxiliary topology policy")
+    worker_branches_worktrees = extract_field(topology_lines, "Worker branches / worktrees")
+    reconciliation_branch = extract_field(topology_lines, "Orchestrator reconciliation branch") or extract_field(
+        topology_lines, "Reconciliation branch"
+    )
+    context["execution_topology"] = execution_topology or "missing"
+
+    if execution_topology not in EXECUTION_TOPOLOGIES:
         violations.append(
             build_violation(
-                "WORKFLOW-REFERENCE-MISSING",
-                "The governing orchestration workflow reference is missing or unexpected.",
-                "Reference `delphi-ai/workflows/docker/subagent-worktree-reconciliation-method.md`.",
-                "Artifact Identity",
+                "EXECUTION-TOPOLOGY-INVALID",
+                f"Execution topology is `{execution_topology or 'missing'}`, expected one of {sorted(EXECUTION_TOPOLOGIES)}.",
+                "Set `Execution topology` to `primary-checkout-single-writer` by default, or `worktree-isolated` only with separate worktree-specific human authorization.",
+                "Orchestration Topology",
             )
         )
+
+    worktree_isolated = execution_topology == "worktree-isolated"
+    if worktree_isolated:
+        if workflow is None or "subagent-worktree-reconciliation-method.md" not in workflow:
+            violations.append(
+                build_violation(
+                    "WORKFLOW-REFERENCE-MISSING",
+                    "Worktree-isolated topology does not reference the worktree reconciliation workflow.",
+                    "Reference `delphi-ai/workflows/docker/subagent-worktree-reconciliation-method.md` only after worktree-specific authorization is recorded.",
+                    "Artifact Identity",
+                )
+            )
+        if normalize_text(worktree_authorization or "") != "explicit":
+            violations.append(
+                build_violation(
+                    "WORKTREE-AUTHORIZATION-MISSING",
+                    "Worktree-isolated topology lacks separate explicit worktree/auxiliary-checkout authorization.",
+                    "Set `Worktree / auxiliary-checkout authorization` to `explicit` only after the human specifically authorizes worktrees or auxiliary checkouts.",
+                    "Orchestration Topology",
+                )
+            )
+        authorization_text = normalize_text(worktree_authorization_evidence or "")
+        if is_placeholder(worktree_authorization_evidence or "") or not any(
+            term in authorization_text for term in ("worktree", "worktrees", "auxiliary checkout", "auxiliary checkouts")
+        ):
+            violations.append(
+                build_violation(
+                    "WORKTREE-AUTHORIZATION-EVIDENCE-INVALID",
+                    "Worktree-isolated topology lacks concrete human authorization evidence naming worktrees or auxiliary checkouts.",
+                    "Record the exact human authorization/reference containing `worktree(s)` or `auxiliary checkout(s)`; generic subagent/delegation/parallelism approval is insufficient.",
+                    "Orchestration Topology",
+                )
+            )
+        if reconciliation_branch is None or is_placeholder(reconciliation_branch) or not references_reconcile_branch(reconciliation_branch):
+            violations.append(
+                build_violation(
+                    "RECONCILIATION-BRANCH-MISSING",
+                    "Worktree-isolated topology does not name a concrete `reconcile/*` branch.",
+                    "Record the orchestrator reconciliation branch under `## Orchestration Topology` after worktree authorization is explicit.",
+                    "Orchestration Topology",
+                )
+            )
+    elif execution_topology == "primary-checkout-single-writer":
+        if workflow is None or "subagent-orchestration-method.md" not in workflow or "worktree-reconciliation" in workflow:
+            violations.append(
+                build_violation(
+                    "WORKFLOW-REFERENCE-MISSING",
+                    "Primary-checkout single-writer topology does not reference the generic subagent orchestration workflow.",
+                    "Reference `delphi-ai/workflows/docker/subagent-orchestration-method.md`; do not load the worktree reconciliation workflow without worktree-specific authorization.",
+                    "Artifact Identity",
+                )
+            )
+        if normalize_text(worktree_authorization or "") not in {"not-authorized", "not authorized"}:
+            violations.append(
+                build_violation(
+                    "PRIMARY-TOPOLOGY-WORKTREE-AUTHORITY-INVALID",
+                    "Primary-checkout single-writer topology must record worktree/auxiliary-checkout authority as not authorized.",
+                    "Set `Worktree / auxiliary-checkout authorization` to `not-authorized` and keep all writers serialized in the principal checkout.",
+                    "Orchestration Topology",
+                )
+            )
+        scheduling = normalize_text(writer_scheduling_policy or "")
+        if "single writer" not in scheduling and "single-writer" not in (writer_scheduling_policy or "").lower():
+            violations.append(
+                build_violation(
+                    "SINGLE-WRITER-POLICY-MISSING",
+                    "Primary-checkout topology does not record single-writer serialization.",
+                    "Set `Writer scheduling policy` to `single-writer-serialized`: one active writer, serialized additional writers, parallel read-only reviewers.",
+                    "Orchestration Topology",
+                )
+            )
+        if "forbidden" not in normalize_text(auxiliary_topology_policy or ""):
+            violations.append(
+                build_violation(
+                    "AUXILIARY-TOPOLOGY-NOT-DENIED",
+                    "Primary-checkout topology does not explicitly forbid auxiliary Git topology.",
+                    "Record that worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` are forbidden.",
+                    "Orchestration Topology",
+                )
+            )
+        if reconciliation_branch and not is_placeholder(reconciliation_branch) and normalize_text(reconciliation_branch) not in {"n/a", "na", "none"}:
+            violations.append(
+                build_violation(
+                    "PRIMARY-TOPOLOGY-RECONCILE-FORBIDDEN",
+                    f"Primary-checkout single-writer topology names a reconciliation branch: {reconciliation_branch}",
+                    "Set the reconciliation branch to `n/a`; subagent authorization alone does not permit `reconcile/*`.",
+                    "Orchestration Topology",
+                )
+            )
+        worker_topology = normalize_text(worker_branches_worktrees or "")
+        if "forbidden" not in worker_topology:
+            violations.append(
+                build_violation(
+                    "PRIMARY-TOPOLOGY-WORKER-TOPOLOGY-FORBIDDEN",
+                    "Primary-checkout single-writer topology does not mark worker branches/worktrees forbidden.",
+                    "Set `Worker branches / worktrees` to `forbidden`; serialize subagent writers in the principal checkout.",
+                    "Orchestration Topology",
+                )
+            )
 
     if approval_token != "APROVADO":
         violations.append(
@@ -510,12 +622,11 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
             )
         )
 
-    topology_lines = sections.get("Orchestration Topology", [])
     authoritative_return_branch = extract_field(topology_lines, "Authoritative return branch after reconcile")
     reconcile_failure_routing = extract_field(topology_lines, "Reconcile failure routing rule")
     promotion_source_after_reconcile = extract_field(topology_lines, "Promotion source after reconcile")
 
-    if authoritative_return_branch is None or is_placeholder(authoritative_return_branch):
+    if worktree_isolated and (authoritative_return_branch is None or is_placeholder(authoritative_return_branch)):
         violations.append(
             build_violation(
                 "RETURN-BRANCH-MISSING",
@@ -524,7 +635,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                 "Orchestration Topology",
             )
         )
-    elif references_reconcile_branch(authoritative_return_branch):
+    elif worktree_isolated and references_reconcile_branch(authoritative_return_branch or ""):
         violations.append(
             build_violation(
                 "RETURN-BRANCH-INVALID",
@@ -534,7 +645,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
             )
         )
 
-    if reconcile_failure_routing is None or is_placeholder(reconcile_failure_routing):
+    if worktree_isolated and (reconcile_failure_routing is None or is_placeholder(reconcile_failure_routing)):
         violations.append(
             build_violation(
                 "RECONCILE-FAILURE-ROUTING-MISSING",
@@ -543,7 +654,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                 "Orchestration Topology",
             )
         )
-    else:
+    elif worktree_isolated:
         lowered_routing = normalize_text(reconcile_failure_routing)
         if not any(token in lowered_routing for token in ("worker", "subagent", "todo owner", "responsible owner", "owning")):
             violations.append(
@@ -575,7 +686,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                 "Orchestration Topology",
             )
         )
-    elif references_reconcile_branch(promotion_source_after_reconcile):
+    elif worktree_isolated and references_reconcile_branch(promotion_source_after_reconcile):
         violations.append(
             build_violation(
                 "PROMOTION-SOURCE-INVALID",
@@ -751,7 +862,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                 build_violation(
                     "UI-RUNTIME-VALIDATION-MISSING",
                     f"Governing TODOs include UI/runtime marker `{marker_label}`, but the consolidated validation matrix has no web/browser/device/navigation/UI runtime evidence row.",
-                    "Add consolidated validation that exercises the affected UI/navigation/runtime behavior against the reconciliation branch, or record an explicit blocker/approved waiver.",
+                    "Add consolidated validation that exercises the affected UI/navigation/runtime behavior against the authoritative consolidated principal-checkout state, or record an explicit blocker/approved waiver.",
                     "Consolidated Validation Matrix",
                 )
             )
@@ -830,6 +941,15 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
                     "Execution Ownership Ledger",
                 )
             )
+        elif execution_topology == "primary-checkout-single-writer" and normalize_text(scope) not in {"none", "n/a", "na"}:
+            violations.append(
+                build_violation(
+                    "PRIMARY-TOPOLOGY-ORCHESTRATOR-SCOPE-INVALID",
+                    f"Primary-checkout single-writer topology grants reconciliation scope to the orchestrator: {scope}",
+                    "Set orchestrator code scope to `none`; schedule exactly one worker/subagent writer at a time in the principal checkout.",
+                    "Execution Ownership Ledger",
+                )
+            )
 
     validation_rows = table_rows(sections.get("Consolidated Validation Matrix", []))
     context["validation_row_count"] = len(validation_rows)
@@ -838,7 +958,7 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
             build_violation(
                 "VALIDATION-MATRIX-MISSING",
                 "No consolidated validation rows were found.",
-                "Add concrete validation evidence rows for the orchestrator reconciliation branch.",
+                "Add concrete validation evidence rows for the authoritative consolidated principal-checkout state.",
                 "Consolidated Validation Matrix",
             )
         )
@@ -907,22 +1027,12 @@ def validate_plan(plan_path: Path, require_approved: bool = False) -> dict[str, 
             )
         )
 
-    if "reconciliation branch" not in lowered:
-        violations.append(
-            build_violation(
-                "RECONCILIATION-BRANCH-MISSING",
-                "The plan does not name an orchestrator reconciliation branch policy.",
-                "Add an orchestrator reconciliation branch under `## Orchestration Topology`.",
-                "Orchestration Topology",
-            )
-        )
-
     if "principal checkout" not in lowered:
         violations.append(
             build_violation(
                 "PRINCIPAL-CHECKOUT-POLICY-MISSING",
                 "The plan does not define principal checkout/runtime validation policy.",
-                "State how browser/device/runtime validation resolves to the reconciliation branch.",
+                "State how browser/device/runtime validation resolves to the consolidated principal-checkout state.",
                 "Orchestration Topology",
             )
         )

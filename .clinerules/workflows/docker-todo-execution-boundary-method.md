@@ -21,17 +21,21 @@ Run implementation under the approved TODO contract without silently expanding s
 2. Ingest the real rules/workflows for touched surfaces after approval and before edits.
 3. Resolve the selected execution/review/monitoring lane through `workflows/docker/effort-selection-method.md` when the active client exposes governed effort/model routing, and record the result in `Agent Routing Preflight`.
 4. Run:
-   - `python3 delphi-ai/tools/agent_role_routing_guard.py ...`
+   - `python3 delphi-ai/tools/agent_role_routing_guard.py ...` (for implementation lanes, record `--execution-topology primary-checkout-single-writer` by default; use `worktree-isolated` only with `--worktree-authorization explicit --worktree-authorization-reference <human-reference>`)
    - require `Overall outcome: go` before implementation or formal review proceeds.
-5. Run profile scope checks when touched paths cross profile boundaries.
-6. Run:
+5. Enforce the authorized topology before edits:
+   - `primary-checkout-single-writer`: one active writer edits in the principal checkout; additional writers are serialized; parallel readers/reviewers do not edit; no worktree, auxiliary checkout/copy, `worker/*`, or `reconcile/*` is created.
+   - `worktree-isolated`: load `subagent-worktree-reconciliation-method.md` and require the recorded worktree-specific human authorization before creating topology.
+   - If simultaneous writers need isolation but authorization is absent, stop and request worktree-specific authorization.
+6. Run profile scope checks when touched paths cross profile boundaries.
+7. Run:
    - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`
    - require `Overall outcome: go` before implementation proceeds.
-7. Execute only inside the approved objective and approval conversation.
-8. Treat TODOs as bounded but elastic:
+8. Execute only inside the approved objective and approval conversation.
+9. Treat TODOs as bounded but elastic:
    - local blockers and small concretization can stay inside the TODO when they preserve the same objective;
    - new independently testable behavior, a new primary objective, or a new approval/risk conversation requires TODO update/split and renewed approval.
-9. Keep decisions and deviations in the TODO as they emerge; do not leave durable truth only in chat or tactical notes.
+10. Keep decisions and deviations in the TODO as they emerge; do not leave durable truth only in chat or tactical notes.
 
 ## Outputs
 - Implemented diff within approved boundary.
@@ -41,6 +45,7 @@ Run implementation under the approved TODO contract without silently expanding s
 - No hidden scope expansion.
 - No implementation against stale rules.
 - No governed implementation/review before `Agent Routing Preflight` resolves to `go`.
+- No Git-isolation topology may be inferred from subagent/delegation/parallelism approval.
 - No implementation after approval/rule-ingestion until `todo_authority_guard.py` returns `Overall outcome: go`.
 - No durable project truth left outside canonical project docs after it stabilizes.
 - If execution reveals approval-material drift, stop and return to approval gates.

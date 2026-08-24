@@ -56,7 +56,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 - Preserve concrete evidence and explicit residual risks rather than smoothing them into generic prose.
 
 ## Required-Gate Waiver Control
-- If a `required` no-context final review cannot be completed after one retry, a `blocked` record alone does not permit `Completed` or `Production-Ready`.
+- If a `required` no-context final review cannot be completed after an objectively terminal failed attempt and one retry of the complete gate-satisfying package, a `blocked` record alone does not permit `Completed` or `Production-Ready`.
 - Only the current human approval authority for the TODO may waive a required final-review gate.
 - The waiver record must include:
   - `waiver_reason`
@@ -73,9 +73,11 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
 3. Run one fresh internal final review with no inherited thread context.
    - This final-review pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
-   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review.
+   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable.
    - Do not invoke or treat an external provider as gate-satisfying review evidence.
    - In other environments, use the closest internal equivalent that guarantees no prior thread contamination.
+   - Reviewer lifecycle is status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline.
+   - A polling timeout means only that no terminal event arrived during that polling window. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
 4. Prompt the reviewer to return findings first, ordered by severity, focusing on:
    - bugs/regressions;
    - adherence breaks;
@@ -90,8 +92,8 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 5. Treat the review as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may block closure if it exposes unresolved material defects, but it does not replace the TODO contract or user approval model.
-6. If the first no-context final-review attempt fails or times out, retry once with a tighter package.
-7. If a `required` final review still cannot be obtained after one retry:
+6. If the first no-context final-review attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric; a polling timeout while the reviewer remains live requires continued waiting.
+7. If a `required` final review still cannot be obtained after an objectively terminal failed attempt and one retry:
    - record the tooling limitation explicitly;
    - do not silently treat bounded self-review as equivalent to a true fresh no-context final review;
    - require either a blocker state or an explicit waiver before `Completed` or `Production-Ready`;

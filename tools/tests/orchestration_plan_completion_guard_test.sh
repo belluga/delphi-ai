@@ -60,11 +60,18 @@ This plan covers only orchestrator reconciliation of approved worker-owned TODO 
 - worker-alpha must land its approved slice before the reconcile validation wave.
 
 ## Orchestration Topology
+- **Execution topology:** worktree-isolated
+- **Subagent / delegation authorization:** User explicitly approved delegated implementation.
+- **Worktree / auxiliary-checkout authorization:** explicit
+- **Worktree authorization evidence:** Human explicitly authorized git worktrees and auxiliary checkouts for isolated writers.
+- **Writer scheduling policy:** isolated-parallel-writers
+- **Auxiliary topology policy:** explicitly authorized worktree topology
 - **Reconciliation branch:** reconcile/v0.2.0+8/test-plan
 - **Principal checkout validation policy:** Principal checkout runs the authoritative CI Equivalent and runtime validation against the reconciliation branch.
 - **Authoritative return branch after reconcile:** release/v0.2.0+8
 - **Reconcile failure routing rule:** CI Equivalent or runtime failures return to the owning worker/subagent or TODO owner by default; orchestrator code changes remain reconciliation-only and limited to merge-conflict or integration glue fixes.
 - **Promotion source after reconcile:** $promotion_source
+- **Worker branches / worktrees:** worker/test-plan-alpha in an isolated git worktree
 
 ## Workstreams
 | Workstream | Worker | Dependencies | Checkpoint | Worker-local validation |
@@ -105,6 +112,23 @@ The orchestrator advances autonomously between waves. Wave boundaries are intern
 EOF
 }
 
+write_valid_primary_plan() {
+  write_valid_plan "release/v0.2.0+8"
+  sed -i \
+    -e 's#subagent-worktree-reconciliation-method.md#subagent-orchestration-method.md#' \
+    -e 's/Execution topology:\*\* worktree-isolated/Execution topology:** primary-checkout-single-writer/' \
+    -e 's/Worktree \/ auxiliary-checkout authorization:\*\* explicit/Worktree \/ auxiliary-checkout authorization:** not-authorized/' \
+    -e 's/Human explicitly authorized git worktrees and auxiliary checkouts for isolated writers./n\/a/' \
+    -e 's/Writer scheduling policy:\*\* isolated-parallel-writers/Writer scheduling policy:** single-writer-serialized/' \
+    -e 's/Auxiliary topology policy:\*\* explicitly authorized worktree topology/Auxiliary topology policy:** forbidden: no worktrees, auxiliary checkouts\/copies, worker\/*, or reconcile\/*/' \
+    -e 's#Reconciliation branch:\*\* reconcile/v0.2.0+8/test-plan#Reconciliation branch:** n/a#' \
+    -e 's#Authoritative return branch after reconcile:\*\* release/v0.2.0+8#Authoritative return branch after reconcile:** n/a#' \
+    -e 's#Reconcile failure routing rule:\*\*.*#Reconcile failure routing rule:** n/a#' \
+    -e 's#Worker branches / worktrees:\*\*.*#Worker branches / worktrees:** forbidden#' \
+    -e 's/worker-alpha | reconciliation-only/worker-alpha | none/' \
+    "$PLAN"
+}
+
 assert_go() {
   python3 "$SCRIPT" --plan "$PLAN" >"$OUTPUT"
   grep -q "Overall outcome: go" "$OUTPUT"
@@ -123,6 +147,17 @@ assert_blocked() {
 
 write_valid_plan "release/v0.2.0+8"
 assert_go
+
+write_valid_primary_plan
+assert_go
+
+write_valid_primary_plan
+sed -i 's#Reconciliation branch:\*\* n/a#Reconciliation branch:** reconcile/implicit-from-subagents#' "$PLAN"
+assert_blocked "PRIMARY-TOPOLOGY-RECONCILE-FORBIDDEN"
+
+write_valid_plan "release/v0.2.0+8"
+sed -i 's/Human explicitly authorized git worktrees and auxiliary checkouts for isolated writers./APROVADO: use subagents in parallel./' "$PLAN"
+assert_blocked "WORKTREE-AUTHORIZATION-EVIDENCE-INVALID"
 
 write_valid_plan "release/v0.2.0+8"
 grep -v "Authoritative return branch after reconcile" "$PLAN" >"$TMP_DIR/plan.tmp"

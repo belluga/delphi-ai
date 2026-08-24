@@ -12,7 +12,7 @@ Use this workflow when the package risk is execution order and rework, not paral
 
 ## Purpose
 - Create a sequencing execution plan that chooses the best TODO order to avoid rework.
-- Default the checkpoint unit to one approved TODO at a time on a dedicated checkpoint branch, preferably `sequence/*`.
+- Default the checkpoint unit to one approved TODO at a time on the current authoritative principal-checkout branch. A dedicated `sequence/*` branch is auxiliary Git topology and needs separate human authorization; an isolated worktree additionally requires authorization explicitly naming worktrees or auxiliary checkouts.
 - Allow a shared checkpoint unit across multiple TODOs only when the sequencing plan explicitly admits a micro-batch, records why that size is safe, and leaves the granularity visible for user validation.
 - Require the current sequencing unit's own delivery gates plus its recorded affected-area checkpoint bundle before the next sequencing unit starts.
 - Require every plan row to name the exact tests, analyzers, guards, builds, and runtime proof that the current TODO changes or consumes; that checkpoint is blocking but is not `CI-Equivalent` or promotion evidence.
@@ -34,6 +34,7 @@ Use this workflow when the package risk is execution order and rework, not paral
 
 ## Non-Negotiables
 - Do not use this workflow for unapproved TODOs.
+- Do not infer sequencing-branch/worktree authority from TODO, subagent, delegation, or parallelism approval.
 - Do not start the next sequencing unit while the current sequencing unit still lacks its green recorded checkpoint gate.
 - Do not replace the required full Flutter-workspace Problems snapshot with an edited-file or directory subset at a checkpoint. It is a static rule gate, not the deferred broad test/runtime gate.
 - Do not use `stage-full`, a promotable wrapper, or another parity-complete broad local gate as the default per-unit checkpoint. Run that gate once only when the full sequencing/orchestration package is ready for integrated closeout, unless the user explicitly asks for broad-regression diagnosis or recovery.

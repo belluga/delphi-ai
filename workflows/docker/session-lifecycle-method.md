@@ -22,6 +22,8 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
    - Confirm availability/readiness of `foundation_documentation/policies/scope_subscope_governance.md` for route/module/screen scope tasks.
    - Note the session purpose (architecture vs. self-improvement).
    - Run Profile Selection before task-specific workflows.
+   - When the active client exposes Delphi hook governance, initialize or refresh the explicit runtime state defined by `config/hook_governance.json` so session-start, task-shift, pre-edit, validation, and closeout loops do not rely on chat memory alone.
+   - Record subagent/delegation authorization independently from Git-isolation authorization. Absent an explicit human statement naming worktrees or auxiliary checkouts, Git isolation remains denied and any executor subagents use the principal checkout under single-writer serialization.
    - If this is a downstream tactical resume and any runtime-index predicate is true (`2+ active TODOs`, `any Blocked TODO`, `any open handoff`, or session-memory carry-over that changes the likely resume front), generate a derived runtime index via `workflows/docker/runtime-index-method.md` before deciding where to resume first.
 2. **Normal Work Sessions**
    - Follow standard architectural workflows (create domain, repository, etc.).
@@ -34,6 +36,7 @@ Ensure every Delphi session respects instruction-loading rules, especially durin
 4. **Instruction Changes During Normal Session**
    - If any core instruction file is modified, finish that work and **do not** proceed to architectural tasks until we explicitly reload the updated instructions.
    - Reload means re-reading the updated `delphi-ai/` files (at minimum `main_instructions.md` plus the edited rule/workflow files) and confirming the new expectations with the user.
+   - When hook governance is active, treat that reload as a runtime-state transition as well: the session must record the refreshed workflow/instruction reads before further governed edits or closeout.
    - If the user prefers a hard boundary, explicitly end the session after the instruction edits and resume only after a fresh start.
 5. **Session Closure**
    - Summarise the work completed.
