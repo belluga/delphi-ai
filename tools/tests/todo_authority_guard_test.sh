@@ -459,9 +459,13 @@ assert not validate_implementation_horizon(extract_sections(valid_current.splitl
 valid_current_cases = valid_current.replace('`none`', 'future reports are informational', 1)
 assert not validate_implementation_horizon(extract_sections(valid_current_cases.splitlines()))[0]
 check(valid_current.replace('current-scope-only', 'unsupported-mode'), {"HORIZON-MODE-INVALID"})
+check(valid_current.replace('current-scope-only', 'CURRENT-SCOPE-ONLY'), {"HORIZON-MODE-INVALID"})
 check(valid_current.replace('**Rationale:** bounded delivery', '**Rationale:** `<required>`'), {"HORIZON-FIELD-MISSING"})
 check(valid_current.replace('**Current delivery:** deliver one bounded change', '**Current delivery:** `none`'), {"HORIZON-FIELD-MISSING"})
 check(valid_current.replace('**Anticipatory implementation authorized now:** `none`', '**Anticipatory implementation authorized now:** `adapter seam`'), {"HORIZON-ANTICIPATORY-MUST-BE-NONE"})
+check(valid_current.replace('**Anticipatory implementation authorized now:** `none`', '**Anticipatory implementation authorized now:** `None`'), {"HORIZON-ANTICIPATORY-MUST-BE-NONE"})
+check(valid_current.replace('**Explicit future cases informing the design:** `none`', '**Explicit future cases informing the design:** `n/a`'), {"HORIZON-FUTURE-CASES-MISSING"})
+check(valid_current.replace('**Explicit future cases informing the design:** `none`', '**Explicit future cases informing the design:** `not applicable`'), {"HORIZON-FUTURE-CASES-MISSING"})
 valid_bounded = valid_current.replace('current-scope-only', 'bounded-anticipatory-extensibility').replace('`none`', 'future channels', 1).replace('`none`', 'channel adapter seam', 1)
 assert not validate_implementation_horizon(extract_sections(valid_bounded.splitlines()))[0]
 check(valid_bounded.replace('future channels', 'none'), {"HORIZON-FUTURE-CASES-MISSING"})

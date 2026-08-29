@@ -656,19 +656,21 @@ def validate_implementation_horizon(sections: dict[str, list[str]]) -> tuple[lis
         "Mode", "Current delivery", "Explicit future cases informing the design",
         "Anticipatory implementation authorized now", "Not authorized now", "Rationale",
     )}
-    mode = normalize(fields["Mode"] or "")
+    mode = strip_markup(fields["Mode"] or "").strip()
     if mode not in {"current-scope-only", "bounded-anticipatory-extensibility"}:
         violations.append(build_violation("HORIZON-MODE-INVALID", "Implementation Horizon `Mode` must be `current-scope-only` or `bounded-anticipatory-extensibility`.", "Use one literal mode from the TODO truth table.", IMPLEMENTATION_HORIZON_SECTION))
         return violations, context
     for label in ("Current delivery", "Not authorized now", "Rationale"):
         if value_is_missing(fields[label]):
             violations.append(build_violation("HORIZON-FIELD-MISSING", f"Implementation Horizon `{label}` is missing or placeholder.", "Fill every required literal truth-table field.", IMPLEMENTATION_HORIZON_SECTION))
-    future_cases = normalize(fields["Explicit future cases informing the design"] or "")
-    anticipatory = normalize(fields["Anticipatory implementation authorized now"] or "")
+    future_cases_raw = strip_markup(fields["Explicit future cases informing the design"] or "").strip()
+    anticipatory_raw = strip_markup(fields["Anticipatory implementation authorized now"] or "").strip()
+    future_cases = normalize(future_cases_raw)
+    anticipatory = normalize(anticipatory_raw)
     if mode == "current-scope-only":
-        if future_cases in {"", "missing"} or value_is_missing(fields["Explicit future cases informing the design"], allow_na=True):
+        if future_cases_raw != "none" and value_is_missing(fields["Explicit future cases informing the design"]):
             violations.append(build_violation("HORIZON-FUTURE-CASES-MISSING", "Current-scope-only horizon needs concrete future cases or literal `none`.", "Record a concrete informational list or `none`.", IMPLEMENTATION_HORIZON_SECTION))
-        if anticipatory != "none":
+        if anticipatory_raw != "none":
             violations.append(build_violation("HORIZON-ANTICIPATORY-MUST-BE-NONE", "Current-scope-only horizon requires `Anticipatory implementation authorized now: none`.", "Use literal `none`; present-contract abstractions remain allowed.", IMPLEMENTATION_HORIZON_SECTION))
     else:
         if value_is_missing(fields["Explicit future cases informing the design"]) or future_cases == "none":

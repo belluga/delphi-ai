@@ -187,7 +187,7 @@ check_laravel_todo_authority_adjunct() {
   local note="Laravel adjunct points to core authority only"
   if ! contains "$adjunct" "rules/core/todo-driven-execution-model-decision\\.md"; then
     status="FAIL"; note="missing core authority pointer"
-  elif contains "$adjunct" "^## Gate [A-Z]" || [ "$(wc -l < "$adjunct" | tr -d '[:space:]')" -gt 80 ]; then
+  elif contains "$adjunct" "^## (Rule|Gate [A-Z]|Simplification First and Explicit Implementation Authority)" || contains "$adjunct" "Choose the simplest faithful design:"; then
     status="FAIL"; note="Laravel adjunct regrows shared authority"
   fi
   emit "| Laravel TODO authority adjunct | $status | $note |"

@@ -19,11 +19,11 @@ cp "$ROOT_DIR/tools/list_public_codex_skill_mirrors.sh" "$TMP_DIR/tools/list_pub
 
 git -C "$TMP_DIR" init -q
 
-(cd "$TMP_DIR" && bash ./audit_instruction_baselines.sh) >"$TMP_DIR/pass.txt"
+(cd "$TMP_DIR" && HOME="$TMP_DIR/isolated-home" bash ./audit_instruction_baselines.sh) >"$TMP_DIR/pass.txt"
 grep -q '| Laravel TODO authority adjunct | PASS |' "$TMP_DIR/pass.txt"
 
-for _ in $(seq 1 90); do echo '## Gate A — Shared Authority'; done >>"$TMP_DIR/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
-if (cd "$TMP_DIR" && bash ./audit_instruction_baselines.sh) >"$TMP_DIR/fail.txt"; then
+sed -n '/^## Simplification First and Explicit Implementation Authority/,/^## /p' "$TMP_DIR/rules/core/todo-driven-execution-model-decision.md" | sed '$d' >>"$TMP_DIR/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
+if (cd "$TMP_DIR" && HOME="$TMP_DIR/isolated-home" bash ./audit_instruction_baselines.sh) >"$TMP_DIR/fail.txt"; then
   echo "Expected Laravel shared-authority regrowth to fail." >&2
   exit 1
 fi
