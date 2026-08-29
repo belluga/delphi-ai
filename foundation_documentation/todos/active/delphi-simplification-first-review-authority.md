@@ -32,7 +32,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** Freeze and push the architecture-opinion-integrated baseline, rerun the affected architecture opinion, then run the independent critique.
+- **Next exact step:** Freeze the architecture-converged package and run the required independent no-context critique.
 
 ## Active Work State (Required While TODO Remains In `active/`)
 - **Work state:** `review`
@@ -214,8 +214,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
-- **Decision review status:** `findings_integrated; refreshed rerun required`
-- **Decision review evidence / resolution:** `fresh no-context reviewer simplification_architecture_opinion; three medium findings integrated as D-10, D-11, scope-drift coverage, and expanded Plan Review alternatives; material integration requires refreshed baseline and affected-lane rerun`
+- **Decision review status:** `no_material_findings`
+- **Decision review evidence / resolution:** `three fresh no-context passes: initial findings integrated; operational gate defects integrated; final pass reported no material findings and architectural convergence`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -275,7 +275,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Deviation policy:** Any unclassified path requires explicit analysis; necessary scope expansion requires TODO refresh and renewed approval.
 
 ## Plan Review Gate
-- **Status:** `draft self-review complete; authoritative review-baseline freeze and independent critique pending`
+- **Status:** `architecture opinion converged; independent critique pending`
 - **Required lenses:** `Architecture|Code Quality|Tests|Performance|Security|Elegance|Structural Soundness`
 
 ### Material Issue Cards
@@ -357,6 +357,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `AO-03-placement-comparison` | `Integrated` | `useful` | ARCH-02 now compares dedicated section, Contract Boundary fields, and decision-only encoding with full tradeoffs. |
 | `AO-RR-01-push-ref` | `Integrated` | `useful` | Push reference corrected to the resolvable `origin/hooks-implementation` ref; commit identity remains separately recorded. |
 | `AO-RR-02-current-cycle-horizon-drift` | `Integrated` | `useful` | Existing guard/test are now explicit implementation surfaces; current cycle uses a bounded direct horizon-section comparison until the approved guard update lands. |
+| `AO-FP-01-stale-status` | `Integrated` | `useful` | Updated Next Exact Step and Plan Review status to reflect the completed baseline freeze and converged architecture opinion. |
 
 ## Coherence Loop Record
 | Pass | Lens | Result | Evidence / Resolution |
@@ -403,11 +404,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending second refreshed baseline after architecture-opinion rerun integration`
+- **Baseline commit:** `dee807b814a0ba2132fe03bfc96766c196f66f70`
 - **Baseline push reference:** `origin/hooks-implementation`
-- **Gate status:** `running`
-- **Findings summary:** `The f6dad51 rerun found two operational gate defects; both are integrated and require one final refreshed material freeze.`
-- **Evidence / reference:** `original refreshed baseline f6dad51; second refresh pending`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `The f6dad51 rerun found two operational gate defects; both were integrated and the final refreshed material package was committed and pushed at dee807b.`
+- **Evidence / reference:** `git commit dee807b + successful push to origin/hooks-implementation`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -419,9 +420,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Implementation Horizon & Extensibility Intent|Definition of Done|Validation Steps|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
-- **Gate status:** `not_run`
-- **Findings summary:** `pending review convergence`
-- **Evidence / reference:** `pending`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `Canonical guard reported 0 changed material sections against dee807b; bounded direct comparison of the complete horizon section also produced no diff.`
+- **Evidence / reference:** `review_scope_drift_guard.py Overall outcome: go + diff -u of horizon section against dee807b exit 0`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
