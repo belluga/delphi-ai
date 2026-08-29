@@ -116,6 +116,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Lazy adoption prevents existing approved TODOs from losing explicit extensibility intent merely because they predate the new section.
 - [ ] Canonical sources, skills, generated mirrors, manifest entries, and tests are synchronized with no contradictory wording.
 - [ ] The Laravel TODO-rule path no longer duplicates the global rule; it points to the core authority and contains only concrete Laravel-specific adjunct behavior, if any.
+- [ ] The existing `tools/audit_instruction_baselines.sh` plus a focused negative regression test reject a Laravel adjunct that regrows shared stack-agnostic TODO authority.
 - [ ] Delphi agnosticism review passes; no project-specific domain truth enters reusable canon.
 
 ## Validation Steps
@@ -476,11 +477,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending duplication-harness-integrated baseline`
+- **Baseline commit:** `pending D-18 DoD-traceability baseline`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `running`
-- **Findings summary:** `Ownership-close critique found the D-17 audit harness was not executable within the diff boundary; D-18 integrates the existing audit and a focused negative test, requiring refreshed freeze.`
-- **Evidence / reference:** `last baseline 773a023; D-18 refresh pending`
+- **Findings summary:** `Harness-close critique found D-18 absent from Definition of Done; the explicit audit-and-negative-test completion criterion is integrated and requires a refreshed freeze.`
+- **Evidence / reference:** `last baseline 2c79b6e; D-18 DoD-traceability refresh pending`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -493,7 +494,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending D-18 refreshed baseline`
+- **Findings summary:** `pending D-18 DoD-traceability refreshed baseline`
 - **Evidence / reference:** `pending`
 - **Waiver authority / reference:** `n/a`
 
@@ -527,6 +528,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `CR-RR-02-truth-table-adoption` | `medium` | `Integrated` | `useful` | Added literal per-mode truth table, canonical `none`, current-only abstraction clarification, legacy adoption boundary, existing authority-guard owner, and focused tests. |
 | `CR-FP-01-laravel-duplicate-authority` | `medium` | `Integrated` | `useful` | D-17 makes the core rule sole shared authority and converts the Laravel path into a concise compatibility adjunct with Laravel-only deltas. |
 | `CR-OC-01-duplication-harness-boundary` | `medium` | `Integrated` | `useful` | Added the existing baseline-audit script and focused negative test to scope, expected diff, DoD, validation, harness, and ordered execution. |
+| `CR-HC-01-D18-DoD-traceability` | `medium` | `Integrated` | `useful` | Definition of Done now explicitly requires the existing baseline audit plus a negative regression test to reject renewed Laravel duplication of shared authority. |
 
 ## Gate: Assumption Code Coherence
 - **Gate decision:** `required`
