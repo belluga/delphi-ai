@@ -32,6 +32,16 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - If any assumption or plan step changes `Scope`, `Out of Scope`, `Definition of Done`, required validation semantics, public contract, or frozen decisions, update the TODO contract first and request renewed approval before execution continues.
 - If the intended path explicitly authorizes a compatibility shim, fallback bridge, dual-read/dual-write period, or another non-canonical temporary construct, record that authorization in the TODO with exact scope, rationale, and removal/closeout condition. Reviewers must be able to distinguish an approved temporary exception from accidental workaround drift.
 
+## Implementation Horizon & Extensibility Intent
+- **Mode:** `<current-scope-only|bounded-anticipatory-extensibility>`
+- **Current delivery:** <concrete current slice>
+- **Explicit future cases informing the design:** `<none|concrete bounded cases>`
+- **Anticipatory implementation authorized now:** `<none|concrete bounded seam>`
+- **Not authorized now:** <concrete excluded speculation>
+- **Rationale:** <why this is the simplest faithful horizon>
+
+Use the literal truth table: `current-scope-only` requires `Anticipatory implementation authorized now: none` and permits future cases to be `none`; `bounded-anticipatory-extensibility` requires concrete future cases and a concrete authorized seam. This is the normative horizon authority; reviewers may not silently invent, rewrite, or erase it.
+
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`
 - **Qualifiers:** `<none|Provisional|Blocked|Provisional+Blocked>`

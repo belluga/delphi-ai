@@ -15,6 +15,17 @@ from finding_carry_forward_extract import build_carry_forward_packet
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
 RESULT_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_result.schema.json"
+SHARED_INTENT_AUTHORITY_FOCUS = (
+    "Do not silently invent, rewrite, or erase explicit TODO intent. Assess the simplest faithful design: "
+    "minimum incidental complexity compatible with approved intent, Clean Code, SOLID, correctness, and security."
+)
+PLANNING_INTENT_AUTHORITY_FOCUS = (
+    "Planning review may challenge proposed horizon intent and recommend a decision change, but must never rewrite it."
+)
+DELIVERY_INTENT_AUTHORITY_FOCUS = (
+    "Treat approved implementation horizon and seam as binding; route material redesign to renewed approval."
+)
+PLANNING_REVIEW_KINDS = {"architecture_opinion", "critique"}
 
 CONFIG = {
     "architecture_opinion": {
@@ -308,7 +319,13 @@ def main() -> int:
         "reviewer_count": args.reviewer_count,
         "no_context_required": True,
         "required_axes": config["axes"],
-        "focus_points": config["focus"],
+        "focus_points": [
+            *config["focus"],
+            SHARED_INTENT_AUTHORITY_FOCUS,
+            PLANNING_INTENT_AUTHORITY_FOCUS
+            if args.review_kind in PLANNING_REVIEW_KINDS
+            else DELIVERY_INTENT_AUTHORITY_FOCUS,
+        ],
         "result_contract_fields": config["result_fields"],
     }
     if args.todo_path:

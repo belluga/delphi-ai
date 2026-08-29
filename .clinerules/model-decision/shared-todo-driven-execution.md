@@ -7,6 +7,12 @@ Subagent/delegation authorization and Git-isolation authorization are independen
 
 Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
 
+## Simplification First and Explicit Implementation Authority
+
+Choose the simplest faithful design: minimum incidental complexity compatible with approved intent, Clean Code, SOLID, correctness, security, and explicit contracts. This is not minimum diff or automatic avoidance of abstraction; simplification may require subtraction, consolidation, or redesign of unnecessary layers. Do not replace justified ownership with scattered conditionals, duplication, or hidden coupling.
+
+Foundation documents may describe future architecture, but they do not authorize future-facing implementation in a current TODO. New and pre-approval TODOs must record `Implementation Horizon & Extensibility Intent` using `current-scope-only|bounded-anticipatory-extensibility` and the template's literal fields. Existing already-approved TODOs retain frozen authority until their next approval-material refresh. Silence means reviewers must not invent future-facing layers and must raise material ambiguity for decision resolution. An expressly approved bounded seam is binding in delivery/adherence review; planning reviewers may challenge it and recommend a decision change, but cannot rewrite it. Run the canonical scope-drift guard before approval and immediately before architecture-adherence/final-review dispatches, rerunning it after protected-section remediation.
+
 For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
 
 ### Phase-State Routing

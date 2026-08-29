@@ -26,6 +26,7 @@ MATERIAL_HEADINGS = (
     "## Context",
     "## Framing Source & Story Slice",
     "## Contract Boundary",
+    "## Implementation Horizon & Extensibility Intent",
     "## Scope",
     "## Out of Scope",
     "## Bounded But Elastic Guardrails",

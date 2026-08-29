@@ -103,7 +103,7 @@ status_for_file() {
     fi
   fi
 
-  if [[ "$rel" == *todo-driven-execution* ]]; then
+  if [[ "$rel" == *todo-driven-execution* && "$rel" != *"rules/stacks/laravel/shared/todo-driven-execution-model-decision.md" ]]; then
     if ! contains "$file" "small\\|medium\\|big"; then
       status="FAIL"
       notes+=("missing complexity policy")
@@ -180,6 +180,19 @@ emit "| Check | Status | Notes |"
 emit "| --- | --- | --- |"
 
 coherence_failed=0
+
+check_laravel_todo_authority_adjunct() {
+  local adjunct="$DEL_ROOT/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
+  local status="PASS"
+  local note="Laravel adjunct points to core authority only"
+  if ! contains "$adjunct" "rules/core/todo-driven-execution-model-decision\\.md"; then
+    status="FAIL"; note="missing core authority pointer"
+  elif contains "$adjunct" "^## Gate [A-Z]" || [ "$(wc -l < "$adjunct" | tr -d '[:space:]')" -gt 80 ]; then
+    status="FAIL"; note="Laravel adjunct regrows shared authority"
+  fi
+  emit "| Laravel TODO authority adjunct | $status | $note |"
+  [ "$status" = "PASS" ]
+}
 
 check_workflow_counterparts() {
   local status="PASS"
@@ -471,6 +484,7 @@ check_skill_tooling_register() {
 }
 
 check_workflow_counterparts || coherence_failed=$((coherence_failed + 1))
+check_laravel_todo_authority_adjunct || coherence_failed=$((coherence_failed + 1))
 check_cline_counterparts || coherence_failed=$((coherence_failed + 1))
 check_skill_mirrors || coherence_failed=$((coherence_failed + 1))
 check_claude_skill_mirrors || coherence_failed=$((coherence_failed + 1))

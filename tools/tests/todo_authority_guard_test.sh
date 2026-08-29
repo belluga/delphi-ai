@@ -437,4 +437,36 @@ TODO
 assert_no_go "$TMP_DIR/promotion-followup-no-ref.md"
 grep -q "PROMOTION-FOLLOWUP-MISSING-REFERENCE" "$OUTPUT_FILE"
 
+python3 - "$ROOT_DIR" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1] + "/tools")
+from todo_authority_guard import extract_sections, validate_implementation_horizon
+
+def check(text, expected):
+    violations, _ = validate_implementation_horizon(extract_sections(text.splitlines()))
+    codes = {item["code"] for item in violations}
+    assert expected <= codes, (expected, codes)
+
+valid_current = '''## Implementation Horizon & Extensibility Intent
+- **Mode:** `current-scope-only`
+- **Current delivery:** deliver one bounded change
+- **Explicit future cases informing the design:** `none`
+- **Anticipatory implementation authorized now:** `none`
+- **Not authorized now:** unrelated speculation
+- **Rationale:** bounded delivery
+'''
+assert not validate_implementation_horizon(extract_sections(valid_current.splitlines()))[0]
+valid_current_cases = valid_current.replace('`none`', 'future reports are informational', 1)
+assert not validate_implementation_horizon(extract_sections(valid_current_cases.splitlines()))[0]
+check(valid_current.replace('current-scope-only', 'unsupported-mode'), {"HORIZON-MODE-INVALID"})
+check(valid_current.replace('**Rationale:** bounded delivery', '**Rationale:** `<required>`'), {"HORIZON-FIELD-MISSING"})
+check(valid_current.replace('**Current delivery:** deliver one bounded change', '**Current delivery:** `none`'), {"HORIZON-FIELD-MISSING"})
+check(valid_current.replace('**Anticipatory implementation authorized now:** `none`', '**Anticipatory implementation authorized now:** `adapter seam`'), {"HORIZON-ANTICIPATORY-MUST-BE-NONE"})
+valid_bounded = valid_current.replace('current-scope-only', 'bounded-anticipatory-extensibility').replace('`none`', 'future channels', 1).replace('`none`', 'channel adapter seam', 1)
+assert not validate_implementation_horizon(extract_sections(valid_bounded.splitlines()))[0]
+check(valid_bounded.replace('future channels', 'none'), {"HORIZON-FUTURE-CASES-MISSING"})
+check(valid_bounded.replace('channel adapter seam', 'none'), {"HORIZON-ANTICIPATORY-SEAM-MISSING"})
+assert not validate_implementation_horizon(extract_sections([]))[0]  # legacy absence
+PY
+
 printf 'todo_authority_guard_test: OK\n'

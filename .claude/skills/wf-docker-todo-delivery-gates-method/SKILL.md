@@ -5,6 +5,8 @@ description: "Workflow phase: complete evidence, CI-equivalent validation, P1/P2
 
 # Method: TODO Delivery Gates
 
+Before each architecture-adherence or final-review dispatch, rerun `review_scope_drift_guard.py` against the approved baseline; rerun it after protected-section remediation. Treat approved implementation-horizon intent as binding unless renewed approval changes it.
+
 Use when implementation is ready for local delivery, promotion readiness, or close-claim evidence. Canonical details live in `workflows/docker/todo-delivery-gates-method.md`.
 
 ## Responsibilities

@@ -36,6 +36,7 @@ Turn a tactical TODO into an executable contract before approval. The TODO defin
 6. Build `Assumptions Preview`.
    - Assumptions must be evidence-backed.
    - Promote an assumption into contract if it changes scope, DoD, validation semantics, public contract, or module coherence.
+   - Resolve `Implementation Horizon & Extensibility Intent` before approval: default to `current-scope-only`; authorize a bounded anticipatory seam only when it is explicit, concrete, and justified in the literal template fields.
 7. Build `Execution Plan`.
    - Record touched surfaces, ordered steps, test strategy, fail-first targets when required, and rollout/runtime notes.
    - For multi-TODO packages, use the active package execution plan as the package-stage ledger (`sequencing_execution_plan` for ordered single-lane packages, `orchestration_execution_plan` for delegated/reconciliation packages). Record wave/order state, current blockers, active review/remediation branches when applicable, and next exact step there instead of creating a parallel version-status artifact.

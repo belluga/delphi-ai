@@ -343,11 +343,64 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Judgment boundary:** No test may claim that a particular code design is universally “simple”; tests protect contract propagation, not architectural taste.
 
 ## Diff Expectation Contract
-- **Repository baseline:** `delphi-ai@3a30f21c611486fa353868d4aab2ec4b350385ef`
+- **Contract status:** `required`
+- **Policy:** `strict; unclassified or forbidden paths block delivery`
+- **User validation:** `required on deviation`
 - **Comparison mode:** `working_tree`
-- **Expected changed paths:** only the Delphi instruction, rule, workflow, template, reviewer dispatch/test, manifest/register, generated mirror, and TODO surfaces enumerated above.
-- **Not expected changed paths:** downstream project repositories/docs, runtime/deploy configuration, unrelated skills/tools, product code, or submodule gitlinks.
 - **Deviation policy:** Any unclassified path requires explicit analysis; necessary scope expansion requires TODO refresh and renewed approval.
+
+### Repository Baselines
+| Repository | Path | Baseline ref | Comparison mode |
+| --- | --- | --- | --- |
+| `delphi-ai` | `.` | `hooks-implementation@a6e8e95b8431e81e3a0b073d7260c92a62c942f6` | `working_tree` |
+
+### Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `delphi-ai` | `main_instructions.md` | `M` | Foundational delivery mandate. |
+| `delphi-ai` | `system_architecture_principles.md` | `M` | Foundational/future implementation boundary. |
+| `delphi-ai` | `templates/todo_template.md` | `M` | Normative horizon truth table. |
+| `delphi-ai` | `rules/core/todo-driven-execution-model-decision.md` | `M` | Sole stack-agnostic TODO authority. |
+| `delphi-ai` | `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md` | `M` | Concise Laravel compatibility adjunct. |
+| `delphi-ai` | `workflows/docker/todo-driven-execution-method.md` | `M` | Umbrella lifecycle invariant. |
+| `delphi-ai` | `workflows/docker/todo-contract-refinement-method.md` | `M` | Horizon refinement semantics. |
+| `delphi-ai` | `workflows/docker/todo-approval-gates-method.md` | `M` | Planning reviewer authority. |
+| `delphi-ai` | `workflows/docker/todo-delivery-gates-method.md` | `M` | Delivery drift freshness and binding authority. |
+| `delphi-ai` | `workflows/docker/independent-critique-method.md` | `M` | Planning challenge boundary. |
+| `delphi-ai` | `workflows/docker/independent-final-review-method.md` | `M` | Delivery adherence boundary. |
+| `delphi-ai` | `skills/wf-docker-todo-driven-execution-method/SKILL.md` | `M` | Concise umbrella entrypoint. |
+| `delphi-ai` | `skills/wf-docker-todo-delivery-gates-method/SKILL.md` | `M` | Concise delivery entrypoint. |
+| `delphi-ai` | `skills/deterministic-tooling-register.md` | `M` | Refresh support notes for the materially changed workflow skills. |
+| `delphi-ai` | `.clinerules/**` | `M` | Generated rule/workflow mirrors. |
+| `delphi-ai` | `.cline/skills/wf-docker-todo-*/SKILL.md` | `M` | Curated Cline skill mirrors. |
+| `delphi-ai` | `.claude/skills/wf-docker-todo-*/SKILL.md` | `M` | Curated Claude skill mirrors. |
+| `delphi-ai` | `tools/audit_instruction_baselines.sh` | `M` | Laravel authority-regrowth audit. |
+| `delphi-ai` | `tools/manifest.md` | `M` | Updated deterministic tool purposes. |
+| `delphi-ai` | `tools/review_scope_drift_guard.py` | `M` | Horizon becomes a protected section. |
+| `delphi-ai` | `tools/subagent_review_dispatch.py` | `M` | Shared and lifecycle-specific reviewer authority. |
+| `delphi-ai` | `tools/todo_authority_guard.py` | `M` | Objective horizon truth-table validation. |
+| `delphi-ai` | `tools/tests/audit_instruction_baselines_test.sh` | `any` | Negative Laravel duplicate-authority fixture (untracked until the implementation commit). |
+| `delphi-ai` | `tools/tests/review_scope_drift_guard_test.sh` | `M` | Explicit horizon drift regression. |
+| `delphi-ai` | `tools/tests/subagent_review_dispatch_test.sh` | `M` | All-kind reviewer authority assertions. |
+| `delphi-ai` | `tools/tests/todo_authority_guard_test.sh` | `M` | Per-mode, placeholder, missing-field, and legacy coverage. |
+| `delphi-ai` | `foundation_documentation/todos/active/delphi-simplification-first-review-authority.md` | `M` | Approval, execution, and delivery evidence. |
+
+### Not Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `delphi-ai` | `config/**` | `any` | No routing/config contract change is authorized. |
+| `delphi-ai` | `schemas/**` | `any` | No new or changed result-schema axis is authorized. |
+| `delphi-ai` | `artifacts/**` | `any` | No generated evidence artifact is required in the tracked diff. |
+| `delphi-ai` | `rules/stacks/flutter/**` | `any` | Flutter-specific rules are outside this stack-agnostic correction. |
+| `delphi-ai` | `workflows/flutter/**` | `any` | Flutter implementation workflows are out of scope. |
+| `delphi-ai` | `workflows/laravel/**` | `any` | Laravel application workflows are out of scope; only the shared compatibility adjunct changes. |
+| `delphi-ai` | `.env*` | `any` | Secrets/runtime environment files are forbidden. |
+| `delphi-ai` | `.gitmodules` | `any` | Submodule topology is outside this instruction-only session. |
+
+### Diff Deviation Analysis
+| Diff item | Classification (`scope deviation|necessary need|noise`) | Evidence / agent defense | Decision (`revert|clean noise|retain with renewed approval`) | User validation / renewed approval |
+| --- | --- | --- | --- | --- |
+| `none` | `necessary need` | `All current paths are explicitly classified above.` | `n/a` | `renewed APROVADO already recorded for D-01 through D-18` |
 
 ## Plan Review Gate
 - **Status:** `architecture opinion converged; independent critique pending`
@@ -477,11 +530,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `ddfb82af08895458176dade6bb0aa8950154330a`
+- **Baseline commit:** `a6e8e95b8431e81e3a0b073d7260c92a62c942f6`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `Harness-close critique found D-18 absent from Definition of Done; the explicit audit-and-negative-test completion criterion is integrated and requires a refreshed freeze.`
-- **Evidence / reference:** `git commit ddfb82a + successful push to origin/hooks-implementation + fresh no-context editorial-scope close`
+- **Findings summary:** `Planning review converged at ddfb82a; the user then renewed APROVADO for D-01 through D-18, and a6e8e95 records that approval, the frozen-decision checkbox, rule ingestion, and implementation routing without changing scope or intent.`
+- **Evidence / reference:** `planning-reviewed baseline ddfb82a + renewed user APROVADO + approval-recorded baseline a6e8e95 pushed to origin/hooks-implementation`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -494,8 +547,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `The refreshed baseline contains the complete D-18 contract and the non-semantic tool-count wording correction; no scope, authority, horizon, or implementation obligation changed.`
-- **Evidence / reference:** `fresh no-context simplification_editorial_scope_close at ddfb82a; final guard and direct horizon comparison recorded below`
+- **Findings summary:** `The approval-recorded baseline contains the complete frozen D-01 through D-18 contract; approval bookkeeping introduced no scope, authority, horizon, or implementation-obligation drift.`
+- **Evidence / reference:** `planning close at ddfb82a + renewed APROVADO + approval-recorded baseline a6e8e95; delivery-side fresh guard evidence recorded before each required dispatch`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close

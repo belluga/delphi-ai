@@ -57,6 +57,7 @@ PATTERNS_TO_ENFORCE_SECTION = "Patterns To Enforce"
 PROHIBITED_ANTI_PATTERNS_SECTION = "Prohibited Anti-Patterns"
 ARCHITECTURE_PROTECTION_HARNESS_SECTION = "Architecture Protection Harness"
 ARCHITECTURE_REVIEW_GATES_SECTION = "Architecture Review Gates"
+IMPLEMENTATION_HORIZON_SECTION = "Implementation Horizon & Extensibility Intent"
 CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
 PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
 RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
@@ -643,6 +644,40 @@ def validate_architecture_governance(sections: dict[str, list[str]]) -> tuple[li
     return violations, context
 
 
+def validate_implementation_horizon(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    """Validate the literal horizon truth table only when a TODO adopts it."""
+    lines = find_section(sections, IMPLEMENTATION_HORIZON_SECTION)
+    context: dict[str, Any] = {"implementation_horizon_present": bool(lines)}
+    if not lines:
+        return [], context  # Legacy approved TODOs retain their frozen authority.
+
+    violations: list[dict[str, str]] = []
+    fields = {label: extract_field(lines, label) for label in (
+        "Mode", "Current delivery", "Explicit future cases informing the design",
+        "Anticipatory implementation authorized now", "Not authorized now", "Rationale",
+    )}
+    mode = normalize(fields["Mode"] or "")
+    if mode not in {"current-scope-only", "bounded-anticipatory-extensibility"}:
+        violations.append(build_violation("HORIZON-MODE-INVALID", "Implementation Horizon `Mode` must be `current-scope-only` or `bounded-anticipatory-extensibility`.", "Use one literal mode from the TODO truth table.", IMPLEMENTATION_HORIZON_SECTION))
+        return violations, context
+    for label in ("Current delivery", "Not authorized now", "Rationale"):
+        if value_is_missing(fields[label]):
+            violations.append(build_violation("HORIZON-FIELD-MISSING", f"Implementation Horizon `{label}` is missing or placeholder.", "Fill every required literal truth-table field.", IMPLEMENTATION_HORIZON_SECTION))
+    future_cases = normalize(fields["Explicit future cases informing the design"] or "")
+    anticipatory = normalize(fields["Anticipatory implementation authorized now"] or "")
+    if mode == "current-scope-only":
+        if future_cases in {"", "missing"} or value_is_missing(fields["Explicit future cases informing the design"], allow_na=True):
+            violations.append(build_violation("HORIZON-FUTURE-CASES-MISSING", "Current-scope-only horizon needs concrete future cases or literal `none`.", "Record a concrete informational list or `none`.", IMPLEMENTATION_HORIZON_SECTION))
+        if anticipatory != "none":
+            violations.append(build_violation("HORIZON-ANTICIPATORY-MUST-BE-NONE", "Current-scope-only horizon requires `Anticipatory implementation authorized now: none`.", "Use literal `none`; present-contract abstractions remain allowed.", IMPLEMENTATION_HORIZON_SECTION))
+    else:
+        if value_is_missing(fields["Explicit future cases informing the design"]) or future_cases == "none":
+            violations.append(build_violation("HORIZON-FUTURE-CASES-MISSING", "Bounded anticipatory horizon requires concrete future cases.", "Name the bounded future cases informing the authorized seam.", IMPLEMENTATION_HORIZON_SECTION))
+        if value_is_missing(fields["Anticipatory implementation authorized now"]) or anticipatory == "none":
+            violations.append(build_violation("HORIZON-ANTICIPATORY-SEAM-MISSING", "Bounded anticipatory horizon requires a concrete authorized seam.", "Name the bounded anticipatory implementation authorized now.", IMPLEMENTATION_HORIZON_SECTION))
+    return violations, context
+
+
 def validate_delivery_gates(
     sections: dict[str, list[str]],
     delivery_claim: bool,
@@ -873,6 +908,7 @@ def validate_todo(
         validate_rules_ingestion,
         validate_agent_routing_preflight,
         validate_architecture_governance,
+        validate_implementation_horizon,
         validate_promotion_routing,
     ):
         section_violations, section_context = validator(sections)

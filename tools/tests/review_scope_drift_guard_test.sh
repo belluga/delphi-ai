@@ -31,6 +31,14 @@ Baseline context.
 ## Scope
 - [ ] original scope
 
+## Implementation Horizon & Extensibility Intent
+- **Mode:** `current-scope-only`
+- **Current delivery:** keep the original bounded slice
+- **Explicit future cases informing the design:** `none`
+- **Anticipatory implementation authorized now:** `none`
+- **Not authorized now:** speculative expansion
+- **Rationale:** baseline contract
+
 ## Definition of Done
 - [ ] keep original scope stable during review
 
@@ -93,6 +101,14 @@ Baseline context.
 
 ## Scope
 - [ ] original scope
+
+## Implementation Horizon & Extensibility Intent
+- **Mode:** \`current-scope-only\`
+- **Current delivery:** keep the original bounded slice
+- **Explicit future cases informing the design:** \`none\`
+- **Anticipatory implementation authorized now:** \`none\`
+- **Not authorized now:** speculative expansion
+- **Rationale:** baseline contract
 
 ## Definition of Done
 - [ ] keep original scope stable during review
@@ -175,5 +191,20 @@ grep -q "REVIEW-SCOPE-DRIFT-MATERIAL-CHANGE" "$tmpdir/no_go.txt"
 grep -q "Architecture Change Governance" "$tmpdir/no_go.txt"
 grep -q "not a hard rejection" "$tmpdir/no_go.txt"
 grep -q "revalidate the evolved scope with the user" "$tmpdir/no_go.txt"
+
+python3 - <<'PY' "$todo"
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace("several envelope families may still coexist", "one collection envelope for every targeted surface", 1)
+text = text.replace("**Mode:** `current-scope-only`", "**Mode:** `bounded-anticipatory-extensibility`", 1)
+path.write_text(text, encoding="utf-8")
+PY
+if python3 "$TOOL" --todo "$todo" >"$tmpdir/horizon_no_go.txt"; then
+  echo "Expected no-go outcome when only the implementation horizon drifts." >&2
+  exit 1
+fi
+grep -q "Implementation Horizon & Extensibility Intent" "$tmpdir/horizon_no_go.txt"
 
 echo "review_scope_drift_guard_test: PASS"
