@@ -334,11 +334,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending`
-- **Baseline push reference:** `pending`
-- **Gate status:** `not_run`
-- **Findings summary:** `TODO created locally; freeze not yet authorized or written`
-- **Evidence / reference:** `pending`
+- **Baseline commit:** `fe89bcc82f05959e440e7f9bfa83f4c3551bb58e`
+- **Baseline push reference:** `origin/hooks-implementation@fe89bcc82f05959e440e7f9bfa83f4c3551bb58e`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `The complete scope/decision package was committed and pushed before independent review dispatch.`
+- **Evidence / reference:** `git commit fe89bcc + successful push to origin/hooks-implementation`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -381,10 +381,24 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Waiver authority / reference:** `n/a`
 
 ## Approval
-- **Approved by:** `pending explicit APROVADO`
-- **Approval scope:** `not yet granted`
-- **Execution not authorized by approval:** `all implementation remains unauthorized`
+- **Approved by:** `user on 2026-08-29 via explicit APROVADO`
+- **Approval scope:** `D-01 through D-09 and the bounded Delphi-only scope recorded in this TODO`
+- **Execution not authorized by approval:** `implementation remains gated by the required architecture opinion, independent critique, assumption-code coherence, and scope-drift checks; material review changes require renewed approval`
 - **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially`
+
+## Agent Routing Preflight
+- **Client surface:** `codex`
+- **Current governed action:** `todo-approval`
+- **Selected role:** `primary-chat`
+- **Selected model:** `gpt-5.4`
+- **Selected effort:** `ExtraRight-or-closest-equivalent`
+- **Proof mode:** `declared`
+- **Subagent / delegation authorization:** `authorized by this TODO's required internal review gates and user APROVADO`
+- **Execution topology:** `primary-checkout-single-writer`
+- **Worktree / auxiliary-checkout authorization:** `not-authorized`
+- **Writer scheduling policy:** `single-writer-serialized`
+- **Guard outcome:** `go`
+- **Evidence:** `agent_role_routing_guard.py returned Overall outcome: go before planning-side review orchestration`
 
 ## Rules Acknowledgement / Ingestion
 - **Status:** `pending APROVADO; this section must be populated before implementation`
