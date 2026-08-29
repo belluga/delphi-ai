@@ -305,7 +305,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `skills/wf-docker-todo-driven-execution-method/SKILL.md`
 - `skills/wf-docker-todo-delivery-gates-method/SKILL.md`
 - other objective TODO guards/tests only if the final contract adds machine-checkable fields
-- `tools/manifest.md` (mandatory because both canonical tools change materially)
+- `tools/manifest.md` (mandatory because the materially changed canonical tools must remain registered)
 - `skills/deterministic-tooling-register.md` (refresh materially affected skill classifications/support links)
 - concise canonical skill entrypoints affected by the workflow changes
 - derived `.clinerules/**`, `.cline/**`, `.claude/**`, and tracked public Codex mirrors selected by existing mirror inventories
@@ -477,11 +477,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending D-18 DoD-traceability baseline`
+- **Baseline commit:** `pending final editorial-convergence baseline`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `running`
 - **Findings summary:** `Harness-close critique found D-18 absent from Definition of Done; the explicit audit-and-negative-test completion criterion is integrated and requires a refreshed freeze.`
-- **Evidence / reference:** `last baseline 2c79b6e; D-18 DoD-traceability refresh pending`
+- **Evidence / reference:** `last reviewed baseline 0a8e949; final editorial-convergence refresh pending`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -494,8 +494,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending D-18 DoD-traceability refreshed baseline`
-- **Evidence / reference:** `pending`
+- **Findings summary:** `pending final editorial-convergence baseline refresh`
+- **Evidence / reference:** `pre-refresh guard conservatively detected the non-semantic four-tool wording correction inside Execution Plan; no implementation scope or authority changed`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -509,9 +509,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** `medium`, cross-stack reusable behavior, public TODO/reviewer contract change, and high-severity architecture issues.
 - **Package mode:** `bounded-file-set`
 - **Critique isolation mode:** `fresh internal no-context reviewer`
-- **Critique status:** `findings_integrated; refreshed rerun required`
-- **Findings summary:** `Two high, four medium, and one low finding integrated; all affected authority, lifecycle, adoption, ownership, evidence, and test contracts were updated.`
-- **Evidence / reference:** `fresh no-context reviewer simplification_independent_critique`
+- **Critique status:** `no_material_findings`
+- **Findings summary:** `Three high, eight medium, and one low finding were integrated across the full loop; the final D-18 traceability rerun found no material issue and only two non-blocking wording corrections, both applied.`
+- **Evidence / reference:** `fresh no-context reviewers simplification_independent_critique through simplification_d18_final_critique; final reviewed baseline 0a8e949617fecd0ffafe53fa3e560f0ac9a25e77`
 - **Waiver authority / reference:** `n/a`
 
 ### Critique Finding Resolution
