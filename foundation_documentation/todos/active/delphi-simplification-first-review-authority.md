@@ -57,6 +57,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Add proportionate deterministic regression coverage for objective prompt/template/contract requirements without pretending to automate subjective architecture judgment.
 - [ ] Synchronize derived skills and compatibility mirrors from canonical sources using existing Delphi synchronization mechanisms.
 - [ ] Retire the full stack-agnostic duplicate under the Laravel rule path by replacing it with a concise compatibility adjunct/pointer containing only Laravel-specific loading deltas, with the core TODO rule as the sole shared authority.
+- [ ] Extend the existing instruction-baseline audit and add a focused negative regression test that rejects a Laravel compatibility adjunct when it regrows shared TODO authority.
 
 ## Out of Scope
 - [ ] Prohibit anticipatory abstractions or future-aware design.
@@ -131,6 +132,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Run any focused TODO template/guard tests touched by the implementation.
 - [ ] Run `bash tools/tests/todo_authority_guard_test.sh`.
 - [ ] Run `bash tools/tests/review_scope_drift_guard_test.sh`, including drift introduced between architecture-adherence and final-review dispatches.
+- [ ] Run `bash tools/tests/audit_instruction_baselines_test.sh`, including a negative fixture where the Laravel adjunct duplicates stack-agnostic core authority.
 - [ ] Run `bash self_check.sh`.
 - [ ] Run `git diff --check`.
 - [ ] Perform a manual agnosticism review of every changed Delphi surface.
@@ -212,9 +214,10 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] `D-15` Run the same scope-drift guard immediately before each architecture-adherence and final-review dispatch and after protected-section remediation, binding review evidence to the approved baseline commit plus fresh guard output.
 - [x] `D-16` Use the literal per-mode truth table above; `todo_authority_guard.py` validates objective semantics only when the section is present, while lazy adoption is enforced at the next review-baseline freeze/renewed approval without mass migration.
 - [x] `D-17` Make `rules/core/todo-driven-execution-model-decision.md` the sole stack-agnostic TODO authority; reduce the Laravel rule path to a concise compatibility adjunct/pointer with only explicit Laravel-specific deltas.
+- [x] `D-18` Extend `tools/audit_instruction_baselines.sh` and add a focused negative regression test so a Laravel adjunct that regrows shared authority fails deterministically.
 
 ## Decision Baseline (Frozen Before Implementation)
-- [ ] Freeze `D-01` through `D-17` after the Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
+- [ ] Freeze `D-01` through `D-18` after the Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
 
 ## Architecture Change Governance (Required When This TODO Establishes, Corrects, or Supersedes Architecture)
 - **Applicability (`required|not_needed`):** `required`
@@ -251,7 +254,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | scope-drift guard | `tools/review_scope_drift_guard.py` | existing guard + focused test | Post-review changes to horizon mode, authorized seam, exclusions, or rationale escape reconvergence | `implement-in-this-todo` | `bash tools/tests/review_scope_drift_guard_test.sh` |
 | TODO authority guard | `tools/todo_authority_guard.py` | existing guard + focused test | Present horizon sections use invalid modes, placeholders, or missing conditional fields | `implement-in-this-todo` | `bash tools/tests/todo_authority_guard_test.sh` |
 | delivery review freshness | TODO delivery workflows/skills | same drift guard before each applicable dispatch | Adherence remediation makes final-review evidence stale | `implement-in-this-todo` | focused workflow audit + drift-guard test scenario |
-| canonical duplication audit | core + Laravel TODO rule path | `bash tools/audit_instruction_baselines.sh` | Stack compatibility path regrows into a full shared-rule copy | `implement-in-this-todo` | focused baseline audit/self-check evidence |
+| canonical duplication audit | core + Laravel TODO rule path | `bash tools/audit_instruction_baselines.sh` | Stack compatibility path regrows into a full shared-rule copy | `implement-in-this-todo` | `bash tools/tests/audit_instruction_baselines_test.sh` negative regression + self-check evidence |
 | review workflows | critique/final/approval methods | canonical review focus | Elegance assessed independently of approved TODO intent | `implement-in-this-todo` | textual contract audit + `bash self_check.sh` |
 | compatibility sync | skills and client mirrors | existing sync/self-check surfaces | Canonical/derived wording drift | `implement-in-this-todo` | run applicable sync checks and `bash self_check.sh` |
 
@@ -296,6 +299,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `tools/tests/review_scope_drift_guard_test.sh`
 - `tools/todo_authority_guard.py`
 - `tools/tests/todo_authority_guard_test.sh`
+- `tools/audit_instruction_baselines.sh`
+- `tools/tests/audit_instruction_baselines_test.sh`
 - `skills/wf-docker-todo-driven-execution-method/SKILL.md`
 - `skills/wf-docker-todo-delivery-gates-method/SKILL.md`
 - other objective TODO guards/tests only if the final contract adds machine-checkable fields
@@ -313,7 +318,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md` | compatibility adjunct, not shared authority | Replace the full stack-agnostic duplicate with a concise pointer to the core rule plus only concrete Laravel-specific loading deltas. |
 | `templates/todo_template.md` | canonical TODO expression | Add the compact normative horizon section and gate labels. |
 | `workflows/docker/todo-*.md`, `independent-*.md` | canonical operational workflows | Carry lifecycle/gate procedures; do not duplicate the full principle. |
-| `tools/subagent_review_dispatch.py`, `tools/review_scope_drift_guard.py`, `tools/todo_authority_guard.py` | canonical deterministic tools | Reuse existing mechanisms; update focused tests and manifest. |
+| `tools/subagent_review_dispatch.py`, `tools/review_scope_drift_guard.py`, `tools/todo_authority_guard.py`, `tools/audit_instruction_baselines.sh` | canonical deterministic tools | Reuse existing mechanisms; update focused tests and manifest. |
 | affected `skills/**/SKILL.md` | concise canonical entrypoints | Update only when their operational responsibilities materially change; refresh deterministic-tooling register. |
 | `.clinerules/**` | generated mirror | Run `bash tools/sync_clinerules_mirrors.sh`. |
 | `.cline/**`, `.claude/**`, public Codex skills | curated derived mirrors | Discover affected skills with existing inventories, then run `bash tools/sync_cline_skill_mirrors.sh <skill>`, `bash tools/sync_claude_skill_mirrors.sh <skill>`, and `bash tools/sync_codex_public_skill_mirrors.sh <skill>` only where tracked. |
@@ -327,13 +332,13 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 4. Extend `todo_authority_guard.py` to validate the literal truth table when present, with legacy-absence coverage and no simplicity judgment.
 5. Align core TODO/review rules with the explicit-intent authority, lifecycle-specific reviewer semantics, and simplest-faithful-design criteria.
 6. Update reviewer workflows and inject one shared dispatch focus fragment while reusing existing elegance and structural-soundness result fields by default; test every review kind.
-7. Collapse the Laravel full-rule duplicate into a concise compatibility adjunct, then synchronize skills and generated mirrors through canonical sync mechanisms.
+7. Collapse the Laravel full-rule duplicate into a concise compatibility adjunct; extend the existing instruction-baseline audit and add a negative regression test that rejects shared-authority regrowth.
 8. Add focused objective regression coverage and run Delphi self-maintenance checks.
 9. Replay `C-01` through `C-09`, run final review gates, and resolve findings without widening the mandate.
 
 ### Test Strategy
 - **Strategy:** `test-first where objective prompt/template contracts change; review-first for semantic prose`
-- **Fail-first targets:** Dispatch tests should initially demonstrate missing explicit TODO-authority/simplification focus; any added objective TODO field guard should first reject an absent or invalid implementation-horizon marker.
+- **Fail-first targets:** Dispatch tests should initially demonstrate missing explicit TODO-authority/simplification focus; the authority guard should reject invalid horizon truth-table instances; the instruction baseline audit test should first prove the current audit incorrectly accepts a regrown Laravel full-rule duplicate.
 - **Judgment boundary:** No test may claim that a particular code design is universally “simple”; tests protect contract propagation, not architectural taste.
 
 ## Diff Expectation Contract
@@ -471,11 +476,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending final-critique-finding-integrated baseline`
+- **Baseline commit:** `pending duplication-harness-integrated baseline`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `running`
-- **Findings summary:** `Final critique pass closed D-15/D-16 and found one remaining medium duplicate-authority issue, integrated as D-17; refreshed baseline required.`
-- **Evidence / reference:** `last baseline 0334fd5; D-17 refresh pending`
+- **Findings summary:** `Ownership-close critique found the D-17 audit harness was not executable within the diff boundary; D-18 integrates the existing audit and a focused negative test, requiring refreshed freeze.`
+- **Evidence / reference:** `last baseline 773a023; D-18 refresh pending`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -488,7 +493,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending D-17 refreshed baseline`
+- **Findings summary:** `pending D-18 refreshed baseline`
 - **Evidence / reference:** `pending`
 - **Waiver authority / reference:** `n/a`
 
@@ -521,6 +526,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `CR-RR-01-delivery-drift-operationalization` | `high` | `Integrated` | `useful` | Added D-15, exact umbrella/delivery workflow and skill surfaces, per-dispatch/after-remediation timing, approved-baseline binding, and focused stale-between-reviews coverage. |
 | `CR-RR-02-truth-table-adoption` | `medium` | `Integrated` | `useful` | Added literal per-mode truth table, canonical `none`, current-only abstraction clarification, legacy adoption boundary, existing authority-guard owner, and focused tests. |
 | `CR-FP-01-laravel-duplicate-authority` | `medium` | `Integrated` | `useful` | D-17 makes the core rule sole shared authority and converts the Laravel path into a concise compatibility adjunct with Laravel-only deltas. |
+| `CR-OC-01-duplication-harness-boundary` | `medium` | `Integrated` | `useful` | Added the existing baseline-audit script and focused negative test to scope, expected diff, DoD, validation, harness, and ordered execution. |
 
 ## Gate: Assumption Code Coherence
 - **Gate decision:** `required`
@@ -535,7 +541,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 
 ## Approval
 - **Approved by:** `user on 2026-08-29 via explicit APROVADO; superseded for execution by material architecture-opinion integration`
-- **Approval scope:** `historically approved D-01 through D-09; current D-01 through D-17 package requires renewed approval after planning gates converge`
+- **Approval scope:** `historically approved D-01 through D-09; current D-01 through D-18 package requires renewed approval after planning gates converge`
 - **Execution not authorized by approval:** `all implementation; architecture-opinion and critique findings materially refined lifecycle authority, full-lifecycle drift protection, modes, adoption, and ownership`
 - **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially`
 
