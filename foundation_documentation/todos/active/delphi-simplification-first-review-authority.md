@@ -32,12 +32,12 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** Freeze the architecture-converged package and run the required independent no-context critique.
+- **Next exact step:** Execute the approved D-01 through D-18 implementation boundary with one serialized routine executor in the principal checkout.
 
 ## Active Work State (Required While TODO Remains In `active/`)
-- **Work state:** `review`
-- **Why this state now:** The TODO contract has been drafted and coherence-reviewed, but implementation authority has not been granted.
-- **Exit condition:** The TODO passes its required planning gates and receives explicit `APROVADO`, or a material blocker is recorded.
+- **Work state:** `implementation`
+- **Why this state now:** The D-01 through D-18 package passed its planning gates and received renewed explicit `APROVADO` on 2026-08-29.
+- **Exit condition:** The bounded implementation and all required delivery gates pass, or a material blocker/scope change is recorded.
 
 ## Scope
 - [ ] Establish `SIMPLIFICATION FIRST` as an explicit Delphi architectural and delivery mandate with Clean Code and SOLID boundaries.
@@ -161,7 +161,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ### Handoff Log
 | From Profile | To Profile | Why the Handoff Exists | Touched Surfaces | Status / Evidence |
 | --- | --- | --- | --- | --- |
-| `strategic-cto` | `operational-coder` | After `APROVADO`, implement the bounded canonical alignment. | `main_instructions.md`, principles, rules, workflows, templates, review dispatch/tests, generated mirrors | `pending approval` |
+| `strategic-cto` | `operational-coder` | After `APROVADO`, implement the bounded canonical alignment. | `main_instructions.md`, principles, rules, workflows, templates, review dispatch/tests, generated mirrors | `active; renewed APROVADO received 2026-08-29` |
 | `operational-coder` | `assurance-tester-quality` | Independently verify reviewer behavior, propagation, and absence of contradictory authority. | bounded implemented diff + validation evidence | `pending implementation` |
 
 ## Complexity
@@ -218,7 +218,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] `D-18` Extend `tools/audit_instruction_baselines.sh` and add a focused negative regression test so a Laravel adjunct that regrows shared authority fails deterministically.
 
 ## Decision Baseline (Frozen Before Implementation)
-- [ ] Freeze `D-01` through `D-18` after the Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
+- [x] Freeze `D-01` through `D-18` after the Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
 
 ## Architecture Change Governance (Required When This TODO Establishes, Corrects, or Supersedes Architecture)
 - **Applicability (`required|not_needed`):** `required`
@@ -264,7 +264,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
-- **Decision review status:** `no_material_findings`
+- **Decision review status:** `passed`
 - **Decision review evidence / resolution:** `three fresh no-context passes: initial findings integrated; operational gate defects integrated; final pass reported no material findings and architectural convergence`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
@@ -542,25 +542,34 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Waiver authority / reference:** `n/a`
 
 ## Approval
-- **Approved by:** `user on 2026-08-29 via explicit APROVADO; superseded for execution by material architecture-opinion integration`
-- **Approval scope:** `historically approved D-01 through D-09; current D-01 through D-18 package requires renewed approval after planning gates converge`
-- **Execution not authorized by approval:** `all implementation; architecture-opinion and critique findings materially refined lifecycle authority, full-lifecycle drift protection, modes, adoption, and ownership`
+- **Approved by:** `user on 2026-08-29 via renewed explicit APROVADO after the final D-01 through D-18 review package converged`
+- **Approval scope:** `implement the complete frozen D-01 through D-18 package inside the enumerated Delphi self-maintenance surfaces`
+- **Execution not authorized by approval:** `downstream project changes, runtime/deploy changes, new policy engines or schemas, speculative migrations, and any objective outside this TODO`
 - **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially`
 
 ## Agent Routing Preflight
 - **Client surface:** `codex`
-- **Current governed action:** `todo-approval`
-- **Selected role:** `primary-chat`
-- **Selected model:** `gpt-5.4`
-- **Selected effort:** `ExtraRight-or-closest-equivalent`
+- **Current governed action:** `implementation`
+- **Selected role:** `routine-executor`
+- **Selected model:** `gpt-5.6-terra`
+- **Selected effort:** `medium`
 - **Proof mode:** `declared`
 - **Subagent / delegation authorization:** `authorized by this TODO's required internal review gates and user APROVADO`
 - **Execution topology:** `primary-checkout-single-writer`
 - **Worktree / auxiliary-checkout authorization:** `not-authorized`
 - **Writer scheduling policy:** `single-writer-serialized`
 - **Guard outcome:** `go`
-- **Evidence:** `agent_role_routing_guard.py returned Overall outcome: go before planning-side review orchestration`
+- **Evidence:** `agent_role_routing_guard.py returned Overall outcome: go for routine-executor implementation on the primary-checkout-single-writer topology after renewed APROVADO`
 
 ## Rules Acknowledgement / Ingestion
-- **Status:** `pending APROVADO; this section must be populated before implementation`
-- **Pre-approval state:** No ingestion row is claimed yet. Populate the canonical table from the then-current rule/workflow sources only after approval and before implementation.
+- **Status:** `ingested after renewed APROVADO and before implementation`
+
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `main_instructions.md` | Primary authority for Delphi self-maintenance and foundational behavior. | Project agnosticism, documented authority, proportional determinism, and guarded git writes. | Downstream-specific truth, competing policy homes, or unguarded commit/push. | Keep all mutations inside Delphi and validate canonical consistency before closeout. |
+| `rules/core/todo-driven-execution-model-decision.md` | This is an approved full tactical TODO changing canonical rules and tools. | Frozen D-01 through D-18, strict diff boundary, criterion-specific evidence, and renewed approval on material drift. | Hidden scope expansion or delivery claims without guards. | Run the authority guard before execution and all delivery guards before completion. |
+| `workflows/docker/self-improvement-session-method.md` | The user explicitly opened a Delphi self-improvement session. | Instruction-only scope, agnosticism review, canonical synchronization, and explicit session closure. | Mixing downstream product work into this session. | Treat canonical instruction/tool changes and their tests as the only implementation scope. |
+| `workflows/docker/todo-execution-boundary-method.md` | Execution is starting after renewed approval. | One serialized writer in the principal checkout and approved touched surfaces only. | Worktrees, concurrent writers, or unapproved objectives. | Route writing to the declared routine executor and stop on approval-material discoveries. |
+| `workflows/docker/todo-delivery-gates-method.md` | Cross-canonical delivery requires evidence, reviews, and deterministic completion gates. | Scope-drift freshness before adherence/final review and criterion-specific validation. | Aggregate-only evidence or stale reviewer baselines. | Populate delivery evidence and run required audit/review lanes before closeout. |
+| `workflows/docker/update-skill-method.md` | Canonical workflow skills and derived client mirrors are expected to change. | Concise skills pointing to canonical sources and synchronized Cline/Claude/Codex mirrors. | Full-body duplication or hand-edited derived drift. | Use existing sync scripts and refresh the tooling register only for materially changed skills. |
+| `skills/test-creation-standard/SKILL.md` | Objective guards and focused regression tests change. | Test-first behavior contracts, meaningful negative fixtures, and no faux simplicity automation. | Tests that only assert text presence without the approved conditional semantics. | Add fail-first cases for horizon truth tables, dispatch lifecycle authority, drift freshness, and Laravel authority regrowth. |
