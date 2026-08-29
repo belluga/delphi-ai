@@ -51,6 +51,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Align canonical planning review, architecture opinion, critique, final-review, and rule-spirit guidance with one shared invariant plus lifecycle-specific authority semantics.
 - [ ] Protect changes to implementation horizon and authorized extension seams through the canonical review-scope-drift mechanism.
 - [ ] Extend the existing `tools/review_scope_drift_guard.py` and its focused test to compare the normative horizon section; do not create a second drift guard.
+- [ ] Bind the horizon contract to the frozen decision/approval baseline and rerun the same scope-drift guard before architecture-adherence/final delivery review.
+- [ ] Establish lazy adoption: new or pre-approval TODOs require the horizon section; already-approved TODOs preserve explicit frozen decisions and adopt the section at their next approval-material refresh without mass migration.
 - [ ] Add proportionate deterministic regression coverage for objective prompt/template/contract requirements without pretending to automate subjective architecture judgment.
 - [ ] Synchronize derived skills and compatibility mirrors from canonical sources using existing Delphi synchronization mechanisms.
 
@@ -73,6 +75,12 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Not authorized now:** A new generalized policy engine, a second review-result schema, a parallel reviewer protocol, or speculative downstream migrations.
 - **Rationale:** This TODO must itself demonstrate the rule it establishes: explicit horizon, bounded future awareness, and the simplest coherent implementation.
 
+### Field Semantics
+- **Mode values:** `current-scope-only|bounded-anticipatory-extensibility`.
+- **`current-scope-only`:** Future roadmap/foundation capabilities do not authorize implementation now. This mode does not prohibit abstractions justified by the present contract, Clean Code, SOLID, correctness, or current operational needs.
+- **`bounded-anticipatory-extensibility`:** The TODO intentionally authorizes a future-facing extension seam now. `Explicit future cases`, `Anticipatory implementation authorized now`, `Not authorized now`, and `Rationale` must all be concrete and non-placeholder before approval.
+- **Silence/adoption rule:** New and pre-approval TODOs may not remain silent. Existing already-approved TODOs retain the authority of their explicit frozen decisions and normalize to this section only at the next approval-material refresh; absence must never be reinterpreted as permission to erase an approved seam.
+
 ## Definition of Done
 - [ ] Canonical Delphi principles state the complete `SIMPLIFICATION FIRST` mandate and distinguish simplicity from minimal diff/minimal abstraction count.
 - [ ] Canonical principles preserve future-aware foundation planning while making clear that tactical implementation authority comes from the TODO and its approved decisions.
@@ -86,6 +94,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Existing `elegance_position` and structural-soundness mechanisms are reused unless an implementation-time evidence record demonstrates that they cannot carry the contract without ambiguity.
 - [ ] The canonical `Foundational, Not Minimalist` / `Complete Vision over Minimalism` language is reconciled so it cannot be read as blanket permission to implement all anticipated capabilities immediately.
 - [ ] Objective contract propagation is covered by focused tests or existing self-check surfaces; subjective simplicity judgment remains reviewer-owned.
+- [ ] The same scope-drift guard protects the horizon section before approval and before architecture-adherence/final delivery review against the frozen decision/approval baseline.
+- [ ] Mode and conditional-field presence are deterministically checkable, but no guard claims to decide whether an architecture is genuinely simple.
+- [ ] Lazy adoption prevents existing approved TODOs from losing explicit extensibility intent merely because they predate the new section.
 - [ ] Canonical sources, skills, generated mirrors, manifest entries, and tests are synchronized with no contradictory wording.
 - [ ] Delphi agnosticism review passes; no project-specific domain truth enters reusable canon.
 
@@ -96,6 +107,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Verify changes to `Implementation Horizon & Extensibility Intent` participate in `review_scope_drift_guard.py` comparison and focused tests.
 - [ ] For this pre-implementation TODO cycle, perform and record a bounded direct comparison of the horizon section against the refreshed pushed baseline because the current guard does not yet recognize the new heading.
 - [ ] Add/update focused tests for `tools/subagent_review_dispatch.py` when its canonical focus text changes.
+- [ ] Iterate every dispatch review kind in focused tests and assert the shared non-invention invariant plus planning-versus-delivery authority text.
 - [ ] Add/update objective TODO guard tests only if the implementation adds machine-checkable labels/enums.
 - [ ] Run `bash tools/tests/subagent_review_dispatch_test.sh`.
 - [ ] Run any focused TODO template/guard tests touched by the implementation.
@@ -145,6 +157,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
   - `workflows/docker/independent-critique-method.md`
   - `workflows/docker/independent-final-review-method.md`
   - `tools/subagent_review_dispatch.py`
+  - `tools/review_scope_drift_guard.py`
 - **Planned decision promotion targets:** foundational delivery mandate; core architectural philosophy; tactical TODO contract boundary; planning/final reviewer focus.
 - **Module decision consolidation targets:** the canonical sources above; skills and client mirrors remain derived compatibility surfaces.
 
@@ -165,14 +178,17 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] `D-04` Require the TODO to state implementation horizon directly; explicit anticipatory extensibility is valid and binding when approved.
 - [x] `D-05` When the TODO is silent, reviewers cannot invent future-facing abstraction. Material ambiguity must return to decision resolution.
 - [x] `D-06` Reviewers cannot erase or reject explicitly authorized extensibility solely because only one current concrete case exists.
-- [x] `D-07` Reviewers may challenge the implementation as unnecessarily complex only while preserving the same authorized intent and future seam.
+- [x] `D-07` Delivery/adherence reviewers may challenge an implementation as unnecessarily complex only while preserving the approved intent and future seam; material redesign routes back to renewed approval.
 - [x] `D-08` Prefer extending the semantics and focus of existing elegance/structural-soundness review mechanisms over adding a parallel simplicity subsystem.
 - [x] `D-09` Deterministic tooling may validate the presence and propagation of objective contract markers but must not claim to judge architectural simplicity mechanically.
 - [x] `D-10` Use lifecycle-specific reviewer authority: planning reviewers may challenge proposed intent without rewriting it; delivery/adherence reviewers treat approved intent as binding and route material defects back to renewed approval.
 - [x] `D-11` Use one compact dedicated `Implementation Horizon & Extensibility Intent` section as the normative TODO expression, owned semantically by the core TODO rule and protected by scope-drift comparison; workflows and dispatches carry only lifecycle-specific operational guidance.
+- [x] `D-12` Define exact modes `current-scope-only|bounded-anticipatory-extensibility` and conditional field requirements; current-only never prohibits abstractions justified by the present contract.
+- [x] `D-13` Adopt lazily: require the section for new/pre-approval TODOs; preserve existing approved frozen-decision authority and normalize at the next approval-material refresh without mass migration.
+- [x] `D-14` Bind the horizon section to the frozen decision/approval baseline and rerun the existing scope-drift guard both before approval and before architecture-adherence/final delivery review.
 
 ## Decision Baseline (Frozen Before Implementation)
-- [ ] Freeze `D-01` through `D-11` after the refreshed architecture opinion, Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
+- [ ] Freeze `D-01` through `D-14` after the Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
 
 ## Architecture Change Governance (Required When This TODO Establishes, Corrects, or Supersedes Architecture)
 - **Applicability (`required|not_needed`):** `required`
@@ -227,9 +243,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ## Assumptions Preview
 | ID | Assumption | Evidence | If False | Confidence | Handling |
 | --- | --- | --- | --- | --- | --- |
-| `A-01` | Current elegance and structural-soundness fields can carry the mandate without a new result-schema axis. | Dispatch and result schema already require both positions for all relevant reviewer kinds. | Add a narrowly justified schema evolution after recording insufficiency evidence. | `High` | `Keep as Assumption` |
-| `A-02` | One compact dedicated TODO section is the simplest reliable direct authority surface for anticipatory implementation intent. | Existing TODO decisions/approval govern implementation, while the architecture opinion compared dedicated-section, Contract Boundary, and decision-only placements. | Reopen ARCH-02 and select the simpler proven placement before implementation. | `High` | `Promote to Decision D-11` |
-| `A-03` | Objective presence/enum checks may be deterministic, but architectural simplicity remains judgment-led. | Delphi already prohibits faux-deterministic tooling for judgment-heavy governance. | Reassess only if a precise, low-false-positive invariant is discovered. | `High` | `Promote to Decision D-09` |
+| `A-01` | Current elegance and structural-soundness fields can carry the mandate without a new result-schema axis. | `tools/subagent_review_dispatch.py:19-153`; `schemas/subagent_review_result.schema.json:6-18`; existing dispatch regression test at `tools/tests/subagent_review_dispatch_test.sh`. | A schema change remains unauthorized; concrete insufficiency requires TODO refresh and renewed approval. | `High` | `Keep as Assumption` |
+| `A-02` | One compact dedicated TODO section is the simplest reliable direct authority surface for anticipatory implementation intent. | `templates/todo_template.md:28-33` owns current WHAT/authorization semantics; ARCH-02 in this TODO records the three-way placement comparison and D-11 resolves it. | Reopen ARCH-02 and select the simpler proven placement before implementation. | `High` | `Promote to Decision D-11` |
+| `A-03` | Objective presence/enum checks may be deterministic, but architectural simplicity remains judgment-led. | `main_instructions.md:217-225` requires proportionate tooling and rejects faux-deterministic judgment; `skills/deterministic-tooling-register.md` is the classification surface. | Reassess only if a precise, low-false-positive invariant is discovered. | `High` | `Promote to Decision D-09` |
 
 ## Execution Plan
 ### Expected Touched Surfaces
@@ -242,22 +258,38 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `workflows/docker/todo-approval-gates-method.md`
 - `workflows/docker/independent-critique-method.md`
 - `workflows/docker/independent-final-review-method.md`
-- `review_session.md`
 - `tools/subagent_review_dispatch.py`
 - `tools/tests/subagent_review_dispatch_test.sh`
 - `tools/review_scope_drift_guard.py`
 - `tools/tests/review_scope_drift_guard_test.sh`
 - other objective TODO guards/tests only if the final contract adds machine-checkable fields
-- `tools/manifest.md` only if a canonical tool is materially changed
-- concise skill entrypoints and generated client mirrors affected by canonical sync
+- `tools/manifest.md` (mandatory because both canonical tools change materially)
+- `skills/deterministic-tooling-register.md` (refresh materially affected skill classifications/support links)
+- concise canonical skill entrypoints affected by the workflow changes
+- derived `.clinerules/**`, `.cline/**`, `.claude/**`, and tracked public Codex mirrors selected by existing mirror inventories
 - this TODO and its review/evidence artifacts
+
+### Canonical / Derived Ownership and Sync Contract
+| Surface | Classification | Required Handling |
+| --- | --- | --- |
+| `main_instructions.md`, `system_architecture_principles.md` | canonical core | Edit directly; keep project-agnostic. |
+| `rules/core/todo-driven-execution-model-decision.md` | canonical shared rule | Own horizon semantics, adoption, lifecycle authority, and delivery recheck. |
+| `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md` | canonical stack specialization | Align duplicated shared semantics without introducing Laravel-specific policy divergence. |
+| `templates/todo_template.md` | canonical TODO expression | Add the compact normative horizon section and gate labels. |
+| `workflows/docker/todo-*.md`, `independent-*.md` | canonical operational workflows | Carry lifecycle/gate procedures; do not duplicate the full principle. |
+| `tools/subagent_review_dispatch.py`, `tools/review_scope_drift_guard.py` | canonical deterministic tools | Reuse existing mechanisms; update focused tests and manifest. |
+| affected `skills/**/SKILL.md` | concise canonical entrypoints | Update only when their operational responsibilities materially change; refresh deterministic-tooling register. |
+| `.clinerules/**` | generated mirror | Run `bash tools/sync_clinerules_mirrors.sh`. |
+| `.cline/**`, `.claude/**`, public Codex skills | curated derived mirrors | Discover affected skills with existing inventories, then run `bash tools/sync_cline_skill_mirrors.sh <skill>`, `bash tools/sync_claude_skill_mirrors.sh <skill>`, and `bash tools/sync_codex_public_skill_mirrors.sh <skill>` only where tracked. |
+
+`review_session.md` is excluded from the implementation boundary because no canonical instruction references it as an authority surface; adding another normative home would violate simplification and mirror discipline.
 
 ### Ordered Steps
 1. Reconcile the foundational mandate wording so future-aware architecture remains valid but does not silently authorize future implementation.
 2. Add the implementation-horizon/extensibility-intent contract to the tactical TODO template and refinement/approval flow.
-3. Add the dedicated horizon section to the scope-drift comparison contract and focused guard tests.
+3. Add the dedicated horizon section to the existing scope-drift comparison contract and focused guard tests, and require the same guard before delivery review.
 4. Align core TODO/review rules with the explicit-intent authority, lifecycle-specific reviewer semantics, and simplest-faithful-design criteria.
-5. Update reviewer workflows and inject one shared dispatch focus fragment while reusing existing elegance and structural-soundness result fields by default.
+5. Update reviewer workflows and inject one shared dispatch focus fragment while reusing existing elegance and structural-soundness result fields by default; test every review kind.
 6. Synchronize stack duplicates, skills, and generated mirrors through canonical sync mechanisms.
 7. Add focused objective regression coverage and run Delphi self-maintenance checks.
 8. Replay `C-01` through `C-09`, run final review gates, and resolve findings without widening the mandate.
@@ -375,10 +407,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `L-11` | Scope-drift protection | `passed after integration` | D-11 makes the horizon section normative and explicitly adds it to drift comparison and tests. |
 
 ## Residual Unknowns / Risks
-- [ ] Confirm during implementation whether an explicit enum label in the TODO template needs deterministic guard enforcement or whether template/workflow/reviewer coverage is proportionate.
-- [ ] Confirm the canonical synchronization command(s) for every touched skill/client mirror before editing derived surfaces.
-- [ ] Verify whether the Laravel stack duplicate of the TODO rule is generated or independently canonical before changing it.
-- [ ] Reassess `A-01` only if reviewer prompt tests demonstrate that the existing elegance/structural fields cannot express the mandate clearly.
+- [ ] Exact affected skill mirror inventory must be resolved with the existing list/sync helpers after canonical workflow edits identify the materially changed entrypoints.
+- [ ] Any evidence that current elegance/structural fields are insufficient is approval-material and requires TODO refresh; no new result-schema axis is authorized by this baseline.
 
 ## Audit Trigger Matrix (Required Before Audit Decisions Are Trusted)
 - **Canonical method:** `wf-docker-audit-escalation-method`
@@ -404,11 +434,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `dee807b814a0ba2132fe03bfc96766c196f66f70`
+- **Baseline commit:** `pending critique-integrated refreshed baseline`
 - **Baseline push reference:** `origin/hooks-implementation`
-- **Gate status:** `no_material_findings`
-- **Findings summary:** `The f6dad51 rerun found two operational gate defects; both were integrated and the final refreshed material package was committed and pushed at dee807b.`
-- **Evidence / reference:** `git commit dee807b + successful push to origin/hooks-implementation`
+- **Gate status:** `running`
+- **Findings summary:** `The independent critique produced approval-material findings now integrated as D-12 through D-14, exact ownership/adoption contracts, and stronger validation; refreshed freeze required.`
+- **Evidence / reference:** `last converged architecture baseline c543623; critique-integrated commit pending`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -420,26 +450,37 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Implementation Horizon & Extensibility Intent|Definition of Done|Validation Steps|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
-- **Gate status:** `no_material_findings`
-- **Findings summary:** `Canonical guard reported 0 changed material sections against dee807b; bounded direct comparison of the complete horizon section also produced no diff.`
-- **Evidence / reference:** `review_scope_drift_guard.py Overall outcome: go + diff -u of horizon section against dee807b exit 0`
+- **Gate status:** `not_run`
+- **Findings summary:** `Must rerun after critique integration is frozen.`
+- **Evidence / reference:** `pending refreshed baseline`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
 - [x] Should future-aware planning be removed? `No; preserve it and separate it from tactical implementation authority.`
 - [x] Can anticipatory abstraction be valid? `Yes, when directly recorded and approved in the TODO.`
 - [x] May reviewers invent or erase that intent? `No; they evaluate the simplest faithful realization of explicit intent.`
-- [ ] Does the final implementation require a new review-result schema axis? `Default no; reopen only on concrete insufficiency evidence.`
+- [x] Does the final implementation require a new review-result schema axis? `No. Existing elegance/structural fields are authoritative; concrete insufficiency requires TODO refresh and renewed approval.`
 
 ## Independent No-Context Critique Gate
 - **Critique decision:** `required`
 - **Why this decision:** `medium`, cross-stack reusable behavior, public TODO/reviewer contract change, and high-severity architecture issues.
 - **Package mode:** `bounded-file-set`
 - **Critique isolation mode:** `fresh internal no-context reviewer`
-- **Critique status:** `not_run`
-- **Findings summary:** `pending review-baseline freeze and dispatch`
-- **Evidence / reference:** `pending`
+- **Critique status:** `findings_integrated; refreshed rerun required`
+- **Findings summary:** `Two high, four medium, and one low finding integrated; all affected authority, lifecycle, adoption, ownership, evidence, and test contracts were updated.`
+- **Evidence / reference:** `fresh no-context reviewer simplification_independent_critique`
 - **Waiver authority / reference:** `n/a`
+
+### Critique Finding Resolution
+| Finding ID | Severity | Resolution | Usefulness | Rationale / Evidence |
+| --- | --- | --- | --- | --- |
+| `CR-01-D07-lifecycle` | `high` | `Integrated` | `useful` | D-07 is now delivery/adherence-specific; D-10 retains planning challenge authority. |
+| `CR-02-full-lifecycle-drift` | `high` | `Integrated` | `useful` | D-14 binds horizon to frozen approval and reruns the existing guard before delivery review. |
+| `CR-03-mode-schema` | `medium` | `Integrated` | `useful` | Exact modes and conditional field semantics are defined before approval. |
+| `CR-04-lazy-adoption` | `medium` | `Integrated` | `useful` | D-13 preserves approved legacy decisions and adopts at next approval-material refresh. |
+| `CR-05-ownership-sync` | `medium` | `Integrated` | `useful` | Canonical/derived table, sync commands, mandatory manifest/register updates, and `review_session.md` exclusion are explicit. |
+| `CR-06-path-evidence` | `medium` | `Integrated` | `useful` | A-01 now cites dispatch, schema, and focused test paths; schema-axis question is closed. |
+| `CR-07-all-kind-tests` | `low` | `Integrated` | `useful` | Validation now requires every dispatch review kind to assert shared and lifecycle-specific semantics. |
 
 ## Gate: Assumption Code Coherence
 - **Gate decision:** `required`
@@ -454,8 +495,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 
 ## Approval
 - **Approved by:** `user on 2026-08-29 via explicit APROVADO; superseded for execution by material architecture-opinion integration`
-- **Approval scope:** `historically approved D-01 through D-09; current D-01 through D-11 package requires renewed approval after planning gates converge`
-- **Execution not authorized by approval:** `all implementation; architecture-opinion findings materially refined reviewer lifecycle authority and scope-drift protection`
+- **Approval scope:** `historically approved D-01 through D-09; current D-01 through D-14 package requires renewed approval after planning gates converge`
+- **Execution not authorized by approval:** `all implementation; architecture-opinion and critique findings materially refined lifecycle authority, full-lifecycle drift protection, modes, adoption, and ownership`
 - **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially`
 
 ## Agent Routing Preflight
