@@ -477,11 +477,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending final editorial-convergence baseline`
+- **Baseline commit:** `ddfb82af08895458176dade6bb0aa8950154330a`
 - **Baseline push reference:** `origin/hooks-implementation`
-- **Gate status:** `running`
+- **Gate status:** `no_material_findings`
 - **Findings summary:** `Harness-close critique found D-18 absent from Definition of Done; the explicit audit-and-negative-test completion criterion is integrated and requires a refreshed freeze.`
-- **Evidence / reference:** `last reviewed baseline 0a8e949; final editorial-convergence refresh pending`
+- **Evidence / reference:** `git commit ddfb82a + successful push to origin/hooks-implementation + fresh no-context editorial-scope close`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -493,9 +493,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Implementation Horizon & Extensibility Intent|Definition of Done|Validation Steps|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
-- **Gate status:** `not_run`
-- **Findings summary:** `pending final editorial-convergence baseline refresh`
-- **Evidence / reference:** `pre-refresh guard conservatively detected the non-semantic four-tool wording correction inside Execution Plan; no implementation scope or authority changed`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `The refreshed baseline contains the complete D-18 contract and the non-semantic tool-count wording correction; no scope, authority, horizon, or implementation obligation changed.`
+- **Evidence / reference:** `fresh no-context simplification_editorial_scope_close at ddfb82a; final guard and direct horizon comparison recorded below`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -511,7 +511,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Critique isolation mode:** `fresh internal no-context reviewer`
 - **Critique status:** `no_material_findings`
 - **Findings summary:** `Three high, eight medium, and one low finding were integrated across the full loop; the final D-18 traceability rerun found no material issue and only two non-blocking wording corrections, both applied.`
-- **Evidence / reference:** `fresh no-context reviewers simplification_independent_critique through simplification_d18_final_critique; final reviewed baseline 0a8e949617fecd0ffafe53fa3e560f0ac9a25e77`
+- **Evidence / reference:** `fresh no-context reviewers simplification_independent_critique through simplification_d18_final_critique plus simplification_editorial_scope_close; final refreshed baseline ddfb82af08895458176dade6bb0aa8950154330a`
 - **Waiver authority / reference:** `n/a`
 
 ### Critique Finding Resolution
