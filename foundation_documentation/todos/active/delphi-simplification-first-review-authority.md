@@ -50,6 +50,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Require reviewers to seek the simplest clean implementation inside the authorized intent, including when the intent deliberately contains an extension seam.
 - [ ] Align canonical planning review, architecture opinion, critique, final-review, and rule-spirit guidance with one shared invariant plus lifecycle-specific authority semantics.
 - [ ] Protect changes to implementation horizon and authorized extension seams through the canonical review-scope-drift mechanism.
+- [ ] Extend the existing `tools/review_scope_drift_guard.py` and its focused test to compare the normative horizon section; do not create a second drift guard.
 - [ ] Add proportionate deterministic regression coverage for objective prompt/template/contract requirements without pretending to automate subjective architecture judgment.
 - [ ] Synchronize derived skills and compatibility mirrors from canonical sources using existing Delphi synchronization mechanisms.
 
@@ -93,6 +94,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [ ] Verify the tactical TODO template contains one explicit implementation-horizon/extensibility contract and does not create a competing source of truth.
 - [ ] Verify reviewer dispatch receives one shared non-invention invariant plus correct planning-versus-delivery lifecycle semantics.
 - [ ] Verify changes to `Implementation Horizon & Extensibility Intent` participate in `review_scope_drift_guard.py` comparison and focused tests.
+- [ ] For this pre-implementation TODO cycle, perform and record a bounded direct comparison of the horizon section against the refreshed pushed baseline because the current guard does not yet recognize the new heading.
 - [ ] Add/update focused tests for `tools/subagent_review_dispatch.py` when its canonical focus text changes.
 - [ ] Add/update objective TODO guard tests only if the implementation adds machine-checkable labels/enums.
 - [ ] Run `bash tools/tests/subagent_review_dispatch_test.sh`.
@@ -203,6 +205,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | canonical prose | `main_instructions.md`, `system_architecture_principles.md` | canonical mandate text | Future planning interpreted as blanket implementation authority | `implement-in-this-todo` | manual coherence review + `bash self_check.sh` |
 | TODO contract | `templates/todo_template.md` + refinement workflow | implementation-horizon contract | Missing/ambiguous implementation horizon | `implement-in-this-todo` | focused template/guard tests where objective |
 | reviewer dispatch | `tools/subagent_review_dispatch.py` | dispatch focus contract | Reviewer invents or erases extensibility intent | `implement-in-this-todo` | `bash tools/tests/subagent_review_dispatch_test.sh` |
+| scope-drift guard | `tools/review_scope_drift_guard.py` | existing guard + focused test | Post-review changes to horizon mode, authorized seam, exclusions, or rationale escape reconvergence | `implement-in-this-todo` | `bash tools/tests/review_scope_drift_guard_test.sh` |
 | review workflows | critique/final/approval methods | canonical review focus | Elegance assessed independently of approved TODO intent | `implement-in-this-todo` | textual contract audit + `bash self_check.sh` |
 | compatibility sync | skills and client mirrors | existing sync/self-check surfaces | Canonical/derived wording drift | `implement-in-this-todo` | run applicable sync checks and `bash self_check.sh` |
 
@@ -242,7 +245,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `review_session.md`
 - `tools/subagent_review_dispatch.py`
 - `tools/tests/subagent_review_dispatch_test.sh`
-- objective TODO guards/tests only if the final contract adds machine-checkable fields
+- `tools/review_scope_drift_guard.py`
+- `tools/tests/review_scope_drift_guard_test.sh`
+- other objective TODO guards/tests only if the final contract adds machine-checkable fields
 - `tools/manifest.md` only if a canonical tool is materially changed
 - concise skill entrypoints and generated client mirrors affected by canonical sync
 - this TODO and its review/evidence artifacts
@@ -350,6 +355,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `AO-01-lifecycle-authority` | `Integrated` | `useful` | Added D-10, ARCH-04, lifecycle-specific DoD, and failure modes. |
 | `AO-02-scope-drift` | `Integrated` | `useful` | Added D-11 and explicit scope/DoD/validation coverage for horizon drift. |
 | `AO-03-placement-comparison` | `Integrated` | `useful` | ARCH-02 now compares dedicated section, Contract Boundary fields, and decision-only encoding with full tradeoffs. |
+| `AO-RR-01-push-ref` | `Integrated` | `useful` | Push reference corrected to the resolvable `origin/hooks-implementation` ref; commit identity remains separately recorded. |
+| `AO-RR-02-current-cycle-horizon-drift` | `Integrated` | `useful` | Existing guard/test are now explicit implementation surfaces; current cycle uses a bounded direct horizon-section comparison until the approved guard update lands. |
 
 ## Coherence Loop Record
 | Pass | Lens | Result | Evidence / Resolution |
@@ -396,11 +403,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending refreshed baseline after architecture-opinion integration`
-- **Baseline push reference:** `pending refreshed push`
+- **Baseline commit:** `pending second refreshed baseline after architecture-opinion rerun integration`
+- **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `running`
-- **Findings summary:** `The original package was frozen at fe89bcc; three material architecture-opinion refinements were integrated and require a refreshed freeze before the affected review reruns.`
-- **Evidence / reference:** `original baseline fe89bcc; refreshed commit pending`
+- **Findings summary:** `The f6dad51 rerun found two operational gate defects; both are integrated and require one final refreshed material freeze.`
+- **Evidence / reference:** `original refreshed baseline f6dad51; second refresh pending`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -411,6 +418,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Implementation Horizon & Extensibility Intent|Definition of Done|Validation Steps|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
+- **Current-cycle horizon bootstrap comparison:** `required; directly compare the complete Implementation Horizon & Extensibility Intent section against the refreshed pushed baseline and require no drift before renewed APROVADO`
 - **Gate status:** `not_run`
 - **Findings summary:** `pending review convergence`
 - **Evidence / reference:** `pending`
