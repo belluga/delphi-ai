@@ -85,6 +85,13 @@ cases = (
     ("No P1/P2 findings; P3 remains open", False),
     ("P1 fixed; regression test did not fail", False),
     ("P1 fixed, maybe", True),
+    ("P1 fixed; but maybe", True),
+    ("P1 resolved; yet reverted", True),
+    ("P1 fixed; is that actually confirmed?", True),
+    ("P1 fixed; resolution was withdrawn", True),
+    ("P1 fixed; but not", True),
+    ("P1 fixed; fix has been reverted", True),
+    ("No P1/P2 findings; final review remains required", False),
 )
 for text, expected in cases:
     assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
@@ -96,6 +103,12 @@ cell_separated_cases = (
     ("P1 finding", "P1 fixed", False),
     ("P1 and P2 findings", "P1/P2 resolved", False),
     ("P1 fixed", "not fixed", True),
+    ("P1 finding", "P1 fixed; but maybe", True),
+    ("P1 finding", "P1 resolved; yet reverted", True),
+    ("P1 finding", "P1 fixed; is that actually confirmed?", True),
+    ("P1 finding", "P1 fixed; resolution was withdrawn", True),
+    ("P1 finding", "P1 fixed; but not", True),
+    ("P1 finding", "P1 fixed; fix has been reverted", True),
     ("P1 fixed", "P2 resolved", False),
     ("No P2 findings", "P1 resolved", False),
 )
@@ -155,6 +168,24 @@ completion_violations = completion.validate_review_gate_matrix(
     allow_waivers=False,
 )
 assert not any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
+
+even_backslash_pipe_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+    "| --- | --- | --- | --- | --- | --- |",
+    r"| package | focus | passed | command \\| P2 pending | No P1/P2 findings | complete |",
+]}
+parsed_even_backslash_row = authority.table_rows(even_backslash_pipe_sections[authority.PIPELINE_PREFLIGHT_SECTION])[0]
+assert len(parsed_even_backslash_row) == 7
+violations, _ = authority.validate_delivery_gates(even_backslash_pipe_sections, delivery_claim=True, allow_waivers=False)
+assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
+completion_violations = completion.validate_review_gate_matrix(
+    even_backslash_pipe_sections,
+    authority.PIPELINE_PREFLIGHT_SECTION,
+    "PIPELINE-PREFLIGHT",
+    "Use the canonical review row.",
+    allow_waivers=False,
+)
+assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
 
 sections = {"Architecture Review Gates": [
     "- **Architecture decision review:** `required`",

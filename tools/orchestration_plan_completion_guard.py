@@ -173,16 +173,35 @@ def section_has_content(lines: list[str]) -> bool:
     return False
 
 
+def split_markdown_table_cells(value: str) -> list[str]:
+    cells: list[str] = []
+    current: list[str] = []
+    for char in value:
+        if char != "|":
+            current.append(char)
+            continue
+        trailing_backslashes = 0
+        for prior in reversed(current):
+            if prior != "\\":
+                break
+            trailing_backslashes += 1
+        if trailing_backslashes % 2:
+            current.pop()
+            current.append("|")
+            continue
+        cells.append("".join(current))
+        current = []
+    cells.append("".join(current))
+    return cells
+
+
 def table_rows(lines: list[str]) -> list[list[str]]:
     rows: list[list[str]] = []
     for line in lines:
         match = TABLE_ROW_RE.match(line)
         if not match:
             continue
-        cells = [
-            strip_markup(cell.replace(r"\|", "|"))
-            for cell in re.split(r"(?<!\\)\|", match.group(1))
-        ]
+        cells = [strip_markup(cell) for cell in split_markdown_table_cells(match.group(1))]
         if not cells:
             continue
         joined = " ".join(cells).strip()

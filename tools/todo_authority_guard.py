@@ -128,10 +128,8 @@ P1_P2_CLEAN_CLAUSE_RE = re.compile(
     rf"|{P1_P2_CLEAN_DISPOSITION}\s+{P1_P2_GROUP})$",
     re.IGNORECASE,
 )
-P1_P2_DETACHED_CONTRADICTION_RE = re.compile(
-    r"^(?:actually\s+not|not(?:\s+(?:fixed|resolved|integrated|clean))?|reopened|still\s+open|"
-    r"no\s+longer\s+(?:fixed|resolved|integrated|clean)|(?:fix|resolution|finding)\s+(?:was\s+)?reverted|"
-    r"maybe|perhaps|possibly|uncertain|unconfirmed)$",
+P1_P2_INDEPENDENT_CLAUSE_RE = re.compile(
+    r"^(?:p(?:[3-9]|\d{2,})\b|(?:regression\s+)?tests?\b|final\s+review\b|(?:resolution|complete)$)",
     re.IGNORECASE,
 )
 WAIVER_PLACEHOLDER_RE = re.compile(r"\b(?:n/?a|none|tbd|pending|required|placeholder)\b", re.IGNORECASE)
@@ -251,7 +249,7 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
                 )
                 for severity in severities:
                     states[severity].add("clean" if clean_clause else "ambiguous")
-            elif active_severities and P1_P2_DETACHED_CONTRADICTION_RE.fullmatch(clause):
+            elif active_severities and not P1_P2_INDEPENDENT_CLAUSE_RE.match(clause):
                 for severity in active_severities:
                     states[severity].add("ambiguous")
         cell_states.append(states)
