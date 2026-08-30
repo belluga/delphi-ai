@@ -22,6 +22,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from todo_authority_guard import row_has_unresolved_p1_p2
+
 
 RULE_ID = "paced.todo.completion-evidence"
 DELIVERY_STAGE_MARKERS = (
@@ -831,93 +833,6 @@ def validate_ci_equivalent_suite_matrix(
                 )
             )
     return violations
-
-
-def row_has_unresolved_p1_p2(row: list[str]) -> bool:
-    normalized = normalize_text(row_text(row))
-    findings = normalize_text(row[4]) if len(row) > 4 else ""
-    notes = normalize_text(row[5]) if len(row) > 5 else ""
-    has_high_priority = bool(re.search(r"(?<![a-z0-9])p[12](?![a-z0-9])", normalized)) or any(
-        phrase in normalized
-        for phrase in (
-            "severity critical",
-            "severity high",
-            "critical severity",
-            "high severity",
-        )
-    )
-    if not has_high_priority:
-        return False
-
-    remaining = re.sub(r"\bno unresolved p1(?:/p2)?\b", "", normalized)
-
-    unresolved_phrases = (
-        "unresolved",
-        "not resolved",
-        "not fixed",
-        "open p1",
-        "open p2",
-        "pending p1",
-        "pending p2",
-        "still open",
-        "deferred p1",
-        "deferred p2",
-        "blocker p1",
-        "blocker p2",
-    )
-    if any(phrase in remaining for phrase in unresolved_phrases):
-        return True
-
-    if remaining != normalized:
-        return False
-
-    clean_phrases = (
-        "no p1",
-        "no p2",
-        "no p1 p2",
-        "no p1 or p2",
-        "no high severity",
-        "no critical severity",
-        "sem p1",
-        "sem p2",
-        "sem severidade alta",
-        "sem critico",
-        "sem crítico",
-        "nenhum p1",
-        "nenhum p2",
-        "zero p1",
-        "zero p2",
-        "0 p1",
-        "0 p2",
-        "none found",
-        "findings none",
-        "findings: none",
-        "no findings",
-        "sem achados",
-        "nenhum achado",
-        "clean",
-        "resolved",
-        "fixed",
-        "integrated",
-    )
-    clean_finding_values = {
-        "none",
-        "n/a",
-        "na",
-        "no findings",
-        "sem achados",
-        "nenhum achado",
-        "nenhum",
-    }
-    clean_finding = findings in clean_finding_values or any(phrase in findings for phrase in clean_phrases)
-    clean_notes = any(phrase in notes for phrase in ("clean", "resolved", "fixed", "integrated"))
-    if any(phrase in normalized for phrase in clean_phrases) or clean_finding or clean_notes:
-        return False
-
-    # A high-priority finding mention without an explicit clean/resolved marker
-    # is ambiguous enough to block a delivery claim. The row should say whether
-    # the finding was fixed, waived with approval, or absent.
-    return True
 
 
 def validate_review_gate_matrix(

@@ -68,7 +68,7 @@ DELIVERY_GATE_SECTIONS = (
     (RULE_SPIRIT_HUNT_SECTION, 2),
 )
 PASSING_STATUSES = {"passed", "waived", "n/a"}
-ARCHITECTURE_REVIEW_PASSING_STATUSES = PASSING_STATUSES | {"no material findings", "findings integrated"}
+ARCHITECTURE_REVIEW_SUCCESS_STATUSES = {"no material findings", "findings integrated"}
 ROUTING_ALLOWED_OUTCOMES = {
     "go",
     "delegate-required",
@@ -116,7 +116,7 @@ P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
 UNRESOLVED_RE = re.compile(
     r"\b("
     r"unresolved|unresolved:|open|pending|blocked|blocker|failing|still open|"
-    r"nao resolvido|não resolvido|sem resolucao|sem resolução|em aberto"
+    r"nao resolvido|não resolvido|sem resolucao|sem resolução|em aberto|(?:needs|requires) remediation"
     r")\b",
     re.IGNORECASE,
 )
@@ -201,10 +201,16 @@ def is_delivery_claim(todo_path: Path, stage: str | None, require_delivery_gates
 def row_has_unresolved_p1_p2(row: list[str]) -> bool:
     text = row_text(row)
     lowered = normalize(text)
-    remaining = re.sub(r"\bno unresolved p1(?:/p2)?\b", "", lowered)
-    if "no p1" in remaining or "no p1 or p2" in remaining or "no p1/p2" in remaining or "sem p1" in remaining:
+    remaining = re.sub(
+        r"\bno unresolved p1(?:[ /]+p2)?(?: findings?)?\b|\bno p[12] findings?\b|\bno p1(?:[ /]+p2)\b|\bno p1 or p2 findings?\b",
+        "",
+        lowered,
+    )
+    if not P1_P2_RE.search(remaining):
         return False
-    return bool(P1_P2_RE.search(remaining) and UNRESOLVED_RE.search(remaining))
+    if UNRESOLVED_RE.search(remaining):
+        return True
+    return not bool(re.search(r"\b(clean|resolved|fixed|integrated|none|no findings?)\b", remaining))
 
 
 def row_has_approved_waiver(row: list[str]) -> bool:
@@ -808,7 +814,7 @@ def validate_architecture_review_gates(
         status = normalize(first_field(lines, (status_label,)) or "")
         if decision != "required":
             violations.append(build_violation("ARCHITECTURE-REVIEW-DECISION-MISMATCH", f"{decision_label} must be `required` when Architecture Change Governance is required.", "Record the guard-derived required decision in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
-        if status not in ARCHITECTURE_REVIEW_PASSING_STATUSES:
+        if status not in ARCHITECTURE_REVIEW_SUCCESS_STATUSES and status != "waived":
             violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
         if status == "waived" and not allow_waivers and "approval" not in normalize("\n".join(lines)):
             violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without explicit approval evidence.", "Record the human waiver/approval reference in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))

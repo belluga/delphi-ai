@@ -264,7 +264,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
-- **Decision review status:** `passed`
+- **Decision review status:** `no_material_findings`
 - **Decision review evidence / resolution:** `three fresh no-context passes: initial findings integrated; operational gate defects integrated; final pass reported no material findings and architectural convergence`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
@@ -771,8 +771,8 @@ All rows are instruction/tooling structure-only. No criterion changes a user-vis
 | `PR-13-hierarchical-subsection-boundary` | integration review | high | release-blocker | fix in current TODO | fixed | Same-or-higher-level bounds preserve nested bodies. |
 | `PR-14-atx-0-3-vs-4-space-mismatch` | TQA review | high | release-blocker | fix in current TODO | fixed | Shared ATX 0-3 grammar; 4-space code-like text rejected. |
 | `PR-15-ci-matrix-status-index` | closeout review | high | release-blocker | fix in current TODO | fixed | Authority guard now reads canonical 9-column CI status cell 6; pass/failing-status regressions pass. |
-| `PR-16-architecture-review-status-enum` | closeout review | medium | release-blocker | fix in current TODO | fixed | Required architecture review accepts canonical final `no_material_findings` and `findings_integrated` statuses only. |
-| `PR-17-p1-negative-phrase` | closeout review | medium | release-blocker | fix in current TODO | fixed | `No unresolved P1/P2` is explicitly clean while genuine unresolved P1/P2 remains blocking. |
+| `PR-16-architecture-review-status-enum` | closeout review | medium | release-blocker | fix in current TODO | fixed | Required reviews now accept only canonical `no_material_findings`/`findings_integrated`, with waived allowed only by explicit human-approved waiver; `passed` and `n/a` are rejected. |
+| `PR-17-p1-negative-phrase` | closeout review | medium | release-blocker | fix in current TODO | fixed | One authority-owned clause-aware parser neutralizes only strict negative clauses and blocks any remaining P1/P2 unresolved, open, pending, or needs-remediation clause. |
 | `PR-18-checklist-status-coverage` | closeout review | medium | release-blocker | fix in current TODO | fixed | Drift normalization ignores only `[ ]`, `[x]`, and `[X]`; `[~]` and `[!]` remain material. |
 | `PR-19-laravel-trigger-mirror-pointer` | closeout review | medium | release-blocker | fix in current TODO | fixed | Canonical/Cline/Claude trigger skills use repository-root invariant core and adjunct pointers, verified by baseline audit test. |
 

@@ -31,9 +31,20 @@ import sys
 sys.path.insert(0, sys.argv[1])
 import todo_completion_guard as guard
 
-assert not guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 findings.", "complete"])
-assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "P1 remains unresolved.", "complete"])
-assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 in package A; P1 remains unresolved in package B.", "complete"])
+cases = (
+    ("No P1; unresolved P2 remains", True),
+    ("No P1/P2; P2 still open", True),
+    ("No unresolved P1/P2 in A; P1 is pending in B", True),
+    ("No unresolved P1/P2 in A; P2 needs remediation in B", True),
+    ("No unresolved P1/P2 findings", False),
+    ("no P1 or P2 findings", False),
+    ("P1 finding", True),
+    ("P1 fixed", False),
+    ("P1 fixed; P2 pending", True),
+    ("No P2 findings", False),
+)
+for text, expected in cases:
+    assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
 PY
 
 cat > "$TMP_DIR/local-implemented-no-evidence.md" <<'TODO'

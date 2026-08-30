@@ -53,12 +53,21 @@ sys.path.insert(0, sys.argv[1])
 import todo_authority_guard as authority
 import todo_completion_guard as completion
 
-assert not authority.row_has_unresolved_p1_p2(["No unresolved P1/P2 findings."])
-assert authority.row_has_unresolved_p1_p2(["P1 remains unresolved."])
-assert authority.row_has_unresolved_p1_p2(["No unresolved P1/P2 in package A; P1 remains unresolved in package B."])
-assert not completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 findings.", "complete"])
-assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "P2 remains unresolved.", "complete"])
-assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 in package A; P1 remains unresolved in package B.", "complete"])
+cases = (
+    ("No P1; unresolved P2 remains", True),
+    ("No P1/P2; P2 still open", True),
+    ("No unresolved P1/P2 in A; P1 is pending in B", True),
+    ("No unresolved P1/P2 in A; P2 needs remediation in B", True),
+    ("No unresolved P1/P2 findings", False),
+    ("no P1 or P2 findings", False),
+    ("P1 finding", True),
+    ("P1 fixed", False),
+    ("P1 fixed; P2 pending", True),
+    ("No P2 findings", False),
+)
+for text, expected in cases:
+    assert authority.row_has_unresolved_p1_p2([text]) is expected, text
+    assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
 
 sections = {"Architecture Review Gates": [
     "- **Architecture decision review:** `required`",
@@ -69,6 +78,34 @@ sections = {"Architecture Review Gates": [
 assert not authority.validate_architecture_review_gates(
     sections, architecture_required=True, delivery_claim=True, allow_waivers=False
 )[0]
+
+for invalid_status in ("passed", "n/a"):
+    invalid = {"Architecture Review Gates": [
+        "- **Architecture decision review:** `required`",
+        f"- **Decision review status:** `{invalid_status}`",
+        "- **Architecture adherence review:** `required`",
+        f"- **Adherence review status:** `{invalid_status}`",
+    ]}
+    violations, _ = authority.validate_architecture_review_gates(
+        invalid, architecture_required=True, delivery_claim=True, allow_waivers=False
+    )
+    assert any(item["code"] == "ARCHITECTURE-REVIEW-STATUS-NOT-PASSING" for item in violations), invalid_status
+
+approved_waiver = {"Architecture Review Gates": [
+    "- **Architecture decision review:** `required`",
+    "- **Decision review status:** `waived`",
+    "- **Architecture adherence review:** `required`",
+    "- **Adherence review status:** `waived`",
+    "- **Waiver authority / reference:** human approval 2026-08-30",
+]}
+assert not authority.validate_architecture_review_gates(
+    approved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
+)[0]
+unapproved_waiver = {"Architecture Review Gates": approved_waiver["Architecture Review Gates"][:-1]}
+violations, _ = authority.validate_architecture_review_gates(
+    unapproved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
+)
+assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations)
 PY
 
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
@@ -285,7 +322,7 @@ cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
 
 ## Architecture Review Gates
 - **Architecture decision review:** `required`
-- **Decision review status:** `passed`
+- **Decision review status:** `no_material_findings`
 - **Architecture adherence review:** `required`
 - **Adherence review status:** `n/a`
 TODO
@@ -360,7 +397,7 @@ cat > "$TMP_DIR/local-implemented-complete.md" <<'TODO'
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
+| bounded diff | high-priority findings | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
@@ -409,7 +446,7 @@ cat > "$TMP_DIR/promotion-p1-open.md" <<'TODO'
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
+| bounded diff | high-priority findings | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
