@@ -95,6 +95,7 @@ cases = (
     ("P1 fixed; tests show the fix was reverted", True),
     ("P1 fixed; regression tests still failing", True),
     ("P1 fixed; final review found the fix reverted", True),
+    ("still failing; P1 fixed", True),
 )
 for text, expected in cases:
     assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
@@ -116,6 +117,7 @@ cell_separated_cases = (
     ("P1 fixed", "P2 resolved", False),
     ("No P2 findings", "P1 resolved", False),
     ("no P1 or P2 anti-pattern findings", "clean", False),
+    ("none", "still failing; P1 fixed", True),
 )
 for findings, resolution, expected in cell_separated_cases:
     authority_row = ["package", "focus", "passed", "evidence", findings, resolution]
@@ -325,6 +327,12 @@ for field, invalid_value in (
     ("Adherence review waiver approval reference", "approved https://example.test/reviews?state=%72evoked"),
     ("Adherence review waiver approval reference", "approved https://example.test/reviews?state=approval%5Frevoked"),
     ("Adherence review waiver approval reference", "approved https://example.test/revocation-of-approval"),
+    ("Adherence review waiver approval reference", "approved https://example.test/approval%ZZdenied"),
+    ("Adherence review waiver approval reference", "approved https://example.test/rev%ZZoked"),
+    ("Adherence review waiver approval reference", "approved https://user@@example.test/reviews/42"),
+    ("Adherence review waiver approval reference", "approved https://example.test/reviews/%ZZ"),
+    ("Adherence review waiver approval reference", "approved https://example.test/review#approval-denial"),
+    ("Adherence review waiver approval reference", "approved https://example.test/approval-rescinded"),
     ("Adherence review waiver approval reference", "not approved 2026-08-30"),
     ("Adherence review waiver approval reference", "unapproved 2026-08-30"),
     ("Adherence review waiver approval reference", "disapproved 2026-08-30"),

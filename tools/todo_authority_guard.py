@@ -152,7 +152,8 @@ WAIVER_APPROVAL_DENIAL_RE = re.compile(
     r"approval\s+(?:not\s+(?:approved|granted)|denied|refused|rejected|revoked)|"
     r"(?:denied|refused|rejected|revoked)\s+(?:the\s+)?approval|"
     r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada)|"
-    r"denied|refused|rejected|revoked|revocation|withdrawn|expired|"
+    r"denial|denied|refused|rejected|revoked|revocation|rescinded|rescission|"
+    r"cancelled|canceled|cancellation|withdrawal|withdrawn|expired|invalidated|invalidation|voided|"
     r"no\s+longer\s+valid|does\s+not\s+constitute\s+approval|rejection\s+of\s+approval)\b",
     re.IGNORECASE,
 )
@@ -242,6 +243,7 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
     active_severities: set[str] = set()
     for cell in row[4:6]:
         states = {"p1": set(), "p2": set()}
+        pending_ambiguous_clause = False
         for raw_clause in re.split(r"[;.,|\n]+", cell):
             clause = normalize(raw_clause)
             if not clause:
@@ -249,6 +251,10 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
             severities = {value.lower() for value in P1_P2_RE.findall(clause)}
             if severities:
                 active_severities = severities
+                if pending_ambiguous_clause:
+                    for severity in severities:
+                        states[severity].add("ambiguous")
+                    pending_ambiguous_clause = False
                 clean_clause = bool(
                     P1_P2_CLEAN_NEGATIVE_RE.fullmatch(clause)
                     or P1_P2_CLEAN_CLAUSE_RE.fullmatch(clause)
@@ -258,6 +264,8 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
             elif active_severities and not P1_P2_SAFE_CONTINUATION_RE.fullmatch(clause):
                 for severity in active_severities:
                     states[severity].add("ambiguous")
+            elif not active_severities and not P1_P2_SAFE_CONTINUATION_RE.fullmatch(clause):
+                pending_ambiguous_clause = True
         cell_states.append(states)
 
     findings, resolution = cell_states
@@ -293,10 +301,14 @@ def has_concrete_approver_identifier(value: str, field_label: str) -> bool:
 def fully_decode_approval_reference(value: str) -> str | None:
     decoded = value
     for _ in range(3):
+        if re.search(r"%(?![0-9a-f]{2})", decoded, re.IGNORECASE):
+            return None
         next_value = urllib.parse.unquote(decoded)
         if next_value == decoded:
             return decoded
         decoded = next_value
+    if re.search(r"%(?![0-9a-f]{2})", decoded, re.IGNORECASE):
+        return None
     return decoded if urllib.parse.unquote(decoded) == decoded else None
 
 
@@ -318,7 +330,13 @@ def valid_approval_url(value: str) -> bool:
             return False
         parsed = urllib.parse.urlsplit(decoded)
         hostname = parsed.hostname
-        if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc or not hostname:
+        if (
+            parsed.scheme.lower() not in {"http", "https"}
+            or not parsed.netloc
+            or not hostname
+            or parsed.username is not None
+            or parsed.password is not None
+        ):
             return False
         parsed.port
         try:
