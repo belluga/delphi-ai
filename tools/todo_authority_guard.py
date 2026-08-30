@@ -199,18 +199,22 @@ def is_delivery_claim(todo_path: Path, stage: str | None, require_delivery_gates
 
 
 def row_has_unresolved_p1_p2(row: list[str]) -> bool:
-    text = row_text(row)
-    lowered = normalize(text)
+    if len(row) < 6:
+        return False
+    evidence = normalize(" | ".join(row[4:6]))
     remaining = re.sub(
         r"\bno unresolved p1(?:[ /]+p2)?(?: findings?)?\b|\bno p[12] findings?\b|\bno p1(?:[ /]+p2)\b|\bno p1 or p2 findings?\b",
         "",
-        lowered,
+        evidence,
     )
-    if not P1_P2_RE.search(remaining):
-        return False
-    if UNRESOLVED_RE.search(remaining):
-        return True
-    return not bool(re.search(r"\b(clean|resolved|fixed|integrated|none|no findings?)\b", remaining))
+    for clause in re.split(r"[;.,|\n]+", remaining):
+        if not P1_P2_RE.search(clause):
+            continue
+        if UNRESOLVED_RE.search(clause):
+            return True
+        if not re.search(r"\b(clean|resolved|fixed|integrated|none|no findings?)\b", clause):
+            return True
+    return False
 
 
 def row_has_approved_waiver(row: list[str]) -> bool:
@@ -781,7 +785,7 @@ def validate_delivery_gates(
                         section_name,
                     )
                 )
-            if row_has_unresolved_p1_p2(row):
+            if section_name in {PIPELINE_PREFLIGHT_SECTION, RULE_SPIRIT_HUNT_SECTION} and row_has_unresolved_p1_p2(row):
                 violations.append(
                     build_violation(
                         "DELIVERY-GATE-UNRESOLVED-P1-P2",
@@ -806,18 +810,37 @@ def validate_architecture_review_gates(
     if not lines:
         return [build_violation("ARCHITECTURE-REVIEW-GATES-MISSING", "Required architecture TODO is missing Architecture Review Gates.", "Add the canonical Architecture Review Gates section and record both derived reviews.", ARCHITECTURE_REVIEW_GATES_SECTION)], context
 
-    checks = [("Architecture decision review", "Decision review status")]
+    checks = [
+        (
+            "Architecture decision review",
+            "Decision review status",
+            "Decision review waiver authority / reference",
+        )
+    ]
     if delivery_claim:
-        checks.append(("Architecture adherence review", "Adherence review status"))
-    for decision_label, status_label in checks:
+        checks.append(
+            (
+                "Architecture adherence review",
+                "Adherence review status",
+                "Adherence review waiver authority / reference",
+            )
+        )
+    for decision_label, status_label, waiver_label in checks:
         decision = normalize(first_field(lines, (decision_label,)) or "")
         status = normalize(first_field(lines, (status_label,)) or "")
         if decision != "required":
             violations.append(build_violation("ARCHITECTURE-REVIEW-DECISION-MISMATCH", f"{decision_label} must be `required` when Architecture Change Governance is required.", "Record the guard-derived required decision in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
         if status not in ARCHITECTURE_REVIEW_SUCCESS_STATUSES and status != "waived":
             violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
-        if status == "waived" and not allow_waivers and "approval" not in normalize("\n".join(lines)):
-            violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without explicit approval evidence.", "Record the human waiver/approval reference in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
+        if status == "waived":
+            waiver = first_field(lines, (waiver_label,)) or ""
+            normalized_waiver = normalize(waiver)
+            if (
+                value_is_missing(waiver)
+                or "human" not in normalized_waiver
+                or not any(token in normalized_waiver for token in ("approval", "approved", "reference"))
+            ):
+                violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without a dedicated human approval/reference field.", f"Record `{waiver_label}` with concrete human approval/reference evidence.", ARCHITECTURE_REVIEW_GATES_SECTION))
     return violations, context
 
 

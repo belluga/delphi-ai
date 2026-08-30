@@ -64,10 +64,22 @@ cases = (
     ("P1 fixed", False),
     ("P1 fixed; P2 pending", True),
     ("No P2 findings", False),
+    ("P1 fixed; P2 finding", True),
+    ("P1 finding; unrelated documentation fixed", True),
+    ("P1 fixed; P2 needs review", True),
+    ("P1 fixed; P2 resolved", False),
 )
 for text, expected in cases:
-    assert authority.row_has_unresolved_p1_p2([text]) is expected, text
+    assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
     assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
+
+full_gate_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+    "| --- | --- | --- | --- | --- | --- |",
+    "| package | focus | passed | evidence | P1 fixed; P2 finding | complete |",
+]}
+violations, _ = authority.validate_delivery_gates(full_gate_sections, delivery_claim=True, allow_waivers=False)
+assert any(item["code"] == "DELIVERY-GATE-UNRESOLVED-P1-P2" for item in violations)
 
 sections = {"Architecture Review Gates": [
     "- **Architecture decision review:** `required`",
@@ -96,14 +108,17 @@ approved_waiver = {"Architecture Review Gates": [
     "- **Decision review status:** `waived`",
     "- **Architecture adherence review:** `required`",
     "- **Adherence review status:** `waived`",
-    "- **Waiver authority / reference:** human approval 2026-08-30",
+    "- **Decision review waiver authority / reference:** human approval 2026-08-30",
+    "- **Adherence review waiver authority / reference:** human approval 2026-08-30",
 ]}
 assert not authority.validate_architecture_review_gates(
     approved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
 )[0]
-unapproved_waiver = {"Architecture Review Gates": approved_waiver["Architecture Review Gates"][:-1]}
+unapproved_waiver = {"Architecture Review Gates": approved_waiver["Architecture Review Gates"][:4] + [
+    "- **No-go handling:** approval-breaking divergence returns to review.",
+]}
 violations, _ = authority.validate_architecture_review_gates(
-    unapproved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
+    unapproved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=True
 )
 assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations)
 PY
