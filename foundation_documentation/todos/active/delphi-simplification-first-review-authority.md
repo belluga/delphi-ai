@@ -563,11 +563,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `pending renewed-approval record commit`
+- **Baseline commit:** `07253df894f8df1b0b6ac2673a0f938fd7f2c9c9`
 - **Baseline push reference:** `origin/hooks-implementation`
-- **Gate status:** `running`
-- **Findings summary:** `Independent adherence rejected the prior elastic-scope interpretation. The user explicitly approved D-19 through D-22 and the named global validation/lifecycle contracts; a pushed approval-record baseline is now required before renewed delivery review.`
-- **Evidence / reference:** `APROVADO 2026-08-30; baseline SHA pending this approval-record commit/push.`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `Independent adherence rejected the prior elastic-scope interpretation; user approval promoted the exact PR-15 through PR-18 and lifecycle contracts into D-19 through D-22 without authorizing any further expansion.`
+- **Evidence / reference:** `published renewed approval baseline hooks-implementation@07253df894f8df1b0b6ac2673a0f938fd7f2c9c9 at origin/hooks-implementation; APROVADO 2026-08-30.`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -580,8 +580,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `retired by implemented canonical parser parity; the same normalized, decorated, H1-H6, hierarchical, and ATX-indent heading contract now governs authority validation and drift protection.`
 - **Gate status:** `running`
-- **Findings summary:** `Material scope changed through explicit D-19 through D-22 approval; the guard must bind to the new pushed approval-record baseline before renewed delivery review.`
-- **Evidence / reference:** `APROVADO 2026-08-30; fresh baseline-bound output pending approval-record commit/push.`
+- **Findings summary:** `Material scope changed through explicit D-19 through D-22 approval; a fresh guard run will bind current delivery to the published 07253df approval baseline after this pointer-only record is committed.`
+- **Evidence / reference:** `published approval baseline 07253df; fresh scope-drift output pending pointer-record commit/push.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
