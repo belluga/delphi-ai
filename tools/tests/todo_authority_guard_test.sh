@@ -472,6 +472,22 @@ check(valid_bounded.replace('future channels', 'none'), {"HORIZON-FUTURE-CASES-M
 check(valid_bounded.replace('channel adapter seam', 'none'), {"HORIZON-ANTICIPATORY-SEAM-MISSING"})
 assert not validate_implementation_horizon(extract_sections([]))[0]  # legacy absence
 
+lowercase_heading = valid_current.replace(
+    '## Implementation Horizon & Extensibility Intent',
+    '## implementation horizon & extensibility intent',
+).replace('`current-scope-only`', '`invalid-mode`')
+violations, context = validate_implementation_horizon(extract_sections(lowercase_heading.splitlines()))
+assert context["implementation_horizon_present"]
+assert {"HORIZON-MODE-INVALID"} <= {item["code"] for item in violations}
+
+required_heading = valid_current.replace(
+    '## Implementation Horizon & Extensibility Intent',
+    '## Implementation Horizon & Extensibility Intent (Required)',
+).replace('`current-scope-only`', '`invalid-mode`')
+violations, context = validate_implementation_horizon(extract_sections(required_heading.splitlines()))
+assert context["implementation_horizon_present"]
+assert {"HORIZON-MODE-INVALID"} <= {item["code"] for item in violations}
+
 empty_at_eof = extract_sections(['## Implementation Horizon & Extensibility Intent'])
 violations, context = validate_implementation_horizon(empty_at_eof)
 assert context["implementation_horizon_present"]

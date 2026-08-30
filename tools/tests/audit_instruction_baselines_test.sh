@@ -22,10 +22,61 @@ git -C "$TMP_DIR" init -q
 (cd "$TMP_DIR" && HOME="$TMP_DIR/isolated-home" bash ./audit_instruction_baselines.sh) >"$TMP_DIR/pass.txt"
 grep -q '| Laravel TODO authority adjunct | PASS |' "$TMP_DIR/pass.txt"
 
-sed -n '/^## Simplification First and Explicit Implementation Authority/,/^## /p' "$TMP_DIR/rules/core/todo-driven-execution-model-decision.md" | sed '$d' >>"$TMP_DIR/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
+python3 - "$TMP_DIR" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+core = (root / "rules/core/todo-driven-execution-model-decision.md").read_text(encoding="utf-8")
+paragraphs = [
+    block.strip()
+    for block in re.split(r"\n\s*\n", core)
+    if len(re.sub(r"\s+", " ", block).strip()) >= 120 and not block.lstrip().startswith("---")
+]
+assert len(paragraphs) >= 2
+first_authority_block = next(block for block in paragraphs if "Choose the simplest faithful design:" in block)
+future_authority_block = next(block for block in paragraphs if "Foundation documents may describe future architecture" in block)
+adjunct = root / "rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
+skill = root / "skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
+adjunct.write_text(adjunct.read_text(encoding="utf-8") + "\n\n" + first_authority_block + "\n", encoding="utf-8")
+assert "Foundation documents may describe future architecture" in future_authority_block
+PY
 if (cd "$TMP_DIR" && HOME="$TMP_DIR/isolated-home" bash ./audit_instruction_baselines.sh) >"$TMP_DIR/fail.txt"; then
-  echo "Expected Laravel shared-authority regrowth to fail." >&2
+  echo "Expected copied Laravel core authority to fail." >&2
   exit 1
 fi
-grep -q 'Laravel adjunct regrows shared authority' "$TMP_DIR/fail.txt"
+grep -q 'Laravel adjunct or trigger copies shared core authority' "$TMP_DIR/fail.txt"
+
+cp "$ROOT_DIR/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md" "$TMP_DIR/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
+python3 - "$TMP_DIR" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+core = (root / "rules/core/todo-driven-execution-model-decision.md").read_text(encoding="utf-8")
+paragraphs = [
+    block.strip()
+    for block in re.split(r"\n\s*\n", core)
+    if len(re.sub(r"\s+", " ", block).strip()) >= 120 and not block.lstrip().startswith("---")
+]
+future_authority_block = next(block for block in paragraphs if "Foundation documents may describe future architecture" in block)
+assert "Foundation documents may describe future architecture" in future_authority_block
+skill = root / "skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
+skill.write_text(skill.read_text(encoding="utf-8") + "\n\n" + future_authority_block + "\n", encoding="utf-8")
+PY
+if (cd "$TMP_DIR" && HOME="$TMP_DIR/isolated-home" bash ./audit_instruction_baselines.sh) >"$TMP_DIR/second-fail.txt"; then
+  echo "Expected the second copied Laravel core authority block to fail." >&2
+  exit 1
+fi
+grep -q 'Laravel adjunct or trigger copies shared core authority' "$TMP_DIR/second-fail.txt"
+
+# Long Laravel-only loading guidance is allowed: literal core overlap, not size,
+# is the boundary.
+cp "$ROOT_DIR/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md" "$TMP_DIR/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
+printf '\n## Laravel-Only Detail\n%s\n' "$(printf 'Laravel endpoint ownership and tenant resolver loading detail. %.0s' {1..40})" >>"$TMP_DIR/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
+cp "$TMP_DIR/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md" "$TMP_DIR/.cline/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
+cp "$TMP_DIR/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md" "$TMP_DIR/.claude/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
+(cd "$TMP_DIR" && HOME="$TMP_DIR/isolated-home" bash ./audit_instruction_baselines.sh) >"$TMP_DIR/long-laravel-pass.txt"
 echo 'audit_instruction_baselines_test: PASS'

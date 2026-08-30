@@ -370,15 +370,19 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `delphi-ai` | `workflows/docker/independent-final-review-method.md` | `M` | Delivery adherence boundary. |
 | `delphi-ai` | `skills/wf-docker-todo-driven-execution-method/SKILL.md` | `M` | Concise umbrella entrypoint. |
 | `delphi-ai` | `skills/wf-docker-todo-delivery-gates-method/SKILL.md` | `M` | Concise delivery entrypoint. |
+| `delphi-ai` | `skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md` | `M` | Concise Laravel trigger entrypoint pointing to the sole core authority. |
 | `delphi-ai` | `skills/deterministic-tooling-register.md` | `M` | Refresh support notes for the materially changed workflow skills. |
 | `delphi-ai` | `.clinerules/**` | `M` | Generated rule/workflow mirrors. |
 | `delphi-ai` | `.cline/skills/wf-docker-todo-*/SKILL.md` | `M` | Curated Cline skill mirrors. |
 | `delphi-ai` | `.claude/skills/wf-docker-todo-*/SKILL.md` | `M` | Curated Claude skill mirrors. |
+| `delphi-ai` | `.cline/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md` | `M` | Derived Cline mirror of the concise Laravel trigger entrypoint. |
+| `delphi-ai` | `.claude/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md` | `M` | Derived Claude mirror of the concise Laravel trigger entrypoint. |
 | `delphi-ai` | `tools/audit_instruction_baselines.sh` | `M` | Laravel authority-regrowth audit. |
 | `delphi-ai` | `tools/manifest.md` | `M` | Updated deterministic tool purposes. |
 | `delphi-ai` | `tools/review_scope_drift_guard.py` | `M` | Horizon becomes a protected section. |
 | `delphi-ai` | `tools/subagent_review_dispatch.py` | `M` | Shared and lifecycle-specific reviewer authority. |
 | `delphi-ai` | `tools/todo_authority_guard.py` | `M` | Objective horizon truth-table validation. |
+| `delphi-ai` | `tools/verify_adherence_sync.sh` | `M` | Existing semantic sync validator covers the full simplification mandate. |
 | `delphi-ai` | `tools/tests/audit_instruction_baselines_test.sh` | `any` | Negative Laravel duplicate-authority fixture (untracked until the implementation commit). |
 | `delphi-ai` | `tools/tests/review_scope_drift_guard_test.sh` | `M` | Explicit horizon drift regression. |
 | `delphi-ai` | `tools/tests/subagent_review_dispatch_test.sh` | `M` | All-kind reviewer authority assertions. |

@@ -216,7 +216,7 @@ verify_no_placeholder_artifacts() {
   done
 
   local hits
-  hits="$(grep -RInE 'asdasd|asdsad' \
+  hits="$(grep -RInE --include='*.md' 'asdasd|asdsad' \
     "$REPO_ROOT/delphi-ai/skills" \
     "$REPO_ROOT/delphi-ai/rules" \
     "$REPO_ROOT/delphi-ai/workflows" \
@@ -366,6 +366,33 @@ verify_clinerules_controls() {
   fi
 }
 
+verify_simplification_first_mandate() {
+  local main="$REPO_ROOT/delphi-ai/main_instructions.md"
+  local principles="$REPO_ROOT/delphi-ai/system_architecture_principles.md"
+  local cline="$REPO_ROOT/delphi-ai/.clinerules/00-main-instructions.md"
+
+  require_file "$main"
+  require_file "$principles"
+  require_file "$cline"
+
+  for surface in "$main" "$principles"; do
+    [ -f "$surface" ] || continue
+    require_contains "$surface" "Simplification First" "Simplification-first mandate"
+    require_contains "$surface" "simplest faithful.*Clean Code.*SOLID" "Simplification-first mandate"
+    require_contains "$surface" "not (a )?minimum.diff|not minimum diff" "Simplification-first mandate"
+    require_contains "$surface" "[Ss]ubtraction, consolidation, or redesign" "Simplification-first mandate"
+    require_contains "$surface" "[Ss]cattered conditionals, duplication, or hidden coupling" "Simplification-first mandate"
+    require_contains "$surface" "Foundation planning.*approved TODO authority" "Simplification-first mandate"
+  done
+
+  if [ -f "$cline" ]; then
+    require_contains "$cline" "Simplification First" "Cline simplification compatibility"
+    require_contains "$cline" "simplest faithful.*Clean Code.*SOLID" "Cline simplification compatibility"
+    require_contains "$cline" "[Ss]ubtraction, consolidation, or redesign" "Cline simplification compatibility"
+    require_contains "$cline" "Foundation planning.*approved TODO authority" "Cline simplification compatibility"
+  fi
+}
+
 verify_workflow_definition_controls() {
   local docker_rule="$REPO_ROOT/delphi-ai/rules/core/workflow-definition-model-decision.md"
   local laravel_rule="$REPO_ROOT/delphi-ai/rules/stacks/laravel/shared/workflow-definition-model-decision.md"
@@ -442,6 +469,7 @@ compare_agent_workflowset \
   "root"
 
 verify_clinerules_controls
+verify_simplification_first_mandate
 verify_workflow_skill_counterparts
 verify_workflow_definition_controls
 verify_no_placeholder_artifacts

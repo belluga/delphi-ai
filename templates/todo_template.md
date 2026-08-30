@@ -263,12 +263,12 @@ Plan the concrete protections that keep the corrected architecture from regressi
 - **Why this decision:** <why post-review material drift must be checked before approval>
 - **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
-- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
+- **Material sections compared:** `Context|Contract Boundary|Implementation Horizon & Extensibility Intent|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
 - **No-go handling rule:** `return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes; this is not a hard rejection`
 - **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <whether material sections drifted and what happened next>
-- **Evidence / reference:** <guard output artifact or command reference>
+- **Evidence / reference:** <approved baseline SHA + exact fresh guard output artifact or command reference; refresh after protected remediation>
 - **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
 
 ## Questions To Close

@@ -19,14 +19,14 @@ SHARED_INTENT_AUTHORITY_FOCUS = (
     "Do not silently invent, rewrite, or erase explicit TODO intent. Assess the simplest faithful design: "
     "minimum incidental complexity compatible with approved intent, Clean Code, SOLID, correctness, and security."
 )
-PLANNING_INTENT_AUTHORITY_FOCUS = (
-    "Planning review may challenge proposed horizon intent and recommend a decision change, but must never rewrite it."
-)
+PLANNING_INTENT_AUTHORITY_FOCUS = "Planning review may challenge proposed horizon intent and recommend a decision change, but must never rewrite it."
 DELIVERY_INTENT_AUTHORITY_FOCUS = (
     "Treat approved implementation horizon and seam as binding; route material redesign to renewed approval."
 )
-PLANNING_REVIEW_KINDS = {"architecture_opinion", "critique"}
-
+CRITIQUE_INTENT_AUTHORITY_FOCUS = (
+    "Planning critique may challenge or recommend but never rewrite proposed intent; when this bounded package is delivery-side, approved intent is binding and material redesign routes to renewed approval. "
+    "This also governs the audit-protocol triple-review performance lane when it invokes critique."
+)
 CONFIG = {
     "architecture_opinion": {
         "axes": ["correctness", "performance", "elegance", "structural_soundness", "operational_fit"],
@@ -322,9 +322,13 @@ def main() -> int:
         "focus_points": [
             *config["focus"],
             SHARED_INTENT_AUTHORITY_FOCUS,
-            PLANNING_INTENT_AUTHORITY_FOCUS
-            if args.review_kind in PLANNING_REVIEW_KINDS
-            else DELIVERY_INTENT_AUTHORITY_FOCUS,
+            (
+                PLANNING_INTENT_AUTHORITY_FOCUS
+                if args.review_kind == "architecture_opinion"
+                else CRITIQUE_INTENT_AUTHORITY_FOCUS
+                if args.review_kind == "critique"
+                else DELIVERY_INTENT_AUTHORITY_FOCUS
+            ),
         ],
         "result_contract_fields": config["result_fields"],
     }

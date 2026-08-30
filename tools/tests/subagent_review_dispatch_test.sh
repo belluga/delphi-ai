@@ -17,8 +17,12 @@ python3 "$DISPATCH" \
 for review_kind in architecture_opinion architecture_adherence critique test_quality_audit final_review cutover_integrity_audit; do
   python3 "$DISPATCH" --review-kind "$review_kind" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/$review_kind.md" >/dev/null
   grep -q "Do not silently invent, rewrite, or erase explicit TODO intent" "$TMP_DIR/$review_kind.md"
-  if [[ "$review_kind" == architecture_opinion || "$review_kind" == critique ]]; then
+  if [[ "$review_kind" == architecture_opinion ]]; then
     grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/$review_kind.md"
+  elif [[ "$review_kind" == critique ]]; then
+    grep -q "Planning critique may challenge or recommend but never rewrite proposed intent" "$TMP_DIR/$review_kind.md"
+    grep -q "delivery-side, approved intent is binding and material redesign routes to renewed approval" "$TMP_DIR/$review_kind.md"
+    grep -q "audit-protocol triple-review performance lane when it invokes critique" "$TMP_DIR/$review_kind.md"
   else
     grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/$review_kind.md"
   fi

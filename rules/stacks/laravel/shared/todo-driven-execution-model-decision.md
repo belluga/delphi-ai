@@ -9,4 +9,4 @@ The sole stack-agnostic TODO authority is [`rules/core/todo-driven-execution-mod
 
 ## Laravel-Specific Loading Delta
 
-When the approved TODO touches Laravel application behavior, also load the relevant Laravel domain, API-endpoint, tenant-access, and test workflows. Apply the core `Implementation Horizon & Extensibility Intent` contract unchanged: future-aware architecture does not authorize future-facing Laravel implementation without explicit approved TODO authority.
+When the approved TODO touches Laravel application behavior, also load the relevant Laravel domain, API-endpoint, tenant-access, and test workflows.
