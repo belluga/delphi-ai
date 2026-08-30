@@ -575,11 +575,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `d54913c5424814f202debb45b57d51418c2693c1`
+- **Baseline commit:** `a32650390974771a48074ee4680486bdfb519953`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `no_material_findings`
 - **Findings summary:** `Independent adherence rejected the prior elastic-scope interpretation; user approval promoted the exact PR-15 through PR-18 and lifecycle contracts into D-19 through D-22 without authorizing any further expansion.`
-- **Evidence / reference:** `published renewed approval baseline hooks-implementation@d54913c5424814f202debb45b57d51418c2693c1 at origin/hooks-implementation; APROVADO 2026-08-30; includes the exact D-22 callsites.`
+- **Evidence / reference:** `published renewed approval baseline hooks-implementation@a32650390974771a48074ee4680486bdfb519953 at origin/hooks-implementation; APROVADO 2026-08-30; includes exact D-22 callsites and the D-20 shared escaped-pipe tokenizer path identified during adherence.`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -592,8 +592,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `retired by implemented canonical parser parity; the same normalized, decorated, H1-H6, hierarchical, and ATX-indent heading contract now governs authority validation and drift protection.`
 - **Gate status:** `running`
-- **Findings summary:** `Material scope changed through explicit D-19 through D-22 approval; a fresh guard run will bind current delivery to the published d54913c approval baseline after this pointer-only record is committed.`
-- **Evidence / reference:** `published approval baseline d54913c; fresh scope-drift output pending pointer-record commit/push.`
+- **Findings summary:** `Material scope changed through explicit D-19 through D-22 approval; a fresh guard run will bind current delivery to the published a326503 approval baseline after this pointer-only record is committed.`
+- **Evidence / reference:** `published approval baseline a326503; fresh scope-drift output pending pointer-record commit/push.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
