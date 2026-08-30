@@ -29,12 +29,22 @@ done
 if python3 "$DISPATCH" --review-kind critique --package "$TMP_DIR/package.md" >"$TMP_DIR/missing-lifecycle.txt" 2>&1; then
   exit 1
 fi
-grep -q "critique requires explicit --lifecycle planning|delivery" "$TMP_DIR/missing-lifecycle.txt"
+grep -q "critique requires exactly one --lifecycle planning|delivery" "$TMP_DIR/missing-lifecycle.txt"
 
 if python3 "$DISPATCH" --review-kind architecture_opinion --lifecycle delivery --package "$TMP_DIR/package.md" >"$TMP_DIR/mismatched-lifecycle.txt" 2>&1; then
   exit 1
 fi
-grep -q "architecture_opinion has fixed lifecycle planning" "$TMP_DIR/mismatched-lifecycle.txt"
+grep -q "architecture_opinion has fixed lifecycle planning; do not pass --lifecycle" "$TMP_DIR/mismatched-lifecycle.txt"
+
+for duplicate_lifecycles in "planning planning" "planning delivery"; do
+  read -r first_lifecycle second_lifecycle <<<"$duplicate_lifecycles"
+  if python3 "$DISPATCH" --review-kind critique \
+    --lifecycle "$first_lifecycle" --lifecycle "$second_lifecycle" \
+    --package "$TMP_DIR/package.md" >"$TMP_DIR/duplicate-lifecycle.txt" 2>&1; then
+    exit 1
+  fi
+  grep -q "critique requires exactly one --lifecycle planning|delivery" "$TMP_DIR/duplicate-lifecycle.txt"
+done
 
 for lifecycle in planning delivery; do
   python3 "$DISPATCH" --review-kind critique --lifecycle "$lifecycle" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/critique-$lifecycle.md" >/dev/null
@@ -86,6 +96,10 @@ assert "`synthetic_required`" in synthetic_contract
 
 sys.path.insert(0, str(root_dir / "skills" / "audit-protocol-triple-review" / "scripts"))
 triple_session = importlib.import_module("triple_audit_session")
+assert triple_session.BASE_LANES[0]["review_kind"] == "critique"
+assert triple_session.BASE_LANES[0]["lifecycle"] == "delivery"
+assert "lifecycle" not in triple_session.BASE_LANES[1]
+assert "lifecycle" not in triple_session.EXTRA_LANES["cutover-integrity"]
 triple_dispatch_json = Path(sys.argv[4]) / "triple-dispatch.json"
 triple_dispatch_markdown = Path(sys.argv[4]) / "triple-dispatch.md"
 triple_session.run_dispatch(
@@ -98,6 +112,18 @@ triple_session.run_dispatch(
 triple_markdown = triple_dispatch_markdown.read_text(encoding="utf-8")
 assert triple_markdown.count("Treat approved implementation horizon and seam as binding") == 1
 assert "Planning review may challenge proposed horizon intent" not in triple_markdown
+
+fixed_dispatch_markdown = Path(sys.argv[4]) / "triple-fixed-dispatch.md"
+triple_session.run_dispatch(
+    package_path=Path(sys.argv[4]) / "package.md",
+    todo_path=None,
+    lane={"review_kind": "test_quality_audit", "goal": "Delivery audit."},
+    dispatch_json_path=Path(sys.argv[4]) / "triple-fixed-dispatch.json",
+    dispatch_markdown_path=fixed_dispatch_markdown,
+)
+assert fixed_dispatch_markdown.read_text(encoding="utf-8").count(
+    "Treat approved implementation horizon and seam as binding"
+) == 1
 PY
 
 printf 'subagent_review_dispatch_test: OK\n'

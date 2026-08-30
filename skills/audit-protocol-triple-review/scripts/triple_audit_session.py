@@ -46,7 +46,6 @@ BASE_LANES = (
     {
         "id": "test-quality",
         "review_kind": "test_quality_audit",
-        "lifecycle": "delivery",
         "goal": (
             "Bounded test-quality audit. Treat regression protection, assertion "
             "effectiveness, and test realism as the primary decision lenses. "
@@ -63,7 +62,6 @@ EXTRA_LANES = {
     "cutover-integrity": {
         "id": "cutover-integrity",
         "review_kind": "cutover_integrity_audit",
-        "lifecycle": "delivery",
         "goal": (
             "Bounded cutover-integrity audit. Determine whether the chosen path is "
             "truly canonical or just a disguised workaround/bridge. Escalate as "
@@ -168,8 +166,6 @@ def run_dispatch(
         str(TOOLS_ROOT / "subagent_review_dispatch.py"),
         "--review-kind",
         lane["review_kind"],
-        "--lifecycle",
-        lane["lifecycle"],
         "--package",
         str(package_path),
         "--reviewer-count",
@@ -181,6 +177,8 @@ def run_dispatch(
         "--markdown-output",
         str(dispatch_markdown_path),
     ]
+    if lifecycle := lane.get("lifecycle"):
+        command[4:4] = ["--lifecycle", lifecycle]
     if todo_path is not None:
         command.extend(["--todo-path", str(todo_path)])
     subprocess.run(command, check=True)

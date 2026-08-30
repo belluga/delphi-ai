@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import ipaddress
 import json
 import re
 import sys
@@ -150,7 +151,8 @@ WAIVER_APPROVAL_DENIAL_RE = re.compile(
     r"\b(?:not\s+approved|not\s+(?:an?\s+)?approval|n[aã]o\s+aprovad[oa]|unapproved|disapproved|"
     r"approval\s+(?:not\s+(?:approved|granted)|denied|refused|rejected|revoked)|"
     r"(?:denied|refused|rejected|revoked)\s+(?:the\s+)?approval|"
-    r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada)|withdrawn|expired|"
+    r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada)|"
+    r"denied|refused|rejected|revoked|revocation|withdrawn|expired|"
     r"no\s+longer\s+valid|does\s+not\s+constitute\s+approval|rejection\s+of\s+approval)\b",
     re.IGNORECASE,
 )
@@ -285,24 +287,24 @@ def has_concrete_approver_identifier(value: str, field_label: str) -> bool:
     }
     if normalized in generic or WAIVER_PLACEHOLDER_RE.search(candidate):
         return False
-    if re.fullmatch(r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}", candidate):
-        local_part = candidate.partition("@")[0]
-        identity_tokens = re.findall(r"[a-z]+|\d+", local_part)
-        generic_tokens = {
-            "actual", "anonymous", "approver", "developer", "human", "manager", "name",
-            "owner", "platform", "release", "reviewer", "user",
-        }
-        return any(token not in generic_tokens and not token.isdigit() for token in identity_tokens)
-    if re.fullmatch(r"@[a-z][a-z0-9._-]{2,}", candidate):
-        return candidate[1:] not in {"approver", "developer", "human", "owner", "reviewer", "user"}
-    return bool(
-        re.fullmatch(r"[a-z][a-z0-9]*(?:[-_.][a-z0-9]+){2,}", candidate)
-        and re.search(r"\d", candidate)
-    )
+    return bool(re.fullmatch(r"user-(?:[a-z][a-z0-9]*-)+0*[1-9]\d*", candidate))
+
+
+def fully_decode_approval_reference(value: str) -> str | None:
+    decoded = value
+    for _ in range(3):
+        next_value = urllib.parse.unquote(decoded)
+        if next_value == decoded:
+            return decoded
+        decoded = next_value
+    return decoded if urllib.parse.unquote(decoded) == decoded else None
 
 
 def has_affirmative_approval(reference: str) -> bool:
-    denial_search_text = re.sub(r"[^\w]+", " ", urllib.parse.unquote(reference))
+    decoded = fully_decode_approval_reference(reference)
+    if decoded is None:
+        return False
+    denial_search_text = re.sub(r"[_\W]+", " ", decoded)
     return bool(
         WAIVER_AFFIRMATIVE_APPROVAL_RE.search(reference)
         and not WAIVER_APPROVAL_DENIAL_RE.search(denial_search_text)
@@ -311,8 +313,20 @@ def has_affirmative_approval(reference: str) -> bool:
 
 def valid_approval_url(value: str) -> bool:
     try:
-        parsed = urllib.parse.urlsplit(value)
-        return parsed.scheme.lower() in {"http", "https"} and bool(parsed.netloc and parsed.hostname)
+        decoded = fully_decode_approval_reference(value)
+        if decoded is None:
+            return False
+        parsed = urllib.parse.urlsplit(decoded)
+        hostname = parsed.hostname
+        if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc or not hostname:
+            return False
+        parsed.port
+        try:
+            ipaddress.ip_address(hostname)
+            return True
+        except ValueError:
+            labels = hostname.rstrip(".").split(".")
+            return all(re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", label, re.IGNORECASE) for label in labels)
     except ValueError:
         return False
 

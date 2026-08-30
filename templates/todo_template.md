@@ -237,7 +237,7 @@ Plan the concrete protections that keep the corrected architecture from regressi
 - **Decision review package:** `<bounded-file-set|bounded-summary|n/a>`
 - **Decision review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived|n/a>`
 - **Decision review evidence / resolution:** `<dispatch/merge path or n/a>`
-- **Decision review waiver approver:** `<required when Decision review status = waived; stable identifier such as user-owner-01, @handle, or email, otherwise n/a>`
+- **Decision review waiver approver:** `<required when Decision review status = waived; canonical user-<subject>-<positive-id> identifier such as user-owner-01, otherwise n/a>`
 - **Decision review waiver approval reference:** `<required when Decision review status = waived; affirmative APROVADO/approved/approval confirmed|granted plus ISO date, SHA, URL, or positive issue/reference number, otherwise n/a>`
 - **Architecture adherence review:** `<required|not_needed>` (from `audit_escalation_guard.py`)
 - **Adherence review lifecycle:** `<after implementation and before Completed|n/a>`
@@ -245,7 +245,7 @@ Plan the concrete protections that keep the corrected architecture from regressi
 - **Adherence review package:** `<bounded-file-set|bounded-summary|n/a>`
 - **Adherence review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived|n/a>`
 - **Adherence review evidence / resolution:** `<dispatch/merge path or n/a>`
-- **Adherence review waiver approver:** `<required when Adherence review status = waived; stable identifier such as user-owner-01, @handle, or email, otherwise n/a>`
+- **Adherence review waiver approver:** `<required when Adherence review status = waived; canonical user-<subject>-<positive-id> identifier such as user-owner-01, otherwise n/a>`
 - **Adherence review waiver approval reference:** `<required when Adherence review status = waived; affirmative APROVADO/approved/approval confirmed|granted plus ISO date, SHA, URL, or positive issue/reference number, otherwise n/a>`
 - **No-go handling:** `when either required review is absent, blocked, or exposes an unresolved approval-breaking divergence, return to the affected diagnosis/decision or delivery-evidence loop; do not claim APROVADO or Completed.`
 

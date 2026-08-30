@@ -299,7 +299,7 @@ def render_markdown(payload: dict) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build a derived no-context subagent dispatch packet.")
     parser.add_argument("--review-kind", required=True, choices=sorted(CONFIG.keys()))
-    parser.add_argument("--lifecycle", choices=("planning", "delivery"), help="Required for review kinds, such as critique, whose lifecycle is not fixed by configuration.")
+    parser.add_argument("--lifecycle", action="append", choices=("planning", "delivery"), help="Required exactly once for review kinds, such as critique, whose lifecycle is not fixed by configuration.")
     parser.add_argument("--package", required=True, help="Bounded package path to hand to the reviewer.")
     parser.add_argument("--reviewer-count", type=int, default=1, help="Expected reviewer/subagent count.")
     parser.add_argument("--todo-path", help="Optional related TODO path.")
@@ -313,14 +313,15 @@ def main() -> int:
     args = parse_args()
     config = CONFIG[args.review_kind]
     configured_lifecycle = config["lifecycle"]
-    if configured_lifecycle and args.lifecycle and args.lifecycle != configured_lifecycle:
+    requested_lifecycles = args.lifecycle or []
+    if configured_lifecycle and requested_lifecycles:
         raise SystemExit(
             f"{args.review_kind} has fixed lifecycle {configured_lifecycle}; "
-            f"received incompatible --lifecycle {args.lifecycle}"
+            "do not pass --lifecycle"
         )
-    lifecycle = configured_lifecycle or args.lifecycle
-    if lifecycle is None:
-        raise SystemExit(f"{args.review_kind} requires explicit --lifecycle planning|delivery")
+    if not configured_lifecycle and len(requested_lifecycles) != 1:
+        raise SystemExit(f"{args.review_kind} requires exactly one --lifecycle planning|delivery")
+    lifecycle = configured_lifecycle or requested_lifecycles[0]
     payload = {
         "schema_version": "subagent-review-dispatch-v1",
         "artifact_kind": "subagent_review_dispatch",
