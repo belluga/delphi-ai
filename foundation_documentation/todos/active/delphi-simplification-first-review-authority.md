@@ -538,11 +538,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `3d27e89f50d4ab10bddde244e381e564bac5e1ae`
+- **Baseline commit:** `f7a9c4066f77f9592df4510bf59b253ebadc85ec`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `The user renewed explicit APROVADO on 2026-08-30 for the two protected evidence projections at 3d27e89f: Security Risk Assessment SEC-NOT-TRIGGERED and Performance & Concurrency pcv-1 EPS/FRC/BCI/RLS PCV-NOT-TRIGGERED/not_needed/not_applicable.`
-- **Evidence / reference:** `approved review baseline 3d27e89f50d4ab10bddde244e381e564bac5e1ae pushed to origin/hooks-implementation; prior D-01 through D-18 approval remains recorded separately.`
+- **Findings summary:** `Published f7a9c4066f77f9592df4510bf59b253ebadc85ec closes PR-15 through PR-19 and concretizes tools/todo_completion_guard.py plus its test under the already-approved Execution Plan clause “other objective TODO guards/tests only if the final contract adds machine-checkable fields”. No new story, horizon, architecture decision, security/PCV classification, or risk conversation was added; renewed approval is not required.`
+- **Evidence / reference:** `published review baseline f7a9c4066f77f9592df4510bf59b253ebadc85ec at origin/hooks-implementation; the prior D-01 through D-18 and 2026-08-30 protected-evidence approvals remain recorded separately.`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -555,8 +555,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `retired by implemented canonical parser parity; the same normalized, decorated, H1-H6, hierarchical, and ATX-indent heading contract now governs authority validation and drift protection.`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `The prior scope-drift no-go identified exactly two protected additions: Security Risk Assessment SEC-NOT-TRIGGERED and Performance & Concurrency pcv-1 EPS/FRC/BCI/RLS PCV-NOT-TRIGGERED/not_needed/not_applicable. The user revalidated precisely those additions on 2026-08-30.`
-- **Evidence / reference:** `Approved review baseline is hooks-implementation@3d27e89f50d4ab10bddde244e381e564bac5e1ae at origin/hooks-implementation. A fresh scope-drift rerun is pending until this TODO approval-record edit is committed and pushed; final-review dispatch remains required.`
+- **Findings summary:** `Published f7a9c40 closes PR-15..PR-19 and the already-approved completion-guard/test concretization without adding a story, horizon, architecture decision, security/PCV classification, or risk conversation; renewed approval is not required.`
+- **Evidence / reference:** `Approved review baseline is hooks-implementation@f7a9c4066f77f9592df4510bf59b253ebadc85ec at origin/hooks-implementation. A fresh scope-drift rerun is pending until this baseline-record edit is committed and pushed; final-review and verification-debt gates remain pending.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
