@@ -322,6 +322,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `tools/todo_completion_guard.py`
 - `tools/tests/todo_completion_guard_test.sh`
 - `skills/audit-protocol-triple-review/scripts/triple_audit_session.py`
+- `workflows/docker/subagent-orchestration-method.md`
+- `skills/wf-docker-subagent-orchestration-method/SKILL.md`
+- `skills/wf-docker-independent-critique-method/SKILL.md`
 - `tools/audit_instruction_baselines.sh`
 - `tools/tests/audit_instruction_baselines_test.sh`
 - `skills/wf-docker-todo-driven-execution-method/SKILL.md`
@@ -414,6 +417,13 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `delphi-ai` | `tools/tests/todo_authority_guard_test.sh` | `M` | Per-mode, placeholder, missing-field, and legacy coverage. |
 | `delphi-ai` | `tools/tests/todo_completion_guard_test.sh` | `M` | Regression coverage for the same canonical P1/P2 negative-evidence parser. |
 | `delphi-ai` | `skills/audit-protocol-triple-review/scripts/triple_audit_session.py` | `M` | Delivery-side critique dispatch supplies its explicit lifecycle. |
+| `delphi-ai` | `workflows/docker/subagent-orchestration-method.md` | `M` | Generic critique dispatch example supplies explicit lifecycle. |
+| `delphi-ai` | `skills/wf-docker-subagent-orchestration-method/SKILL.md` | `M` | Orchestration entrypoint documents the critique lifecycle argument. |
+| `delphi-ai` | `skills/wf-docker-independent-critique-method/SKILL.md` | `M` | Critique entrypoint distinguishes planning and delivery calls. |
+| `delphi-ai` | `.cline/skills/wf-docker-subagent-orchestration-method/SKILL.md` | `M` | Derived Cline mirror of lifecycle-aware orchestration entrypoint. |
+| `delphi-ai` | `.claude/skills/wf-docker-subagent-orchestration-method/SKILL.md` | `M` | Derived Claude mirror of lifecycle-aware orchestration entrypoint. |
+| `delphi-ai` | `.cline/skills/wf-docker-independent-critique-method/SKILL.md` | `M` | Derived Cline mirror of lifecycle-aware critique entrypoint. |
+| `delphi-ai` | `.claude/skills/wf-docker-independent-critique-method/SKILL.md` | `M` | Derived Claude mirror of lifecycle-aware critique entrypoint. |
 | `delphi-ai` | `foundation_documentation/todos/active/delphi-simplification-first-review-authority.md` | `M` | Approval, execution, and delivery evidence. |
 
 ### Not Expected Changed Paths
