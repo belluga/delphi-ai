@@ -78,6 +78,13 @@ cases = (
     ("P1 fixed; still open", True),
     ("P1 fixed; actually not", True),
     ("Not no P1/P2 findings", True),
+    ("P1 fixed?", True),
+    ("P1 fixed maybe", True),
+    ("P1 fixed; no longer fixed", True),
+    ("P1 fixed; fix was reverted", True),
+    ("No P1/P2 findings; P3 remains open", False),
+    ("P1 fixed; regression test did not fail", False),
+    ("P1 fixed, maybe", True),
 )
 for text, expected in cases:
     assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
@@ -130,6 +137,25 @@ completion_violations = completion.validate_review_gate_matrix(
 )
 assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
 
+escaped_pipe_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+    "| --- | --- | --- | --- | --- | --- |",
+    r"| package | focus | passed | command \| tee artifact | No P1/P2 findings | complete |",
+]}
+parsed_escaped_row = authority.table_rows(escaped_pipe_sections[authority.PIPELINE_PREFLIGHT_SECTION])[0]
+assert len(parsed_escaped_row) == 6
+assert parsed_escaped_row[3] == "command | tee artifact"
+violations, _ = authority.validate_delivery_gates(escaped_pipe_sections, delivery_claim=True, allow_waivers=False)
+assert not any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
+completion_violations = completion.validate_review_gate_matrix(
+    escaped_pipe_sections,
+    authority.PIPELINE_PREFLIGHT_SECTION,
+    "PIPELINE-PREFLIGHT",
+    "Use the canonical review row.",
+    allow_waivers=False,
+)
+assert not any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
+
 sections = {"Architecture Review Gates": [
     "- **Architecture decision review:** `required`",
     "- **Decision review status:** `no_material_findings`",
@@ -165,6 +191,13 @@ approved_waiver = {"Architecture Review Gates": [
 assert not authority.validate_architecture_review_gates(
     approved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
 )[0]
+affirmative_waiver = {"Architecture Review Gates": [
+    line.replace("APROVADO 2026-08-30", "approval confirmed ref #42")
+    for line in approved_waiver["Architecture Review Gates"]
+]}
+assert not authority.validate_architecture_review_gates(
+    affirmative_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
+)[0]
 unapproved_waiver = {"Architecture Review Gates": approved_waiver["Architecture Review Gates"][:4] + [
     "- **No-go handling:** approval-breaking divergence returns to review.",
 ]}
@@ -184,6 +217,9 @@ for field, invalid_value in (
     ("Decision review waiver approver", "developer"),
     ("Decision review waiver approver", "actual approver"),
     ("Decision review waiver approver", "anonymous"),
+    ("Decision review waiver approver", "platform owner"),
+    ("Decision review waiver approver", "release manager"),
+    ("Decision review waiver approver", "approver name"),
     ("Decision review waiver approver", "Decision review waiver approver"),
     ("Decision review waiver approval reference", "none"),
     ("Adherence review waiver approver", "n/a"),
@@ -203,6 +239,15 @@ for field, invalid_value in (
     ("Adherence review waiver approval reference", "não aprovado 2026-08-30"),
     ("Adherence review waiver approval reference", "not an approval 2026-08-30"),
     ("Adherence review waiver approval reference", "approval refused 2026-08-30"),
+    ("Adherence review waiver approval reference", "no approval 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval is no longer valid 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval withdrawn 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval has expired 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval was revoked 2026-08-30"),
+    ("Adherence review waiver approval reference", "rejection of approval issue #42"),
+    ("Adherence review waiver approval reference", "this does not constitute approval 2026-08-30"),
+    ("Adherence review waiver approval reference", "approved? 2026-08-30"),
+    ("Adherence review waiver approval reference", "approved maybe 2026-08-30"),
     ("Adherence review waiver approval reference", "<placeholder>"),
 ):
     invalid_lines = [
@@ -217,7 +262,50 @@ for field, invalid_value in (
             allow_waivers=allow_waivers,
         )
         assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations), (field, allow_waivers)
+
+duplicate_reference_lines = approved_waiver["Architecture Review Gates"] + [
+    "- **Decision review waiver approval reference:** approval was revoked 2026-08-30",
+]
+for allow_waivers in (False, True):
+    violations, _ = authority.validate_architecture_review_gates(
+        {"Architecture Review Gates": duplicate_reference_lines},
+        architecture_required=True,
+        delivery_claim=True,
+        allow_waivers=allow_waivers,
+    )
+    assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations)
 PY
+
+cat > "$TMP_DIR/denied-waiver-proof.md" <<'TODO'
+# TODO: Denied Waiver Proof
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** `user-owner-01`
+- **Approval scope:** `waiver proof regression`
+
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** Review authority changes.
+- **Deviation / debt being retired:** Invalid waiver evidence.
+- **Target steady-state after closeout:** Affirmative approval only.
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** Guard rejects denial.
+
+## Architecture Review Gates
+- **Architecture decision review:** `required`
+- **Decision review status:** `waived`
+- **Decision review waiver approver:** `user-owner-01`
+- **Decision review waiver approval reference:** `no approval 2026-08-30`
+TODO
+
+for waiver_mode in "" "--allow-waivers"; do
+  # shellcheck disable=SC2086
+  assert_no_go "$TMP_DIR/denied-waiver-proof.md" $waiver_mode
+  grep -q "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" "$OUTPUT_FILE"
+done
 
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
 # TODO: Missing Approval

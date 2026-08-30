@@ -179,7 +179,10 @@ def table_rows(lines: list[str]) -> list[list[str]]:
         match = TABLE_ROW_RE.match(line)
         if not match:
             continue
-        cells = [strip_markup(cell) for cell in match.group(1).split("|")]
+        cells = [
+            strip_markup(cell.replace(r"\|", "|"))
+            for cell in re.split(r"(?<!\\)\|", match.group(1))
+        ]
         if not cells:
             continue
         joined = " ".join(cells).strip()

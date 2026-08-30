@@ -56,6 +56,13 @@ cases = (
     ("P1 fixed; still open", True),
     ("P1 fixed; actually not", True),
     ("Not no P1/P2 findings", True),
+    ("P1 fixed?", True),
+    ("P1 fixed maybe", True),
+    ("P1 fixed; no longer fixed", True),
+    ("P1 fixed; fix was reverted", True),
+    ("No P1/P2 findings; P3 remains open", False),
+    ("P1 fixed; regression test did not fail", False),
+    ("P1 fixed, maybe", True),
 )
 for text, expected in cases:
     assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text

@@ -22,6 +22,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from orchestration_plan_completion_guard import table_rows
 from todo_authority_guard import row_has_unresolved_p1_p2
 
 
@@ -62,7 +63,6 @@ REVIEW_GATE_SECTIONS = (
 )
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 FIELD_RE_TEMPLATE = r"^\s*-\s+\*\*%s:\*\*\s*(.+?)\s*$"
-TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
 PLACEHOLDER_RE = re.compile(r"<[^>]+>")
 
 RUNTIME_REQUIRED_TERMS = (
@@ -590,24 +590,6 @@ def extract_field(lines: list[str], label: str) -> str | None:
         if match:
             return strip_markup(match.group(1))
     return None
-
-
-def table_rows(lines: list[str]) -> list[list[str]]:
-    rows: list[list[str]] = []
-    for line in lines:
-        match = TABLE_ROW_RE.match(line)
-        if not match:
-            continue
-        cells = [strip_markup(cell) for cell in match.group(1).split("|")]
-        joined = " ".join(cells).strip()
-        if not joined:
-            continue
-        if set(joined.replace(" ", "")) <= {"-", ":"}:
-            continue
-        rows.append(cells)
-    if len(rows) <= 1:
-        return []
-    return rows[1:]
 
 
 def extract_checklist_items(lines: list[str]) -> list[dict[str, Any]]:

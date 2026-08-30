@@ -121,20 +121,35 @@ P1_P2_CLEAN_NEGATIVE_RE = re.compile(
     r"|\bno\s+p[12]\s+findings?)\s*$",
     re.IGNORECASE,
 )
-P1_P2_DIRTY_RE = re.compile(
-    r"\b(?:unresolved|open|pending|blocked|blocker|failing|reopened|still\s+open|"
-    r"not|needs?\s+(?:review|remediation)|"
-    r"requires?\s+remediation)\b",
+P1_P2_GROUP = r"p[12](?:\s*(?:/|and|or)\s*p[12])*"
+P1_P2_CLEAN_DISPOSITION = r"(?:fixed|resolved|integrated|clean)"
+P1_P2_CLEAN_CLAUSE_RE = re.compile(
+    rf"^(?:{P1_P2_GROUP}\s*(?::|-)?\s*(?:(?:is|was|has\s+been|are|were|have\s+been)\s+)?{P1_P2_CLEAN_DISPOSITION}"
+    rf"|{P1_P2_CLEAN_DISPOSITION}\s+{P1_P2_GROUP})$",
     re.IGNORECASE,
 )
-P1_P2_CLEAN_DISPOSITION_RE = r"(?:fixed|resolved|integrated|clean)"
+P1_P2_DETACHED_CONTRADICTION_RE = re.compile(
+    r"^(?:actually\s+not|not(?:\s+(?:fixed|resolved|integrated|clean))?|reopened|still\s+open|"
+    r"no\s+longer\s+(?:fixed|resolved|integrated|clean)|(?:fix|resolution|finding)\s+(?:was\s+)?reverted|"
+    r"maybe|perhaps|possibly|uncertain|unconfirmed)$",
+    re.IGNORECASE,
+)
 WAIVER_PLACEHOLDER_RE = re.compile(r"\b(?:n/?a|none|tbd|pending|required|placeholder)\b", re.IGNORECASE)
-WAIVER_APPROVAL_RE = re.compile(r"\b(?:aprovado|approved|approval)\b", re.IGNORECASE)
+WAIVER_APPROVAL_ANCHOR = (
+    r"(?:\d{4}-\d{2}-\d{2}|[0-9a-f]{7,}|https?://\S+|"
+    r"(?:issue|reference|ref)\s*(?:#|:)?\s*\d+)"
+)
+WAIVER_AFFIRMATIVE_APPROVAL_RE = re.compile(
+    rf"^(?:(?:aprovado|approved)|(?:approval\s+(?:approved|confirmed|granted)|"
+    rf"aprova[cç][aã]o\s+(?:confirmada|concedida)))\s+{WAIVER_APPROVAL_ANCHOR}$",
+    re.IGNORECASE,
+)
 WAIVER_APPROVAL_DENIAL_RE = re.compile(
     r"\b(?:not\s+approved|not\s+(?:an?\s+)?approval|n[aã]o\s+aprovad[oa]|unapproved|disapproved|"
     r"approval\s+(?:not\s+(?:approved|granted)|denied|refused|rejected|revoked)|"
     r"(?:denied|refused|rejected|revoked)\s+(?:the\s+)?approval|"
-    r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada))\b",
+    r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada)|withdrawn|expired|"
+    r"no\s+longer\s+valid|does\s+not\s+constitute\s+approval|rejection\s+of\s+approval)\b",
     re.IGNORECASE,
 )
 
@@ -220,39 +235,28 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
     if len(row) < 6:
         return False
     cell_states: list[dict[str, set[str]]] = []
-    has_unqualified_dirty_clause = False
+    active_severities: set[str] = set()
     for cell in row[4:6]:
         states = {"p1": set(), "p2": set()}
         for raw_clause in re.split(r"[;.,|\n]+", cell):
-            for clean_negative in P1_P2_CLEAN_NEGATIVE_RE.finditer(raw_clause):
-                for severity in P1_P2_RE.findall(clean_negative.group(0)):
-                    states[severity.lower()].add("clean")
-            clause = normalize(P1_P2_CLEAN_NEGATIVE_RE.sub("", raw_clause))
-            if P1_P2_DIRTY_RE.search(clause) and not P1_P2_RE.search(clause):
-                has_unqualified_dirty_clause = True
-            for severity in ("p1", "p2"):
-                if not re.search(rf"\b{severity}\b", clause):
-                    continue
-                if P1_P2_DIRTY_RE.search(clause):
-                    states[severity].add("dirty")
-                    continue
-                severity_group = rf"\b{severity}\b(?:\s*(?:/|and|or)\s*\bp[12]\b)*"
-                direct_clean = (
-                    re.search(
-                        rf"{severity_group}\s*(?::|-)?\s*(?:(?:is|was|has been)\s+)?{P1_P2_CLEAN_DISPOSITION_RE}\b",
-                        clause,
-                    )
-                    or re.search(
-                        rf"\b{P1_P2_CLEAN_DISPOSITION_RE}\b\s*(?:(?:is|was|has been)\s+)?(?:\bp[12]\b\s*(?:/|and|or)\s*)*\b{severity}\b",
-                        clause,
-                    )
+            clause = normalize(raw_clause)
+            if not clause:
+                continue
+            severities = {value.lower() for value in P1_P2_RE.findall(clause)}
+            if severities:
+                active_severities = severities
+                clean_clause = bool(
+                    P1_P2_CLEAN_NEGATIVE_RE.fullmatch(clause)
+                    or P1_P2_CLEAN_CLAUSE_RE.fullmatch(clause)
                 )
-                states[severity].add("clean" if direct_clean else "ambiguous")
+                for severity in severities:
+                    states[severity].add("clean" if clean_clause else "ambiguous")
+            elif active_severities and P1_P2_DETACHED_CONTRADICTION_RE.fullmatch(clause):
+                for severity in active_severities:
+                    states[severity].add("ambiguous")
         cell_states.append(states)
 
     findings, resolution = cell_states
-    if has_unqualified_dirty_clause and any(states[severity] for states in cell_states for severity in ("p1", "p2")):
-        return True
     for severity in ("p1", "p2"):
         resolution_states = resolution[severity]
         if resolution_states:
@@ -262,6 +266,38 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
         if findings[severity] and findings[severity] != {"clean"}:
             return True
     return False
+
+
+def field_values(lines: list[str], label: str) -> list[str]:
+    pattern = re.compile(rf"^\s*-\s+\*\*{re.escape(label)}:\*\*\s*(.*?)\s*$")
+    return [strip_markup(match.group(1)) for line in lines if (match := pattern.match(line))]
+
+
+def has_concrete_approver_identifier(value: str, field_label: str) -> bool:
+    candidate = strip_markup(value).strip().lower()
+    normalized = normalize(candidate)
+    generic = {
+        "actual approver", "anonymous", "approver", "approver name", "developer", "human",
+        "human approver", "owner", "platform owner", "release manager", "reviewer", "user",
+        "user approver", normalize(field_label),
+    }
+    if normalized in generic or WAIVER_PLACEHOLDER_RE.search(candidate):
+        return False
+    if re.fullmatch(r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}", candidate):
+        return True
+    if re.fullmatch(r"@[a-z][a-z0-9._-]{2,}", candidate):
+        return candidate[1:] not in {"approver", "developer", "human", "owner", "reviewer", "user"}
+    return bool(
+        re.fullmatch(r"[a-z][a-z0-9]*(?:[-_.][a-z0-9]+){2,}", candidate)
+        and re.search(r"\d", candidate)
+    )
+
+
+def has_affirmative_approval(reference: str) -> bool:
+    return bool(
+        WAIVER_AFFIRMATIVE_APPROVAL_RE.search(reference)
+        and not WAIVER_APPROVAL_DENIAL_RE.search(reference)
+    )
 
 
 def has_concrete_approval_anchor(reference: str) -> bool:
@@ -909,34 +945,18 @@ def validate_architecture_review_gates(
         if status not in ARCHITECTURE_REVIEW_SUCCESS_STATUSES and status != "waived":
             violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
         if status == "waived":
-            approver = first_field(lines, (approver_label,)) or ""
-            reference = first_field(lines, (reference_label,)) or ""
-            normalized_approver = normalize(approver)
-            generic_approvers = {
-                "actual approver", "anonymous", "developer", "human", "human approver",
-                "owner", "approver", "reviewer", "user", "user approver",
-            }
-            generic_approvers.add(normalize(approver_label))
-            approver_words = set(re.findall(r"[a-z]+", normalized_approver))
-            generic_approver_words = {
-                "a", "actual", "an", "anonymous", "approver", "developer", "human",
-                "owner", "reviewer", "the", "user",
-            }
-            stripped_approver = strip_markup(approver).strip().lower()
-            structured_approver = bool(
-                re.fullmatch(r"[a-z0-9]+(?:[-_.][a-z0-9]+){2,}", stripped_approver)
-                and re.search(r"\d", stripped_approver)
-            )
+            approvers = field_values(lines, approver_label)
+            references = field_values(lines, reference_label)
+            approver = approvers[0] if len(approvers) == 1 else ""
+            reference = references[0] if len(references) == 1 else ""
             if (
-                value_is_missing(approver)
-                or normalized_approver in generic_approvers
-                or not approver_words
-                or (approver_words <= generic_approver_words and not structured_approver)
-                or WAIVER_PLACEHOLDER_RE.search(approver) is not None
+                len(approvers) != 1
+                or len(references) != 1
+                or value_is_missing(approver)
+                or not has_concrete_approver_identifier(approver, approver_label)
                 or value_is_missing(reference)
                 or WAIVER_PLACEHOLDER_RE.search(reference) is not None
-                or WAIVER_APPROVAL_RE.search(reference) is None
-                or WAIVER_APPROVAL_DENIAL_RE.search(reference) is not None
+                or not has_affirmative_approval(reference)
                 or not has_concrete_approval_anchor(reference)
             ):
                 violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without dedicated concrete approver and approval-reference fields.", f"Record `{approver_label}` with a concrete approver and `{reference_label}` with approval language plus a date, SHA, URL, or issue/reference number.", ARCHITECTURE_REVIEW_GATES_SECTION))

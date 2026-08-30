@@ -18,10 +18,10 @@ for review_kind in architecture_opinion architecture_adherence test_quality_audi
   python3 "$DISPATCH" --review-kind "$review_kind" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/$review_kind.md" >/dev/null
   grep -q "Do not silently invent, rewrite, or erase explicit TODO intent" "$TMP_DIR/$review_kind.md"
   if [[ "$review_kind" == architecture_opinion ]]; then
-    grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/$review_kind.md"
+    [[ "$(grep -Fc "Planning review may challenge proposed horizon intent" "$TMP_DIR/$review_kind.md")" -eq 1 ]]
     ! grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/$review_kind.md"
   else
-    grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/$review_kind.md"
+    [[ "$(grep -Fc "Treat approved implementation horizon and seam as binding" "$TMP_DIR/$review_kind.md")" -eq 1 ]]
     ! grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/$review_kind.md"
   fi
 done
@@ -39,9 +39,9 @@ grep -q "architecture_opinion has fixed lifecycle planning" "$TMP_DIR/mismatched
 for lifecycle in planning delivery; do
   python3 "$DISPATCH" --review-kind critique --lifecycle "$lifecycle" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/critique-$lifecycle.md" >/dev/null
 done
-grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/critique-planning.md"
+[[ "$(grep -Fc "Planning review may challenge proposed horizon intent" "$TMP_DIR/critique-planning.md")" -eq 1 ]]
 ! grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/critique-planning.md"
-grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/critique-delivery.md"
+[[ "$(grep -Fc "Treat approved implementation horizon and seam as binding" "$TMP_DIR/critique-delivery.md")" -eq 1 ]]
 ! grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/critique-delivery.md"
 
 python3 - "$ROOT_DIR" "$RESULT_SCHEMA" "$TMP_DIR/dispatch.md" "$TMP_DIR" <<'PY'
@@ -96,7 +96,7 @@ triple_session.run_dispatch(
     dispatch_markdown_path=triple_dispatch_markdown,
 )
 triple_markdown = triple_dispatch_markdown.read_text(encoding="utf-8")
-assert "Treat approved implementation horizon and seam as binding" in triple_markdown
+assert triple_markdown.count("Treat approved implementation horizon and seam as binding") == 1
 assert "Planning review may challenge proposed horizon intent" not in triple_markdown
 PY
 
