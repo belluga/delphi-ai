@@ -488,6 +488,32 @@ violations, context = validate_implementation_horizon(extract_sections(required_
 assert context["implementation_horizon_present"]
 assert {"HORIZON-MODE-INVALID"} <= {item["code"] for item in violations}
 
+near_collision = valid_current.replace(
+    '## Implementation Horizon & Extensibility Intent',
+    '## Implementation Horizon & Extensibility Intentional Notes',
+)
+violations, context = validate_implementation_horizon(extract_sections(near_collision.splitlines()))
+assert not context["implementation_horizon_present"]
+assert not violations  # A near-collision heading remains unrelated legacy content.
+
+duplicate_horizon = valid_current + '''
+## implementation horizon & extensibility intent (Required)
+- **Mode:** `current-scope-only`
+- **Current delivery:** deliver one bounded change
+- **Explicit future cases informing the design:** `none`
+- **Anticipatory implementation authorized now:** `none`
+- **Not authorized now:** unrelated speculation
+- **Rationale:** duplicate authority
+'''
+violations, context = validate_implementation_horizon(extract_sections(duplicate_horizon.splitlines()))
+assert context["implementation_horizon_section_count"] == 2
+assert {"HORIZON-SECTION-DUPLICATE"} <= {item["code"] for item in violations}
+
+exact_duplicate_horizon = valid_current + "\n" + valid_current
+violations, context = validate_implementation_horizon(extract_sections(exact_duplicate_horizon.splitlines()))
+assert context["implementation_horizon_section_count"] == 2
+assert {"HORIZON-SECTION-DUPLICATE"} <= {item["code"] for item in violations}
+
 empty_at_eof = extract_sections(['## Implementation Horizon & Extensibility Intent'])
 violations, context = validate_implementation_horizon(empty_at_eof)
 assert context["implementation_horizon_present"]

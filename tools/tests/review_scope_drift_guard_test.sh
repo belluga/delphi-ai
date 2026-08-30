@@ -3,6 +3,31 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL="$SCRIPT_DIR/../review_scope_drift_guard.py"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+DELIVERY_WORKFLOW="$REPO_ROOT/workflows/docker/todo-delivery-gates-method.md"
+DELIVERY_SKILL="$REPO_ROOT/skills/wf-docker-todo-delivery-gates-method/SKILL.md"
+
+grep -Fq 'immediately before dispatch, run `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`; rerun it after remediation touching protected sections;' "$DELIVERY_WORKFLOW"
+grep -Fq 'approved baseline SHA and the exact fresh scope-drift guard output' "$DELIVERY_WORKFLOW"
+grep -Fq 'Immediately before final-review dispatch, rerun the same scope-drift guard and repeat it after protected-section remediation.' "$DELIVERY_WORKFLOW"
+grep -Fq 'Immediately before each architecture-adherence or final-review dispatch, rerun `review_scope_drift_guard.py` against the approved baseline; rerun it after protected-section remediation.' "$DELIVERY_SKILL"
+grep -Fq 'approved baseline SHA and the exact fresh guard output; protected remediation requires a new binding from the rerun.' "$DELIVERY_SKILL"
+
+python3 - <<'PY' "$TOOL"
+import importlib.util
+import sys
+from pathlib import Path
+
+tool_path = Path(sys.argv[1])
+spec = importlib.util.spec_from_file_location("review_scope_drift_guard", tool_path)
+module = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(module)
+assert not module.heading_matches(
+    "## Implementation Horizon & Extensibility Intentional Notes",
+    "## Implementation Horizon & Extensibility Intent",
+)
+PY
 
 tmpdir="$(mktemp -d)"
 cleanup() {
@@ -206,5 +231,59 @@ if python3 "$TOOL" --todo "$todo" >"$tmpdir/horizon_no_go.txt"; then
   exit 1
 fi
 grep -q "Implementation Horizon & Extensibility Intent" "$tmpdir/horizon_no_go.txt"
+
+python3 - <<'PY' "$todo"
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace("**Mode:** `bounded-anticipatory-extensibility`", "**Mode:** `current-scope-only`", 1)
+text = text.replace("## Implementation Horizon & Extensibility Intent", "## implementation horizon & extensibility intent", 1)
+text = text.replace("**Rationale:** baseline contract", "**Rationale:** lowercase heading drift", 1)
+path.write_text(text, encoding="utf-8")
+PY
+if python3 "$TOOL" --todo "$todo" >"$tmpdir/lowercase_horizon_no_go.txt"; then
+  echo "Expected no-go outcome for lowercase implementation-horizon drift." >&2
+  exit 1
+fi
+grep -q "Implementation Horizon & Extensibility Intent" "$tmpdir/lowercase_horizon_no_go.txt"
+
+python3 - <<'PY' "$todo"
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace("## implementation horizon & extensibility intent", "## Implementation Horizon & Extensibility Intent (Required)", 1)
+text = text.replace("**Rationale:** lowercase heading drift", "**Rationale:** suffixed heading drift", 1)
+path.write_text(text, encoding="utf-8")
+PY
+if python3 "$TOOL" --todo "$todo" >"$tmpdir/suffixed_horizon_no_go.txt"; then
+  echo "Expected no-go outcome for suffixed implementation-horizon drift." >&2
+  exit 1
+fi
+grep -q "Implementation Horizon & Extensibility Intent" "$tmpdir/suffixed_horizon_no_go.txt"
+
+python3 - <<'PY' "$todo"
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace("## Implementation Horizon & Extensibility Intent (Required)", "## Implementation Horizon & Extensibility Intent", 1)
+text = text.replace("**Rationale:** suffixed heading drift", "**Rationale:** baseline contract", 1)
+text += '''\n## Implementation Horizon & Extensibility Intent
+- **Mode:** `current-scope-only`
+- **Current delivery:** keep the original bounded slice
+- **Explicit future cases informing the design:** `none`
+- **Anticipatory implementation authorized now:** `none`
+- **Not authorized now:** speculative expansion
+- **Rationale:** duplicate authority
+'''
+path.write_text(text, encoding="utf-8")
+PY
+if python3 "$TOOL" --todo "$todo" >"$tmpdir/duplicate_horizon_no_go.txt"; then
+  echo "Expected no-go outcome for duplicate normalized implementation horizons." >&2
+  exit 1
+fi
+grep -q "REVIEW-SCOPE-DRIFT-HORIZON-DUPLICATE" "$tmpdir/duplicate_horizon_no_go.txt"
 
 echo "review_scope_drift_guard_test: PASS"

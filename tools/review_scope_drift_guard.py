@@ -47,7 +47,7 @@ MATERIAL_HEADINGS = (
     "## Security Risk Assessment",
     "## Performance & Concurrency Risk Assessment",
 )
-H2_RE = re.compile(r"^##\s+.+$")
+H2_RE = re.compile(r"^##\s+(.+?)\s*$")
 
 
 def clean_value(raw: str) -> str:
@@ -68,20 +68,39 @@ def read_lines(path: Path) -> list[str]:
     return path.read_text(encoding="utf-8").splitlines()
 
 
+def normalize_heading(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip().lower())
+
+
+def heading_matches(line: str, heading_prefix: str) -> bool:
+    actual = H2_RE.match(line.strip())
+    expected = H2_RE.match(heading_prefix)
+    if actual is None or expected is None:
+        return False
+    expected_title = normalize_heading(expected.group(1))
+    actual_title = normalize_heading(actual.group(1))
+    return actual_title == expected_title or actual_title.startswith(f"{expected_title} ")
+
+
 def find_section_bounds(lines: list[str], heading_prefix: str) -> tuple[int, int] | None:
-    start = None
+    matches = find_section_bounds_all(lines, heading_prefix)
+    return matches[0] if matches else None
+
+
+def find_section_bounds_all(lines: list[str], heading_prefix: str) -> list[tuple[int, int]]:
+    starts: list[int] = []
     for index, line in enumerate(lines):
-        if line.strip().startswith(heading_prefix):
-            start = index + 1
-            break
-    if start is None:
-        return None
-    end = len(lines)
-    for index in range(start, len(lines)):
-        if lines[index].strip().startswith("## "):
-            end = index
-            break
-    return start, end
+        if heading_matches(line, heading_prefix):
+            starts.append(index + 1)
+    bounds: list[tuple[int, int]] = []
+    for start in starts:
+        end = len(lines)
+        for index in range(start, len(lines)):
+            if H2_RE.match(lines[index].strip()):
+                end = index
+                break
+        bounds.append((start, end))
+    return bounds
 
 
 def extract_field_in_section(lines: list[str], heading_prefix: str, label: str) -> str:
@@ -129,6 +148,10 @@ def section_body(lines: list[str], heading_prefix: str) -> list[str] | None:
     return normalize_section(lines[start:end])
 
 
+def section_bodies(lines: list[str], heading_prefix: str) -> list[list[str]]:
+    return [normalize_section(lines[start:end]) for start, end in find_section_bounds_all(lines, heading_prefix)]
+
+
 def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", "-C", str(repo_root), *args],
@@ -163,11 +186,11 @@ def commit_reaches_ref(repo_root: Path, commit: str, ref: str) -> bool:
 def material_changes(baseline_lines: list[str], current_lines: list[str]) -> list[str]:
     changed: list[str] = []
     for heading in MATERIAL_HEADINGS:
-        baseline_body = section_body(baseline_lines, heading)
-        current_body = section_body(current_lines, heading)
-        if baseline_body is None and current_body is None:
+        baseline_bodies = section_bodies(baseline_lines, heading)
+        current_bodies = section_bodies(current_lines, heading)
+        if not baseline_bodies and not current_bodies:
             continue
-        if baseline_body != current_body:
+        if baseline_bodies != current_bodies:
             changed.append(heading.replace("## ", "", 1))
     return changed
 
@@ -270,6 +293,14 @@ def evaluate(todo_path: Path) -> dict:
             )
 
     changed_sections: list[str] = []
+    horizon_matches = find_section_bounds_all(current_lines, "## Implementation Horizon & Extensibility Intent")
+    if len(horizon_matches) > 1:
+        issues.append(
+            build_issue(
+                "REVIEW-SCOPE-DRIFT-HORIZON-DUPLICATE",
+                "Implementation Horizon & Extensibility Intent appears more than once after normalized heading matching.",
+            )
+        )
     if baseline_lines is not None:
         changed_sections = material_changes(baseline_lines, current_lines)
         if changed_sections:
