@@ -25,6 +25,17 @@ assert_go() {
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
 }
 
+python3 - "$ROOT_DIR/tools" <<'PY'
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import todo_completion_guard as guard
+
+assert not guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 findings.", "complete"])
+assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "P1 remains unresolved.", "complete"])
+assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 in package A; P1 remains unresolved in package B.", "complete"])
+PY
+
 cat > "$TMP_DIR/local-implemented-no-evidence.md" <<'TODO'
 # TODO: Local Implemented No Evidence
 
@@ -149,9 +160,9 @@ cat > "$TMP_DIR/complete-evidence.md" <<'TODO'
 | VAL-01 | Validation Steps | Unit test: completion guard regression script passes. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | Canonical CI status cell. | Repository checkout only. | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
@@ -188,12 +199,12 @@ cat > "$TMP_DIR/rejected-mutation-real-backend-evidence.md" <<'TODO'
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | SCP-01 | Scope | Guard a referenced type mutation. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 | DOD-01 | Definition of Done | An admin PATCH mutation returns 422 with no mutation on the rejected path. | real-backend integration PATCH mutation feature test | `php artisan test --filter=referenced_type_rejection` | Laravel real-backend integration tenant test database | passed | PATCH mutation is exercised through the Laravel kernel. |
-| VAL-01 | Validation Steps | Feature test: run the real-backend mutation regression. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
+| VAL-01 | Validation Steps | Feature test: run the real-backend mutation regression. | real-backend mutation test | `php artisan test --filter=referenced_type_rejection` | Laravel real-backend integration tenant test database | passed | PATCH mutation is exercised through the Laravel kernel. |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | Canonical CI status cell. | Repository checkout only. | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
@@ -236,9 +247,9 @@ cat > "$TMP_DIR/unresolved-pipeline-p1.md" <<'TODO'
 | VAL-01 | Validation Steps | Unit test: completion guard regression script passes. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | Canonical CI status cell. | Repository checkout only. | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |

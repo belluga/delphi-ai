@@ -300,6 +300,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `tools/tests/review_scope_drift_guard_test.sh`
 - `tools/todo_authority_guard.py`
 - `tools/tests/todo_authority_guard_test.sh`
+- `tools/todo_completion_guard.py`
+- `tools/tests/todo_completion_guard_test.sh`
 - `tools/audit_instruction_baselines.sh`
 - `tools/tests/audit_instruction_baselines_test.sh`
 - `skills/wf-docker-todo-driven-execution-method/SKILL.md`
@@ -382,11 +384,13 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `delphi-ai` | `tools/review_scope_drift_guard.py` | `M` | Horizon becomes a protected section. |
 | `delphi-ai` | `tools/subagent_review_dispatch.py` | `M` | Shared and lifecycle-specific reviewer authority. |
 | `delphi-ai` | `tools/todo_authority_guard.py` | `M` | Objective horizon truth-table validation. |
+| `delphi-ai` | `tools/todo_completion_guard.py` | `M` | Canonical P1/P2 negative-evidence parser required by PR-17 and the completion gate. |
 | `delphi-ai` | `tools/verify_adherence_sync.sh` | `M` | Existing semantic sync validator covers the full simplification mandate. |
 | `delphi-ai` | `tools/tests/audit_instruction_baselines_test.sh` | `any` | Negative Laravel duplicate-authority fixture (untracked until the implementation commit). |
 | `delphi-ai` | `tools/tests/review_scope_drift_guard_test.sh` | `M` | Explicit horizon drift regression. |
 | `delphi-ai` | `tools/tests/subagent_review_dispatch_test.sh` | `M` | All-kind reviewer authority assertions. |
 | `delphi-ai` | `tools/tests/todo_authority_guard_test.sh` | `M` | Per-mode, placeholder, missing-field, and legacy coverage. |
+| `delphi-ai` | `tools/tests/todo_completion_guard_test.sh` | `M` | Regression coverage for the same canonical P1/P2 negative-evidence parser. |
 | `delphi-ai` | `foundation_documentation/todos/active/delphi-simplification-first-review-authority.md` | `M` | Approval, execution, and delivery evidence. |
 
 ### Not Expected Changed Paths
@@ -404,7 +408,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ### Diff Deviation Analysis
 | Diff item | Classification (`scope deviation|necessary need|noise`) | Evidence / agent defense | Decision (`revert|clean noise|retain with renewed approval`) | User validation / renewed approval |
 | --- | --- | --- | --- | --- |
-| `none` | `necessary need` | `All current paths are explicitly classified above.` | `n/a` | `renewed APROVADO already recorded for D-01 through D-18` |
+| `tools/todo_completion_guard.py` (`M`) | `necessary need` | Same canonical P1/P2 negative-evidence parser required by PR-17 and the completion gate; it stays inside the already-approved elastic execution boundary and Expected Touched Surfaces allowance for other objective TODO guards/tests. | `retain under existing approval` | `No new story, behavior horizon, or risk conversation: this is approved-scope concretization, so no renewed approval is required.` |
 
 ## Plan Review Gate
 - **Status:** `passed; architecture opinion and independent critique converged, with all material findings integrated before renewed APROVADO`
@@ -650,7 +654,7 @@ All rows are instruction/tooling structure-only. No criterion changes a user-vis
 | `S-11` | `Scope` | Extend the existing `tools/review_scope_drift_guard.py` and its focused test to compare the normative horizon section; do not create a second drift guard. | test | `tools/review_scope_drift_guard.py`; focused test | `n/a` | `passed` | Existing guard extended. |
 | `S-12` | `Scope` | Bind the horizon contract to the frozen decision/approval baseline and rerun the same scope-drift guard before architecture-adherence/final delivery review. | guard/review | baseline `a6e8e95b8431e81e3a0b073d7260c92a62c942f6`; guard `go/23/0` | `n/a` | `passed` | Adherence binding complete; final rerun remains required. |
 | `S-13` | `Scope` | Run the existing scope-drift guard immediately before each applicable `architecture_adherence` and `final_review` dispatch, rerunning it after any remediation that touches protected sections; bind each review record to the approved baseline commit and guard output. | doc/test | D-15 workflow/skill audit; focused baseline test | `n/a` | `passed` | Final-review invocation remains open. |
-| `S-14` | `Scope` | Establish lazy adoption: new or pre-approval TODOs require the horizon section; already-approved TODOs preserve explicit frozen decisions and adopt the section at their next approval-material refresh without mass migration. | test | `bash tools/tests/todo_authority_guard_test.sh` | `n/a` | `passed` | Legacy absence regression passed. |
+| `S-14` | `Scope` | Establish lazy adoption: new or pre-approval TODOs require the horizon section; already-approved TODOs preserve explicit frozen decisions and adopt the section at their next approval-material refresh without mass migration. | test | `bash tools/tests/todo_authority_guard_test.sh`; migration/legacy-adoption regression | `n/a` | `passed` | Legacy absence migration regression passed. |
 | `S-15` | `Scope` | Add proportionate deterministic regression coverage for objective prompt/template/contract requirements without pretending to automate subjective architecture judgment. | test/review | four focused tests; independent adherence/TQA review | `n/a` | `passed` | Judgment remains reviewer-owned. |
 | `S-16` | `Scope` | Synchronize derived skills and compatibility mirrors from canonical sources using existing Delphi synchronization mechanisms. | tooling | `bash tools/self_check.sh`; applicable sync helpers | `n/a` | `passed` | Delphi canonical self-check passed. |
 | `S-17` | `Scope` | Retire the full stack-agnostic duplicate under the Laravel rule path by replacing it with a concise compatibility adjunct/pointer containing only Laravel-specific loading deltas, with the core TODO rule as the sole shared authority. | test | `bash tools/tests/audit_instruction_baselines_test.sh` | `n/a` | `passed` | Laravel-only adjunct regression passed. |
@@ -665,17 +669,17 @@ All rows are instruction/tooling structure-only. No criterion changes a user-vis
 | `DOD-08` | `Definition of Done` | Reviewers remain authorized to flag a materially simpler faithful realization, implementation beyond the authorized seam, SOLID violations, duplicated decision logic, hidden coupling, or needless layers. | doc/test | dispatch focus; all-kind test | `n/a` | `passed` | Structure-only reviewer focus. |
 | `DOD-09` | `Definition of Done` | Reviewer language distinguishes `essential complexity authorized by intent` from `incidental complexity introduced by implementation`. | doc/test | dispatch focus; all-kind test | `n/a` | `passed` | Structure-only reviewer focus. |
 | `DOD-10` | `Definition of Done` | Existing `elegance_position` and structural-soundness mechanisms are reused unless an implementation-time evidence record demonstrates that they cannot carry the contract without ambiguity. | code/test | dispatch; schema unchanged; dispatch test | `n/a` | `passed` | No schema axis added. |
-| `DOD-11` | `Definition of Done` | The canonical `Foundational, Not Minimalist` / `Complete Vision over Minimalism` language is reconciled so it cannot be read as blanket permission to implement all anticipated capabilities immediately. | doc/review | canonical principles; self-check | `n/a` | `passed` | Structure-only canon. |
+| `DOD-11` | `Definition of Done` | The canonical `Foundational, Not Minimalist` / `Complete Vision over Minimalism` language is reconciled so it cannot be read as blanket permission to implement all anticipated capabilities immediately. | doc/review | canonical principles; self-check | `n/a` | `passed` | Approved instruction-only structure deviation: navigation/browser/device N/A; no user-observable product flow can change. |
 | `DOD-12` | `Definition of Done` | Objective contract propagation is covered by focused tests or existing self-check surfaces; subjective simplicity judgment remains reviewer-owned. | test | four focused tests; self-check | `n/a` | `passed` | No faux deterministic judgment. |
 | `DOD-13` | `Definition of Done` | The same scope-drift guard protects the horizon section before approval and before architecture-adherence/final delivery review against the frozen decision/approval baseline. | guard/test | scope-drift test; baseline `a6e8e95...`; `go/23/0` | `n/a` | `passed` | Final review rerun remains required. |
 | `DOD-14` | `Definition of Done` | Mode and conditional-field presence are deterministically checkable, but no guard claims to decide whether an architecture is genuinely simple. | code/test | authority guard and focused test | `n/a` | `passed` | Objective-only validation. |
-| `DOD-15` | `Definition of Done` | `todo_authority_guard.py` validates the exact per-mode truth table when the section is present, with focused tests for both modes, placeholders, and legacy absence; no exporter/schema expansion or new validator is introduced. | code/test | authority guard focused test | `n/a` | `passed` | Existing guard extended. |
+| `DOD-15` | `Definition of Done` | `todo_authority_guard.py` validates the exact per-mode truth table when the section is present, with focused tests for both modes, placeholders, and legacy absence; no exporter/schema expansion or new validator is introduced. | code/test | authority guard focused test; schema absence/no schema expansion asserted | `n/a` | `passed` | Existing guard extended without schema expansion. |
 | `DOD-16` | `Definition of Done` | Lazy adoption prevents existing approved TODOs from losing explicit extensibility intent merely because they predate the new section. | test | authority guard legacy-absence test | `n/a` | `passed` | No mass migration. |
 | `DOD-17` | `Definition of Done` | Canonical sources, skills, generated mirrors, manifest entries, and tests are synchronized with no contradictory wording. | tooling | self-check; applicable sync helpers | `n/a` | `passed` | Delphi local semantic checks passed. |
 | `DOD-18` | `Definition of Done` | The Laravel TODO-rule path no longer duplicates the global rule; it points to the core authority and contains only concrete Laravel-specific adjunct behavior, if any. | test | baseline audit test | `n/a` | `passed` | Adjunct is Laravel-only. |
 | `DOD-19` | `Definition of Done` | The existing `tools/audit_instruction_baselines.sh` plus a focused negative regression test reject a Laravel adjunct that regrows shared stack-agnostic TODO authority. | test | baseline audit focused test | `n/a` | `passed` | Literal/structural overlap detection. |
 | `DOD-20` | `Definition of Done` | Delphi agnosticism review passes; no project-specific domain truth enters reusable canon. | review | manual agnosticism review; independent adherence | `n/a` | `passed` | No downstream domain truth. |
-| `VAL-01` | `Validation Steps` | Search canonical and derived instruction surfaces for contradictory future-implementation wording, including `from day one`, `Not Minimalist`, `Complete Vision over Minimalism`, and reviewer simplicity language. | review | manual agnosticism/coherence review; self-check | `n/a` | `passed` | Structure-only review. |
+| `VAL-01` | `Validation Steps` | Search canonical and derived instruction surfaces for contradictory future-implementation wording, including `from day one`, `Not Minimalist`, `Complete Vision over Minimalism`, and reviewer simplicity language. | review | manual agnosticism/coherence review; self-check | `n/a` | `passed` | Approved instruction-only structure deviation: navigation/browser/device N/A; no user-observable product flow can change. |
 | `VAL-02` | `Validation Steps` | Verify the tactical TODO template contains one explicit implementation-horizon/extensibility contract and does not create a competing source of truth. | test | authority guard test; baseline audit | `n/a` | `passed` | One core authority. |
 | `VAL-03` | `Validation Steps` | Verify reviewer dispatch receives one shared non-invention invariant plus correct planning-versus-delivery lifecycle semantics. | test | dispatch all-kind test | `n/a` | `passed` | Lifecycle regression. |
 | `VAL-04` | `Validation Steps` | Verify changes to `Implementation Horizon & Extensibility Intent` participate in `review_scope_drift_guard.py` comparison and focused tests. | test | scope-drift focused test | `n/a` | `passed` | Parser parity regression. |
@@ -766,6 +770,11 @@ All rows are instruction/tooling structure-only. No criterion changes a user-vis
 | `PR-12-h1-h6-decorated-heading-mismatch` | guard review | high | release-blocker | fix in current TODO | fixed | Shared heading grammar/parser parity. |
 | `PR-13-hierarchical-subsection-boundary` | integration review | high | release-blocker | fix in current TODO | fixed | Same-or-higher-level bounds preserve nested bodies. |
 | `PR-14-atx-0-3-vs-4-space-mismatch` | TQA review | high | release-blocker | fix in current TODO | fixed | Shared ATX 0-3 grammar; 4-space code-like text rejected. |
+| `PR-15-ci-matrix-status-index` | closeout review | high | release-blocker | fix in current TODO | fixed | Authority guard now reads canonical 9-column CI status cell 6; pass/failing-status regressions pass. |
+| `PR-16-architecture-review-status-enum` | closeout review | medium | release-blocker | fix in current TODO | fixed | Required architecture review accepts canonical final `no_material_findings` and `findings_integrated` statuses only. |
+| `PR-17-p1-negative-phrase` | closeout review | medium | release-blocker | fix in current TODO | fixed | `No unresolved P1/P2` is explicitly clean while genuine unresolved P1/P2 remains blocking. |
+| `PR-18-checklist-status-coverage` | closeout review | medium | release-blocker | fix in current TODO | fixed | Drift normalization ignores only `[ ]`, `[x]`, and `[X]`; `[~]` and `[!]` remain material. |
+| `PR-19-laravel-trigger-mirror-pointer` | closeout review | medium | release-blocker | fix in current TODO | fixed | Canonical/Cline/Claude trigger skills use repository-root invariant core and adjunct pointers, verified by baseline audit test. |
 
 ## Security Risk Assessment (Mandatory Before Delivery)
 - **Risk level:** `none`

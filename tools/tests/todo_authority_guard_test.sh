@@ -46,6 +46,31 @@ assert_go() {
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
 }
 
+python3 - "$ROOT_DIR/tools" <<'PY'
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import todo_authority_guard as authority
+import todo_completion_guard as completion
+
+assert not authority.row_has_unresolved_p1_p2(["No unresolved P1/P2 findings."])
+assert authority.row_has_unresolved_p1_p2(["P1 remains unresolved."])
+assert authority.row_has_unresolved_p1_p2(["No unresolved P1/P2 in package A; P1 remains unresolved in package B."])
+assert not completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 findings.", "complete"])
+assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "P2 remains unresolved.", "complete"])
+assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", "No unresolved P1/P2 in package A; P1 remains unresolved in package B.", "complete"])
+
+sections = {"Architecture Review Gates": [
+    "- **Architecture decision review:** `required`",
+    "- **Decision review status:** `no_material_findings`",
+    "- **Architecture adherence review:** `required`",
+    "- **Adherence review status:** `findings_integrated`",
+]}
+assert not authority.validate_architecture_review_gates(
+    sections, architecture_required=True, delivery_claim=True, allow_waivers=False
+)[0]
+PY
+
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
 # TODO: Missing Approval
 
@@ -328,19 +353,19 @@ cat > "$TMP_DIR/local-implemented-complete.md" <<'TODO'
 | `rules/core/todo-driven-execution-model-decision.md` | TODO execution. | Approval gate. | Silent changes. | Check before execution. |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / authority guard | Guard changed. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / authority guard | Guard changed. | Canonical CI status column. | Repository checkout only. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
+| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
+| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
 
 ## Promotion Finding Routing Ledger
 | Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
@@ -349,6 +374,17 @@ cat > "$TMP_DIR/local-implemented-complete.md" <<'TODO'
 TODO
 
 assert_go "$TMP_DIR/local-implemented-complete.md"
+
+cp "$TMP_DIR/local-implemented-complete.md" "$TMP_DIR/local-implemented-ci-status-failing.md"
+python3 - "$TMP_DIR/local-implemented-ci-status-failing.md" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.write_text(path.read_text(encoding="utf-8").replace("| Local-Implemented | passed |", "| Local-Implemented | blocked |", 1), encoding="utf-8")
+PY
+assert_no_go "$TMP_DIR/local-implemented-ci-status-failing.md"
+grep -q "DELIVERY-GATE-STATUS-NOT-PASSING" "$OUTPUT_FILE"
 
 cat > "$TMP_DIR/promotion-p1-open.md" <<'TODO'
 # TODO: Promotion P1 Open
@@ -366,19 +402,19 @@ cat > "$TMP_DIR/promotion-p1-open.md" <<'TODO'
 | `skills/github-stage-promotion-orchestrator/SKILL.md` | Promotion flow. | P1 blocks completion. | P1 bypass. | Check routing. |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / authority guard | Guard changed. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / authority guard | Guard changed. | Canonical CI status column. | Repository checkout only. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
+| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
+| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
 
 ## Promotion Finding Routing Ledger
 | Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |

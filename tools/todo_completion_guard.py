@@ -769,17 +769,17 @@ def validate_ci_equivalent_suite_matrix(
         return violations
 
     for row in rows:
-        if len(row) < 7:
+        if len(row) < 9:
             violations.append(
                 build_violation(
                     "CI-EQUIVALENT-ROW-INCOMPLETE",
-                    f"CI-equivalent suite row has fewer than 7 cells: {row_text(row)}",
-                    "Use columns: Repository / CI Surface, Why In Scope, Local CI-Equivalent Command, Required Before, Status, Evidence Artifact / Command, Notes.",
+                f"CI-equivalent suite row has fewer than 9 cells: {row_text(row)}",
+                "Use the canonical 9-column Local CI-Equivalent Suite Matrix shape from the TODO template.",
                     CI_EQ_SECTION,
                 )
             )
             continue
-        repo_surface, why_in_scope, local_command, _required_before, status_raw, evidence, notes = row[:7]
+        repo_surface, why_in_scope, _behavior, _preconditions, local_command, _required_before, status_raw, evidence, notes = row[:9]
         status = normalize_text(status_raw)
         combined = " ".join((repo_surface, why_in_scope, local_command, evidence, notes))
         if any(is_placeholder(cell) for cell in (repo_surface, why_in_scope, local_command, status_raw, evidence)):
@@ -849,6 +849,8 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
     if not has_high_priority:
         return False
 
+    remaining = re.sub(r"\bno unresolved p1(?:/p2)?\b", "", normalized)
+
     unresolved_phrases = (
         "unresolved",
         "not resolved",
@@ -863,8 +865,11 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
         "blocker p1",
         "blocker p2",
     )
-    if any(phrase in normalized for phrase in unresolved_phrases):
+    if any(phrase in remaining for phrase in unresolved_phrases):
         return True
+
+    if remaining != normalized:
+        return False
 
     clean_phrases = (
         "no p1",

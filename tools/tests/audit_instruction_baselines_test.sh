@@ -23,6 +23,26 @@ git -C "$TMP_DIR" init -q
 grep -q '| Laravel TODO authority adjunct | PASS |' "$TMP_DIR/pass.txt"
 
 python3 - "$TMP_DIR" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+core = "rules/core/todo-driven-execution-model-decision.md"
+adjunct = "rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
+assert (root / core).is_file()
+assert (root / adjunct).is_file()
+for skill in (
+    root / "skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md",
+    root / ".cline/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md",
+    root / ".claude/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md",
+):
+    text = skill.read_text(encoding="utf-8")
+    assert f"`{core}` from the repository root" in text, skill
+    assert f"`{adjunct}` from the repository root" in text, skill
+    assert "](../../rules/" not in text, skill
+PY
+
+python3 - "$TMP_DIR" <<'PY'
 import re
 import sys
 from pathlib import Path

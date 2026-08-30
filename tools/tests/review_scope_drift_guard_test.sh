@@ -80,6 +80,10 @@ checklist_current = [
 assert module.material_changes(checklist_baseline, checklist_current) == []
 checklist_current[1] = "- [x] changed criterion text"
 assert "Scope" in module.material_changes(checklist_baseline, checklist_current)
+checklist_current[1] = "- [~] unchanged criterion"
+assert "Scope" in module.material_changes(checklist_baseline, checklist_current)
+checklist_current[1] = "- [!] unchanged criterion"
+assert "Scope" in module.material_changes(checklist_baseline, checklist_current)
 
 governance_baseline = [
     "## Architecture Change Governance",
