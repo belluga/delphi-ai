@@ -42,12 +42,14 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
    ```bash
    python3 delphi-ai/tools/subagent_review_dispatch.py \
      --review-kind critique \
+     --lifecycle planning \
      --package foundation_documentation/artifacts/tmp/critique-package.md \
      --reviewer-count 1 \
      --todo-path foundation_documentation/todos/active/docker/example.md \
      --json-output foundation_documentation/artifacts/tmp/subagent-critique-dispatch.json \
      --markdown-output foundation_documentation/artifacts/tmp/subagent-critique-dispatch.md
    ```
+   Use `--lifecycle delivery` when the bounded critique is reviewing an implemented/delivery package. Critique dispatch fails closed when lifecycle is omitted.
 2. Run the fresh internal reviewer through the canonical runner. It embeds the bounded package in a closed stdin prompt, records JSONL/stderr, requires `turn.completed`, and falls back to the final streamed message only when `--output-last-message` is absent:
    ```bash
    python3 delphi-ai/tools/subagent_review_run.py \

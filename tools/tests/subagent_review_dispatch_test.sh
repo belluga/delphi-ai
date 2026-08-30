@@ -14,19 +14,35 @@ python3 "$DISPATCH" \
   --json-output "$TMP_DIR/dispatch.json" \
   --markdown-output "$TMP_DIR/dispatch.md"
 
-for review_kind in architecture_opinion architecture_adherence critique test_quality_audit final_review cutover_integrity_audit; do
+for review_kind in architecture_opinion architecture_adherence test_quality_audit final_review cutover_integrity_audit; do
   python3 "$DISPATCH" --review-kind "$review_kind" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/$review_kind.md" >/dev/null
   grep -q "Do not silently invent, rewrite, or erase explicit TODO intent" "$TMP_DIR/$review_kind.md"
   if [[ "$review_kind" == architecture_opinion ]]; then
     grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/$review_kind.md"
-  elif [[ "$review_kind" == critique ]]; then
-    grep -q "Planning critique may challenge or recommend but never rewrite proposed intent" "$TMP_DIR/$review_kind.md"
-    grep -q "delivery-side, approved intent is binding and material redesign routes to renewed approval" "$TMP_DIR/$review_kind.md"
-    grep -q "audit-protocol triple-review performance lane when it invokes critique" "$TMP_DIR/$review_kind.md"
+    ! grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/$review_kind.md"
   else
     grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/$review_kind.md"
+    ! grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/$review_kind.md"
   fi
 done
+
+if python3 "$DISPATCH" --review-kind critique --package "$TMP_DIR/package.md" >"$TMP_DIR/missing-lifecycle.txt" 2>&1; then
+  exit 1
+fi
+grep -q "critique requires explicit --lifecycle planning|delivery" "$TMP_DIR/missing-lifecycle.txt"
+
+if python3 "$DISPATCH" --review-kind architecture_opinion --lifecycle delivery --package "$TMP_DIR/package.md" >"$TMP_DIR/mismatched-lifecycle.txt" 2>&1; then
+  exit 1
+fi
+grep -q "architecture_opinion has fixed lifecycle planning" "$TMP_DIR/mismatched-lifecycle.txt"
+
+for lifecycle in planning delivery; do
+  python3 "$DISPATCH" --review-kind critique --lifecycle "$lifecycle" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/critique-$lifecycle.md" >/dev/null
+done
+grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/critique-planning.md"
+! grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/critique-planning.md"
+grep -q "Treat approved implementation horizon and seam as binding" "$TMP_DIR/critique-delivery.md"
+! grep -q "Planning review may challenge proposed horizon intent" "$TMP_DIR/critique-delivery.md"
 
 python3 - "$ROOT_DIR" "$RESULT_SCHEMA" "$TMP_DIR/dispatch.md" "$TMP_DIR" <<'PY'
 import copy
@@ -67,6 +83,21 @@ synthetic_path.write_text(json.dumps(synthetic_schema), encoding="utf-8")
 dispatcher.RESULT_SCHEMA_PATH = synthetic_path
 synthetic_contract = "\n".join(dispatcher.result_contract_lines({"review_kind": "architecture_opinion"}))
 assert "`synthetic_required`" in synthetic_contract
+
+sys.path.insert(0, str(root_dir / "skills" / "audit-protocol-triple-review" / "scripts"))
+triple_session = importlib.import_module("triple_audit_session")
+triple_dispatch_json = Path(sys.argv[4]) / "triple-dispatch.json"
+triple_dispatch_markdown = Path(sys.argv[4]) / "triple-dispatch.md"
+triple_session.run_dispatch(
+    package_path=Path(sys.argv[4]) / "package.md",
+    todo_path=None,
+    lane={"review_kind": "critique", "lifecycle": "delivery", "goal": "Delivery audit."},
+    dispatch_json_path=triple_dispatch_json,
+    dispatch_markdown_path=triple_dispatch_markdown,
+)
+triple_markdown = triple_dispatch_markdown.read_text(encoding="utf-8")
+assert "Treat approved implementation horizon and seam as binding" in triple_markdown
+assert "Planning review may challenge proposed horizon intent" not in triple_markdown
 PY
 
 printf 'subagent_review_dispatch_test: OK\n'

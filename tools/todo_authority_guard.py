@@ -20,6 +20,7 @@ todo_completion_guard.py. It emits a TEACH runtime response and exits with:
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import re
 import sys
@@ -114,20 +115,28 @@ PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS = (
 HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+(.+?)\s*$")
 P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
 P1_P2_CLEAN_NEGATIVE_RE = re.compile(
-    r"\bno\s+unresolved\s+p1\s*(?:/|\band\b|\bor\b)\s*p2(?:\s+findings?)?"
+    r"^\s*(?:\bno\s+unresolved\s+p1\s*(?:/|\band\b|\bor\b)\s*p2(?:\s+findings?)?"
     r"|\bno\s+p1\s+(?:and|or)\s+(?:no\s+)?p2\s+(?:anti-pattern\s+)?findings?"
     r"|\bno\s+p1\s*/\s*p2\s+findings?"
-    r"|\bno\s+p[12]\s+findings?",
+    r"|\bno\s+p[12]\s+findings?)\s*$",
     re.IGNORECASE,
 )
 P1_P2_DIRTY_RE = re.compile(
     r"\b(?:unresolved|open|pending|blocked|blocker|failing|reopened|still\s+open|"
-    r"not\s+(?:fixed|resolved|integrated|clean)|needs?\s+(?:review|remediation)|"
+    r"not|needs?\s+(?:review|remediation)|"
     r"requires?\s+remediation)\b",
     re.IGNORECASE,
 )
 P1_P2_CLEAN_DISPOSITION_RE = r"(?:fixed|resolved|integrated|clean)"
 WAIVER_PLACEHOLDER_RE = re.compile(r"\b(?:n/?a|none|tbd|pending|required|placeholder)\b", re.IGNORECASE)
+WAIVER_APPROVAL_RE = re.compile(r"\b(?:aprovado|approved|approval)\b", re.IGNORECASE)
+WAIVER_APPROVAL_DENIAL_RE = re.compile(
+    r"\b(?:not\s+approved|not\s+(?:an?\s+)?approval|n[aã]o\s+aprovad[oa]|unapproved|disapproved|"
+    r"approval\s+(?:not\s+(?:approved|granted)|denied|refused|rejected|revoked)|"
+    r"(?:denied|refused|rejected|revoked)\s+(?:the\s+)?approval|"
+    r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada))\b",
+    re.IGNORECASE,
+)
 
 
 def normalize(value: str) -> str:
@@ -210,28 +219,66 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
     """Fail closed for P1/P2 evidence in canonical Findings and Resolution cells."""
     if len(row) < 6:
         return False
-    # Preserve Findings/Resolution boundaries and raw separators before
-    # normalization so a clean disposition cannot leak into another clause.
+    cell_states: list[dict[str, set[str]]] = []
+    has_unqualified_dirty_clause = False
     for cell in row[4:6]:
+        states = {"p1": set(), "p2": set()}
         for raw_clause in re.split(r"[;.,|\n]+", cell):
+            for clean_negative in P1_P2_CLEAN_NEGATIVE_RE.finditer(raw_clause):
+                for severity in P1_P2_RE.findall(clean_negative.group(0)):
+                    states[severity.lower()].add("clean")
             clause = normalize(P1_P2_CLEAN_NEGATIVE_RE.sub("", raw_clause))
+            if P1_P2_DIRTY_RE.search(clause) and not P1_P2_RE.search(clause):
+                has_unqualified_dirty_clause = True
             for severity in ("p1", "p2"):
                 if not re.search(rf"\b{severity}\b", clause):
                     continue
                 if P1_P2_DIRTY_RE.search(clause):
-                    return True
-                if not (
+                    states[severity].add("dirty")
+                    continue
+                severity_group = rf"\b{severity}\b(?:\s*(?:/|and|or)\s*\bp[12]\b)*"
+                direct_clean = (
                     re.search(
-                        rf"\b{severity}\b\s*(?::|-)?\s*(?:(?:is|was|has been)\s+)?{P1_P2_CLEAN_DISPOSITION_RE}\b",
+                        rf"{severity_group}\s*(?::|-)?\s*(?:(?:is|was|has been)\s+)?{P1_P2_CLEAN_DISPOSITION_RE}\b",
                         clause,
                     )
                     or re.search(
-                        rf"\b{P1_P2_CLEAN_DISPOSITION_RE}\b\s*(?:(?:is|was|has been)\s+)?\b{severity}\b",
+                        rf"\b{P1_P2_CLEAN_DISPOSITION_RE}\b\s*(?:(?:is|was|has been)\s+)?(?:\bp[12]\b\s*(?:/|and|or)\s*)*\b{severity}\b",
                         clause,
                     )
-                ):
-                    return True
+                )
+                states[severity].add("clean" if direct_clean else "ambiguous")
+        cell_states.append(states)
+
+    findings, resolution = cell_states
+    if has_unqualified_dirty_clause and any(states[severity] for states in cell_states for severity in ("p1", "p2")):
+        return True
+    for severity in ("p1", "p2"):
+        resolution_states = resolution[severity]
+        if resolution_states:
+            if resolution_states != {"clean"}:
+                return True
+            continue
+        if findings[severity] and findings[severity] != {"clean"}:
+            return True
     return False
+
+
+def has_concrete_approval_anchor(reference: str) -> bool:
+    if re.search(r"https?://\S+", reference, re.IGNORECASE):
+        return True
+    if re.search(r"\b[0-9a-f]{7,}\b", reference, re.IGNORECASE):
+        return True
+    for value in re.findall(r"\b\d{4}-\d{2}-\d{2}\b", reference):
+        try:
+            datetime.date.fromisoformat(value)
+            return True
+        except ValueError:
+            pass
+    return any(
+        int(value) > 0
+        for value in re.findall(r"\b(?:issue|reference|ref)\s*(?:#|:)?\s*(\d+)\b", reference, re.IGNORECASE)
+    )
 
 
 def row_has_approved_waiver(row: list[str]) -> bool:
@@ -764,6 +811,16 @@ def validate_delivery_gates(
             )
             continue
         for row in rows:
+            if section_name in {PIPELINE_PREFLIGHT_SECTION, RULE_SPIRIT_HUNT_SECTION} and len(row) != 6:
+                violations.append(
+                    build_violation(
+                        "DELIVERY-GATE-ROW-INCOMPLETE",
+                        f"{section_name} row must use the canonical 6-cell shape: {row_text(row)}",
+                        f"Use the canonical {section_name} table shape from the TODO template and escape literal pipes inside cells.",
+                        section_name,
+                    )
+                )
+                continue
             if len(row) <= status_index:
                 violations.append(
                     build_violation(
@@ -855,24 +912,32 @@ def validate_architecture_review_gates(
             approver = first_field(lines, (approver_label,)) or ""
             reference = first_field(lines, (reference_label,)) or ""
             normalized_approver = normalize(approver)
-            normalized_reference = normalize(reference)
-            generic_approvers = {"human", "approver", "user", "human approver", "user approver"}
+            generic_approvers = {
+                "actual approver", "anonymous", "developer", "human", "human approver",
+                "owner", "approver", "reviewer", "user", "user approver",
+            }
             generic_approvers.add(normalize(approver_label))
-            approver_tokens = set(re.findall(r"[a-z0-9]+", normalized_approver))
-            reference_anchor = re.search(
-                r"\b\d{4}-\d{2}-\d{2}\b|\b[0-9a-f]{7,}\b|https?://\S+|\b(?:issue|reference|ref)\s*(?:#|:)?\s*\d+\b",
-                reference,
-                re.IGNORECASE,
+            approver_words = set(re.findall(r"[a-z]+", normalized_approver))
+            generic_approver_words = {
+                "a", "actual", "an", "anonymous", "approver", "developer", "human",
+                "owner", "reviewer", "the", "user",
+            }
+            stripped_approver = strip_markup(approver).strip().lower()
+            structured_approver = bool(
+                re.fullmatch(r"[a-z0-9]+(?:[-_.][a-z0-9]+){2,}", stripped_approver)
+                and re.search(r"\d", stripped_approver)
             )
             if (
                 value_is_missing(approver)
                 or normalized_approver in generic_approvers
-                or (bool(approver_tokens) and approver_tokens <= {"human", "approver", "user"})
+                or not approver_words
+                or (approver_words <= generic_approver_words and not structured_approver)
                 or WAIVER_PLACEHOLDER_RE.search(approver) is not None
                 or value_is_missing(reference)
                 or WAIVER_PLACEHOLDER_RE.search(reference) is not None
-                or not any(token in normalized_reference for token in ("aprovado", "approved", "approval"))
-                or not reference_anchor
+                or WAIVER_APPROVAL_RE.search(reference) is None
+                or WAIVER_APPROVAL_DENIAL_RE.search(reference) is not None
+                or not has_concrete_approval_anchor(reference)
             ):
                 violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without dedicated concrete approver and approval-reference fields.", f"Record `{approver_label}` with a concrete approver and `{reference_label}` with approval language plus a date, SHA, URL, or issue/reference number.", ARCHITECTURE_REVIEW_GATES_SECTION))
     return violations, context

@@ -856,11 +856,11 @@ def validate_review_gate_matrix(
         return violations
 
     for row in rows:
-        if len(row) < 6:
+        if len(row) != 6:
             violations.append(
                 build_violation(
                     f"{code_prefix}-ROW-INCOMPLETE",
-                    f"{section_name} row has fewer than 6 cells: {row_text(row)}",
+                    f"{section_name} row must use the canonical 6-cell shape: {row_text(row)}",
                     row_resolution,
                     section_name,
                 )

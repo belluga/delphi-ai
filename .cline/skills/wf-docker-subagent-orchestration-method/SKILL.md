@@ -24,7 +24,7 @@ Required Delphi review gates use fresh internal no-context reviewers only. A dis
 - When a reviewer slot is needed, recycle only terminal inactive agents; never reclaim a `pending_init` or `running` reviewer.
 
 ## Preferred Deterministic Helpers
-1. Build the dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py ...`.
+1. Build the dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py ...`. For `--review-kind critique`, explicitly pass `--lifecycle planning|delivery`; omission fails closed.
 2. Run fresh internal Codex reviews with `python3 delphi-ai/tools/subagent_review_run.py ...`; it embeds the bounded packet, records JSONL/stderr, and requires `turn.completed` before a result can be considered collected.
 3. If a structured result uses a documented historical alias, normalize it with `python3 delphi-ai/tools/subagent_review_normalize.py ...`; unknown fields/categories/positions must still fail.
 4. Merge only canonical-schema-valid reviewer JSON outputs with `python3 delphi-ai/tools/subagent_review_merge.py ...`.

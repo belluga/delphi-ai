@@ -50,6 +50,12 @@ cases = (
     ("No P1/P2 findings", False),
     ("No P1 or P2 anti-pattern findings", False),
     ("P1 is fixed; P2 has been resolved", False),
+    ("P1 and P2 fixed", False),
+    ("P1/P2 resolved", False),
+    ("P1 fixed; reopened", True),
+    ("P1 fixed; still open", True),
+    ("P1 fixed; actually not", True),
+    ("Not no P1/P2 findings", True),
 )
 for text, expected in cases:
     assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
@@ -57,6 +63,9 @@ for text, expected in cases:
 cell_separated_cases = (
     ("P1 fixed", "P2 finding", True),
     ("P1 finding", "unrelated documentation fixed", True),
+    ("P1 finding", "P1 fixed", False),
+    ("P1 and P2 findings", "P1/P2 resolved", False),
+    ("P1 fixed", "not fixed", True),
     ("P1 fixed", "P2 resolved", False),
     ("No P2 findings", "P1 resolved", False),
 )
@@ -197,7 +206,7 @@ cat > "$TMP_DIR/complete-evidence.md" <<'TODO'
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff + guard evidence | CI/Copilot P1/P2 defects | passed | `bash tools/tests/todo_completion_guard_test.sh` | none | review complete |
+| bounded diff + guard evidence | CI/Copilot P1/P2 defects | passed | `bash tools/tests/todo_completion_guard_test.sh` | P1 and P2 findings | P1/P2 resolved |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |

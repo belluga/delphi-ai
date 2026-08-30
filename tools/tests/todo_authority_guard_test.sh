@@ -72,6 +72,12 @@ cases = (
     ("No P1/P2 findings", False),
     ("No P1 or P2 anti-pattern findings", False),
     ("P1 is fixed; P2 has been resolved", False),
+    ("P1 and P2 fixed", False),
+    ("P1/P2 resolved", False),
+    ("P1 fixed; reopened", True),
+    ("P1 fixed; still open", True),
+    ("P1 fixed; actually not", True),
+    ("Not no P1/P2 findings", True),
 )
 for text, expected in cases:
     assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
@@ -80,6 +86,9 @@ for text, expected in cases:
 cell_separated_cases = (
     ("P1 fixed", "P2 finding", True),
     ("P1 finding", "unrelated documentation fixed", True),
+    ("P1 finding", "P1 fixed", False),
+    ("P1 and P2 findings", "P1/P2 resolved", False),
+    ("P1 fixed", "not fixed", True),
     ("P1 fixed", "P2 resolved", False),
     ("No P2 findings", "P1 resolved", False),
 )
@@ -96,6 +105,30 @@ full_gate_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
 ]}
 violations, _ = authority.validate_delivery_gates(full_gate_sections, delivery_claim=True, allow_waivers=False)
 assert any(item["code"] == "DELIVERY-GATE-UNRESOLVED-P1-P2" for item in violations)
+
+resolved_gate_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+    "| --- | --- | --- | --- | --- | --- |",
+    "| package | focus | passed | evidence | P1 and P2 findings | P1/P2 resolved |",
+]}
+violations, _ = authority.validate_delivery_gates(resolved_gate_sections, delivery_claim=True, allow_waivers=False)
+assert not any(item["code"] == "DELIVERY-GATE-UNRESOLVED-P1-P2" for item in violations)
+
+extra_cell_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+    "| --- | --- | --- | --- | --- | --- |",
+    "| package | focus | passed | evidence | No P1/P2 findings | complete | P2 pending |",
+]}
+violations, _ = authority.validate_delivery_gates(extra_cell_sections, delivery_claim=True, allow_waivers=False)
+assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
+completion_violations = completion.validate_review_gate_matrix(
+    extra_cell_sections,
+    authority.PIPELINE_PREFLIGHT_SECTION,
+    "PIPELINE-PREFLIGHT",
+    "Use the canonical review row.",
+    allow_waivers=False,
+)
+assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
 
 sections = {"Architecture Review Gates": [
     "- **Architecture decision review:** `required`",
@@ -143,6 +176,14 @@ assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in v
 for field, invalid_value in (
     ("Decision review waiver approver", "human"),
     ("Decision review waiver approver", "human user"),
+    ("Decision review waiver approver", "the user"),
+    ("Decision review waiver approver", "human reviewer"),
+    ("Decision review waiver approver", "user 01"),
+    ("Decision review waiver approver", "reviewer"),
+    ("Decision review waiver approver", "owner"),
+    ("Decision review waiver approver", "developer"),
+    ("Decision review waiver approver", "actual approver"),
+    ("Decision review waiver approver", "anonymous"),
     ("Decision review waiver approver", "Decision review waiver approver"),
     ("Decision review waiver approval reference", "none"),
     ("Adherence review waiver approver", "n/a"),
@@ -150,6 +191,18 @@ for field, invalid_value in (
     ("Adherence review waiver approver", "Adherence review waiver approver"),
     ("Adherence review waiver approval reference", "required"),
     ("Adherence review waiver approval reference", "pending approval 2026-08-30"),
+    ("Adherence review waiver approval reference", "approved 2026-99-99"),
+    ("Adherence review waiver approval reference", "approved issue #0"),
+    ("Adherence review waiver approval reference", "not approved 2026-08-30"),
+    ("Adherence review waiver approval reference", "unapproved 2026-08-30"),
+    ("Adherence review waiver approval reference", "disapproved 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval denied 2026-08-30"),
+    ("Adherence review waiver approval reference", "rejected approval ref #42"),
+    ("Adherence review waiver approval reference", "approval revoked 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval not granted 2026-08-30"),
+    ("Adherence review waiver approval reference", "não aprovado 2026-08-30"),
+    ("Adherence review waiver approval reference", "not an approval 2026-08-30"),
+    ("Adherence review waiver approval reference", "approval refused 2026-08-30"),
     ("Adherence review waiver approval reference", "<placeholder>"),
 ):
     invalid_lines = [

@@ -30,6 +30,7 @@ BASE_LANES = (
     {
         "id": "performance",
         "review_kind": "critique",
+        "lifecycle": "delivery",
         "goal": (
             "Bounded critique with performance focus. Treat performance and "
             "operational fit as the primary decision lenses. Escalate as blocking "
@@ -45,6 +46,7 @@ BASE_LANES = (
     {
         "id": "test-quality",
         "review_kind": "test_quality_audit",
+        "lifecycle": "delivery",
         "goal": (
             "Bounded test-quality audit. Treat regression protection, assertion "
             "effectiveness, and test realism as the primary decision lenses. "
@@ -61,6 +63,7 @@ EXTRA_LANES = {
     "cutover-integrity": {
         "id": "cutover-integrity",
         "review_kind": "cutover_integrity_audit",
+        "lifecycle": "delivery",
         "goal": (
             "Bounded cutover-integrity audit. Determine whether the chosen path is "
             "truly canonical or just a disguised workaround/bridge. Escalate as "
@@ -165,6 +168,8 @@ def run_dispatch(
         str(TOOLS_ROOT / "subagent_review_dispatch.py"),
         "--review-kind",
         lane["review_kind"],
+        "--lifecycle",
+        lane["lifecycle"],
         "--package",
         str(package_path),
         "--reviewer-count",
