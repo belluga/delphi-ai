@@ -647,8 +647,9 @@ def validate_architecture_governance(sections: dict[str, list[str]]) -> tuple[li
 def validate_implementation_horizon(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
     """Validate the literal horizon truth table only when a TODO adopts it."""
     lines = find_section(sections, IMPLEMENTATION_HORIZON_SECTION)
-    context: dict[str, Any] = {"implementation_horizon_present": bool(lines)}
-    if not lines:
+    section_present = IMPLEMENTATION_HORIZON_SECTION in sections
+    context: dict[str, Any] = {"implementation_horizon_present": section_present}
+    if not section_present:
         return [], context  # Legacy approved TODOs retain their frozen authority.
 
     violations: list[dict[str, str]] = []

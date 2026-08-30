@@ -471,6 +471,19 @@ assert not validate_implementation_horizon(extract_sections(valid_bounded.splitl
 check(valid_bounded.replace('future channels', 'none'), {"HORIZON-FUTURE-CASES-MISSING"})
 check(valid_bounded.replace('channel adapter seam', 'none'), {"HORIZON-ANTICIPATORY-SEAM-MISSING"})
 assert not validate_implementation_horizon(extract_sections([]))[0]  # legacy absence
+
+empty_at_eof = extract_sections(['## Implementation Horizon & Extensibility Intent'])
+violations, context = validate_implementation_horizon(empty_at_eof)
+assert context["implementation_horizon_present"]
+assert {"HORIZON-MODE-INVALID"} <= {item["code"] for item in violations}
+
+empty_before_next_h2 = extract_sections([
+    '## Implementation Horizon & Extensibility Intent',
+    '## Unrelated Section',
+])
+violations, context = validate_implementation_horizon(empty_before_next_h2)
+assert context["implementation_horizon_present"]
+assert {"HORIZON-MODE-INVALID"} <= {item["code"] for item in violations}
 PY
 
 printf 'todo_authority_guard_test: OK\n'
