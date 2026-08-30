@@ -46,9 +46,24 @@ cases = (
     ("P1 finding; unrelated documentation fixed", True),
     ("P1 fixed; P2 needs review", True),
     ("P1 fixed; P2 resolved", False),
+    ("No P1 and no P2 findings", False),
+    ("No P1/P2 findings", False),
+    ("No P1 or P2 anti-pattern findings", False),
+    ("P1 is fixed; P2 has been resolved", False),
 )
 for text, expected in cases:
     assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
+
+cell_separated_cases = (
+    ("P1 fixed", "P2 finding", True),
+    ("P1 finding", "unrelated documentation fixed", True),
+    ("P1 fixed", "P2 resolved", False),
+    ("No P2 findings", "P1 resolved", False),
+)
+for findings, resolution, expected in cell_separated_cases:
+    assert guard.row_has_unresolved_p1_p2(
+        ["surface", "focus", "passed", "evidence", findings, resolution]
+    ) is expected, (findings, resolution)
 PY
 
 cat > "$TMP_DIR/local-implemented-no-evidence.md" <<'TODO'

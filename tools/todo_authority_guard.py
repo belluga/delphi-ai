@@ -113,13 +113,21 @@ PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS = (
 # an indented code block and must never establish TODO authority.
 HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+(.+?)\s*$")
 P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
-UNRESOLVED_RE = re.compile(
-    r"\b("
-    r"unresolved|unresolved:|open|pending|blocked|blocker|failing|still open|"
-    r"nao resolvido|não resolvido|sem resolucao|sem resolução|em aberto|(?:needs|requires) remediation"
-    r")\b",
+P1_P2_CLEAN_NEGATIVE_RE = re.compile(
+    r"\bno\s+unresolved\s+p1\s*(?:/|\band\b|\bor\b)\s*p2(?:\s+findings?)?"
+    r"|\bno\s+p1\s+(?:and|or)\s+(?:no\s+)?p2\s+(?:anti-pattern\s+)?findings?"
+    r"|\bno\s+p1\s*/\s*p2\s+findings?"
+    r"|\bno\s+p[12]\s+findings?",
     re.IGNORECASE,
 )
+P1_P2_DIRTY_RE = re.compile(
+    r"\b(?:unresolved|open|pending|blocked|blocker|failing|reopened|still\s+open|"
+    r"not\s+(?:fixed|resolved|integrated|clean)|needs?\s+(?:review|remediation)|"
+    r"requires?\s+remediation)\b",
+    re.IGNORECASE,
+)
+P1_P2_CLEAN_DISPOSITION_RE = r"(?:fixed|resolved|integrated|clean)"
+WAIVER_PLACEHOLDER_RE = re.compile(r"\b(?:n/?a|none|tbd|pending|required|placeholder)\b", re.IGNORECASE)
 
 
 def normalize(value: str) -> str:
@@ -199,21 +207,30 @@ def is_delivery_claim(todo_path: Path, stage: str | None, require_delivery_gates
 
 
 def row_has_unresolved_p1_p2(row: list[str]) -> bool:
+    """Fail closed for P1/P2 evidence in canonical Findings and Resolution cells."""
     if len(row) < 6:
         return False
-    evidence = normalize(" | ".join(row[4:6]))
-    remaining = re.sub(
-        r"\bno unresolved p1(?:[ /]+p2)?(?: findings?)?\b|\bno p[12] findings?\b|\bno p1(?:[ /]+p2)\b|\bno p1 or p2 findings?\b",
-        "",
-        evidence,
-    )
-    for clause in re.split(r"[;.,|\n]+", remaining):
-        if not P1_P2_RE.search(clause):
-            continue
-        if UNRESOLVED_RE.search(clause):
-            return True
-        if not re.search(r"\b(clean|resolved|fixed|integrated|none|no findings?)\b", clause):
-            return True
+    # Preserve Findings/Resolution boundaries and raw separators before
+    # normalization so a clean disposition cannot leak into another clause.
+    for cell in row[4:6]:
+        for raw_clause in re.split(r"[;.,|\n]+", cell):
+            clause = normalize(P1_P2_CLEAN_NEGATIVE_RE.sub("", raw_clause))
+            for severity in ("p1", "p2"):
+                if not re.search(rf"\b{severity}\b", clause):
+                    continue
+                if P1_P2_DIRTY_RE.search(clause):
+                    return True
+                if not (
+                    re.search(
+                        rf"\b{severity}\b\s*(?::|-)?\s*(?:(?:is|was|has been)\s+)?{P1_P2_CLEAN_DISPOSITION_RE}\b",
+                        clause,
+                    )
+                    or re.search(
+                        rf"\b{P1_P2_CLEAN_DISPOSITION_RE}\b\s*(?:(?:is|was|has been)\s+)?\b{severity}\b",
+                        clause,
+                    )
+                ):
+                    return True
     return False
 
 
@@ -814,7 +831,8 @@ def validate_architecture_review_gates(
         (
             "Architecture decision review",
             "Decision review status",
-            "Decision review waiver authority / reference",
+            "Decision review waiver approver",
+            "Decision review waiver approval reference",
         )
     ]
     if delivery_claim:
@@ -822,10 +840,11 @@ def validate_architecture_review_gates(
             (
                 "Architecture adherence review",
                 "Adherence review status",
-                "Adherence review waiver authority / reference",
+                "Adherence review waiver approver",
+                "Adherence review waiver approval reference",
             )
         )
-    for decision_label, status_label, waiver_label in checks:
+    for decision_label, status_label, approver_label, reference_label in checks:
         decision = normalize(first_field(lines, (decision_label,)) or "")
         status = normalize(first_field(lines, (status_label,)) or "")
         if decision != "required":
@@ -833,14 +852,29 @@ def validate_architecture_review_gates(
         if status not in ARCHITECTURE_REVIEW_SUCCESS_STATUSES and status != "waived":
             violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
         if status == "waived":
-            waiver = first_field(lines, (waiver_label,)) or ""
-            normalized_waiver = normalize(waiver)
+            approver = first_field(lines, (approver_label,)) or ""
+            reference = first_field(lines, (reference_label,)) or ""
+            normalized_approver = normalize(approver)
+            normalized_reference = normalize(reference)
+            generic_approvers = {"human", "approver", "user", "human approver", "user approver"}
+            generic_approvers.add(normalize(approver_label))
+            approver_tokens = set(re.findall(r"[a-z0-9]+", normalized_approver))
+            reference_anchor = re.search(
+                r"\b\d{4}-\d{2}-\d{2}\b|\b[0-9a-f]{7,}\b|https?://\S+|\b(?:issue|reference|ref)\s*(?:#|:)?\s*\d+\b",
+                reference,
+                re.IGNORECASE,
+            )
             if (
-                value_is_missing(waiver)
-                or "human" not in normalized_waiver
-                or not any(token in normalized_waiver for token in ("approval", "approved", "reference"))
+                value_is_missing(approver)
+                or normalized_approver in generic_approvers
+                or (bool(approver_tokens) and approver_tokens <= {"human", "approver", "user"})
+                or WAIVER_PLACEHOLDER_RE.search(approver) is not None
+                or value_is_missing(reference)
+                or WAIVER_PLACEHOLDER_RE.search(reference) is not None
+                or not any(token in normalized_reference for token in ("aprovado", "approved", "approval"))
+                or not reference_anchor
             ):
-                violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without a dedicated human approval/reference field.", f"Record `{waiver_label}` with concrete human approval/reference evidence.", ARCHITECTURE_REVIEW_GATES_SECTION))
+                violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without dedicated concrete approver and approval-reference fields.", f"Record `{approver_label}` with a concrete approver and `{reference_label}` with approval language plus a date, SHA, URL, or issue/reference number.", ARCHITECTURE_REVIEW_GATES_SECTION))
     return violations, context
 
 

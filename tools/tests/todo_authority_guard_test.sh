@@ -68,10 +68,26 @@ cases = (
     ("P1 finding; unrelated documentation fixed", True),
     ("P1 fixed; P2 needs review", True),
     ("P1 fixed; P2 resolved", False),
+    ("No P1 and no P2 findings", False),
+    ("No P1/P2 findings", False),
+    ("No P1 or P2 anti-pattern findings", False),
+    ("P1 is fixed; P2 has been resolved", False),
 )
 for text, expected in cases:
     assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
     assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
+
+cell_separated_cases = (
+    ("P1 fixed", "P2 finding", True),
+    ("P1 finding", "unrelated documentation fixed", True),
+    ("P1 fixed", "P2 resolved", False),
+    ("No P2 findings", "P1 resolved", False),
+)
+for findings, resolution, expected in cell_separated_cases:
+    authority_row = ["package", "focus", "passed", "evidence", findings, resolution]
+    completion_row = ["surface", "focus", "passed", "evidence", findings, resolution]
+    assert authority.row_has_unresolved_p1_p2(authority_row) is expected, (findings, resolution)
+    assert completion.row_has_unresolved_p1_p2(completion_row) is expected, (findings, resolution)
 
 full_gate_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
     "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
@@ -108,8 +124,10 @@ approved_waiver = {"Architecture Review Gates": [
     "- **Decision review status:** `waived`",
     "- **Architecture adherence review:** `required`",
     "- **Adherence review status:** `waived`",
-    "- **Decision review waiver authority / reference:** human approval 2026-08-30",
-    "- **Adherence review waiver authority / reference:** human approval 2026-08-30",
+    "- **Decision review waiver approver:** user-owner-01",
+    "- **Decision review waiver approval reference:** APROVADO 2026-08-30",
+    "- **Adherence review waiver approver:** user-owner-02",
+    "- **Adherence review waiver approval reference:** approved https://example.test/reviews/42",
 ]}
 assert not authority.validate_architecture_review_gates(
     approved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
@@ -121,6 +139,31 @@ violations, _ = authority.validate_architecture_review_gates(
     unapproved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=True
 )
 assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations)
+
+for field, invalid_value in (
+    ("Decision review waiver approver", "human"),
+    ("Decision review waiver approver", "human user"),
+    ("Decision review waiver approver", "Decision review waiver approver"),
+    ("Decision review waiver approval reference", "none"),
+    ("Adherence review waiver approver", "n/a"),
+    ("Adherence review waiver approver", "TBD"),
+    ("Adherence review waiver approver", "Adherence review waiver approver"),
+    ("Adherence review waiver approval reference", "required"),
+    ("Adherence review waiver approval reference", "pending approval 2026-08-30"),
+    ("Adherence review waiver approval reference", "<placeholder>"),
+):
+    invalid_lines = [
+        line if not line.startswith(f"- **{field}:**") else f"- **{field}:** {invalid_value}"
+        for line in approved_waiver["Architecture Review Gates"]
+    ] + ["- **No-go handling:** approval-breaking divergence returns to review."]
+    for allow_waivers in (False, True):
+        violations, _ = authority.validate_architecture_review_gates(
+            {"Architecture Review Gates": invalid_lines},
+            architecture_required=True,
+            delivery_claim=True,
+            allow_waivers=allow_waivers,
+        )
+        assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations), (field, allow_waivers)
 PY
 
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
