@@ -35,6 +35,7 @@ accepted_horizon_headings = [
     f"### `{title}`",
     f"#### _{title.lower()}_ (Required)",
     f"##### > {title}",
+    *(f"{' ' * indent}## {title}" for indent in range(4)),
 ]
 for index, heading in enumerate(accepted_horizon_headings):
     baseline = [
@@ -51,6 +52,14 @@ for index, heading in enumerate(accepted_horizon_headings):
     assert module.heading_matches(heading, f"## {title}"), heading
     assert title in module.material_changes(baseline, current), heading
     assert len(module.find_section_bounds_all(baseline + current, f"## {title}")) == 2, heading
+
+code_block_horizon = f"    ## {title}"
+assert not module.heading_matches(code_block_horizon, f"## {title}")
+assert module.find_section_bounds_all([code_block_horizon], f"## {title}") == []
+assert title not in module.material_changes(
+    [code_block_horizon, "- **Mode:** `current-scope-only`"],
+    [code_block_horizon, "- **Mode:** `bounded-anticipatory-extensibility`"],
+)
 
 governance_baseline = [
     "## Architecture Change Governance",

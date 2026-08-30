@@ -501,6 +501,22 @@ for heading in accepted_horizon_headings:
     assert context["implementation_horizon_present"], heading
     assert not violations, (heading, violations)
 
+for indent in range(4):
+    heading = f"{' ' * indent}## Implementation Horizon & Extensibility Intent"
+    adopted = valid_current.replace('## Implementation Horizon & Extensibility Intent', heading, 1)
+    violations, context = validate_implementation_horizon(extract_sections(adopted.splitlines()))
+    assert context["implementation_horizon_present"], heading
+    assert not violations, (heading, violations)
+
+code_block_horizon = valid_current.replace(
+    '## Implementation Horizon & Extensibility Intent',
+    '    ## Implementation Horizon & Extensibility Intent',
+    1,
+)
+violations, context = validate_implementation_horizon(extract_sections(code_block_horizon.splitlines()))
+assert not context["implementation_horizon_present"]
+assert not violations  # Four-space code text remains unrelated legacy content.
+
 near_collision = valid_current.replace(
     '## Implementation Horizon & Extensibility Intent',
     '## Implementation Horizon & Extensibility Intentional Notes',
@@ -524,6 +540,16 @@ assert {"HORIZON-SECTION-DUPLICATE"} <= {item["code"] for item in violations}
 
 exact_duplicate_horizon = valid_current + "\n" + valid_current
 violations, context = validate_implementation_horizon(extract_sections(exact_duplicate_horizon.splitlines()))
+assert context["implementation_horizon_section_count"] == 2
+assert {"HORIZON-SECTION-DUPLICATE"} <= {item["code"] for item in violations}
+
+indented_duplicate_horizon = valid_current.replace(
+    '## Implementation Horizon & Extensibility Intent',
+    '   ## Implementation Horizon & Extensibility Intent',
+    1,
+)
+indented_duplicate_horizon += "\n" + indented_duplicate_horizon
+violations, context = validate_implementation_horizon(extract_sections(indented_duplicate_horizon.splitlines()))
 assert context["implementation_horizon_section_count"] == 2
 assert {"HORIZON-SECTION-DUPLICATE"} <= {item["code"] for item in violations}
 

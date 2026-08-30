@@ -108,7 +108,9 @@ PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS = (
     "fast follow",
     "hardening",
 )
-HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+# CommonMark ATX headings permit at most three leading spaces; four spaces are
+# an indented code block and must never establish TODO authority.
+HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+(.+?)\s*$")
 P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
 UNRESOLVED_RE = re.compile(
     r"\b("
