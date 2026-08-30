@@ -70,6 +70,9 @@ cases = (
     ("P1 fixed; but not", True),
     ("P1 fixed; fix has been reverted", True),
     ("No P1/P2 findings; final review remains required", False),
+    ("P1 fixed; tests show the fix was reverted", True),
+    ("P1 fixed; regression tests still failing", True),
+    ("P1 fixed; final review found the fix reverted", True),
 )
 for text, expected in cases:
     assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
@@ -86,8 +89,10 @@ cell_separated_cases = (
     ("P1 finding", "P1 fixed; resolution was withdrawn", True),
     ("P1 finding", "P1 fixed; but not", True),
     ("P1 finding", "P1 fixed; fix has been reverted", True),
+    ("P1 finding", "P1 fixed; regression tests still failing", True),
     ("P1 fixed", "P2 resolved", False),
     ("No P2 findings", "P1 resolved", False),
+    ("no P1 or P2 anti-pattern findings", "clean", False),
 )
 for findings, resolution, expected in cell_separated_cases:
     assert guard.row_has_unresolved_p1_p2(

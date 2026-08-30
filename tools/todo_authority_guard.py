@@ -24,6 +24,7 @@ import datetime
 import json
 import re
 import sys
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -128,8 +129,11 @@ P1_P2_CLEAN_CLAUSE_RE = re.compile(
     rf"|{P1_P2_CLEAN_DISPOSITION}\s+{P1_P2_GROUP})$",
     re.IGNORECASE,
 )
-P1_P2_INDEPENDENT_CLAUSE_RE = re.compile(
-    r"^(?:p(?:[3-9]|\d{2,})\b|(?:regression\s+)?tests?\b|final\s+review\b|(?:resolution|complete)$)",
+P1_P2_SAFE_CONTINUATION_RE = re.compile(
+    r"^(?:fixed|resolved|integrated|clean|resolution|complete|"
+    r"p(?:[3-9]|\d{2,})\s+remains?\s+open|"
+    r"(?:regression\s+)?tests?\s+did\s+not\s+fail|"
+    r"final\s+review\s+remains?\s+required)$",
     re.IGNORECASE,
 )
 WAIVER_PLACEHOLDER_RE = re.compile(r"\b(?:n/?a|none|tbd|pending|required|placeholder)\b", re.IGNORECASE)
@@ -249,7 +253,7 @@ def row_has_unresolved_p1_p2(row: list[str]) -> bool:
                 )
                 for severity in severities:
                     states[severity].add("clean" if clean_clause else "ambiguous")
-            elif active_severities and not P1_P2_INDEPENDENT_CLAUSE_RE.match(clause):
+            elif active_severities and not P1_P2_SAFE_CONTINUATION_RE.fullmatch(clause):
                 for severity in active_severities:
                     states[severity].add("ambiguous")
         cell_states.append(states)
@@ -282,7 +286,13 @@ def has_concrete_approver_identifier(value: str, field_label: str) -> bool:
     if normalized in generic or WAIVER_PLACEHOLDER_RE.search(candidate):
         return False
     if re.fullmatch(r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}", candidate):
-        return True
+        local_part = candidate.partition("@")[0]
+        identity_tokens = re.findall(r"[a-z]+|\d+", local_part)
+        generic_tokens = {
+            "actual", "anonymous", "approver", "developer", "human", "manager", "name",
+            "owner", "platform", "release", "reviewer", "user",
+        }
+        return any(token not in generic_tokens and not token.isdigit() for token in identity_tokens)
     if re.fullmatch(r"@[a-z][a-z0-9._-]{2,}", candidate):
         return candidate[1:] not in {"approver", "developer", "human", "owner", "reviewer", "user"}
     return bool(
@@ -292,14 +302,23 @@ def has_concrete_approver_identifier(value: str, field_label: str) -> bool:
 
 
 def has_affirmative_approval(reference: str) -> bool:
+    denial_search_text = re.sub(r"[^\w]+", " ", urllib.parse.unquote(reference))
     return bool(
         WAIVER_AFFIRMATIVE_APPROVAL_RE.search(reference)
-        and not WAIVER_APPROVAL_DENIAL_RE.search(reference)
+        and not WAIVER_APPROVAL_DENIAL_RE.search(denial_search_text)
     )
 
 
+def valid_approval_url(value: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        return parsed.scheme.lower() in {"http", "https"} and bool(parsed.netloc and parsed.hostname)
+    except ValueError:
+        return False
+
+
 def has_concrete_approval_anchor(reference: str) -> bool:
-    if re.search(r"https?://\S+", reference, re.IGNORECASE):
+    if any(valid_approval_url(value) for value in re.findall(r"https?://\S+", reference, re.IGNORECASE)):
         return True
     if re.search(r"\b[0-9a-f]{7,}\b", reference, re.IGNORECASE):
         return True

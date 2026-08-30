@@ -92,6 +92,9 @@ cases = (
     ("P1 fixed; but not", True),
     ("P1 fixed; fix has been reverted", True),
     ("No P1/P2 findings; final review remains required", False),
+    ("P1 fixed; tests show the fix was reverted", True),
+    ("P1 fixed; regression tests still failing", True),
+    ("P1 fixed; final review found the fix reverted", True),
 )
 for text, expected in cases:
     assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
@@ -109,8 +112,10 @@ cell_separated_cases = (
     ("P1 finding", "P1 fixed; resolution was withdrawn", True),
     ("P1 finding", "P1 fixed; but not", True),
     ("P1 finding", "P1 fixed; fix has been reverted", True),
+    ("P1 finding", "P1 fixed; regression tests still failing", True),
     ("P1 fixed", "P2 resolved", False),
     ("No P2 findings", "P1 resolved", False),
+    ("no P1 or P2 anti-pattern findings", "clean", False),
 )
 for findings, resolution, expected in cell_separated_cases:
     authority_row = ["package", "focus", "passed", "evidence", findings, resolution]
@@ -143,6 +148,22 @@ violations, _ = authority.validate_delivery_gates(extra_cell_sections, delivery_
 assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
 completion_violations = completion.validate_review_gate_matrix(
     extra_cell_sections,
+    authority.PIPELINE_PREFLIGHT_SECTION,
+    "PIPELINE-PREFLIGHT",
+    "Use the canonical review row.",
+    allow_waivers=False,
+)
+assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
+
+missing_cell_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+    "| --- | --- | --- | --- | --- | --- |",
+    "| package | focus | passed | evidence | No P1/P2 findings |",
+]}
+violations, _ = authority.validate_delivery_gates(missing_cell_sections, delivery_claim=True, allow_waivers=False)
+assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
+completion_violations = completion.validate_review_gate_matrix(
+    missing_cell_sections,
     authority.PIPELINE_PREFLIGHT_SECTION,
     "PIPELINE-PREFLIGHT",
     "Use the canonical review row.",
@@ -186,6 +207,26 @@ completion_violations = completion.validate_review_gate_matrix(
     allow_waivers=False,
 )
 assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
+
+for backslash_count in range(1, 6):
+    parity_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
+        "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
+        "| --- | --- | --- | --- | --- | --- |",
+        "| package | focus | passed | command " + ("\\" * backslash_count) + "| tee artifact | No P1/P2 findings | complete |",
+    ]}
+    parsed_row = authority.table_rows(parity_sections[authority.PIPELINE_PREFLIGHT_SECTION])[0]
+    expected_cell_count = 6 if backslash_count % 2 else 7
+    assert len(parsed_row) == expected_cell_count, (backslash_count, parsed_row)
+    violations, _ = authority.validate_delivery_gates(parity_sections, delivery_claim=True, allow_waivers=False)
+    completion_violations = completion.validate_review_gate_matrix(
+        parity_sections,
+        authority.PIPELINE_PREFLIGHT_SECTION,
+        "PIPELINE-PREFLIGHT",
+        "Use the canonical review row.",
+        allow_waivers=False,
+    )
+    assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations) is (backslash_count % 2 == 0)
+    assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations) is (backslash_count % 2 == 0)
 
 sections = {"Architecture Review Gates": [
     "- **Architecture decision review:** `required`",
@@ -251,6 +292,11 @@ for field, invalid_value in (
     ("Decision review waiver approver", "platform owner"),
     ("Decision review waiver approver", "release manager"),
     ("Decision review waiver approver", "approver name"),
+    ("Decision review waiver approver", "anonymous@example.com"),
+    ("Decision review waiver approver", "approver@example.com"),
+    ("Decision review waiver approver", "human@example.com"),
+    ("Decision review waiver approver", "reviewer@example.com"),
+    ("Decision review waiver approver", "user@example.com"),
     ("Decision review waiver approver", "Decision review waiver approver"),
     ("Decision review waiver approval reference", "none"),
     ("Adherence review waiver approver", "n/a"),
@@ -260,6 +306,12 @@ for field, invalid_value in (
     ("Adherence review waiver approval reference", "pending approval 2026-08-30"),
     ("Adherence review waiver approval reference", "approved 2026-99-99"),
     ("Adherence review waiver approval reference", "approved issue #0"),
+    ("Adherence review waiver approval reference", "approved https:///"),
+    ("Adherence review waiver approval reference", "approved http:///"),
+    ("Adherence review waiver approval reference", "approved https://?ref=1"),
+    ("Adherence review waiver approval reference", "approved https://example.test/not-approved"),
+    ("Adherence review waiver approval reference", "approved https://example.test/approval-revoked"),
+    ("Adherence review waiver approval reference", "approved https://example.test/approval-denied"),
     ("Adherence review waiver approval reference", "not approved 2026-08-30"),
     ("Adherence review waiver approval reference", "unapproved 2026-08-30"),
     ("Adherence review waiver approval reference", "disapproved 2026-08-30"),
