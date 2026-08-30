@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import subprocess
 from pathlib import Path
 
+from todo_authority_guard import HEADING_RE, normalize
 
 ALLOWED_GATE_DECISIONS = {"required", "recommended", "not_needed"}
 ALLOWED_GATE_STATUSES = {
@@ -47,9 +47,6 @@ MATERIAL_HEADINGS = (
     "## Security Risk Assessment",
     "## Performance & Concurrency Risk Assessment",
 )
-H2_RE = re.compile(r"^##\s+(.+?)\s*$")
-
-
 def clean_value(raw: str) -> str:
     value = raw.strip()
     while len(value) >= 2 and value[0] == value[-1] and value[0] in {"`", '"', "'"}:
@@ -68,17 +65,13 @@ def read_lines(path: Path) -> list[str]:
     return path.read_text(encoding="utf-8").splitlines()
 
 
-def normalize_heading(value: str) -> str:
-    return re.sub(r"\s+", " ", value.strip().lower())
-
-
 def heading_matches(line: str, heading_prefix: str) -> bool:
-    actual = H2_RE.match(line.strip())
-    expected = H2_RE.match(heading_prefix)
+    actual = HEADING_RE.match(line.strip())
+    expected = HEADING_RE.match(heading_prefix)
     if actual is None or expected is None:
         return False
-    expected_title = normalize_heading(expected.group(1))
-    actual_title = normalize_heading(actual.group(1))
+    expected_title = normalize(expected.group(2))
+    actual_title = normalize(actual.group(2))
     return actual_title == expected_title or actual_title.startswith(f"{expected_title} ")
 
 
@@ -88,15 +81,17 @@ def find_section_bounds(lines: list[str], heading_prefix: str) -> tuple[int, int
 
 
 def find_section_bounds_all(lines: list[str], heading_prefix: str) -> list[tuple[int, int]]:
-    starts: list[int] = []
+    starts: list[tuple[int, int]] = []
     for index, line in enumerate(lines):
-        if heading_matches(line, heading_prefix):
-            starts.append(index + 1)
+        match = HEADING_RE.match(line.strip())
+        if match and heading_matches(line, heading_prefix):
+            starts.append((index + 1, len(match.group(1))))
     bounds: list[tuple[int, int]] = []
-    for start in starts:
+    for start, start_level in starts:
         end = len(lines)
         for index in range(start, len(lines)):
-            if H2_RE.match(lines[index].strip()):
+            next_heading = HEADING_RE.match(lines[index].strip())
+            if next_heading and len(next_heading.group(1)) <= start_level:
                 end = index
                 break
         bounds.append((start, end))

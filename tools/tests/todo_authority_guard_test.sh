@@ -488,6 +488,19 @@ violations, context = validate_implementation_horizon(extract_sections(required_
 assert context["implementation_horizon_present"]
 assert {"HORIZON-MODE-INVALID"} <= {item["code"] for item in violations}
 
+accepted_horizon_headings = [
+    *(f"{'#' * level} Implementation Horizon & Extensibility Intent" for level in range(1, 7)),
+    "## **Implementation Horizon & Extensibility Intent**",
+    "### `Implementation Horizon & Extensibility Intent`",
+    "#### _implementation horizon & extensibility intent_ (Required)",
+    "##### > Implementation Horizon & Extensibility Intent",
+]
+for heading in accepted_horizon_headings:
+    adopted = valid_current.replace('## Implementation Horizon & Extensibility Intent', heading, 1)
+    violations, context = validate_implementation_horizon(extract_sections(adopted.splitlines()))
+    assert context["implementation_horizon_present"], heading
+    assert not violations, (heading, violations)
+
 near_collision = valid_current.replace(
     '## Implementation Horizon & Extensibility Intent',
     '## Implementation Horizon & Extensibility Intentional Notes',

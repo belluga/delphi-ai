@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 tool_path = Path(sys.argv[1])
+sys.path.insert(0, str(tool_path.parent))
 spec = importlib.util.spec_from_file_location("review_scope_drift_guard", tool_path)
 module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -27,6 +28,55 @@ assert not module.heading_matches(
     "## Implementation Horizon & Extensibility Intentional Notes",
     "## Implementation Horizon & Extensibility Intent",
 )
+title = "Implementation Horizon & Extensibility Intent"
+accepted_horizon_headings = [
+    *(f"{'#' * level} {title}" for level in range(1, 7)),
+    f"## **{title}**",
+    f"### `{title}`",
+    f"#### _{title.lower()}_ (Required)",
+    f"##### > {title}",
+]
+for index, heading in enumerate(accepted_horizon_headings):
+    baseline = [
+        heading,
+        "- **Mode:** `current-scope-only`",
+        "- **Rationale:** baseline contract",
+    ]
+    current = baseline.copy()
+    current[1 if index % 2 == 0 else 2] = (
+        "- **Mode:** `bounded-anticipatory-extensibility`"
+        if index % 2 == 0
+        else "- **Rationale:** decorated heading drift"
+    )
+    assert module.heading_matches(heading, f"## {title}"), heading
+    assert title in module.material_changes(baseline, current), heading
+    assert len(module.find_section_bounds_all(baseline + current, f"## {title}")) == 2, heading
+
+governance_baseline = [
+    "## Architecture Change Governance",
+    "### Patterns To Enforce",
+    "- canonical envelope remains required",
+    "## Questions To Close",
+]
+governance_current = governance_baseline.copy()
+governance_current[2] = "- legacy envelope is permitted again"
+assert "### Patterns To Enforce" in module.section_body(
+    governance_baseline, "## Architecture Change Governance"
+)
+assert "Architecture Change Governance" in module.material_changes(
+    governance_baseline, governance_current
+)
+
+non_h2_horizon = [
+    f"### {title}",
+    "- **Mode:** `current-scope-only`",
+    "#### Nested Horizon Detail",
+    "- retained nested detail",
+    "### Next Peer Section",
+    "- outside the horizon",
+]
+assert module.find_section_bounds_all(non_h2_horizon, f"## {title}") == [(1, 4)]
+assert "#### Nested Horizon Detail" in module.section_body(non_h2_horizon, f"## {title}")
 PY
 
 tmpdir="$(mktemp -d)"
@@ -270,7 +320,7 @@ path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
 text = text.replace("## Implementation Horizon & Extensibility Intent (Required)", "## Implementation Horizon & Extensibility Intent", 1)
 text = text.replace("**Rationale:** suffixed heading drift", "**Rationale:** baseline contract", 1)
-text += '''\n## Implementation Horizon & Extensibility Intent
+text += '''\n### **Implementation Horizon & Extensibility Intent** (Required)
 - **Mode:** `current-scope-only`
 - **Current delivery:** keep the original bounded slice
 - **Explicit future cases informing the design:** `none`
