@@ -32,12 +32,12 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** Run the required independent final review against the bounded implementation/evidence package, then resolve any finding before closeout.
+- **Next exact step:** Publish the renewed D-19 through D-22 approval baseline, implement the bounded remediation, and rerun adherence/TQA before final review.
 
 ## Active Work State (Required While TODO Remains In `active/`)
-- **Work state:** `review`
-- **Why this state now:** The bounded D-01 through D-18 implementation and local deterministic validation are complete; required final review and verification-debt audit remain open.
-- **Exit condition:** The required final review, verification-debt audit, and closeout disposition are recorded without an unresolved material finding.
+- **Work state:** `implementation`
+- **Why this state now:** Renewed user approval authorizes the review-discovered PR-15 through PR-18 global validation contracts, their fail-closed remediation, and explicit reviewer lifecycle dispatch under D-19 through D-22.
+- **Exit condition:** D-19 through D-22 are implemented and evidenced, adherence/TQA/final review reconverge, and closeout records no unresolved material finding.
 
 ## Scope
 - [x] Establish `SIMPLIFICATION FIRST` as an explicit Delphi architectural and delivery mandate with Clean Code and SOLID boundaries.
@@ -58,6 +58,10 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] Synchronize derived skills and compatibility mirrors from canonical sources using existing Delphi synchronization mechanisms.
 - [x] Retire the full stack-agnostic duplicate under the Laravel rule path by replacing it with a concise compatibility adjunct/pointer containing only Laravel-specific loading deltas, with the core TODO rule as the sole shared authority.
 - [x] Extend the existing instruction-baseline audit and add a focused negative regression test that rejects a Laravel compatibility adjunct when it regrows shared TODO authority.
+- [ ] Govern the review-discovered PR-15 through PR-18 global CI, waiver, P1/P2, and checklist-validation semantics as explicit current scope rather than implicit closeout repair.
+- [ ] Make canonical six-cell review evidence fail closed while allowing severity-qualified Resolution evidence to close Findings without unrelated text leaking across cells or clauses.
+- [ ] Require architecture-review waivers to carry a concrete approver identifier plus affirmative, semantically anchored approval evidence; generic identities, invalid anchors, and denial/revocation language must fail in every waiver mode.
+- [ ] Make reviewer lifecycle authority explicit: fixed-lifecycle review kinds declare it in dispatch configuration, ambiguous `critique` calls must provide `planning|delivery`, and exactly one lifecycle rule reaches the reviewer.
 
 ## Out of Scope
 - [ ] Prohibit anticipatory abstractions or future-aware design.
@@ -118,6 +122,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] The Laravel TODO-rule path no longer duplicates the global rule; it points to the core authority and contains only concrete Laravel-specific adjunct behavior, if any.
 - [x] The existing `tools/audit_instruction_baselines.sh` plus a focused negative regression test reject a Laravel adjunct that regrows shared stack-agnostic TODO authority.
 - [x] Delphi agnosticism review passes; no project-specific domain truth enters reusable canon.
+- [ ] PR-15 through PR-18 have explicit approved decisions and regression evidence rather than relying on an elastic-scope interpretation.
+- [ ] P1/P2 evidence uses one shared per-severity reducer across authority/completion guards, exact six-cell review rows, qualified cross-cell resolution, combined severities, and fail-closed contradictory continuations.
+- [ ] Architecture-review waiver validation rejects generic identities, placeholder/literal labels, invalid dates/zero issue references, and non-approval language regardless of `--allow-waivers`.
+- [ ] Dispatch emits exactly one planning or delivery authority rule; ambiguous critique dispatch fails without explicit lifecycle and the delivery-side triple-audit caller supplies `delivery`.
+- [ ] No result-schema axis, parallel policy engine, or duplicate P1/P2 implementation is introduced.
 
 ## Validation Steps
 - [x] Search canonical and derived instruction surfaces for contradictory future-implementation wording, including `from day one`, `Not Minimalist`, `Complete Vision over Minimalism`, and reviewer simplicity language.
@@ -138,6 +147,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] Run `git diff --check`.
 - [x] Perform a manual agnosticism review of every changed Delphi surface.
 - [x] Perform a final conversation-coherence replay against `C-01` through `C-09` below.
+- [ ] Run adversarial authority/completion regressions for cross-cell P1/P2 resolution, combined severities, detached dirty continuations, malformed extra cells, generic waiver identities, invalid anchors, and approval denial/revocation.
+- [ ] Verify both `--allow-waivers` modes reject malformed architecture waiver proof.
+- [ ] Verify every dispatch kind receives exactly one lifecycle rule, critique without lifecycle fails closed, and planning/delivery critique packets differ only in the lifecycle-specific authority fragment.
+- [ ] Verify the triple-audit performance lane dispatches critique explicitly as `delivery`.
+- [ ] Rerun authority/completion guards, focused tests, test-quality audit, `self_check.sh`, scope drift, diff expectation, architecture adherence, TQA, and final review after the renewed baseline.
 
 ## Conversation Coherence Contract
 | ID | Confirmed Conclusion | Required TODO/Implementation Consequence |
@@ -216,15 +230,19 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - [x] `D-16` Use the literal per-mode truth table above; `todo_authority_guard.py` validates objective semantics only when the section is present, while lazy adoption is enforced at the next review-baseline freeze/renewed approval without mass migration.
 - [x] `D-17` Make `rules/core/todo-driven-execution-model-decision.md` the sole stack-agnostic TODO authority; reduce the Laravel rule path to a concise compatibility adjunct/pointer with only explicit Laravel-specific deltas.
 - [x] `D-18` Extend `tools/audit_instruction_baselines.sh` and add a focused negative regression test so a Laravel adjunct that regrows shared authority fails deterministically.
+- [x] `D-19` Adopt PR-15 and PR-18 as approved global parser corrections: CI evidence reads the canonical status cell and scope-drift normalization ignores only canonical checklist markers.
+- [x] `D-20` Adopt PR-17 as an approved shared six-cell P1/P2 evidence contract: one authority-owned per-severity reducer reconciles qualified Resolution evidence, accepts explicit combined clean dispositions, and blocks malformed rows, ambiguous findings, and contradictory continuations in both authority and completion paths.
+- [x] `D-21` Adopt PR-16 as an approved architecture-waiver contract: separate concrete approver and affirmative anchored approval-reference fields are mandatory and cannot be bypassed by generic waiver flags.
+- [x] `D-22` Make lifecycle authority explicit without a new result-schema axis: unambiguous review kinds own one lifecycle in dispatch configuration; `critique` requires an explicit `planning|delivery` call argument; each packet emits exactly one corresponding authority rule.
 
 ## Decision Baseline (Frozen Before Implementation)
-- [x] Freeze `D-01` through `D-18` after the Plan Review Gate, required critique handling, conversation-coherence replay, and renewed explicit user approval converge.
+- [x] Freeze `D-01` through `D-22` after the original Plan Review Gate and explicit renewed user approval of the review-discovered global validation/lifecycle expansion on 2026-08-30.
 
 ## Architecture Change Governance (Required When This TODO Establishes, Corrects, or Supersedes Architecture)
 - **Applicability (`required|not_needed`):** `required`
 - **Why this applies:** The TODO corrects a reusable architectural-review ambiguity that can repeatedly create extra layers or incorrectly remove intentional extension seams.
 - **Deviation / debt being retired:** Conflation of future-aware foundational planning, tactical implementation authorization, and reviewer architectural preference.
-- **Target steady-state after closeout:** Every tactical TODO declares its implementation horizon; Delphi and its reviewers choose the simplest clean realization of explicit intent without adding or erasing future-facing design autonomously.
+- **Target steady-state after closeout:** Every tactical TODO declares its implementation horizon; Delphi and its reviewers choose the simplest clean realization of explicit intent without adding or erasing future-facing design autonomously; review evidence and lifecycle authority fail closed under D-19 through D-22.
 - **Temporary exceptions allowed:** `none`; a materially different authority model requires TODO refresh and renewed approval.
 - **Cutover / removal condition:** Canonical rules, TODO template, workflows, reviewer dispatch, tests, skills, and mirrors express one non-contradictory authority model.
 
@@ -252,6 +270,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | canonical prose | `main_instructions.md`, `system_architecture_principles.md` | canonical mandate text | Future planning interpreted as blanket implementation authority | `implement-in-this-todo` | manual coherence review + `bash self_check.sh` |
 | TODO contract | `templates/todo_template.md` + refinement workflow | implementation-horizon contract | Missing/ambiguous implementation horizon | `implement-in-this-todo` | focused template/guard tests where objective |
 | reviewer dispatch | `tools/subagent_review_dispatch.py` | dispatch focus contract | Reviewer invents or erases extensibility intent | `implement-in-this-todo` | `bash tools/tests/subagent_review_dispatch_test.sh` |
+| reviewer lifecycle dispatch | dispatch configuration + explicit critique call argument | one planning/delivery authority fragment | Ambiguous critique receives both rules or delivery audit inherits planning authority | `implement-in-this-todo` | dispatch focused test + triple-audit caller assertion |
 | scope-drift guard | `tools/review_scope_drift_guard.py` | existing guard + focused test | Post-review changes to horizon mode, authorized seam, exclusions, or rationale escape reconvergence | `implement-in-this-todo` | `bash tools/tests/review_scope_drift_guard_test.sh` |
 | TODO authority guard | `tools/todo_authority_guard.py` | existing guard + focused test | Present horizon sections use invalid modes, placeholders, or missing conditional fields | `implement-in-this-todo` | `bash tools/tests/todo_authority_guard_test.sh` |
 | delivery review freshness | TODO delivery workflows/skills | same drift guard before each applicable dispatch | Adherence remediation makes final-review evidence stale | `implement-in-this-todo` | focused workflow audit + drift-guard test scenario |
@@ -270,8 +289,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
 - **Adherence review package:** `bounded-file-set`
-- **Adherence review status:** `no_material_findings`
-- **Adherence review evidence / resolution:** `fresh independent architecture-adherence convergence over the bounded implementation/evidence packet reported no material findings; D-15 binding used approved baseline a6e8e95b8431e81e3a0b073d7260c92a62c942f6 and fresh guard output go/23/0 for candidate a2e0cd85ecb82799452303f61f77d78130265561; final review remains required.`
+- **Adherence review status:** `running`
+- **Adherence review evidence / resolution:** `candidate 84376dd exposed approval-boundary, P1/P2, waiver-proof, and implicit-lifecycle findings; D-19 through D-22 are now explicitly approved and require implementation plus a fresh baseline-bound adherence rerun.`
 - **No-go handling:** `when either required review is absent, blocked, or exposes an unresolved approval-breaking divergence, return to the affected diagnosis/decision or delivery-evidence loop; do not claim APROVADO or Completed.`
 
 ## Assumptions Preview
@@ -302,6 +321,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `tools/tests/todo_authority_guard_test.sh`
 - `tools/todo_completion_guard.py`
 - `tools/tests/todo_completion_guard_test.sh`
+- `skills/audit-protocol-triple-review/scripts/triple_audit_session.py`
 - `tools/audit_instruction_baselines.sh`
 - `tools/tests/audit_instruction_baselines_test.sh`
 - `skills/wf-docker-todo-driven-execution-method/SKILL.md`
@@ -337,7 +357,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 6. Update reviewer workflows and inject one shared dispatch focus fragment while reusing existing elegance and structural-soundness result fields by default; test every review kind.
 7. Collapse the Laravel full-rule duplicate into a concise compatibility adjunct; extend the existing instruction-baseline audit and add a negative regression test that rejects shared-authority regrowth.
 8. Add focused objective regression coverage and run Delphi self-maintenance checks.
-9. Replay `C-01` through `C-09`, run final review gates, and resolve findings without widening the mandate.
+9. Implement the approved D-19 through D-21 fail-closed review-evidence contracts with one shared P1/P2 reducer and focused adversarial regressions.
+10. Implement D-22 through dispatch configuration plus an explicit lifecycle only for ambiguous critique calls; update the delivery-side triple-audit caller and focused dispatch regression without changing result schemas.
+11. Replay `C-01` through `C-09`, run final review gates, and resolve findings without widening the renewed mandate.
 
 ### Test Strategy
 - **Strategy:** `test-first where objective prompt/template contracts change; review-first for semantic prose`
@@ -391,6 +413,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `delphi-ai` | `tools/tests/subagent_review_dispatch_test.sh` | `M` | All-kind reviewer authority assertions. |
 | `delphi-ai` | `tools/tests/todo_authority_guard_test.sh` | `M` | Per-mode, placeholder, missing-field, and legacy coverage. |
 | `delphi-ai` | `tools/tests/todo_completion_guard_test.sh` | `M` | Regression coverage for the same canonical P1/P2 negative-evidence parser. |
+| `delphi-ai` | `skills/audit-protocol-triple-review/scripts/triple_audit_session.py` | `M` | Delivery-side critique dispatch supplies its explicit lifecycle. |
 | `delphi-ai` | `foundation_documentation/todos/active/delphi-simplification-first-review-authority.md` | `M` | Approval, execution, and delivery evidence. |
 
 ### Not Expected Changed Paths
@@ -408,7 +431,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 ### Diff Deviation Analysis
 | Diff item | Classification (`scope deviation|necessary need|noise`) | Evidence / agent defense | Decision (`revert|clean noise|retain with renewed approval`) | User validation / renewed approval |
 | --- | --- | --- | --- | --- |
-| `tools/todo_completion_guard.py` (`M`) | `necessary need` | Same canonical P1/P2 negative-evidence parser required by PR-17 and the completion gate; it stays inside the already-approved elastic execution boundary and Expected Touched Surfaces allowance for other objective TODO guards/tests. | `retain under existing approval` | `No new story, behavior horizon, or risk conversation: this is approved-scope concretization, so no renewed approval is required.` |
+| `tools/todo_completion_guard.py` (`M`) | `necessary need` | Same canonical P1/P2 reducer required by D-20 and the completion gate. | `retain with renewed approval` | `APROVADO 2026-08-30 for D-19 through D-22.` |
+| PR-15 through PR-18 global validation contracts | `scope deviation promoted to approved scope` | Independent adherence correctly identified reusable CI, waiver, P1/P2, and checklist behavior beyond D-01 through D-18. | `retain with renewed approval` | `APROVADO 2026-08-30 for this explicit expansion.` |
+| explicit critique lifecycle + triple-audit caller | `necessary need` | D-10 cannot be deterministic while critique receives both planning and delivery authority; D-22 selects one rule without result-schema expansion. | `retain with renewed approval` | `APROVADO 2026-08-30 for D-22.` |
 
 ## Plan Review Gate
 - **Status:** `passed; architecture opinion and independent critique converged, with all material findings integrated before renewed APROVADO`
@@ -538,11 +563,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `f7a9c4066f77f9592df4510bf59b253ebadc85ec`
+- **Baseline commit:** `pending renewed-approval record commit`
 - **Baseline push reference:** `origin/hooks-implementation`
-- **Gate status:** `no_material_findings`
-- **Findings summary:** `Published f7a9c4066f77f9592df4510bf59b253ebadc85ec closes PR-15 through PR-19 and concretizes tools/todo_completion_guard.py plus its test under the already-approved Execution Plan clause “other objective TODO guards/tests only if the final contract adds machine-checkable fields”. No new story, horizon, architecture decision, security/PCV classification, or risk conversation was added; renewed approval is not required.`
-- **Evidence / reference:** `published review baseline f7a9c4066f77f9592df4510bf59b253ebadc85ec at origin/hooks-implementation; the prior D-01 through D-18 and 2026-08-30 protected-evidence approvals remain recorded separately.`
+- **Gate status:** `running`
+- **Findings summary:** `Independent adherence rejected the prior elastic-scope interpretation. The user explicitly approved D-19 through D-22 and the named global validation/lifecycle contracts; a pushed approval-record baseline is now required before renewed delivery review.`
+- **Evidence / reference:** `APROVADO 2026-08-30; baseline SHA pending this approval-record commit/push.`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -554,9 +579,9 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Implementation Horizon & Extensibility Intent|Definition of Done|Validation Steps|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `retired by implemented canonical parser parity; the same normalized, decorated, H1-H6, hierarchical, and ATX-indent heading contract now governs authority validation and drift protection.`
-- **Gate status:** `no_material_findings`
-- **Findings summary:** `Published f7a9c40 closes PR-15..PR-19 and the already-approved completion-guard/test concretization without adding a story, horizon, architecture decision, security/PCV classification, or risk conversation; renewed approval is not required.`
-- **Evidence / reference:** `Approved review baseline is hooks-implementation@f7a9c4066f77f9592df4510bf59b253ebadc85ec at origin/hooks-implementation. A fresh scope-drift rerun is pending until this baseline-record edit is committed and pushed; final-review and verification-debt gates remain pending.`
+- **Gate status:** `running`
+- **Findings summary:** `Material scope changed through explicit D-19 through D-22 approval; the guard must bind to the new pushed approval-record baseline before renewed delivery review.`
+- **Evidence / reference:** `APROVADO 2026-08-30; fresh baseline-bound output pending approval-record commit/push.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -603,10 +628,10 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Waiver authority / reference:** `n/a`
 
 ## Approval
-- **Approved by:** `user on 2026-08-29 via renewed explicit APROVADO after the final D-01 through D-18 review package converged; user renewed explicit APROVADO on 2026-08-30 for the protected evidence projections at 3d27e89f50d4ab10bddde244e381e564bac5e1ae`
-- **Approval scope:** `the original complete frozen D-01 through D-18 package, plus only the two already-present protected evidence projections at 3d27e89f: Security Risk Assessment SEC-NOT-TRIGGERED and Performance & Concurrency pcv-1 four lanes EPS/FRC/BCI/RLS PCV-NOT-TRIGGERED/not_needed/not_applicable`
+- **Approved by:** `user on 2026-08-29 for D-01 through D-18; user on 2026-08-30 for the protected security/PCV evidence projections; user renewed explicit APROVADO on 2026-08-30 after independent review exposed the PR-15 through PR-18 global-contract and lifecycle-authority expansion`
+- **Approval scope:** `D-01 through D-22; PR-15 through PR-18 global CI, checklist, P1/P2, and architecture-waiver semantics; fail-closed remediation of the reported parser/waiver bypasses; explicit planning|delivery dispatch authority including the delivery-side triple-audit critique caller; the two previously approved security/PCV projections`
 - **Execution not authorized by approval:** `downstream project changes, runtime/deploy changes, new policy engines or schemas, speculative migrations, and any objective outside this TODO`
-- **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially`
+- **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially beyond D-01 through D-22`
 
 ## Agent Routing Preflight
 - **Client surface:** `codex`
@@ -775,6 +800,10 @@ All rows are instruction/tooling structure-only. No criterion changes a user-vis
 | `PR-17-p1-negative-phrase` | closeout review | medium | release-blocker | fix in current TODO | fixed | One authority-owned parser preserves canonical Findings and Resolution cell boundaries, splits raw clauses before normalization, removes only explicit clean negatives, and requires an explicit direct clean disposition for every remaining P1/P2 token; dirty or ambiguous clauses block. |
 | `PR-18-checklist-status-coverage` | closeout review | medium | release-blocker | fix in current TODO | fixed | Drift normalization ignores only `[ ]`, `[x]`, and `[X]`; `[~]` and `[!]` remain material. |
 | `PR-19-laravel-trigger-mirror-pointer` | closeout review | medium | release-blocker | fix in current TODO | fixed | Canonical/Cline/Claude trigger skills use repository-root invariant core and adjunct pointers, verified by baseline audit test. |
+| `PR-20-p1-state-reducer` | fresh adherence/TQA | high | release-blocker | fix in renewed TODO scope | in_progress | D-20 authorizes exact six-cell parsing, qualified cross-cell resolution, combined severities, and detached-dirty fail-closed behavior. |
+| `PR-21-waiver-proof-semantics` | fresh adherence/TQA | high | release-blocker | fix in renewed TODO scope | in_progress | D-21 authorizes concrete identity plus affirmative semantically anchored approval proof in both waiver modes. |
+| `PR-22-explicit-review-lifecycle` | fresh adherence | medium | release-blocker | fix in renewed TODO scope | in_progress | D-22 authorizes one explicit planning/delivery rule and delivery lifecycle at the triple-audit critique caller. |
+| `PR-23-approval-boundary` | fresh adherence | high | approval-breaking divergence | renewed approval in current TODO | approved | User explicitly approved D-19 through D-22 and the named expansion on 2026-08-30. |
 
 ## Security Risk Assessment (Mandatory Before Delivery)
 - **Risk level:** `none`
@@ -817,9 +846,9 @@ All rows are instruction/tooling structure-only. No criterion changes a user-vis
 - **Gate-satisfying evidence expectation:** `required fresh internal no-context audit`
 - **Audit focus:** `test delta alignment|bypass detection|assertion efficacy|coverage sufficiency`
 - **Required applicable evidence:** `focused tests|self-check|guard outputs|independent TQA convergence`
-- **Audit status:** `no_material_findings`
-- **Findings summary:** `Independent TQA convergence found no material finding after parser-parity regressions.`
-- **Evidence / reference:** `four focused tests plus independent TQA reviewer convergence; audit escalation guard go fingerprint 5c30969f94cd`
+- **Audit status:** `running`
+- **Findings summary:** `Fresh TQA found cross-cell/combined P1/P2 and waiver-proof gaps in candidate 84376dd; D-20/D-21 remediation and a fresh no-context rerun are required.`
+- **Evidence / reference:** `candidate 84376dd TQA findings; renewed APROVADO 2026-08-30.`
 
 ## Independent No-Context Final Review Gate (Deterministic Floor From Audit Escalation)
 - **Final review decision:** `required`
