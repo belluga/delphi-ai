@@ -61,6 +61,26 @@ assert title not in module.material_changes(
     [code_block_horizon, "- **Mode:** `bounded-anticipatory-extensibility`"],
 )
 
+checklist_baseline = [
+    "## Scope",
+    "- [ ] unchanged criterion",
+    "## Definition of Done",
+    "- [X] unchanged definition",
+    "## Validation Steps",
+    "- [ ] unchanged validation",
+]
+checklist_current = [
+    "## Scope",
+    "- [x] unchanged criterion",
+    "## Definition of Done",
+    "- [ ] unchanged definition",
+    "## Validation Steps",
+    "- [x] unchanged validation",
+]
+assert module.material_changes(checklist_baseline, checklist_current) == []
+checklist_current[1] = "- [x] changed criterion text"
+assert "Scope" in module.material_changes(checklist_baseline, checklist_current)
+
 governance_baseline = [
     "## Architecture Change Governance",
     "### Patterns To Enforce",
