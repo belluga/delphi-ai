@@ -534,11 +534,11 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Why this decision:** The first planning-side independent review must evaluate one immutable TODO package.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `hooks-implementation`
-- **Baseline commit:** `a6e8e95b8431e81e3a0b073d7260c92a62c942f6`
+- **Baseline commit:** `3d27e89f50d4ab10bddde244e381e564bac5e1ae`
 - **Baseline push reference:** `origin/hooks-implementation`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `Planning review converged at ddfb82a; the user then renewed APROVADO for D-01 through D-18, and a6e8e95 records that approval, the frozen-decision checkbox, rule ingestion, and implementation routing without changing scope or intent.`
-- **Evidence / reference:** `planning-reviewed baseline ddfb82a + renewed user APROVADO + approval-recorded baseline a6e8e95 pushed to origin/hooks-implementation`
+- **Findings summary:** `The user renewed explicit APROVADO on 2026-08-30 for the two protected evidence projections at 3d27e89f: Security Risk Assessment SEC-NOT-TRIGGERED and Performance & Concurrency pcv-1 EPS/FRC/BCI/RLS PCV-NOT-TRIGGERED/not_needed/not_applicable.`
+- **Evidence / reference:** `approved review baseline 3d27e89f50d4ab10bddde244e381e564bac5e1ae pushed to origin/hooks-implementation; prior D-01 through D-18 approval remains recorded separately.`
 - **Waiver authority / reference:** `n/a`
 - **Pre-freeze packet-prep rule:** `all current loop results are self-review preparation, not gate-satisfying independent review evidence`
 
@@ -551,8 +551,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md`
 - **Current-cycle horizon bootstrap comparison:** `retired by implemented canonical parser parity; the same normalized, decorated, H1-H6, hierarchical, and ATX-indent heading contract now governs authority validation and drift protection.`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `Fresh architecture-adherence binding passed before delivery-evidence edits: baseline a6e8e95b8431e81e3a0b073d7260c92a62c942f6, candidate a2e0cd85ecb82799452303f61f77d78130265561, output go/23/0. Final-review dispatch remains required and must rerun after any protected remediation.`
-- **Evidence / reference:** `Pre-evidence architecture-adherence binding: python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-simplification-first-review-authority.md => baseline a6e8e95b8431e81e3a0b073d7260c92a62c942f6, candidate a2e0cd85ecb82799452303f61f77d78130265561, go/23/0. Post-evidence guard is intentionally no-go/6 because this TODO marks protected Scope/DoD/Validation evidence complete and updates governance risk evidence; renewed scope validation and final-review rerun remain open.`
+- **Findings summary:** `The prior scope-drift no-go identified exactly two protected additions: Security Risk Assessment SEC-NOT-TRIGGERED and Performance & Concurrency pcv-1 EPS/FRC/BCI/RLS PCV-NOT-TRIGGERED/not_needed/not_applicable. The user revalidated precisely those additions on 2026-08-30.`
+- **Evidence / reference:** `Approved review baseline is hooks-implementation@3d27e89f50d4ab10bddde244e381e564bac5e1ae at origin/hooks-implementation. A fresh scope-drift rerun is pending until this TODO approval-record edit is committed and pushed; final-review dispatch remains required.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -599,8 +599,8 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - **Waiver authority / reference:** `n/a`
 
 ## Approval
-- **Approved by:** `user on 2026-08-29 via renewed explicit APROVADO after the final D-01 through D-18 review package converged`
-- **Approval scope:** `implement the complete frozen D-01 through D-18 package inside the enumerated Delphi self-maintenance surfaces`
+- **Approved by:** `user on 2026-08-29 via renewed explicit APROVADO after the final D-01 through D-18 review package converged; user renewed explicit APROVADO on 2026-08-30 for the protected evidence projections at 3d27e89f50d4ab10bddde244e381e564bac5e1ae`
+- **Approval scope:** `the original complete frozen D-01 through D-18 package, plus only the two already-present protected evidence projections at 3d27e89f: Security Risk Assessment SEC-NOT-TRIGGERED and Performance & Concurrency pcv-1 four lanes EPS/FRC/BCI/RLS PCV-NOT-TRIGGERED/not_needed/not_applicable`
 - **Execution not authorized by approval:** `downstream project changes, runtime/deploy changes, new policy engines or schemas, speculative migrations, and any objective outside this TODO`
 - **Renewed approval required when:** `scope, mandate semantics, implementation horizon, reviewer authority, validation, or architecture changes materially`
 
