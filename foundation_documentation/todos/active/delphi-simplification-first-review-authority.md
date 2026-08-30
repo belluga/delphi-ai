@@ -321,6 +321,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 - `tools/tests/todo_authority_guard_test.sh`
 - `tools/todo_completion_guard.py`
 - `tools/tests/todo_completion_guard_test.sh`
+- `tools/orchestration_plan_completion_guard.py`
 - `skills/audit-protocol-triple-review/scripts/triple_audit_session.py`
 - `workflows/docker/subagent-orchestration-method.md`
 - `skills/wf-docker-subagent-orchestration-method/SKILL.md`
@@ -410,6 +411,7 @@ The current wording creates two opposite failure modes: reviewers can interpret 
 | `delphi-ai` | `tools/subagent_review_dispatch.py` | `M` | Shared and lifecycle-specific reviewer authority. |
 | `delphi-ai` | `tools/todo_authority_guard.py` | `M` | Objective horizon truth-table validation. |
 | `delphi-ai` | `tools/todo_completion_guard.py` | `M` | Canonical P1/P2 negative-evidence parser required by PR-17 and the completion gate. |
+| `delphi-ai` | `tools/orchestration_plan_completion_guard.py` | `M` | Shared Markdown table tokenizer preserves escaped literal pipes under D-20 exact-cell validation. |
 | `delphi-ai` | `tools/verify_adherence_sync.sh` | `M` | Existing semantic sync validator covers the full simplification mandate. |
 | `delphi-ai` | `tools/tests/audit_instruction_baselines_test.sh` | `any` | Negative Laravel duplicate-authority fixture (untracked until the implementation commit). |
 | `delphi-ai` | `tools/tests/review_scope_drift_guard_test.sh` | `M` | Explicit horizon drift regression. |
