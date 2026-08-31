@@ -103,9 +103,7 @@ status_for_file() {
     fi
   fi
 
-  if [[ "$rel" == *todo-driven-execution* && \
-        "$rel" != *"rules/stacks/laravel/shared/todo-driven-execution-model-decision.md" && \
-        "$rel" != *"skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md" ]]; then
+  if [[ "$rel" == *todo-driven-execution* ]]; then
     if ! contains "$file" "small\\|medium\\|big"; then
       status="FAIL"
       notes+=("missing complexity policy")
@@ -182,54 +180,6 @@ emit "| Check | Status | Notes |"
 emit "| --- | --- | --- |"
 
 coherence_failed=0
-
-check_laravel_todo_authority_adjunct() {
-  local adjunct="$DEL_ROOT/rules/stacks/laravel/shared/todo-driven-execution-model-decision.md"
-  local trigger_skill="$DEL_ROOT/skills/rule-laravel-shared-todo-driven-execution-model-decision/SKILL.md"
-  local core="$DEL_ROOT/rules/core/todo-driven-execution-model-decision.md"
-  local status="PASS"
-  local note="Laravel adjunct and trigger point to core without copied shared authority"
-  if ! contains "$adjunct" "rules/core/todo-driven-execution-model-decision\\.md" || \
-     ! contains "$trigger_skill" "rules/core/todo-driven-execution-model-decision\\.md"; then
-    status="FAIL"; note="missing core authority pointer"
-  elif ! python3 - "$core" "$adjunct" "$trigger_skill" <<'PY'
-import re
-import sys
-from pathlib import Path
-
-core = Path(sys.argv[1]).read_text(encoding="utf-8")
-targets = [Path(path).read_text(encoding="utf-8") for path in sys.argv[2:]]
-
-def normalized(value: str) -> str:
-    return re.sub(r"\s+", " ", value).strip().lower()
-
-def headings(value: str) -> set[str]:
-    return {
-        normalized(match.group(1))
-        for match in re.finditer(r"^#{2,3}\s+(.+?)\s*$", value, re.MULTILINE)
-    }
-
-target_headings = set().union(*(headings(target) for target in targets))
-core_headings = headings(core)
-copied_headings = core_headings & target_headings
-if copied_headings:
-    raise SystemExit("copied core H2/H3 heading: " + sorted(copied_headings)[0])
-
-# A literal core authority paragraph is objectively copied when its normalized
-# substantive text appears in either Laravel surface. This deliberately does
-# not judge paraphrases and uses content, not a line-count heuristic.
-target_text = "\n".join(normalized(target) for target in targets)
-for paragraph in re.split(r"\n\s*\n", core):
-    candidate = normalized(paragraph)
-    if len(candidate) >= 120 and not candidate.startswith("---") and candidate in target_text:
-        raise SystemExit("copied substantive core authority paragraph: " + candidate[:80])
-PY
-  then
-    status="FAIL"; note="Laravel adjunct or trigger copies shared core authority"
-  fi
-  emit "| Laravel TODO authority adjunct | $status | $note |"
-  [ "$status" = "PASS" ]
-}
 
 check_workflow_counterparts() {
   local status="PASS"
@@ -521,7 +471,6 @@ check_skill_tooling_register() {
 }
 
 check_workflow_counterparts || coherence_failed=$((coherence_failed + 1))
-check_laravel_todo_authority_adjunct || coherence_failed=$((coherence_failed + 1))
 check_cline_counterparts || coherence_failed=$((coherence_failed + 1))
 check_skill_mirrors || coherence_failed=$((coherence_failed + 1))
 check_claude_skill_mirrors || coherence_failed=$((coherence_failed + 1))

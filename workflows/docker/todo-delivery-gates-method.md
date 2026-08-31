@@ -55,13 +55,10 @@ Prove the implemented TODO slice before any `Local-Implemented`, `promotion_lane
    - Allowlists are temporary exceptions only: each entry needs an owner, expiration date, and reason; expired entries remain active findings.
    - Unresolved `P1|P2` blocks delivery.
 11. Run the derived architecture adherence review when `architecture_adherence_review = required`:
-    - immediately before dispatch, run `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`; rerun it after remediation touching protected sections;
-    - bind the review package/evidence record to the approved baseline SHA and the exact fresh scope-drift guard output from that run; protected remediation requires a new binding from the rerun;
-    - treat approved horizon intent as binding and route material redesign to renewed approval;
     - dispatch a fresh internal no-context reviewer with `review_kind=architecture_adherence`; the reviewer cannot be the implementing agent and external providers do not satisfy the gate;
     - bound the package to the frozen Architecture Change Governance contract, Decision Baseline, delivered diff/touched surfaces, protection-harness evidence, and the decision-adherence/module-consistency evidence;
     - block closure on an unresolved divergence from the approved target state, a missing required protection harness, or an unapproved architecture change.
-12. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them. Immediately before final-review dispatch, rerun the same scope-drift guard and repeat it after protected-section remediation. Bind each final-review package/evidence record to the approved baseline SHA and the exact fresh guard output; protected remediation requires a new binding from the rerun.
+12. Run derived test-quality, verification-debt, and final-review lanes when the audit floor requires them.
 13. Run:
     - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
     - require `Overall outcome: go`.

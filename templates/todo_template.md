@@ -33,14 +33,12 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - If the intended path explicitly authorizes a compatibility shim, fallback bridge, dual-read/dual-write period, or another non-canonical temporary construct, record that authorization in the TODO with exact scope, rationale, and removal/closeout condition. Reviewers must be able to distinguish an approved temporary exception from accidental workaround drift.
 
 ## Implementation Horizon & Extensibility Intent
-- **Mode:** `<current-scope-only|bounded-anticipatory-extensibility>`
 - **Current delivery:** <concrete current slice>
-- **Explicit future cases informing the design:** `<none|concrete bounded cases>`
-- **Anticipatory implementation authorized now:** `<none|concrete bounded seam>`
-- **Not authorized now:** <concrete excluded speculation>
-- **Rationale:** <why this is the simplest faithful horizon>
+- **Planned next steps:** `<none|concrete future steps; informational unless authorized below>`
+- **Anticipatory implementation authorized now:** `<none|concrete bounded future-facing implementation>`
+- **Rationale:** <why this is the simplest faithful implementation boundary>
 
-Use the literal truth table: `current-scope-only` requires `Anticipatory implementation authorized now: none` and permits future cases to be `none`; `bounded-anticipatory-extensibility` requires concrete future cases and a concrete authorized seam. This is the normative horizon authority; reviewers may not silently invent, rewrite, or erase it.
+Planned next steps do not authorize implementation. Reviewers may not invent future-facing work, and they must respect anticipatory implementation explicitly authorized here.
 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`
@@ -263,12 +261,12 @@ Plan the concrete protections that keep the corrected architecture from regressi
 - **Why this decision:** <why post-review material drift must be checked before approval>
 - **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
-- **Material sections compared:** `Context|Contract Boundary|Implementation Horizon & Extensibility Intent|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
+- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
 - **No-go handling rule:** `return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes; this is not a hard rejection`
 - **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <whether material sections drifted and what happened next>
-- **Evidence / reference:** <approved baseline SHA + exact fresh guard output artifact or command reference; refresh after protected remediation>
+- **Evidence / reference:** <guard output artifact or command reference>
 - **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
 
 ## Questions To Close

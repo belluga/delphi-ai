@@ -1,17 +1,59 @@
 ---
 name: rule-laravel-shared-todo-driven-execution-model-decision
-description: "Rule: MUST use for Laravel-scoped implementation work governed by the canonical core TODO authority."
+description: "Rule: MUST use whenever Laravel-scoped implementation work needs tactical TODO authority, APROVADO, rule ingestion, and delivery gates from the canonical TODO-driven execution rule."
 ---
 
-# Rule: Laravel TODO Authority Trigger
+# Rule: Laravel TODO-Driven Execution
 
-This is a trigger and loading delta, not a second TODO policy.
+This skill is the Laravel trigger surface for TODO-driven execution. Do not duplicate the full gate language here.
 
-## Required Pointer
+## Canonical Sources
+- Global rule: `rules/core/todo-driven-execution-model-decision.md`
+- Workflow umbrella: `workflows/docker/todo-driven-execution-method.md`
+- Phase workflows: `workflows/docker/todo-*-method.md`
+- Laravel adjunct rule, when present in downstream stacks: `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md`
+- Deterministic diff-scope guard: `tools/todo_diff_expectation_guard.py`
+- Deterministic authority/process guard: `tools/todo_authority_guard.py`
+- Deterministic close guard: `tools/todo_completion_guard.py`
 
-- Load and follow [`rules/core/todo-driven-execution-model-decision.md`](../../rules/core/todo-driven-execution-model-decision.md) first.
-- Then load the Laravel compatibility adjunct: [`rules/stacks/laravel/shared/todo-driven-execution-model-decision.md`](../../rules/stacks/laravel/shared/todo-driven-execution-model-decision.md).
+When this skill triggers, load the global rule first. For Laravel implementation, also load the relevant Laravel workflow/rules for touched endpoints, domains, tenant access, domain resolution, package boundaries, and foundation-doc sync.
 
-## Laravel Loading Delta
+## Required Application
+0. Keep subagent/delegation authority independent from Git-isolation authority. Default to one writer at a time in the principal checkout. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate human authorization explicitly naming worktrees or auxiliary checkouts.
+1. Classify the lane before implementation:
+   - exemption;
+   - Operational Micro-Fix;
+   - Maintenance/Regression Fix with ephemeral TODO;
+   - full tactical TODO lane.
+2. For full tactical work, require the TODO contract before implementation:
+   - bounded story slice or feature brief/direct-to-TODO rationale;
+   - scope, out-of-scope, DoD, validation steps;
+   - canonical module anchors and decision-consolidation targets;
+   - primary profile, technical scope, and handoff trace;
+   - assumptions preview and execution plan;
+   - complexity policy (`small|medium|big`);
+   - Plan Review Gate when required;
+   - Decision Baseline freeze and module-coherence check.
+3. Do not modify Laravel code, routes, schemas, jobs, config, project docs, or cross-stack contracts before explicit `APROVADO`, unless the canonical rule's exemption/micro-fix lane applies. Test/support edits before approval are allowed only through the canonical bounded pre-`APROVADO` RED evidence capture lane for bugfix/regression TODOs.
+4. After `APROVADO`, record compact approval evidence in the TODO, ingest the governing Laravel and shared rules/workflows for the touched surfaces, and run `tools/todo_authority_guard.py <todo-path>` before execution.
+5. Before delivery, require evidence for:
+   - the strict `Diff Expectation Contract` and a passing `tools/todo_diff_expectation_guard.py` result;
+   - Completion Evidence Matrix;
+   - Local CI-Equivalent Suite Matrix;
+   - Decision Adherence and module consistency;
+   - Pipeline/Copilot P1/P2 Preflight;
+   - Rule-Spirit Anti-Pattern Hunt;
+   - security, performance/concurrency, verification debt, test-quality audit, and final review according to the canonical rule and audit floor.
+   - `tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>`, `tools/todo_authority_guard.py <todo-path> --require-delivery-gates`, and `tools/todo_completion_guard.py <todo-path>` must all return `Overall outcome: go`.
 
-For the touched Laravel scope, load only the applicable endpoint, domain, tenant-access, domain-resolution, package-boundary, foundation-doc-sync, and test workflows/rules. Keep project-specific Laravel exceptions and anti-pattern candidates in the downstream project's canonical docs or local rule/pattern catalog.
+## Delivery Blockers
+- Unresolved `P1` or `P2` findings in the Pipeline/Copilot preflight block delivery.
+- Unresolved `P1` or `P2` findings in the Rule-Spirit Anti-Pattern Hunt block delivery.
+- Missing approval evidence or rule-ingestion evidence blocks implementation.
+- Any unclassified, forbidden, or incompatible real diff path/type blocks delivery for `Diff Deviation Analysis`: classify it as scope deviation, necessary/justifiable need, or noise. A no-go is not an automatic rollback; defend necessary changes with evidence, clean noise, revert unnecessary deviations, and require user validation plus renewed approval for necessary scope expansion.
+- Missing, aggregate-only, placeholder, or non-criterion-specific evidence blocks delivery.
+- `tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>`, `tools/todo_authority_guard.py <todo-path> --require-delivery-gates`, and `tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claim.
+
+## Drift Control
+- If this skill and the canonical rule disagree, the canonical rule wins and this skill should be updated.
+- Keep reusable PACED/Laravel method in `delphi-ai/`; keep project-specific Laravel exceptions and anti-pattern candidates in the downstream project's canonical docs or local rule/pattern catalog.

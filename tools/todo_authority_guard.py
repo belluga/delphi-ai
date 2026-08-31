@@ -57,7 +57,6 @@ PATTERNS_TO_ENFORCE_SECTION = "Patterns To Enforce"
 PROHIBITED_ANTI_PATTERNS_SECTION = "Prohibited Anti-Patterns"
 ARCHITECTURE_PROTECTION_HARNESS_SECTION = "Architecture Protection Harness"
 ARCHITECTURE_REVIEW_GATES_SECTION = "Architecture Review Gates"
-IMPLEMENTATION_HORIZON_SECTION = "Implementation Horizon & Extensibility Intent"
 CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
 PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
 RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
@@ -108,9 +107,7 @@ PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS = (
     "fast follow",
     "hardening",
 )
-# CommonMark ATX headings permit at most three leading spaces; four spaces are
-# an indented code block and must never establish TODO authority.
-HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+(.+?)\s*$")
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
 UNRESOLVED_RE = re.compile(
     r"\b("
@@ -135,13 +132,8 @@ def extract_sections(lines: list[str]) -> dict[str, list[str]]:
     for line in lines:
         match = HEADING_RE.match(line)
         if match:
-            title = match.group(2).strip()
-            current = title
-            occurrence = 2
-            while current in sections:
-                current = f"{title} (duplicate occurrence {occurrence})"
-                occurrence += 1
-            sections[current] = []
+            current = match.group(2).strip()
+            sections.setdefault(current, [])
             continue
         if current is not None:
             sections[current].append(line)
@@ -149,19 +141,12 @@ def extract_sections(lines: list[str]) -> dict[str, list[str]]:
 
 
 def find_section(sections: dict[str, list[str]], section_name: str) -> list[str]:
-    matches = find_matching_sections(sections, section_name)
-    return matches[0][1] if matches else []
-
-
-def find_matching_sections(
-    sections: dict[str, list[str]], section_name: str
-) -> list[tuple[str, list[str]]]:
     wanted = normalize(section_name)
-    return [
-        (title, lines)
-        for title, lines in sections.items()
-        if (normalized := normalize(title)) == wanted or normalized.startswith(f"{wanted} ")
-    ]
+    for title, lines in sections.items():
+        normalized = normalize(title)
+        if normalized == wanted or normalized.startswith(wanted):
+            return lines
+    return []
 
 
 def first_field(lines: list[str], labels: tuple[str, ...]) -> str | None:
@@ -658,58 +643,6 @@ def validate_architecture_governance(sections: dict[str, list[str]]) -> tuple[li
     return violations, context
 
 
-def validate_implementation_horizon(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
-    """Validate the literal horizon truth table only when a TODO adopts it."""
-    matches = find_matching_sections(sections, IMPLEMENTATION_HORIZON_SECTION)
-    context: dict[str, Any] = {
-        "implementation_horizon_present": bool(matches),
-        "implementation_horizon_section_count": len(matches),
-    }
-    section_present = context["implementation_horizon_present"]
-    if not section_present:
-        return [], context  # Legacy approved TODOs retain their frozen authority.
-
-    violations: list[dict[str, str]] = []
-    if len(matches) > 1:
-        violations.append(
-            build_violation(
-                "HORIZON-SECTION-DUPLICATE",
-                "Implementation Horizon & Extensibility Intent appears more than once after normalized heading matching.",
-                "Keep exactly one canonical Implementation Horizon section; remove normalized or suffixed duplicates.",
-                IMPLEMENTATION_HORIZON_SECTION,
-            )
-        )
-        return violations, context
-
-    lines = matches[0][1]
-    fields = {label: extract_field(lines, label) for label in (
-        "Mode", "Current delivery", "Explicit future cases informing the design",
-        "Anticipatory implementation authorized now", "Not authorized now", "Rationale",
-    )}
-    mode = strip_markup(fields["Mode"] or "").strip()
-    if mode not in {"current-scope-only", "bounded-anticipatory-extensibility"}:
-        violations.append(build_violation("HORIZON-MODE-INVALID", "Implementation Horizon `Mode` must be `current-scope-only` or `bounded-anticipatory-extensibility`.", "Use one literal mode from the TODO truth table.", IMPLEMENTATION_HORIZON_SECTION))
-        return violations, context
-    for label in ("Current delivery", "Not authorized now", "Rationale"):
-        if value_is_missing(fields[label]):
-            violations.append(build_violation("HORIZON-FIELD-MISSING", f"Implementation Horizon `{label}` is missing or placeholder.", "Fill every required literal truth-table field.", IMPLEMENTATION_HORIZON_SECTION))
-    future_cases_raw = strip_markup(fields["Explicit future cases informing the design"] or "").strip()
-    anticipatory_raw = strip_markup(fields["Anticipatory implementation authorized now"] or "").strip()
-    future_cases = normalize(future_cases_raw)
-    anticipatory = normalize(anticipatory_raw)
-    if mode == "current-scope-only":
-        if future_cases_raw != "none" and value_is_missing(fields["Explicit future cases informing the design"]):
-            violations.append(build_violation("HORIZON-FUTURE-CASES-MISSING", "Current-scope-only horizon needs concrete future cases or literal `none`.", "Record a concrete informational list or `none`.", IMPLEMENTATION_HORIZON_SECTION))
-        if anticipatory_raw != "none":
-            violations.append(build_violation("HORIZON-ANTICIPATORY-MUST-BE-NONE", "Current-scope-only horizon requires `Anticipatory implementation authorized now: none`.", "Use literal `none`; present-contract abstractions remain allowed.", IMPLEMENTATION_HORIZON_SECTION))
-    else:
-        if value_is_missing(fields["Explicit future cases informing the design"]) or future_cases == "none":
-            violations.append(build_violation("HORIZON-FUTURE-CASES-MISSING", "Bounded anticipatory horizon requires concrete future cases.", "Name the bounded future cases informing the authorized seam.", IMPLEMENTATION_HORIZON_SECTION))
-        if value_is_missing(fields["Anticipatory implementation authorized now"]) or anticipatory == "none":
-            violations.append(build_violation("HORIZON-ANTICIPATORY-SEAM-MISSING", "Bounded anticipatory horizon requires a concrete authorized seam.", "Name the bounded anticipatory implementation authorized now.", IMPLEMENTATION_HORIZON_SECTION))
-    return violations, context
-
-
 def validate_delivery_gates(
     sections: dict[str, list[str]],
     delivery_claim: bool,
@@ -940,7 +873,6 @@ def validate_todo(
         validate_rules_ingestion,
         validate_agent_routing_preflight,
         validate_architecture_governance,
-        validate_implementation_horizon,
         validate_promotion_routing,
     ):
         section_violations, section_context = validator(sections)

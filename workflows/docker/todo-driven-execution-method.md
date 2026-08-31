@@ -34,7 +34,7 @@ Use this workflow as the TODO-driven **orchestrator**. It owns the state machine
 
 Do not skip ahead because a later phase feels obvious. A phase may be recorded as `n/a` only when the supporting workflow allows it and the TODO records the rationale.
 
-For new or pre-approval TODOs, the literal `Implementation Horizon & Extensibility Intent` section is the authority for current versus bounded anticipatory work. Planning reviewers may challenge and recommend a decision change; delivery/adherence review treats approved horizon intent as binding and routes material redesign to renewed approval. Run the existing scope-drift guard before each architecture-adherence/final-review dispatch and again after protected-section remediation.
+The TODO's `Implementation Horizon & Extensibility Intent` section separates current delivery and planned next steps from anticipatory implementation authorized now. Planning reviewers may challenge that decision; delivery/adherence review must preserve approved intent or route a material redesign to renewed approval.
 
 ## Non-Negotiable Gates Visible At The Umbrella
 - **No implementation before `APROVADO`** for tactical and ephemeral TODO lanes.
