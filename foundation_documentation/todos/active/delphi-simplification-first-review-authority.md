@@ -9,7 +9,7 @@ Foundation documentation may plan future architecture. That planning does not au
 - Establish this mandate in Delphi's canonical instructions and reviewer guidance.
 - Add one direct TODO field group separating current delivery, planned next steps, and anticipatory implementation authorized now.
 - Reuse existing TODO and reviewer mechanisms.
-- Do not add a simplicity engine, result-schema axis, semantic prose parser, specialized approval grammar, or new reviewer topology.
+- Do not add a new policy, validation, or reviewer subsystem.
 
 ## Delivery Status Canon
 - **Current delivery stage:** `Pending`
@@ -32,22 +32,20 @@ Foundation documentation may plan future architecture. That planning does not au
 - [x] Reuse existing reviewer fields and dispatch mechanisms.
 
 ## Out of Scope
-- [ ] Judge architectural simplicity mechanically.
-- [ ] Parse free-form reviewer findings or approval language.
-- [ ] Change P1/P2 evidence semantics, waiver semantics, Markdown table parsing, or lifecycle CLI behavior.
-- [ ] Add schemas, policy engines, reviewer kinds, or delivery gates.
+- [ ] Automate architectural judgment or infer implementation authority from free-form language.
+- [ ] Add or change guards, schemas, reviewer topology, evidence semantics, or lifecycle behavior.
 - [ ] Modify downstream project code or project-specific foundation documentation.
 
-## Implementation Horizon & Extensibility Intent
+## Implementation Intent
 - **Current delivery:** Delphi instruction, TODO-template, and reviewer-authority alignment described in this TODO.
 - **Planned next steps:** `none`
 - **Anticipatory implementation authorized now:** `none`
-- **Rationale:** The existing instruction, TODO, dispatch, workflow, skill, and mirror mechanisms can express the mandate without a new subsystem.
+- **Rationale:** The existing instruction, TODO, rule, dispatch, and mirror mechanisms can express the mandate without a new subsystem.
 
 ## Definition of Done
 - [x] Canonical principles contain the complete mandate.
 - [x] The TODO template separates current delivery, planned next steps, and anticipatory implementation authorized now.
-- [x] Core TODO guidance states that foundation planning is not current implementation authority.
+- [x] Core TODO guidance states that foundation planning does not itself authorize future-facing implementation.
 - [x] Planning reviewers may challenge intent; delivery reviewers preserve approved intent or return for renewed approval.
 - [x] Reviewer dispatches receive the shared non-invention and simplest-faithful guidance.
 - [x] Derived mirrors are synchronized.
@@ -71,18 +69,7 @@ Foundation documentation may plan future architecture. That planning does not au
 | `C-06` | A developer may intentionally authorize anticipatory extensibility. | Record it directly in the TODO. |
 | `C-07` | Explicit approved TODO intent is binding in delivery. | Reviewers cannot erase it autonomously. |
 | `C-08` | Reviewers cannot invent absent future-facing complexity. | Ambiguity returns to the developer/user. |
-| `C-09` | Authorized extensibility remains subject to simplification. | Implement the simplest faithful form of the approved seam. |
-
-## Decisions
-- [x] `D-01` Use the simplest faithful Clean Code/SOLID architecture for approved intent.
-- [x] `D-02` Treat subtraction, consolidation, and redesign as valid simplification tools.
-- [x] `D-03` Keep foundation planning separate from tactical implementation authority.
-- [x] `D-04` Express anticipatory implementation intent directly in the TODO.
-- [x] `D-05` Treat explicit approved intent as binding during delivery review.
-- [x] `D-06` Let planning review challenge decisions without rewriting them.
-- [x] `D-07` Reuse existing reviewer fields and dispatch mechanisms.
-- [x] `D-08` Keep deterministic checks limited to existing structural/coherence checks; do not automate architectural judgment.
-- [x] `D-09` Remove every review-driven change without a direct line to this mandate rather than correcting or replacing it.
+| `C-09` | Authorized extensibility remains subject to simplification. | Implement the simplest faithful form of the approved future-facing work. |
 
 ## Changed Surfaces
 | Surface | Why It Remains |
@@ -90,14 +77,13 @@ Foundation documentation may plan future architecture. That planning does not au
 | `main_instructions.md`, `system_architecture_principles.md` | Canonical mandate. |
 | `templates/todo_template.md` | Direct expression of current, planned, and anticipatory intent. |
 | `rules/core/todo-driven-execution-model-decision.md` | Canonical TODO authority. |
-| TODO refinement/approval/execution and independent-review workflows | Lifecycle-appropriate reviewer authority. |
 | `tools/subagent_review_dispatch.py` and its focused test | Reuse the existing dispatch path to carry reviewer guidance. |
 | Canonical/derived instruction mirrors | Keep supported clients aligned. |
 
 ## Approval
 - **Approved by:** `user on 2026-08-30`
 - **Approval scope:** `retain only changes directly implementing C-01 through C-09 and remove every unrelated review-driven expansion`
-- **Execution not authorized by approval:** `new guards, phrase grammars, waiver rules, Markdown parsing, lifecycle CLI changes, reviewer topology, schemas, or downstream changes`
+- **Execution not authorized by approval:** `new validation or reviewer subsystems, or downstream changes`
 - **Renewed approval required when:** `a future change proposes any excluded mechanism or materially changes C-01 through C-09`
 
 ## Rules Acknowledgement / Ingestion

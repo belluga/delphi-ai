@@ -16,8 +16,6 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - Assumption-vs-code coherence evidence for the still-live assumptions.
 
 ## Procedure
-
-Before approval, resolve material ambiguity between planned future steps and anticipatory implementation authorized now.
 1. Freeze or refresh the `Decision Baseline (Frozen)` before execution.
 2. Freeze a pushed review baseline before the first planning-side review or guard:
    - commit and push the governing TODO package in its authoritative repo (normally `foundation_documentation`); when that authoritative documentation lane is documented as autonomous for baseline refresh/freeze writes, no extra per-action confirmation is required unless the user set a stricter boundary;

@@ -49,7 +49,6 @@ Load the phase skill that matches the current TODO state:
 - Complexity policy (`small|medium|big`) and `Plan Review Gate` before approval when required.
 - If the user/TODO/external reference asks for a `devil's advocate` loop, map it canonically to `wf-docker-independent-critique-method`; add `audit-protocol-triple-review` when the request also implies a persistent objection ledger, evidence-based reopening, or repeated no-context rounds until blocking objections are closed through the dedicated delivery-side multi-lane audit protocol.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` before implementation after approval/rule ingestion.
-- New and pre-approval TODOs record `Implementation Horizon & Extensibility Intent`; legacy approved TODOs retain frozen authority until the next approval-material refresh. Reviewers cannot silently invent, rewrite, or erase that intent.
 - `Completion Evidence Matrix` before delivery claims.
 - Strict `Diff Expectation Contract` and `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>` before delivery claims.
 - `Local CI-Equivalent Suite Matrix` executed locally for in-scope CI jobs.

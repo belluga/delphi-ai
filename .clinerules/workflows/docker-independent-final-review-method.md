@@ -10,7 +10,7 @@ description: "Define the canonical no-context internal final-review gate for imp
 ## Purpose
 Provide the canonical delivery-side internal review lane for an implemented tactical TODO once `wf-docker-audit-escalation-method` has derived the final-review floor.
 
-This method critiques the delivered implementation and its evidence. It is not a late-stage redesign gate unless the reviewer finds a material defect or approval-breaking divergence. Approved implementation-horizon intent is binding here: flag a material defect or divergence and route redesign to renewed approval; do not silently invent, rewrite, or erase the approved seam.
+This method critiques the delivered implementation and its evidence. It is not a late-stage redesign gate unless the reviewer finds a material defect or approval-breaking divergence.
 
 ## When It Applies
 - Run this method whenever `wf-docker-audit-escalation-method` marks `final_review` as `required|recommended`.

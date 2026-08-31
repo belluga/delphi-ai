@@ -7,7 +7,7 @@ description: Define the canonical no-context auxiliary critique gate for higher-
 ## Purpose
 Provide the canonical planning-side challenge lane for a tactical TODO once `wf-docker-audit-escalation-method` has derived the critique floor.
 
-This method exists to expose weak assumptions, blind spots, and plan-review gaps before implementation starts. It is a challenge mechanism, not an authority transfer. When a TODO records implementation-horizon intent, critique may challenge the proposed seam and recommend a decision change, but may not silently invent, rewrite, or erase it.
+This method exists to expose weak assumptions, blind spots, and plan-review gaps before implementation starts. It is a challenge mechanism, not an authority transfer.
 It must also challenge whether the planned path is sound for performance, elegant, and structurally sound rather than reliant on brittle workarounds or structural shortcuts.
 
 ## When It Applies

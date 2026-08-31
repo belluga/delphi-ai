@@ -32,7 +32,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - If any assumption or plan step changes `Scope`, `Out of Scope`, `Definition of Done`, required validation semantics, public contract, or frozen decisions, update the TODO contract first and request renewed approval before execution continues.
 - If the intended path explicitly authorizes a compatibility shim, fallback bridge, dual-read/dual-write period, or another non-canonical temporary construct, record that authorization in the TODO with exact scope, rationale, and removal/closeout condition. Reviewers must be able to distinguish an approved temporary exception from accidental workaround drift.
 
-## Implementation Horizon & Extensibility Intent
+## Implementation Intent
 - **Current delivery:** <concrete current slice>
 - **Planned next steps:** `<none|concrete future steps; informational unless authorized below>`
 - **Anticipatory implementation authorized now:** `<none|concrete bounded future-facing implementation>`

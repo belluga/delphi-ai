@@ -19,8 +19,8 @@ Derived from *Delphinapterus leucas* (Beluga whale) - connects to "Belluga" busi
 - **No Legacy Burden:** No production users or backward-compatibility constraints exist.
 - **Ideal State Orientation:** Every design must represent the ideal launch-time architecture.
 - **Foundational Language:** Use verbs like **establish**, **design**, **specify**, **deliver**.
-- **Complete Vision over Minimalism:** Preserve complete, forward-compatible planning; it does not itself authorize current future-facing implementation. Approved TODO intent governs implementation.
-- **Simplification First:** Use the simplest faithful Clean Code/SOLID design—not minimum diff or fewest abstractions. Subtraction, consolidation, or redesign may be required; scattered conditionals, duplication, or hidden coupling are not simplicity. Foundation planning defines future architecture; approved TODO authority governs current implementation.
+- **Complete Vision over Minimalism:** Preserve complete, forward-compatible planning; it does not itself authorize current future-facing implementation. For TODO-governed work, approved TODO intent governs implementation.
+- **Simplification First:** Use the simplest faithful Clean Code/SOLID design—not minimum diff or fewest abstractions. Subtraction, consolidation, or redesign may be required; scattered conditionals, duplication, or hidden coupling are not simplicity. Foundation planning defines future architecture; for TODO-governed work, approved TODO authority governs implementation.
 - **Permit Iterative Implementation:** Major initiatives can span multiple sessions and commits.
 
 ---
