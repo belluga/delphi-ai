@@ -52,6 +52,11 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - **Post-review scope drift** must be checked before `APROVADO`:
   - `python3 delphi-ai/tools/review_scope_drift_guard.py <todo-path>`
   - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, and refresh the pushed baseline as required before approval resumes.
+- **Execution-readiness authority preflight** must pass before `APROVADO` is requested:
+  - prepare concrete rule/workflow/skill paths and one planned implementation routing tuple;
+  - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` must return `Overall outcome: preflight-go`;
+  - `preflight-go` grants no implementation authority and does not replace the normal post-approval guard;
+  - `todo_deterministic_validator.py` validates a different structural contract and is not a substitute for this preflight.
 - **Approval and rule-ingestion evidence** must be recorded in the TODO after `APROVADO` and before implementation:
   - `Agent Routing Preflight` must also be recorded whenever the active client exposes governed effort/model routing or declared routing policy that this TODO is using.
   - `python3 delphi-ai/tools/agent_role_routing_guard.py ...`
@@ -97,6 +102,7 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - The TODO records which phase workflow governed each major transition.
 - Any TODO that remains in `active/` records `Active Work State = implementation|review|blocked` plus an exact exit condition.
 - No phase-specific requirements are left only in chat.
+- Approval requests are blocked unless `todo_authority_guard.py --pre-approval` returns `Overall outcome: preflight-go`.
 - Delivery claims are blocked unless `todo_diff_expectation_guard.py`, `todo_authority_guard.py --require-delivery-gates`, and `todo_completion_guard.py` all return `Overall outcome: go`.
 - Governed execution is blocked unless `Agent Routing Preflight` resolves to `go` before `todo_authority_guard.py` is trusted.
 - Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.

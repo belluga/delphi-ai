@@ -33,7 +33,7 @@ Load the phase skill that matches the current TODO state:
 ## Required State Machine
 1. Classify lane and framing.
 2. Refine the TODO contract.
-3. Run approval gates, including optional bounded pre-approval RED evidence capture when the TODO requires it, and obtain explicit `APROVADO`.
+3. Run approval gates, including optional bounded pre-approval RED evidence capture when the TODO requires it; require `todo_authority_guard.py <todo-path> --pre-approval` to return `Overall outcome: preflight-go`, then obtain explicit `APROVADO`. `preflight-go` grants no execution authority.
 4. Record approval/rule-ingestion evidence and require `todo_authority_guard.py <todo-path>` to return `Overall outcome: go`.
 5. Execute only inside the approved boundary.
 6. Complete delivery gates and deterministic guards.
@@ -46,6 +46,7 @@ Load the phase skill that matches the current TODO state:
 - `Gate: Review Baseline Freeze` committed and pushed before the first planning-side review/guard run.
 - Any review-packet preparation recorded before that freeze is satisfied must stay explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) and must not be labeled as a passed planning-side review/guard result.
 - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` must return `Overall outcome: go` before `APROVADO` whenever the TODO used the review loop.
+- `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` must return `Overall outcome: preflight-go` before `APROVADO`; general deterministic validation does not replace this execution-readiness check.
 - Complexity policy (`small|medium|big`) and `Plan Review Gate` before approval when required.
 - If the user/TODO/external reference asks for a `devil's advocate` loop, map it canonically to `wf-docker-independent-critique-method`; add `audit-protocol-triple-review` when the request also implies a persistent objection ledger, evidence-based reopening, or repeated no-context rounds until blocking objections are closed through the dedicated delivery-side multi-lane audit protocol.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` before implementation after approval/rule ingestion.

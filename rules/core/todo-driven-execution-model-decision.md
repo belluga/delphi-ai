@@ -26,7 +26,7 @@ The canonical operational workflow is `workflows/docker/todo-driven-execution-me
 - `todo-delivery-gates-method`
 - `todo-closeout-promotion-method`
 
-The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Rules Acknowledgement / Ingestion`, `Diff Expectation Contract`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, `todo_diff_expectation_guard.py`, `todo_authority_guard.py`, and `todo_completion_guard.py` remain blocking obligations at their respective phases. A `Local CI-Equivalent Suite Matrix` is valid only when each row explicitly identifies the intended behavior/scenario plus the fixture/seed/runtime preconditions required to exercise it; a generic green suite is not acceptable evidence when the new/changed behavior was never actually provable in that run.
+The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Rules Acknowledgement / Ingestion`, `Diff Expectation Contract`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, the pre-approval execution-readiness mode of `todo_authority_guard.py`, the normal post-approval `todo_authority_guard.py`, `todo_diff_expectation_guard.py`, and `todo_completion_guard.py` remain blocking obligations at their respective phases. A `Local CI-Equivalent Suite Matrix` is valid only when each row explicitly identifies the intended behavior/scenario plus the fixture/seed/runtime preconditions required to exercise it; a generic green suite is not acceptable evidence when the new/changed behavior was never actually provable in that run.
 
 ### Classification vs Versioned Delivery
 - Classification family roots (for example `active/bugs-performance/<severity>/`, `active/features/`, or analogous project-defined intake families) classify work, triage admission, and help decide which delivery conversation the owner belongs to.
@@ -246,6 +246,13 @@ If the change restores previously documented or verifiably working behavior (inc
 - If any decision is `Conflict`, block implementation until TODO/module decisions are reconciled and re-approved.
 - If any module decision has unintended divergence, block implementation until it is either preserved or explicitly approved for supersede.
 
+### Gate K1 — Execution-readiness authority preflight (mandatory before requesting approval)
+- Prepare the `Rules Acknowledgement / Ingestion` rows with concrete rule/workflow/skill paths. This is a structural declaration only; reload and bind the applicable sources after approval under Gate M.
+- Record the planned implementation `Agent Routing Preflight` as one concrete executable surface/role/model tuple. Keep approval/review history in separate evidence fields; do not combine several governed surfaces in one machine-readable value.
+- Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` and require `Overall outcome: preflight-go` before asking for `APROVADO`.
+- This mode skips only approval evidence that cannot exist yet. It still validates rule paths, routing, architecture governance, architecture review status, and other execution-readiness structure.
+- `preflight-go` explicitly grants no execution authority. A generic `todo_deterministic_validator.py` PASS does not substitute for it, and the normal post-approval authority guard remains mandatory.
+
 ### Gate L — Explicit approval token (mandatory)
 - After Gates 0-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
@@ -257,7 +264,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - During Gate I1, any allowed write must stay inside the exact test/support surfaces listed in the TODO and remains subject to renewed review-loop convergence before `APROVADO`.
 
 ### Gate M — Rules Acknowledgement / Ingestion (mandatory after `APROVADO` and before execution)
-- Use the approved execution plan to identify the exact touched surfaces.
+- Reload the predeclared sources against the approved execution plan and confirm the exact touched surfaces.
 - Load the relevant stack rules/workflows for those surfaces and record:
   - `source`
   - `why it applies now`
@@ -466,6 +473,8 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If the execution plan does not contain a recorded test strategy, block implementation.
 - If bugfix/regression or behavior-defining work does not contain fail-first targets (or explicit rationale for non-applicability), block implementation.
 - If explicit approval evidence is missing from the TODO after approval, block implementation.
+- If `todo_authority_guard.py <todo-path> --pre-approval` did not return `Overall outcome: preflight-go`, block the request for `APROVADO` until structural execution readiness is corrected.
+- Never treat `preflight-go` as implementation authority; it skips approval evidence by design.
 - If relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`, block implementation.
 - If `todo_authority_guard.py <todo-path>` does not return `Overall outcome: go` after approval/rule ingestion, block implementation.
 - If implementation absorbs a new independently testable behavior, a new primary objective, or a new approval/risk conversation without TODO update/split + renewed approval, block delivery.

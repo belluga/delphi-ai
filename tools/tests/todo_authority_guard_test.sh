@@ -46,6 +46,26 @@ assert_go() {
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
 }
 
+assert_preflight_go() {
+  local todo_file="$1"
+  if ! python3 "$GUARD" "$todo_file" --pre-approval > "$OUTPUT_FILE" 2>&1; then
+    cat "$OUTPUT_FILE"
+    return 1
+  fi
+  grep -q "Overall outcome: preflight-go" "$OUTPUT_FILE"
+  grep -q "execution_authority_granted: False" "$OUTPUT_FILE"
+}
+
+assert_preflight_no_go() {
+  local todo_file="$1"
+  if python3 "$GUARD" "$todo_file" --pre-approval > "$OUTPUT_FILE" 2>&1; then
+    cat "$OUTPUT_FILE"
+    printf 'expected preflight-no-go for %s\n' "$todo_file" >&2
+    exit 1
+  fi
+  grep -q "Overall outcome: preflight-no-go" "$OUTPUT_FILE"
+}
+
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
 # TODO: Missing Approval
 
@@ -112,6 +132,48 @@ TODO
 
 assert_go "$TMP_DIR/approved-no-delivery-claim.md"
 
+cat > "$TMP_DIR/pre-approval-ready.md" <<'TODO'
+# TODO: Pre-Approval Ready
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `rules/core/todo-driven-execution-model-decision.md` | TODO execution. | Approval gate. | Silent changes. | Check before execution. |
+TODO
+
+assert_preflight_go "$TMP_DIR/pre-approval-ready.md"
+assert_no_go "$TMP_DIR/pre-approval-ready.md"
+grep -q "APPROVAL-SECTION-MISSING" "$OUTPUT_FILE"
+
+sed 's#rules/core/todo-driven-execution-model-decision.md#package-first-verification#' \
+  "$TMP_DIR/pre-approval-ready.md" > "$TMP_DIR/weak-rule-source.md"
+assert_preflight_no_go "$TMP_DIR/weak-rule-source.md"
+grep -q "RULE-INGESTION-SOURCE-WEAK" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/approval-prefix-collision.md" <<'TODO'
+# TODO: Exact Approval Section Wins
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval and execution gates
+- [x] Planning checks completed.
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `rules/core/todo-driven-execution-model-decision.md` | TODO execution. | Approval gate. | Silent changes. | Check before execution. |
+TODO
+
+assert_go "$TMP_DIR/approval-prefix-collision.md"
+
 cat > "$TMP_DIR/approved-with-routing-preflight.md" <<'TODO'
 # TODO: Approved With Routing Preflight
 
@@ -151,6 +213,11 @@ path.write_text(
 PY
 
 assert_go "$TMP_DIR/approved-with-routing-preflight.md"
+
+sed 's/`implementation`/final `todo-approval` plus planned `implementation` handoff/' \
+  "$TMP_DIR/approved-with-routing-preflight.md" > "$TMP_DIR/composite-routing-preflight.md"
+assert_preflight_no_go "$TMP_DIR/composite-routing-preflight.md"
+grep -q "ROUTING-SURFACE-UNKNOWN" "$OUTPUT_FILE"
 
 cat > "$TMP_DIR/architecture-supersede-missing-governance.md" <<'TODO'
 # TODO: Architecture Supersede Missing Governance
@@ -213,6 +280,9 @@ TODO
 assert_no_go "$TMP_DIR/architecture-required-incomplete.md"
 grep -q "ARCHITECTURE-ANTI-PATTERNS-MISSING" "$OUTPUT_FILE"
 grep -q "ARCHITECTURE-HARNESS-MISSING" "$OUTPUT_FILE"
+assert_preflight_no_go "$TMP_DIR/architecture-required-incomplete.md"
+grep -q "ARCHITECTURE-ANTI-PATTERNS-MISSING" "$OUTPUT_FILE"
+grep -q "ARCHITECTURE-HARNESS-MISSING" "$OUTPUT_FILE"
 
 cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
 # TODO: Architecture Required Complete
@@ -266,6 +336,10 @@ cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
 TODO
 
 assert_go "$TMP_DIR/architecture-required-complete.md"
+
+sed 's/Decision review status:\*\* `passed`/Decision review status:** `no_material_findings`/' \
+  "$TMP_DIR/architecture-required-complete.md" > "$TMP_DIR/architecture-review-status-compatible.md"
+assert_preflight_go "$TMP_DIR/architecture-review-status-compatible.md"
 
 cat > "$TMP_DIR/architecture-not-needed.md" <<'TODO'
 # TODO: Architecture Not Needed

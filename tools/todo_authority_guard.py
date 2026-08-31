@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Deterministic authority/process guard for tactical TODO execution.
 
-This companion guard validates evidence that should already exist in a tactical
-TODO after approval and before implementation/delivery claims:
+This companion guard validates execution-readiness structure before approval
+and full authority evidence after approval and before implementation/delivery
+claims:
 
   - explicit approval evidence and approved scope;
   - touched-surface rule/workflow ingestion;
@@ -12,7 +13,7 @@ TODO after approval and before implementation/delivery claims:
 It intentionally does not scrape chat history and does not replace
 todo_completion_guard.py. It emits a TEACH runtime response and exits with:
 
-  0  GO: no authority/process blocker was found.
+  0  GO or PREFLIGHT-GO: no blocker was found for the selected mode.
   2  NO-GO: deterministic authority/process blockers were found.
   1  Tool/runtime misuse.
 """
@@ -67,6 +68,12 @@ DELIVERY_GATE_SECTIONS = (
     (RULE_SPIRIT_HUNT_SECTION, 2),
 )
 PASSING_STATUSES = {"passed", "waived", "n/a"}
+ARCHITECTURE_REVIEW_PASSING_STATUSES = PASSING_STATUSES | {
+    "no_material_findings",
+    "findings_integrated",
+    "no material findings",
+    "findings integrated",
+}
 ROUTING_ALLOWED_OUTCOMES = {
     "go",
     "delegate-required",
@@ -143,8 +150,10 @@ def extract_sections(lines: list[str]) -> dict[str, list[str]]:
 def find_section(sections: dict[str, list[str]], section_name: str) -> list[str]:
     wanted = normalize(section_name)
     for title, lines in sections.items():
-        normalized = normalize(title)
-        if normalized == wanted or normalized.startswith(wanted):
+        if normalize(title) == wanted:
+            return lines
+    for title, lines in sections.items():
+        if normalize(title).startswith(wanted):
             return lines
     return []
 
@@ -739,7 +748,7 @@ def validate_architecture_review_gates(
         status = normalize(first_field(lines, (status_label,)) or "")
         if decision != "required":
             violations.append(build_violation("ARCHITECTURE-REVIEW-DECISION-MISMATCH", f"{decision_label} must be `required` when Architecture Change Governance is required.", "Record the guard-derived required decision in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
-        if status not in PASSING_STATUSES:
+        if status not in ARCHITECTURE_REVIEW_PASSING_STATUSES:
             violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
         if status == "waived" and not allow_waivers and "approval" not in normalize("\n".join(lines)):
             violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without explicit approval evidence.", "Record the human waiver/approval reference in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
@@ -837,12 +846,15 @@ def validate_todo(
     todo_path: Path,
     require_delivery_gates: bool,
     allow_waivers: bool,
+    pre_approval: bool = False,
 ) -> dict[str, Any]:
     context: dict[str, Any] = {
         "todo_path": str(todo_path),
         "current_delivery_stage": "missing",
         "delivery_claim": False,
         "require_delivery_gates": require_delivery_gates,
+        "validation_mode": "pre-approval" if pre_approval else "execution-authority",
+        "execution_authority_granted": False,
     }
     violations: list[dict[str, str]] = []
 
@@ -858,6 +870,7 @@ def validate_todo(
                 )
             ],
             "context": context,
+            "pre_approval": pre_approval,
         }
 
     lines = todo_path.read_text(encoding="utf-8").splitlines()
@@ -868,13 +881,16 @@ def validate_todo(
     delivery_claim = is_delivery_claim(todo_path, stage, require_delivery_gates)
     context["delivery_claim"] = delivery_claim
 
-    for validator in (
-        validate_approval,
+    validators = [
         validate_rules_ingestion,
         validate_agent_routing_preflight,
         validate_architecture_governance,
         validate_promotion_routing,
-    ):
+    ]
+    if not pre_approval:
+        validators.insert(0, validate_approval)
+
+    for validator in validators:
         section_violations, section_context = validator(sections)
         violations.extend(section_violations)
         context.update(section_context)
@@ -895,18 +911,24 @@ def validate_todo(
     violations.extend(architecture_review_violations)
     context.update(architecture_review_context)
 
+    context["execution_authority_granted"] = not pre_approval and not violations
     return {
         "blocked": bool(violations),
         "violations": violations,
         "context": context,
+        "pre_approval": pre_approval,
     }
 
 
 def format_response(result: dict[str, Any]) -> str:
+    if result.get("pre_approval"):
+        outcome = "preflight-no-go" if result["blocked"] else "preflight-go"
+    else:
+        outcome = "no-go" if result["blocked"] else "go"
     lines = [
         "TODO Authority Guard",
         f"Rule: {RULE_ID}",
-        f"Overall outcome: {'no-go' if result['blocked'] else 'go'}",
+        f"Overall outcome: {outcome}",
         "",
         "Context:",
     ]
@@ -950,6 +972,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Allow waived delivery rows without requiring inline approval evidence in the row.",
     )
+    parser.add_argument(
+        "--pre-approval",
+        action="store_true",
+        help=(
+            "Validate execution-readiness structure before human approval. "
+            "Approval evidence is the only skipped gate; a successful result is preflight-go and never grants execution authority."
+        ),
+    )
     parser.add_argument("--json-output", help="Optional path for machine-readable JSON output.")
     return parser.parse_args(argv)
 
@@ -960,6 +990,7 @@ def main(argv: list[str]) -> int:
         Path(args.todo_path),
         require_delivery_gates=args.require_delivery_gates,
         allow_waivers=args.allow_waivers,
+        pre_approval=args.pre_approval,
     )
     if args.json_output:
         write_json(Path(args.json_output), result)

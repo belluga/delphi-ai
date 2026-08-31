@@ -34,8 +34,9 @@ When this skill triggers, load the canonical rule first and follow it as the sou
    - Plan Review Gate when required;
    - Decision Baseline freeze and module-coherence check.
 3. Do not modify project code, submodule code, runtime files, or project docs before explicit `APROVADO`, unless the canonical rule's exemption/micro-fix lane applies. Test/support edits before approval are allowed only through the canonical bounded pre-`APROVADO` RED evidence capture lane for bugfix/regression TODOs.
-4. After `APROVADO`, record compact approval evidence in the TODO, ingest the governing rules/workflows for the touched surfaces, and run `tools/todo_authority_guard.py <todo-path>` before execution.
-5. Before delivery, require evidence for:
+4. Before requesting `APROVADO`, prepare concrete rule/workflow paths plus one planned implementation routing tuple and require `tools/todo_authority_guard.py <todo-path> --pre-approval` to return `Overall outcome: preflight-go`; this is structural readiness only and grants no execution authority.
+5. After `APROVADO`, record compact approval evidence in the TODO, ingest the governing rules/workflows for the touched surfaces, and run `tools/todo_authority_guard.py <todo-path>` before execution.
+6. Before delivery, require evidence for:
    - the strict `Diff Expectation Contract` and a passing `tools/todo_diff_expectation_guard.py` result;
    - Completion Evidence Matrix;
    - Local CI-Equivalent Suite Matrix;
@@ -49,6 +50,7 @@ When this skill triggers, load the canonical rule first and follow it as the sou
 - Unresolved `P1` or `P2` findings in the Pipeline/Copilot preflight block delivery.
 - Unresolved `P1` or `P2` findings in the Rule-Spirit Anti-Pattern Hunt block delivery.
 - Missing approval evidence or rule-ingestion evidence blocks implementation.
+- Missing `preflight-go` evidence blocks the approval request; `preflight-go` itself never authorizes implementation.
 - Any unclassified, forbidden, or incompatible real diff path/type blocks delivery for `Diff Deviation Analysis`: classify it as scope deviation, necessary/justifiable need, or noise. A no-go is not an automatic rollback; defend necessary changes with evidence, clean noise, revert unnecessary deviations, and require user validation plus renewed approval for necessary scope expansion.
 - Missing, aggregate-only, placeholder, or non-criterion-specific evidence blocks delivery.
 - `tools/todo_authority_guard.py <todo-path> --require-delivery-gates` and `tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any `Local-Implemented`, `promotion_lane/`, `completed/`, or `Production-Ready` claim.
