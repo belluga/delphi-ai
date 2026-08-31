@@ -16,8 +16,9 @@ python3 "$DISPATCH" \
 
 for review_kind in architecture_opinion architecture_adherence critique test_quality_audit final_review cutover_integrity_audit; do
   python3 "$DISPATCH" --review-kind "$review_kind" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/$review_kind.md" >/dev/null
-  grep -q "Do not silently invent, rewrite, or erase explicit TODO intent" "$TMP_DIR/$review_kind.md"
-  grep -q "Planning review may challenge proposed intent; after approval, preserve it or route material redesign to renewed approval" "$TMP_DIR/$review_kind.md"
+  grep -q "Seek the simplest faithful Clean Code/SOLID design for the approved intent" "$TMP_DIR/$review_kind.md"
+  grep -q "Do not invent future-facing work or erase explicit TODO intent" "$TMP_DIR/$review_kind.md"
+  grep -q "delivery review must preserve approved intent or return for renewed approval" "$TMP_DIR/$review_kind.md"
 done
 
 python3 - "$ROOT_DIR" "$RESULT_SCHEMA" "$TMP_DIR/dispatch.md" "$TMP_DIR" <<'PY'
@@ -47,7 +48,7 @@ for field in finding["properties"]:
 
 assert "No top-level fields other than the following are allowed:" in markdown
 assert "Return exactly one JSON object and no Markdown fence or prose." in markdown
-assert "Do not silently invent, rewrite, or erase explicit TODO intent" in markdown
+assert "Do not invent future-facing work or erase explicit TODO intent" in markdown
 
 sys.path.insert(0, str(root_dir / "tools"))
 dispatcher = importlib.import_module("subagent_review_dispatch")

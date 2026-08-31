@@ -38,7 +38,7 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - **Anticipatory implementation authorized now:** `<none|concrete bounded future-facing implementation>`
 - **Rationale:** <why this is the simplest faithful implementation boundary>
 
-Planned next steps do not authorize implementation. Reviewers may not invent future-facing work, and they must respect anticipatory implementation explicitly authorized here.
+Planned next steps do not authorize implementation. Planning reviewers may challenge proposed intent; delivery reviewers must preserve approved intent or return for renewed approval.
 
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`

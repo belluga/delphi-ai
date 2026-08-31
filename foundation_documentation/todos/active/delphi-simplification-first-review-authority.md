@@ -1,7 +1,7 @@
 # TODO: Establish Simplification First and Explicit TODO Intent
 
 ## Context
-Delphi must choose the simplest Clean Code/SOLID architecture that faithfully implements approved intent. Simplicity is not minimum diff, minimum file count, or automatic avoidance of abstraction. It may require removing or consolidating existing layers, while scattered conditionals, duplicated decisions, and hidden coupling remain unacceptable.
+Delphi must choose the simplest Clean Code/SOLID architecture that faithfully implements approved intent. Simplicity is not minimum diff or automatic avoidance of abstraction. It may require removing or consolidating existing layers, while scattered conditionals, duplicated decisions, and hidden coupling remain unacceptable.
 
 Foundation documentation may plan future architecture. That planning does not automatically authorize future-facing implementation. A developer may intentionally authorize anticipatory extensibility, but that intention must be explicit in the governing TODO. Reviewers may question a proposed decision during planning; they may not invent absent future work or erase approved intent during delivery.
 
@@ -32,7 +32,7 @@ Foundation documentation may plan future architecture. That planning does not au
 - [x] Reuse existing reviewer fields and dispatch mechanisms.
 
 ## Out of Scope
-- [ ] Automate architectural judgment or infer implementation authority from free-form language.
+- [ ] Require special phrases or mechanically judge architectural simplicity.
 - [ ] Add or change guards, schemas, reviewer topology, evidence semantics, or lifecycle behavior.
 - [ ] Modify downstream project code or project-specific foundation documentation.
 
@@ -96,8 +96,6 @@ Foundation documentation may plan future architecture. That planning does not au
 | `rules/core/todo-driven-execution-model-decision.md` | The active TODO governs this implementation. | Approved boundary and explicit intent. | Hidden scope expansion. | Remove, rather than replace, unrelated changes. |
 
 ## Coherence Result
-- Canonical conclusions `C-01` through `C-09`: `preserved`
-- Unrelated post-implementation review machinery: `removed`
-- Remaining specialized simplicity subsystem: `none`
-- Project-specific content in reusable Delphi canon: `none`
-- Required additional reviewer loop: `none`
+- All remaining changed surfaces map directly to `C-01` through `C-09`.
+- Non-mandate changes and specialized simplicity machinery were removed.
+- Reusable Delphi canon remains project-agnostic.

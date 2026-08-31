@@ -16,9 +16,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
 RESULT_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_result.schema.json"
 SHARED_INTENT_AUTHORITY_FOCUS = (
-    "Do not silently invent, rewrite, or erase explicit TODO intent. Assess the simplest faithful design: "
-    "minimum incidental complexity compatible with approved intent, Clean Code, SOLID, correctness, and security. "
-    "Planning review may challenge proposed intent; after approval, preserve it or route material redesign to renewed approval."
+    "Seek the simplest faithful Clean Code/SOLID design for the approved intent. Do not invent future-facing work "
+    "or erase explicit TODO intent. Planning review may challenge proposed intent; delivery review must preserve "
+    "approved intent or return for renewed approval."
 )
 CONFIG = {
     "architecture_opinion": {

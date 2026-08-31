@@ -11,9 +11,9 @@ Before starting any implementation work that changes project code, submodule cod
 
 ## Simplification First and Explicit Implementation Authority
 
-Choose the simplest faithful design: minimum incidental complexity compatible with approved intent, Clean Code, SOLID, correctness, security, and explicit contracts. This is not minimum diff or automatic avoidance of abstraction; simplification may require subtraction, consolidation, or redesign of unnecessary layers. Do not replace justified ownership with scattered conditionals, duplication, or hidden coupling.
+Choose the simplest faithful Clean Code/SOLID design for the approved intent. This is not minimum diff or automatic avoidance of abstraction; simplification may require subtraction, consolidation, or redesign of unnecessary layers. Do not replace a justified abstraction with scattered conditionals, duplicated decisions, or hidden coupling.
 
-Foundation documents may describe future architecture, but they do not authorize future-facing implementation in a current TODO. The TODO must distinguish current delivery and planned next steps from any anticipatory implementation authorized now. Without explicit authorization, reviewers must not invent future-facing work. When anticipatory implementation is explicitly approved, planning reviewers may challenge the decision, but delivery/adherence reviewers must preserve it or return for renewed approval.
+Foundation documents may describe future architecture, but they do not authorize future-facing implementation for the current delivery. The TODO must distinguish current delivery and planned next steps from any anticipatory implementation authorized now. Without explicit authorization, reviewers must not invent future-facing work. Planning reviewers may challenge proposed intent; delivery/adherence reviewers must preserve approved intent or return for renewed approval.
 
 For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
 
