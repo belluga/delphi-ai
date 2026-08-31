@@ -16,7 +16,7 @@ python3 "$DISPATCH" \
 
 for review_kind in architecture_opinion architecture_adherence critique test_quality_audit final_review cutover_integrity_audit; do
   python3 "$DISPATCH" --review-kind "$review_kind" --package "$TMP_DIR/package.md" --markdown-output "$TMP_DIR/$review_kind.md" >/dev/null
-  grep -q "Seek the simplest faithful Clean Code/SOLID design for the approved intent" "$TMP_DIR/$review_kind.md"
+  grep -q "When assessing design, seek the simplest faithful Clean Code/SOLID design for the approved intent" "$TMP_DIR/$review_kind.md"
   grep -q "Do not invent future-facing work or erase explicit TODO intent" "$TMP_DIR/$review_kind.md"
   grep -q "delivery review must preserve approved intent or return for renewed approval" "$TMP_DIR/$review_kind.md"
 done

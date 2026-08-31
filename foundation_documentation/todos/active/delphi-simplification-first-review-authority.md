@@ -5,12 +5,6 @@ Delphi must choose the simplest Clean Code/SOLID architecture that faithfully im
 
 Foundation documentation may plan future architecture. That planning does not automatically authorize future-facing implementation. A developer may intentionally authorize anticipatory extensibility, but that intention must be explicit in the governing TODO. Reviewers may question a proposed decision during planning; they may not invent absent future work or erase approved intent during delivery.
 
-## Contract Boundary
-- Establish this mandate in Delphi's canonical instructions and reviewer guidance.
-- Add one direct TODO field group separating current delivery, planned next steps, and anticipatory implementation authorized now.
-- Reuse existing TODO and reviewer mechanisms.
-- Do not add a new policy, validation, or reviewer subsystem.
-
 ## Delivery Status Canon
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
@@ -22,14 +16,15 @@ Foundation documentation may plan future architecture. That planning does not au
 - **Exit condition:** User confirms this self-improvement session is complete.
 
 ## Scope
-- [x] State `SIMPLIFICATION FIRST` as the simplest faithful Clean Code/SOLID design, not the smallest change.
-- [x] State that simplification may remove, consolidate, or redesign unnecessary layers.
-- [x] Reject fake simplicity through scattered conditionals, duplication, or hidden coupling.
-- [x] Preserve future-aware foundation planning without treating it as implementation authority.
-- [x] Require future-facing implementation intent to be explicit in the TODO.
-- [x] Preserve explicitly approved anticipatory extensibility.
-- [x] Prevent reviewers from inventing or erasing TODO intent autonomously.
-- [x] Reuse existing reviewer fields and dispatch mechanisms.
+- [x] `C-01` Simplification first is not minimal change; judge the resulting structure, not diff size.
+- [x] `C-02` The target is the simplest Clean Code/SOLID solution; do not replace an abstraction with scattered conditions or duplication.
+- [x] `C-03` Existing solutions may need layers removed; consider subtraction and consolidation before addition.
+- [x] `C-04` Foundation documentation may plan future architecture; preserve that planning.
+- [x] `C-05` Future planning does not itself authorize implementation; current TODO-governed authority comes from the TODO.
+- [x] `C-06` A developer may intentionally authorize anticipatory extensibility; record it directly in the TODO.
+- [x] `C-07` Explicit approved TODO intent is binding in delivery; reviewers cannot erase it autonomously.
+- [x] `C-08` Reviewers cannot invent absent future-facing complexity; ambiguity returns to the developer/user.
+- [x] `C-09` Authorized extensibility remains subject to simplification; implement the simplest faithful form of the approved future-facing work.
 
 ## Out of Scope
 - [ ] Require special phrases or mechanically judge architectural simplicity.
@@ -58,19 +53,6 @@ Foundation documentation may plan future architecture. That planning does not au
 - [x] Search canonical and derived surfaces for contradictory future-implementation or reviewer-authority wording.
 - [x] Compare the final tree against the pre-expansion implementation boundary and remove unrelated review-driven changes.
 
-## Conversation Coherence Contract
-| ID | Confirmed Conclusion | Required Consequence |
-| --- | --- | --- |
-| `C-01` | Simplification first is not minimal change. | Judge resulting structure, not diff size. |
-| `C-02` | The target is the simplest Clean Code/SOLID solution. | Do not replace ownership with scattered conditions or duplication. |
-| `C-03` | Existing solutions may need layers removed. | Consider subtraction and consolidation before addition. |
-| `C-04` | Foundation documentation may plan future architecture. | Preserve future planning. |
-| `C-05` | Future planning does not itself authorize implementation. | Current authority comes from the TODO. |
-| `C-06` | A developer may intentionally authorize anticipatory extensibility. | Record it directly in the TODO. |
-| `C-07` | Explicit approved TODO intent is binding in delivery. | Reviewers cannot erase it autonomously. |
-| `C-08` | Reviewers cannot invent absent future-facing complexity. | Ambiguity returns to the developer/user. |
-| `C-09` | Authorized extensibility remains subject to simplification. | Implement the simplest faithful form of the approved future-facing work. |
-
 ## Changed Surfaces
 | Surface | Why It Remains |
 | --- | --- |
@@ -94,8 +76,3 @@ Foundation documentation may plan future architecture. That planning does not au
 | `main_instructions.md` | Primary Delphi authority. | Project agnosticism and self-improvement boundary. | Downstream-specific truth. | Keep edits inside Delphi. |
 | `workflows/docker/self-improvement-session-method.md` | This is a self-improvement session. | Canonical coherence and explicit session closure. | Returning to project work before closure. | Await user confirmation after validation. |
 | `rules/core/todo-driven-execution-model-decision.md` | The active TODO governs this implementation. | Approved boundary and explicit intent. | Hidden scope expansion. | Remove, rather than replace, unrelated changes. |
-
-## Coherence Result
-- All remaining changed surfaces map directly to `C-01` through `C-09`.
-- Non-mandate changes and specialized simplicity machinery were removed.
-- Reusable Delphi canon remains project-agnostic.
