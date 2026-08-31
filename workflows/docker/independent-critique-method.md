@@ -56,7 +56,7 @@ It must also challenge whether the planned path is sound for performance, elegan
    - The TODO must record `Gate: Review Baseline Freeze` with a real branch/commit/push reference before the first critique run.
    - If that gate is missing or unresolved, block the critique lane instead of treating an unpushed worktree snapshot as canonical review input.
 3. Build the bounded critique package.
-   - If orchestration tooling is desired, derive this planning critique packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique --lifecycle planning ...`; delivery-side critique callers must use `--lifecycle delivery` instead.
+   - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 4. Run one fresh internal critique with no inherited thread context.
    - This critique pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
    - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable.

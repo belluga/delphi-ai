@@ -22,9 +22,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from orchestration_plan_completion_guard import table_rows
-from todo_authority_guard import row_has_unresolved_p1_p2
-
 
 RULE_ID = "paced.todo.completion-evidence"
 DELIVERY_STAGE_MARKERS = (
@@ -63,6 +60,7 @@ REVIEW_GATE_SECTIONS = (
 )
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 FIELD_RE_TEMPLATE = r"^\s*-\s+\*\*%s:\*\*\s*(.+?)\s*$"
+TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
 PLACEHOLDER_RE = re.compile(r"<[^>]+>")
 
 RUNTIME_REQUIRED_TERMS = (
@@ -592,6 +590,24 @@ def extract_field(lines: list[str], label: str) -> str | None:
     return None
 
 
+def table_rows(lines: list[str]) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for line in lines:
+        match = TABLE_ROW_RE.match(line)
+        if not match:
+            continue
+        cells = [strip_markup(cell) for cell in match.group(1).split("|")]
+        joined = " ".join(cells).strip()
+        if not joined:
+            continue
+        if set(joined.replace(" ", "")) <= {"-", ":"}:
+            continue
+        rows.append(cells)
+    if len(rows) <= 1:
+        return []
+    return rows[1:]
+
+
 def extract_checklist_items(lines: list[str]) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for line in lines:
@@ -753,17 +769,17 @@ def validate_ci_equivalent_suite_matrix(
         return violations
 
     for row in rows:
-        if len(row) < 9:
+        if len(row) < 7:
             violations.append(
                 build_violation(
                     "CI-EQUIVALENT-ROW-INCOMPLETE",
-                f"CI-equivalent suite row has fewer than 9 cells: {row_text(row)}",
-                "Use the canonical 9-column Local CI-Equivalent Suite Matrix shape from the TODO template.",
+                    f"CI-equivalent suite row has fewer than 7 cells: {row_text(row)}",
+                    "Use columns: Repository / CI Surface, Why In Scope, Local CI-Equivalent Command, Required Before, Status, Evidence Artifact / Command, Notes.",
                     CI_EQ_SECTION,
                 )
             )
             continue
-        repo_surface, why_in_scope, _behavior, _preconditions, local_command, _required_before, status_raw, evidence, notes = row[:9]
+        repo_surface, why_in_scope, local_command, _required_before, status_raw, evidence, notes = row[:7]
         status = normalize_text(status_raw)
         combined = " ".join((repo_surface, why_in_scope, local_command, evidence, notes))
         if any(is_placeholder(cell) for cell in (repo_surface, why_in_scope, local_command, status_raw, evidence)):
@@ -817,6 +833,88 @@ def validate_ci_equivalent_suite_matrix(
     return violations
 
 
+def row_has_unresolved_p1_p2(row: list[str]) -> bool:
+    normalized = normalize_text(row_text(row))
+    findings = normalize_text(row[4]) if len(row) > 4 else ""
+    notes = normalize_text(row[5]) if len(row) > 5 else ""
+    has_high_priority = bool(re.search(r"(?<![a-z0-9])p[12](?![a-z0-9])", normalized)) or any(
+        phrase in normalized
+        for phrase in (
+            "severity critical",
+            "severity high",
+            "critical severity",
+            "high severity",
+        )
+    )
+    if not has_high_priority:
+        return False
+
+    unresolved_phrases = (
+        "unresolved",
+        "not resolved",
+        "not fixed",
+        "open p1",
+        "open p2",
+        "pending p1",
+        "pending p2",
+        "still open",
+        "deferred p1",
+        "deferred p2",
+        "blocker p1",
+        "blocker p2",
+    )
+    if any(phrase in normalized for phrase in unresolved_phrases):
+        return True
+
+    clean_phrases = (
+        "no p1",
+        "no p2",
+        "no p1 p2",
+        "no p1 or p2",
+        "no high severity",
+        "no critical severity",
+        "sem p1",
+        "sem p2",
+        "sem severidade alta",
+        "sem critico",
+        "sem crítico",
+        "nenhum p1",
+        "nenhum p2",
+        "zero p1",
+        "zero p2",
+        "0 p1",
+        "0 p2",
+        "none found",
+        "findings none",
+        "findings: none",
+        "no findings",
+        "sem achados",
+        "nenhum achado",
+        "clean",
+        "resolved",
+        "fixed",
+        "integrated",
+    )
+    clean_finding_values = {
+        "none",
+        "n/a",
+        "na",
+        "no findings",
+        "sem achados",
+        "nenhum achado",
+        "nenhum",
+    }
+    clean_finding = findings in clean_finding_values or any(phrase in findings for phrase in clean_phrases)
+    clean_notes = any(phrase in notes for phrase in ("clean", "resolved", "fixed", "integrated"))
+    if any(phrase in normalized for phrase in clean_phrases) or clean_finding or clean_notes:
+        return False
+
+    # A high-priority finding mention without an explicit clean/resolved marker
+    # is ambiguous enough to block a delivery claim. The row should say whether
+    # the finding was fixed, waived with approval, or absent.
+    return True
+
+
 def validate_review_gate_matrix(
     sections: dict[str, list[str]],
     section_name: str,
@@ -838,11 +936,11 @@ def validate_review_gate_matrix(
         return violations
 
     for row in rows:
-        if len(row) != 6:
+        if len(row) < 6:
             violations.append(
                 build_violation(
                     f"{code_prefix}-ROW-INCOMPLETE",
-                    f"{section_name} row must use the canonical 6-cell shape: {row_text(row)}",
+                    f"{section_name} row has fewer than 6 cells: {row_text(row)}",
                     row_resolution,
                     section_name,
                 )

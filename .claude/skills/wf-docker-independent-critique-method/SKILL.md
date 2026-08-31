@@ -23,7 +23,7 @@ Run the canonical planning-side critique lane once `wf-docker-audit-escalation-m
 2. Confirm the review baseline freeze is already committed and pushed before the first fresh critique run.
 3. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen decisions, approved scope boundary, assumptions preview, execution plan summary, material issue cards, residual risks, and existing waivers/blockers.
-   - When using subagents programmatically, derive this planning critique packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique --lifecycle planning ...`; delivery-side critique callers use `--lifecycle delivery`.
+   - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 4. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence. Recycle only terminal inactive reviewer lanes; a live reviewer is never recyclable.
 5. Ask for findings first, ordered by severity, with no implementation.
 6. Treat reviewer lifecycle as status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline; a polling timeout is not failure and requires continued waiting.

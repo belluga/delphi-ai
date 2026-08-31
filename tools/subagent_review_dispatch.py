@@ -23,9 +23,12 @@ PLANNING_INTENT_AUTHORITY_FOCUS = "Planning review may challenge proposed horizo
 DELIVERY_INTENT_AUTHORITY_FOCUS = (
     "Treat approved implementation horizon and seam as binding; route material redesign to renewed approval."
 )
+CRITIQUE_INTENT_AUTHORITY_FOCUS = (
+    "Planning critique may challenge or recommend but never rewrite proposed intent; when this bounded package is delivery-side, approved intent is binding and material redesign routes to renewed approval. "
+    "This also governs the audit-protocol triple-review performance lane when it invokes critique."
+)
 CONFIG = {
     "architecture_opinion": {
-        "lifecycle": "planning",
         "axes": ["correctness", "performance", "elegance", "structural_soundness", "operational_fit"],
         "focus": [
             "Compare only viable architectural paths inside the bounded package.",
@@ -48,7 +51,6 @@ CONFIG = {
         ],
     },
     "architecture_adherence": {
-        "lifecycle": "delivery",
         "axes": ["adherence", "structural_soundness", "operational_fit", "performance", "elegance"],
         "focus": [
             "Compare the delivered bounded package against the frozen Architecture Change Governance contract and Decision Baseline.",
@@ -71,7 +73,6 @@ CONFIG = {
         ],
     },
     "critique": {
-        "lifecycle": None,
         "axes": ["adherence", "performance", "elegance", "structural_soundness", "operational_fit"],
         "focus": [
             "Challenge the bounded plan or implementation for regressions, hidden scope, and weak adherence.",
@@ -94,7 +95,6 @@ CONFIG = {
         ],
     },
     "test_quality_audit": {
-        "lifecycle": "delivery",
         "axes": ["test_effectiveness", "test_efficiency", "performance", "structural_soundness", "operational_fit"],
         "focus": [
             "Verify whether changed tests reflect real behavior/contract change or only pass-the-test repair.",
@@ -117,7 +117,6 @@ CONFIG = {
         ],
     },
     "final_review": {
-        "lifecycle": "delivery",
         "axes": ["adherence", "residual_risk", "performance", "elegance", "structural_soundness"],
         "focus": [
             "Review the delivered bounded package for regressions, adherence gaps, residual risk, and waiver quality.",
@@ -140,7 +139,6 @@ CONFIG = {
         ],
     },
     "cutover_integrity_audit": {
-        "lifecycle": "delivery",
         "axes": ["adherence", "structural_soundness", "operational_fit", "performance", "elegance"],
         "focus": [
             "Determine whether the chosen path is truly canonical or just a disguised workaround/bridge.",
@@ -299,7 +297,6 @@ def render_markdown(payload: dict) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build a derived no-context subagent dispatch packet.")
     parser.add_argument("--review-kind", required=True, choices=sorted(CONFIG.keys()))
-    parser.add_argument("--lifecycle", action="append", choices=("planning", "delivery"), help="Required exactly once for review kinds, such as critique, whose lifecycle is not fixed by configuration.")
     parser.add_argument("--package", required=True, help="Bounded package path to hand to the reviewer.")
     parser.add_argument("--reviewer-count", type=int, default=1, help="Expected reviewer/subagent count.")
     parser.add_argument("--todo-path", help="Optional related TODO path.")
@@ -312,16 +309,6 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     config = CONFIG[args.review_kind]
-    configured_lifecycle = config["lifecycle"]
-    requested_lifecycles = args.lifecycle or []
-    if configured_lifecycle and requested_lifecycles:
-        raise SystemExit(
-            f"{args.review_kind} has fixed lifecycle {configured_lifecycle}; "
-            "do not pass --lifecycle"
-        )
-    if not configured_lifecycle and len(requested_lifecycles) != 1:
-        raise SystemExit(f"{args.review_kind} requires exactly one --lifecycle planning|delivery")
-    lifecycle = configured_lifecycle or requested_lifecycles[0]
     payload = {
         "schema_version": "subagent-review-dispatch-v1",
         "artifact_kind": "subagent_review_dispatch",
@@ -335,7 +322,13 @@ def main() -> int:
         "focus_points": [
             *config["focus"],
             SHARED_INTENT_AUTHORITY_FOCUS,
-            PLANNING_INTENT_AUTHORITY_FOCUS if lifecycle == "planning" else DELIVERY_INTENT_AUTHORITY_FOCUS,
+            (
+                PLANNING_INTENT_AUTHORITY_FOCUS
+                if args.review_kind == "architecture_opinion"
+                else CRITIQUE_INTENT_AUTHORITY_FOCUS
+                if args.review_kind == "critique"
+                else DELIVERY_INTENT_AUTHORITY_FOCUS
+            ),
         ],
         "result_contract_fields": config["result_fields"],
     }

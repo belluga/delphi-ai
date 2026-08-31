@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import subprocess
 from pathlib import Path
 
@@ -118,7 +117,7 @@ def section_present(lines: list[str], heading_prefix: str) -> bool:
 
 
 def normalize_section(lines: list[str]) -> list[str]:
-    normalized = [re.sub(r"^(\s*)- \[[ xX]\](?=\s)", r"\1- [ ]", line.rstrip()) for line in lines]
+    normalized = [line.rstrip() for line in lines]
     while normalized and normalized[0] == "":
         normalized.pop(0)
     while normalized and normalized[-1] == "":

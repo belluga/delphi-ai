@@ -30,7 +30,6 @@ BASE_LANES = (
     {
         "id": "performance",
         "review_kind": "critique",
-        "lifecycle": "delivery",
         "goal": (
             "Bounded critique with performance focus. Treat performance and "
             "operational fit as the primary decision lenses. Escalate as blocking "
@@ -177,8 +176,6 @@ def run_dispatch(
         "--markdown-output",
         str(dispatch_markdown_path),
     ]
-    if lifecycle := lane.get("lifecycle"):
-        command[4:4] = ["--lifecycle", lifecycle]
     if todo_path is not None:
         command.extend(["--todo-path", str(todo_path)])
     subprocess.run(command, check=True)

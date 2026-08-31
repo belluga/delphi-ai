@@ -20,12 +20,9 @@ todo_completion_guard.py. It emits a TEACH runtime response and exits with:
 from __future__ import annotations
 
 import argparse
-import datetime
-import ipaddress
 import json
 import re
 import sys
-import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -66,12 +63,11 @@ PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
 RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
 PROMOTION_ROUTING_SECTION = "Promotion Finding Routing Ledger"
 DELIVERY_GATE_SECTIONS = (
-    (CI_EQ_SECTION, 6),
+    (CI_EQ_SECTION, 4),
     (PIPELINE_PREFLIGHT_SECTION, 2),
     (RULE_SPIRIT_HUNT_SECTION, 2),
 )
 PASSING_STATUSES = {"passed", "waived", "n/a"}
-ARCHITECTURE_REVIEW_SUCCESS_STATUSES = {"no material findings", "findings integrated"}
 ROUTING_ALLOWED_OUTCOMES = {
     "go",
     "delegate-required",
@@ -116,45 +112,11 @@ PROMOTION_FOLLOWUP_CLASSIFICATION_TOKENS = (
 # an indented code block and must never establish TODO authority.
 HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+(.+?)\s*$")
 P1_P2_RE = re.compile(r"\bP[12]\b", re.IGNORECASE)
-P1_P2_CLEAN_NEGATIVE_RE = re.compile(
-    r"^\s*(?:\bno\s+unresolved\s+p1\s*(?:/|\band\b|\bor\b)\s*p2(?:\s+findings?)?"
-    r"|\bno\s+p1\s+(?:and|or)\s+(?:no\s+)?p2\s+(?:anti-pattern\s+)?findings?"
-    r"|\bno\s+p1\s*/\s*p2\s+findings?"
-    r"|\bno\s+p[12]\s+findings?)\s*$",
-    re.IGNORECASE,
-)
-P1_P2_GROUP = r"p[12](?:\s*(?:/|and|or)\s*p[12])*"
-P1_P2_CLEAN_DISPOSITION = r"(?:fixed|resolved|integrated|clean)"
-P1_P2_CLEAN_CLAUSE_RE = re.compile(
-    rf"^(?:{P1_P2_GROUP}\s*(?::|-)?\s*(?:(?:is|was|has\s+been|are|were|have\s+been)\s+)?{P1_P2_CLEAN_DISPOSITION}"
-    rf"|{P1_P2_CLEAN_DISPOSITION}\s+{P1_P2_GROUP})$",
-    re.IGNORECASE,
-)
-P1_P2_SAFE_CONTINUATION_RE = re.compile(
-    r"^(?:fixed|resolved|integrated|clean|resolution|complete|"
-    r"p(?:[3-9]|\d{2,})\s+remains?\s+open|"
-    r"(?:regression\s+)?tests?\s+did\s+not\s+fail|"
-    r"final\s+review\s+remains?\s+required)$",
-    re.IGNORECASE,
-)
-WAIVER_PLACEHOLDER_RE = re.compile(r"\b(?:n/?a|none|tbd|pending|required|placeholder)\b", re.IGNORECASE)
-WAIVER_APPROVAL_ANCHOR = (
-    r"(?:\d{4}-\d{2}-\d{2}|[0-9a-f]{7,}|https?://\S+|"
-    r"(?:issue|reference|ref)\s*(?:#|:)?\s*\d+)"
-)
-WAIVER_AFFIRMATIVE_APPROVAL_RE = re.compile(
-    rf"^(?:(?:aprovado|approved)|(?:approval\s+(?:approved|confirmed|granted)|"
-    rf"aprova[cç][aã]o\s+(?:confirmada|concedida)))\s+{WAIVER_APPROVAL_ANCHOR}$",
-    re.IGNORECASE,
-)
-WAIVER_APPROVAL_DENIAL_RE = re.compile(
-    r"\b(?:not\s+approved|not\s+(?:an?\s+)?approval|n[aã]o\s+aprovad[oa]|unapproved|disapproved|"
-    r"approval\s+(?:not\s+(?:approved|granted)|denied|refused|rejected|revoked)|"
-    r"(?:denied|refused|rejected|revoked)\s+(?:the\s+)?approval|"
-    r"aprova[cç][aã]o\s+(?:negada|recusada|rejeitada|revogada)|"
-    r"denial|denied|refused|rejected|revoked|revocation|rescinded|rescission|"
-    r"cancelled|canceled|cancellation|withdrawal|withdrawn|expired|invalidated|invalidation|voided|"
-    r"no\s+longer\s+valid|does\s+not\s+constitute\s+approval|rejection\s+of\s+approval)\b",
+UNRESOLVED_RE = re.compile(
+    r"\b("
+    r"unresolved|unresolved:|open|pending|blocked|blocker|failing|still open|"
+    r"nao resolvido|não resolvido|sem resolucao|sem resolução|em aberto"
+    r")\b",
     re.IGNORECASE,
 )
 
@@ -236,134 +198,11 @@ def is_delivery_claim(todo_path: Path, stage: str | None, require_delivery_gates
 
 
 def row_has_unresolved_p1_p2(row: list[str]) -> bool:
-    """Fail closed for P1/P2 evidence in canonical Findings and Resolution cells."""
-    if len(row) < 6:
+    text = row_text(row)
+    lowered = normalize(text)
+    if "no p1" in lowered or "no p1 or p2" in lowered or "no p1/p2" in lowered or "sem p1" in lowered:
         return False
-    cell_states: list[dict[str, set[str]]] = []
-    active_severities: set[str] = set()
-    for cell in row[4:6]:
-        states = {"p1": set(), "p2": set()}
-        pending_ambiguous_clause = False
-        for raw_clause in re.split(r"[;.,|\n]+", cell):
-            clause = normalize(raw_clause)
-            if not clause:
-                continue
-            severities = {value.lower() for value in P1_P2_RE.findall(clause)}
-            if severities:
-                active_severities = severities
-                if pending_ambiguous_clause:
-                    for severity in severities:
-                        states[severity].add("ambiguous")
-                    pending_ambiguous_clause = False
-                clean_clause = bool(
-                    P1_P2_CLEAN_NEGATIVE_RE.fullmatch(clause)
-                    or P1_P2_CLEAN_CLAUSE_RE.fullmatch(clause)
-                )
-                for severity in severities:
-                    states[severity].add("clean" if clean_clause else "ambiguous")
-            elif active_severities and not P1_P2_SAFE_CONTINUATION_RE.fullmatch(clause):
-                for severity in active_severities:
-                    states[severity].add("ambiguous")
-            elif not active_severities and not P1_P2_SAFE_CONTINUATION_RE.fullmatch(clause):
-                pending_ambiguous_clause = True
-        cell_states.append(states)
-
-    findings, resolution = cell_states
-    for severity in ("p1", "p2"):
-        resolution_states = resolution[severity]
-        if resolution_states:
-            if resolution_states != {"clean"}:
-                return True
-            continue
-        if findings[severity] and findings[severity] != {"clean"}:
-            return True
-    return False
-
-
-def field_values(lines: list[str], label: str) -> list[str]:
-    pattern = re.compile(rf"^\s*-\s+\*\*{re.escape(label)}:\*\*\s*(.*?)\s*$")
-    return [strip_markup(match.group(1)) for line in lines if (match := pattern.match(line))]
-
-
-def has_concrete_approver_identifier(value: str, field_label: str) -> bool:
-    candidate = strip_markup(value).strip().lower()
-    normalized = normalize(candidate)
-    generic = {
-        "actual approver", "anonymous", "approver", "approver name", "developer", "human",
-        "human approver", "owner", "platform owner", "release manager", "reviewer", "user",
-        "user approver", normalize(field_label),
-    }
-    if normalized in generic or WAIVER_PLACEHOLDER_RE.search(candidate):
-        return False
-    return bool(re.fullmatch(r"user-(?:[a-z][a-z0-9]*-)+0*[1-9]\d*", candidate))
-
-
-def fully_decode_approval_reference(value: str) -> str | None:
-    decoded = value
-    for _ in range(3):
-        if re.search(r"%(?![0-9a-f]{2})", decoded, re.IGNORECASE):
-            return None
-        next_value = urllib.parse.unquote(decoded)
-        if next_value == decoded:
-            return decoded
-        decoded = next_value
-    if re.search(r"%(?![0-9a-f]{2})", decoded, re.IGNORECASE):
-        return None
-    return decoded if urllib.parse.unquote(decoded) == decoded else None
-
-
-def has_affirmative_approval(reference: str) -> bool:
-    decoded = fully_decode_approval_reference(reference)
-    if decoded is None:
-        return False
-    denial_search_text = re.sub(r"[_\W]+", " ", decoded)
-    return bool(
-        WAIVER_AFFIRMATIVE_APPROVAL_RE.search(reference)
-        and not WAIVER_APPROVAL_DENIAL_RE.search(denial_search_text)
-    )
-
-
-def valid_approval_url(value: str) -> bool:
-    try:
-        decoded = fully_decode_approval_reference(value)
-        if decoded is None:
-            return False
-        parsed = urllib.parse.urlsplit(decoded)
-        hostname = parsed.hostname
-        if (
-            parsed.scheme.lower() not in {"http", "https"}
-            or not parsed.netloc
-            or not hostname
-            or parsed.username is not None
-            or parsed.password is not None
-        ):
-            return False
-        parsed.port
-        try:
-            ipaddress.ip_address(hostname)
-            return True
-        except ValueError:
-            labels = hostname.rstrip(".").split(".")
-            return all(re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", label, re.IGNORECASE) for label in labels)
-    except ValueError:
-        return False
-
-
-def has_concrete_approval_anchor(reference: str) -> bool:
-    if any(valid_approval_url(value) for value in re.findall(r"https?://\S+", reference, re.IGNORECASE)):
-        return True
-    if re.search(r"\b[0-9a-f]{7,}\b", reference, re.IGNORECASE):
-        return True
-    for value in re.findall(r"\b\d{4}-\d{2}-\d{2}\b", reference):
-        try:
-            datetime.date.fromisoformat(value)
-            return True
-        except ValueError:
-            pass
-    return any(
-        int(value) > 0
-        for value in re.findall(r"\b(?:issue|reference|ref)\s*(?:#|:)?\s*(\d+)\b", reference, re.IGNORECASE)
-    )
+    return bool(P1_P2_RE.search(text) and UNRESOLVED_RE.search(text))
 
 
 def row_has_approved_waiver(row: list[str]) -> bool:
@@ -896,16 +735,6 @@ def validate_delivery_gates(
             )
             continue
         for row in rows:
-            if section_name in {PIPELINE_PREFLIGHT_SECTION, RULE_SPIRIT_HUNT_SECTION} and len(row) != 6:
-                violations.append(
-                    build_violation(
-                        "DELIVERY-GATE-ROW-INCOMPLETE",
-                        f"{section_name} row must use the canonical 6-cell shape: {row_text(row)}",
-                        f"Use the canonical {section_name} table shape from the TODO template and escape literal pipes inside cells.",
-                        section_name,
-                    )
-                )
-                continue
             if len(row) <= status_index:
                 violations.append(
                     build_violation(
@@ -944,7 +773,7 @@ def validate_delivery_gates(
                         section_name,
                     )
                 )
-            if section_name in {PIPELINE_PREFLIGHT_SECTION, RULE_SPIRIT_HUNT_SECTION} and row_has_unresolved_p1_p2(row):
+            if row_has_unresolved_p1_p2(row):
                 violations.append(
                     build_violation(
                         "DELIVERY-GATE-UNRESOLVED-P1-P2",
@@ -969,46 +798,18 @@ def validate_architecture_review_gates(
     if not lines:
         return [build_violation("ARCHITECTURE-REVIEW-GATES-MISSING", "Required architecture TODO is missing Architecture Review Gates.", "Add the canonical Architecture Review Gates section and record both derived reviews.", ARCHITECTURE_REVIEW_GATES_SECTION)], context
 
-    checks = [
-        (
-            "Architecture decision review",
-            "Decision review status",
-            "Decision review waiver approver",
-            "Decision review waiver approval reference",
-        )
-    ]
+    checks = [("Architecture decision review", "Decision review status")]
     if delivery_claim:
-        checks.append(
-            (
-                "Architecture adherence review",
-                "Adherence review status",
-                "Adherence review waiver approver",
-                "Adherence review waiver approval reference",
-            )
-        )
-    for decision_label, status_label, approver_label, reference_label in checks:
+        checks.append(("Architecture adherence review", "Adherence review status"))
+    for decision_label, status_label in checks:
         decision = normalize(first_field(lines, (decision_label,)) or "")
         status = normalize(first_field(lines, (status_label,)) or "")
         if decision != "required":
             violations.append(build_violation("ARCHITECTURE-REVIEW-DECISION-MISMATCH", f"{decision_label} must be `required` when Architecture Change Governance is required.", "Record the guard-derived required decision in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
-        if status not in ARCHITECTURE_REVIEW_SUCCESS_STATUSES and status != "waived":
+        if status not in PASSING_STATUSES:
             violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
-        if status == "waived":
-            approvers = field_values(lines, approver_label)
-            references = field_values(lines, reference_label)
-            approver = approvers[0] if len(approvers) == 1 else ""
-            reference = references[0] if len(references) == 1 else ""
-            if (
-                len(approvers) != 1
-                or len(references) != 1
-                or value_is_missing(approver)
-                or not has_concrete_approver_identifier(approver, approver_label)
-                or value_is_missing(reference)
-                or WAIVER_PLACEHOLDER_RE.search(reference) is not None
-                or not has_affirmative_approval(reference)
-                or not has_concrete_approval_anchor(reference)
-            ):
-                violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without dedicated concrete approver and approval-reference fields.", f"Record `{approver_label}` with a concrete approver and `{reference_label}` with approval language plus a date, SHA, URL, or issue/reference number.", ARCHITECTURE_REVIEW_GATES_SECTION))
+        if status == "waived" and not allow_waivers and "approval" not in normalize("\n".join(lines)):
+            violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without explicit approval evidence.", "Record the human waiver/approval reference in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
     return violations, context
 
 

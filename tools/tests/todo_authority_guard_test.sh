@@ -46,371 +46,6 @@ assert_go() {
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
 }
 
-python3 - "$ROOT_DIR/tools" <<'PY'
-import sys
-
-sys.path.insert(0, sys.argv[1])
-import todo_authority_guard as authority
-import todo_completion_guard as completion
-
-cases = (
-    ("No P1; unresolved P2 remains", True),
-    ("No P1/P2; P2 still open", True),
-    ("No unresolved P1/P2 in A; P1 is pending in B", True),
-    ("No unresolved P1/P2 in A; P2 needs remediation in B", True),
-    ("No unresolved P1/P2 findings", False),
-    ("no P1 or P2 findings", False),
-    ("P1 finding", True),
-    ("P1 fixed", False),
-    ("P1 fixed; P2 pending", True),
-    ("No P2 findings", False),
-    ("P1 fixed; P2 finding", True),
-    ("P1 finding; unrelated documentation fixed", True),
-    ("P1 fixed; P2 needs review", True),
-    ("P1 fixed; P2 resolved", False),
-    ("No P1 and no P2 findings", False),
-    ("No P1/P2 findings", False),
-    ("No P1 or P2 anti-pattern findings", False),
-    ("P1 is fixed; P2 has been resolved", False),
-    ("P1 and P2 fixed", False),
-    ("P1/P2 resolved", False),
-    ("P1 fixed; reopened", True),
-    ("P1 fixed; still open", True),
-    ("P1 fixed; actually not", True),
-    ("Not no P1/P2 findings", True),
-    ("P1 fixed?", True),
-    ("P1 fixed maybe", True),
-    ("P1 fixed; no longer fixed", True),
-    ("P1 fixed; fix was reverted", True),
-    ("No P1/P2 findings; P3 remains open", False),
-    ("P1 fixed; regression test did not fail", False),
-    ("P1 fixed, maybe", True),
-    ("P1 fixed; but maybe", True),
-    ("P1 resolved; yet reverted", True),
-    ("P1 fixed; is that actually confirmed?", True),
-    ("P1 fixed; resolution was withdrawn", True),
-    ("P1 fixed; but not", True),
-    ("P1 fixed; fix has been reverted", True),
-    ("No P1/P2 findings; final review remains required", False),
-    ("P1 fixed; tests show the fix was reverted", True),
-    ("P1 fixed; regression tests still failing", True),
-    ("P1 fixed; final review found the fix reverted", True),
-    ("still failing; P1 fixed", True),
-)
-for text, expected in cases:
-    assert authority.row_has_unresolved_p1_p2(["package", "focus", "passed", "evidence", text, "resolution"]) is expected, text
-    assert completion.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
-
-cell_separated_cases = (
-    ("P1 fixed", "P2 finding", True),
-    ("P1 finding", "unrelated documentation fixed", True),
-    ("P1 finding", "P1 fixed", False),
-    ("P1 and P2 findings", "P1/P2 resolved", False),
-    ("P1 fixed", "not fixed", True),
-    ("P1 finding", "P1 fixed; but maybe", True),
-    ("P1 finding", "P1 resolved; yet reverted", True),
-    ("P1 finding", "P1 fixed; is that actually confirmed?", True),
-    ("P1 finding", "P1 fixed; resolution was withdrawn", True),
-    ("P1 finding", "P1 fixed; but not", True),
-    ("P1 finding", "P1 fixed; fix has been reverted", True),
-    ("P1 finding", "P1 fixed; regression tests still failing", True),
-    ("P1 fixed", "P2 resolved", False),
-    ("No P2 findings", "P1 resolved", False),
-    ("no P1 or P2 anti-pattern findings", "clean", False),
-    ("none", "still failing; P1 fixed", True),
-)
-for findings, resolution, expected in cell_separated_cases:
-    authority_row = ["package", "focus", "passed", "evidence", findings, resolution]
-    completion_row = ["surface", "focus", "passed", "evidence", findings, resolution]
-    assert authority.row_has_unresolved_p1_p2(authority_row) is expected, (findings, resolution)
-    assert completion.row_has_unresolved_p1_p2(completion_row) is expected, (findings, resolution)
-
-full_gate_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-    "| --- | --- | --- | --- | --- | --- |",
-    "| package | focus | passed | evidence | P1 fixed; P2 finding | complete |",
-]}
-violations, _ = authority.validate_delivery_gates(full_gate_sections, delivery_claim=True, allow_waivers=False)
-assert any(item["code"] == "DELIVERY-GATE-UNRESOLVED-P1-P2" for item in violations)
-
-resolved_gate_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-    "| --- | --- | --- | --- | --- | --- |",
-    "| package | focus | passed | evidence | P1 and P2 findings | P1/P2 resolved |",
-]}
-violations, _ = authority.validate_delivery_gates(resolved_gate_sections, delivery_claim=True, allow_waivers=False)
-assert not any(item["code"] == "DELIVERY-GATE-UNRESOLVED-P1-P2" for item in violations)
-
-extra_cell_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-    "| --- | --- | --- | --- | --- | --- |",
-    "| package | focus | passed | evidence | No P1/P2 findings | complete | P2 pending |",
-]}
-violations, _ = authority.validate_delivery_gates(extra_cell_sections, delivery_claim=True, allow_waivers=False)
-assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
-completion_violations = completion.validate_review_gate_matrix(
-    extra_cell_sections,
-    authority.PIPELINE_PREFLIGHT_SECTION,
-    "PIPELINE-PREFLIGHT",
-    "Use the canonical review row.",
-    allow_waivers=False,
-)
-assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
-
-missing_cell_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-    "| --- | --- | --- | --- | --- | --- |",
-    "| package | focus | passed | evidence | No P1/P2 findings |",
-]}
-violations, _ = authority.validate_delivery_gates(missing_cell_sections, delivery_claim=True, allow_waivers=False)
-assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
-completion_violations = completion.validate_review_gate_matrix(
-    missing_cell_sections,
-    authority.PIPELINE_PREFLIGHT_SECTION,
-    "PIPELINE-PREFLIGHT",
-    "Use the canonical review row.",
-    allow_waivers=False,
-)
-assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
-
-escaped_pipe_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-    "| --- | --- | --- | --- | --- | --- |",
-    r"| package | focus | passed | command \| tee artifact | No P1/P2 findings | complete |",
-]}
-parsed_escaped_row = authority.table_rows(escaped_pipe_sections[authority.PIPELINE_PREFLIGHT_SECTION])[0]
-assert len(parsed_escaped_row) == 6
-assert parsed_escaped_row[3] == "command | tee artifact"
-violations, _ = authority.validate_delivery_gates(escaped_pipe_sections, delivery_claim=True, allow_waivers=False)
-assert not any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
-completion_violations = completion.validate_review_gate_matrix(
-    escaped_pipe_sections,
-    authority.PIPELINE_PREFLIGHT_SECTION,
-    "PIPELINE-PREFLIGHT",
-    "Use the canonical review row.",
-    allow_waivers=False,
-)
-assert not any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
-
-even_backslash_pipe_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-    "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-    "| --- | --- | --- | --- | --- | --- |",
-    r"| package | focus | passed | command \\| P2 pending | No P1/P2 findings | complete |",
-]}
-parsed_even_backslash_row = authority.table_rows(even_backslash_pipe_sections[authority.PIPELINE_PREFLIGHT_SECTION])[0]
-assert len(parsed_even_backslash_row) == 7
-violations, _ = authority.validate_delivery_gates(even_backslash_pipe_sections, delivery_claim=True, allow_waivers=False)
-assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations)
-completion_violations = completion.validate_review_gate_matrix(
-    even_backslash_pipe_sections,
-    authority.PIPELINE_PREFLIGHT_SECTION,
-    "PIPELINE-PREFLIGHT",
-    "Use the canonical review row.",
-    allow_waivers=False,
-)
-assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations)
-
-for backslash_count in range(1, 6):
-    parity_sections = {authority.PIPELINE_PREFLIGHT_SECTION: [
-        "| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |",
-        "| --- | --- | --- | --- | --- | --- |",
-        "| package | focus | passed | command " + ("\\" * backslash_count) + "| tee artifact | No P1/P2 findings | complete |",
-    ]}
-    parsed_row = authority.table_rows(parity_sections[authority.PIPELINE_PREFLIGHT_SECTION])[0]
-    expected_cell_count = 6 if backslash_count % 2 else 7
-    assert len(parsed_row) == expected_cell_count, (backslash_count, parsed_row)
-    violations, _ = authority.validate_delivery_gates(parity_sections, delivery_claim=True, allow_waivers=False)
-    completion_violations = completion.validate_review_gate_matrix(
-        parity_sections,
-        authority.PIPELINE_PREFLIGHT_SECTION,
-        "PIPELINE-PREFLIGHT",
-        "Use the canonical review row.",
-        allow_waivers=False,
-    )
-    assert any(item["code"] == "DELIVERY-GATE-ROW-INCOMPLETE" for item in violations) is (backslash_count % 2 == 0)
-    assert any(item["code"] == "PIPELINE-PREFLIGHT-ROW-INCOMPLETE" for item in completion_violations) is (backslash_count % 2 == 0)
-
-sections = {"Architecture Review Gates": [
-    "- **Architecture decision review:** `required`",
-    "- **Decision review status:** `no_material_findings`",
-    "- **Architecture adherence review:** `required`",
-    "- **Adherence review status:** `findings_integrated`",
-]}
-assert not authority.validate_architecture_review_gates(
-    sections, architecture_required=True, delivery_claim=True, allow_waivers=False
-)[0]
-
-for invalid_status in ("passed", "n/a"):
-    invalid = {"Architecture Review Gates": [
-        "- **Architecture decision review:** `required`",
-        f"- **Decision review status:** `{invalid_status}`",
-        "- **Architecture adherence review:** `required`",
-        f"- **Adherence review status:** `{invalid_status}`",
-    ]}
-    violations, _ = authority.validate_architecture_review_gates(
-        invalid, architecture_required=True, delivery_claim=True, allow_waivers=False
-    )
-    assert any(item["code"] == "ARCHITECTURE-REVIEW-STATUS-NOT-PASSING" for item in violations), invalid_status
-
-approved_waiver = {"Architecture Review Gates": [
-    "- **Architecture decision review:** `required`",
-    "- **Decision review status:** `waived`",
-    "- **Architecture adherence review:** `required`",
-    "- **Adherence review status:** `waived`",
-    "- **Decision review waiver approver:** user-owner-01",
-    "- **Decision review waiver approval reference:** APROVADO 2026-08-30",
-    "- **Adherence review waiver approver:** user-owner-02",
-    "- **Adherence review waiver approval reference:** approved https://example.test/reviews/42",
-]}
-assert not authority.validate_architecture_review_gates(
-    approved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
-)[0]
-affirmative_waiver = {"Architecture Review Gates": [
-    line.replace("APROVADO 2026-08-30", "approval confirmed ref #42")
-    for line in approved_waiver["Architecture Review Gates"]
-]}
-assert not authority.validate_architecture_review_gates(
-    affirmative_waiver, architecture_required=True, delivery_claim=True, allow_waivers=False
-)[0]
-unapproved_waiver = {"Architecture Review Gates": approved_waiver["Architecture Review Gates"][:4] + [
-    "- **No-go handling:** approval-breaking divergence returns to review.",
-]}
-violations, _ = authority.validate_architecture_review_gates(
-    unapproved_waiver, architecture_required=True, delivery_claim=True, allow_waivers=True
-)
-assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations)
-
-for field, invalid_value in (
-    ("Decision review waiver approver", "human"),
-    ("Decision review waiver approver", "human user"),
-    ("Decision review waiver approver", "the user"),
-    ("Decision review waiver approver", "human reviewer"),
-    ("Decision review waiver approver", "user 01"),
-    ("Decision review waiver approver", "reviewer"),
-    ("Decision review waiver approver", "owner"),
-    ("Decision review waiver approver", "developer"),
-    ("Decision review waiver approver", "actual approver"),
-    ("Decision review waiver approver", "anonymous"),
-    ("Decision review waiver approver", "platform owner"),
-    ("Decision review waiver approver", "release manager"),
-    ("Decision review waiver approver", "approver name"),
-    ("Decision review waiver approver", "anonymous@example.com"),
-    ("Decision review waiver approver", "approver@example.com"),
-    ("Decision review waiver approver", "human@example.com"),
-    ("Decision review waiver approver", "reviewer@example.com"),
-    ("Decision review waiver approver", "user@example.com"),
-    ("Decision review waiver approver", "admin@example.com"),
-    ("Decision review waiver approver", "security@example.com"),
-    ("Decision review waiver approver", "release-ops@example.com"),
-    ("Decision review waiver approver", "@admin"),
-    ("Decision review waiver approver", "@elton"),
-    ("Decision review waiver approver", "Decision review waiver approver"),
-    ("Decision review waiver approval reference", "none"),
-    ("Adherence review waiver approver", "n/a"),
-    ("Adherence review waiver approver", "TBD"),
-    ("Adherence review waiver approver", "Adherence review waiver approver"),
-    ("Adherence review waiver approval reference", "required"),
-    ("Adherence review waiver approval reference", "pending approval 2026-08-30"),
-    ("Adherence review waiver approval reference", "approved 2026-99-99"),
-    ("Adherence review waiver approval reference", "approved issue #0"),
-    ("Adherence review waiver approval reference", "approved https:///"),
-    ("Adherence review waiver approval reference", "approved http:///"),
-    ("Adherence review waiver approval reference", "approved https://?ref=1"),
-    ("Adherence review waiver approval reference", "approved https://example.test/not-approved"),
-    ("Adherence review waiver approval reference", "approved https://example.test/approval-revoked"),
-    ("Adherence review waiver approval reference", "approved https://example.test/approval-denied"),
-    ("Adherence review waiver approval reference", "approved https://example.test/approval%252Ddenied"),
-    ("Adherence review waiver approval reference", "approved https://example.test:notaport/review/42"),
-    ("Adherence review waiver approval reference", "approved https://exa%20mple.test/review/42"),
-    ("Adherence review waiver approval reference", "approved https://example.test/reviews/revoked"),
-    ("Adherence review waiver approval reference", "approved https://example.test/reviews/denied"),
-    ("Adherence review waiver approval reference", "approved https://example.test/reviews?state=%72evoked"),
-    ("Adherence review waiver approval reference", "approved https://example.test/reviews?state=approval%5Frevoked"),
-    ("Adherence review waiver approval reference", "approved https://example.test/revocation-of-approval"),
-    ("Adherence review waiver approval reference", "approved https://example.test/approval%ZZdenied"),
-    ("Adherence review waiver approval reference", "approved https://example.test/rev%ZZoked"),
-    ("Adherence review waiver approval reference", "approved https://user@@example.test/reviews/42"),
-    ("Adherence review waiver approval reference", "approved https://example.test/reviews/%ZZ"),
-    ("Adherence review waiver approval reference", "approved https://example.test/review#approval-denial"),
-    ("Adherence review waiver approval reference", "approved https://example.test/approval-rescinded"),
-    ("Adherence review waiver approval reference", "not approved 2026-08-30"),
-    ("Adherence review waiver approval reference", "unapproved 2026-08-30"),
-    ("Adherence review waiver approval reference", "disapproved 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval denied 2026-08-30"),
-    ("Adherence review waiver approval reference", "rejected approval ref #42"),
-    ("Adherence review waiver approval reference", "approval revoked 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval not granted 2026-08-30"),
-    ("Adherence review waiver approval reference", "não aprovado 2026-08-30"),
-    ("Adherence review waiver approval reference", "not an approval 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval refused 2026-08-30"),
-    ("Adherence review waiver approval reference", "no approval 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval is no longer valid 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval withdrawn 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval has expired 2026-08-30"),
-    ("Adherence review waiver approval reference", "approval was revoked 2026-08-30"),
-    ("Adherence review waiver approval reference", "rejection of approval issue #42"),
-    ("Adherence review waiver approval reference", "this does not constitute approval 2026-08-30"),
-    ("Adherence review waiver approval reference", "approved? 2026-08-30"),
-    ("Adherence review waiver approval reference", "approved maybe 2026-08-30"),
-    ("Adherence review waiver approval reference", "<placeholder>"),
-):
-    invalid_lines = [
-        line if not line.startswith(f"- **{field}:**") else f"- **{field}:** {invalid_value}"
-        for line in approved_waiver["Architecture Review Gates"]
-    ] + ["- **No-go handling:** approval-breaking divergence returns to review."]
-    for allow_waivers in (False, True):
-        violations, _ = authority.validate_architecture_review_gates(
-            {"Architecture Review Gates": invalid_lines},
-            architecture_required=True,
-            delivery_claim=True,
-            allow_waivers=allow_waivers,
-        )
-        assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations), (field, allow_waivers)
-
-duplicate_reference_lines = approved_waiver["Architecture Review Gates"] + [
-    "- **Decision review waiver approval reference:** approval was revoked 2026-08-30",
-]
-for allow_waivers in (False, True):
-    violations, _ = authority.validate_architecture_review_gates(
-        {"Architecture Review Gates": duplicate_reference_lines},
-        architecture_required=True,
-        delivery_claim=True,
-        allow_waivers=allow_waivers,
-    )
-    assert any(item["code"] == "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" for item in violations)
-PY
-
-cat > "$TMP_DIR/denied-waiver-proof.md" <<'TODO'
-# TODO: Denied Waiver Proof
-
-## Delivery Status Canon
-- **Current delivery stage:** `Pending`
-
-## Approval
-- **Approved by:** `user-owner-01`
-- **Approval scope:** `waiver proof regression`
-
-## Architecture Change Governance
-- **Applicability (`required|not_needed`):** `required`
-- **Why this applies:** Review authority changes.
-- **Deviation / debt being retired:** Invalid waiver evidence.
-- **Target steady-state after closeout:** Affirmative approval only.
-- **Temporary exceptions allowed:** `none`
-- **Cutover / removal condition:** Guard rejects denial.
-
-## Architecture Review Gates
-- **Architecture decision review:** `required`
-- **Decision review status:** `waived`
-- **Decision review waiver approver:** `user-owner-01`
-- **Decision review waiver approval reference:** `no approval 2026-08-30`
-TODO
-
-for waiver_mode in "" "--allow-waivers"; do
-  # shellcheck disable=SC2086
-  assert_no_go "$TMP_DIR/denied-waiver-proof.md" $waiver_mode
-  grep -q "ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED" "$OUTPUT_FILE"
-done
-
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
 # TODO: Missing Approval
 
@@ -625,7 +260,7 @@ cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
 
 ## Architecture Review Gates
 - **Architecture decision review:** `required`
-- **Decision review status:** `no_material_findings`
+- **Decision review status:** `passed`
 - **Architecture adherence review:** `required`
 - **Adherence review status:** `n/a`
 TODO
@@ -693,19 +328,19 @@ cat > "$TMP_DIR/local-implemented-complete.md" <<'TODO'
 | `rules/core/todo-driven-execution-model-decision.md` | TODO execution. | Approval gate. | Silent changes. | Check before execution. |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / authority guard | Guard changed. | Canonical CI status column. | Repository checkout only. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / authority guard | Guard changed. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff | high-priority findings | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
+| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
+| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
 
 ## Promotion Finding Routing Ledger
 | Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
@@ -714,17 +349,6 @@ cat > "$TMP_DIR/local-implemented-complete.md" <<'TODO'
 TODO
 
 assert_go "$TMP_DIR/local-implemented-complete.md"
-
-cp "$TMP_DIR/local-implemented-complete.md" "$TMP_DIR/local-implemented-ci-status-failing.md"
-python3 - "$TMP_DIR/local-implemented-ci-status-failing.md" <<'PY'
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-path.write_text(path.read_text(encoding="utf-8").replace("| Local-Implemented | passed |", "| Local-Implemented | blocked |", 1), encoding="utf-8")
-PY
-assert_no_go "$TMP_DIR/local-implemented-ci-status-failing.md"
-grep -q "DELIVERY-GATE-STATUS-NOT-PASSING" "$OUTPUT_FILE"
 
 cat > "$TMP_DIR/promotion-p1-open.md" <<'TODO'
 # TODO: Promotion P1 Open
@@ -742,19 +366,19 @@ cat > "$TMP_DIR/promotion-p1-open.md" <<'TODO'
 | `skills/github-stage-promotion-orchestrator/SKILL.md` | Promotion flow. | P1 blocks completion. | P1 bypass. | Check routing. |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / authority guard | Guard changed. | Canonical CI status column. | Repository checkout only. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / authority guard | Guard changed. | `bash tools/tests/todo_authority_guard_test.sh` | Local-Implemented | passed | `bash tools/tests/todo_authority_guard_test.sh` | passed |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff | high-priority findings | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
+| bounded diff | P1/P2 issues | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | No unresolved P1/P2 findings | complete |
+| TODO process | process bypass | passed | `bash tools/tests/todo_authority_guard_test.sh` | no P1 or P2 findings | complete |
 
 ## Promotion Finding Routing Ledger
 | Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |

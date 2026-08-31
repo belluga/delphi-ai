@@ -9,8 +9,8 @@ This is a trigger and loading delta, not a second TODO policy.
 
 ## Required Pointer
 
-- Load and follow `rules/core/todo-driven-execution-model-decision.md` from the repository root first.
-- Then load the Laravel compatibility adjunct `rules/stacks/laravel/shared/todo-driven-execution-model-decision.md` from the repository root.
+- Load and follow [`rules/core/todo-driven-execution-model-decision.md`](../../rules/core/todo-driven-execution-model-decision.md) first.
+- Then load the Laravel compatibility adjunct: [`rules/stacks/laravel/shared/todo-driven-execution-model-decision.md`](../../rules/stacks/laravel/shared/todo-driven-execution-model-decision.md).
 
 ## Laravel Loading Delta
 

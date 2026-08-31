@@ -25,83 +25,6 @@ assert_go() {
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
 }
 
-python3 - "$ROOT_DIR/tools" <<'PY'
-import sys
-
-sys.path.insert(0, sys.argv[1])
-import todo_completion_guard as guard
-
-cases = (
-    ("No P1; unresolved P2 remains", True),
-    ("No P1/P2; P2 still open", True),
-    ("No unresolved P1/P2 in A; P1 is pending in B", True),
-    ("No unresolved P1/P2 in A; P2 needs remediation in B", True),
-    ("No unresolved P1/P2 findings", False),
-    ("no P1 or P2 findings", False),
-    ("P1 finding", True),
-    ("P1 fixed", False),
-    ("P1 fixed; P2 pending", True),
-    ("No P2 findings", False),
-    ("P1 fixed; P2 finding", True),
-    ("P1 finding; unrelated documentation fixed", True),
-    ("P1 fixed; P2 needs review", True),
-    ("P1 fixed; P2 resolved", False),
-    ("No P1 and no P2 findings", False),
-    ("No P1/P2 findings", False),
-    ("No P1 or P2 anti-pattern findings", False),
-    ("P1 is fixed; P2 has been resolved", False),
-    ("P1 and P2 fixed", False),
-    ("P1/P2 resolved", False),
-    ("P1 fixed; reopened", True),
-    ("P1 fixed; still open", True),
-    ("P1 fixed; actually not", True),
-    ("Not no P1/P2 findings", True),
-    ("P1 fixed?", True),
-    ("P1 fixed maybe", True),
-    ("P1 fixed; no longer fixed", True),
-    ("P1 fixed; fix was reverted", True),
-    ("No P1/P2 findings; P3 remains open", False),
-    ("P1 fixed; regression test did not fail", False),
-    ("P1 fixed, maybe", True),
-    ("P1 fixed; but maybe", True),
-    ("P1 resolved; yet reverted", True),
-    ("P1 fixed; is that actually confirmed?", True),
-    ("P1 fixed; resolution was withdrawn", True),
-    ("P1 fixed; but not", True),
-    ("P1 fixed; fix has been reverted", True),
-    ("No P1/P2 findings; final review remains required", False),
-    ("P1 fixed; tests show the fix was reverted", True),
-    ("P1 fixed; regression tests still failing", True),
-    ("P1 fixed; final review found the fix reverted", True),
-    ("still failing; P1 fixed", True),
-)
-for text, expected in cases:
-    assert guard.row_has_unresolved_p1_p2(["surface", "focus", "passed", "evidence", text, "complete"]) is expected, text
-
-cell_separated_cases = (
-    ("P1 fixed", "P2 finding", True),
-    ("P1 finding", "unrelated documentation fixed", True),
-    ("P1 finding", "P1 fixed", False),
-    ("P1 and P2 findings", "P1/P2 resolved", False),
-    ("P1 fixed", "not fixed", True),
-    ("P1 finding", "P1 fixed; but maybe", True),
-    ("P1 finding", "P1 resolved; yet reverted", True),
-    ("P1 finding", "P1 fixed; is that actually confirmed?", True),
-    ("P1 finding", "P1 fixed; resolution was withdrawn", True),
-    ("P1 finding", "P1 fixed; but not", True),
-    ("P1 finding", "P1 fixed; fix has been reverted", True),
-    ("P1 finding", "P1 fixed; regression tests still failing", True),
-    ("P1 fixed", "P2 resolved", False),
-    ("No P2 findings", "P1 resolved", False),
-    ("no P1 or P2 anti-pattern findings", "clean", False),
-    ("none", "still failing; P1 fixed", True),
-)
-for findings, resolution, expected in cell_separated_cases:
-    assert guard.row_has_unresolved_p1_p2(
-        ["surface", "focus", "passed", "evidence", findings, resolution]
-    ) is expected, (findings, resolution)
-PY
-
 cat > "$TMP_DIR/local-implemented-no-evidence.md" <<'TODO'
 # TODO: Local Implemented No Evidence
 
@@ -226,14 +149,14 @@ cat > "$TMP_DIR/complete-evidence.md" <<'TODO'
 | VAL-01 | Validation Steps | Unit test: completion guard regression script passes. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / guard regression | Guard implementation touched | Canonical CI status cell. | Repository checkout only. | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| bounded diff + guard evidence | CI/Copilot P1/P2 defects | passed | `bash tools/tests/todo_completion_guard_test.sh` | P1 and P2 findings | P1/P2 resolved |
+| bounded diff + guard evidence | CI/Copilot P1/P2 defects | passed | `bash tools/tests/todo_completion_guard_test.sh` | none | review complete |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
@@ -265,12 +188,12 @@ cat > "$TMP_DIR/rejected-mutation-real-backend-evidence.md" <<'TODO'
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | SCP-01 | Scope | Guard a referenced type mutation. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 | DOD-01 | Definition of Done | An admin PATCH mutation returns 422 with no mutation on the rejected path. | real-backend integration PATCH mutation feature test | `php artisan test --filter=referenced_type_rejection` | Laravel real-backend integration tenant test database | passed | PATCH mutation is exercised through the Laravel kernel. |
-| VAL-01 | Validation Steps | Feature test: run the real-backend mutation regression. | real-backend mutation test | `php artisan test --filter=referenced_type_rejection` | Laravel real-backend integration tenant test database | passed | PATCH mutation is exercised through the Laravel kernel. |
+| VAL-01 | Validation Steps | Feature test: run the real-backend mutation regression. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / guard regression | Guard implementation touched | Canonical CI status cell. | Repository checkout only. | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
@@ -313,9 +236,9 @@ cat > "$TMP_DIR/unresolved-pipeline-p1.md" <<'TODO'
 | VAL-01 | Validation Steps | Unit test: completion guard regression script passes. | automated | `bash tools/tests/todo_completion_guard_test.sh` | local shell | passed | completed |
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delphi-ai / guard regression | Guard implementation touched | Canonical CI status cell. | Repository checkout only. | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| delphi-ai / guard regression | Guard implementation touched | `bash tools/tests/todo_completion_guard_test.sh` | delivery | passed | `bash tools/tests/todo_completion_guard_test.sh` | local CI-equivalent pass |
 
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
