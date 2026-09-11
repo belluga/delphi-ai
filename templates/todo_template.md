@@ -493,7 +493,7 @@ Use the canonical routing contract from `config/agent_role_routing.json` plus `p
 - Record the section only after the selected lane is actually known for the next governed action.
 - If the guard does not resolve to `go`, stop execution and repair the routing or record approved waiver evidence first.
 - `waiver` is an explicit visible exception path, not silent fallback for a missing model/role declaration.
-- Subagent/delegation authority never implies Git-isolation authority. Default to `primary-checkout-single-writer`: one writer edits in the principal checkout, additional writers are serialized, and parallel readers/reviewers do not edit. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate worktree-specific human authorization.
+- Subagent/delegation authority never implies Git-isolation authority. Default to `primary-checkout-single-writer`: one product/runtime code writer edits across code repositories and executable surfaces, and additional code writers are serialized. Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths and must stage, commit, and promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate worktree-specific human authorization.
 
 ## Decision Adherence Validation (Mandatory Before Delivery)
 | Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |

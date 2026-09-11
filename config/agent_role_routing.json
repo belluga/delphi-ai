@@ -142,10 +142,13 @@
     "primary-checkout-single-writer": {
       "requires_explicit_worktree_authorization": false,
       "max_concurrent_writers": 1,
+      "writer_scope": "product-runtime-code",
+      "parallel_disjoint_foundation_todo_writers": true,
       "allows": [
         "executor-subagents",
         "parallel-read-only-reviewers",
-        "serialized-additional-writers"
+        "serialized-additional-code-writers",
+        "parallel-disjoint-foundation-todo-writers"
       ],
       "forbids": [
         "git-worktree",
@@ -156,7 +159,9 @@
       ],
       "notes": [
         "This is the default implementation topology whenever worktrees or auxiliary checkouts were not explicitly authorized by a human.",
-        "Subagent, delegation, parallelism, or generic plan approval never changes this default."
+        "The single-writer limit applies to product/runtime code across code repositories and executable surfaces, including Laravel, Flutter, Docker, root tooling, and runtime configuration.",
+        "Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths; each owner stages, commits, and promotes only its own TODO, while shared canonical docs/artifacts and the same TODO remain serialized.",
+        "Subagent, delegation, parallelism, or generic plan approval never authorizes parallel code writers or Git-isolation topology."
       ]
     },
     "worktree-isolated": {

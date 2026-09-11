@@ -10,7 +10,7 @@ Provide a portable orchestration layer for PACED review subagents and principal-
 
 ## Git Topology Authorization Boundary
 - Subagent authorization never authorizes worktrees, auxiliary checkouts, `worker/*`, `reconcile/*`, or repository copies.
-- Default executor topology is `primary-checkout-single-writer`: one writer edits in the principal checkout, additional writers are serialized, and readers/reviewers may run in parallel without editing.
+- Default executor topology is `primary-checkout-single-writer`: one product/runtime code writer edits across code repositories and executable surfaces, and additional code writers are serialized. Distinct Foundation tactical-TODO owners may concurrently edit disjoint TODO paths when each stages, commits, and promotes only its own TODO; the same TODO and shared canonical docs/artifacts remain serialized. Readers/reviewers may run in parallel.
 - Load `wf-docker-subagent-worktree-reconciliation-method` only after separate human authorization explicitly names worktrees or auxiliary checkouts.
 - Authoritative Docker, browser, device, and CI-Equivalent validation stays on the consolidated principal checkout.
 

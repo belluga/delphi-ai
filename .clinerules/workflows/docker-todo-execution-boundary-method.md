@@ -24,9 +24,9 @@ Run implementation under the approved TODO contract without silently expanding s
    - `python3 delphi-ai/tools/agent_role_routing_guard.py ...` (for implementation lanes, record `--execution-topology primary-checkout-single-writer` by default; use `worktree-isolated` only with `--worktree-authorization explicit --worktree-authorization-reference <human-reference>`)
    - require `Overall outcome: go` before implementation or formal review proceeds.
 5. Enforce the authorized topology before edits:
-   - `primary-checkout-single-writer`: one active writer edits in the principal checkout; additional writers are serialized; parallel readers/reviewers do not edit; no worktree, auxiliary checkout/copy, `worker/*`, or `reconcile/*` is created.
+   - `primary-checkout-single-writer`: one active writer mutates product/runtime code in the principal checkout across code repositories and executable surfaces; additional code writers are serialized. Distinct Foundation tactical-TODO owners may concurrently edit disjoint TODO paths and must stage/commit/promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized. No worktree, auxiliary checkout/copy, `worker/*`, or `reconcile/*` is created.
    - `worktree-isolated`: load `subagent-worktree-reconciliation-method.md` and require the recorded worktree-specific human authorization before creating topology.
-   - If simultaneous writers need isolation but authorization is absent, stop and request worktree-specific authorization.
+   - If simultaneous code writers need isolation but authorization is absent, stop and request worktree-specific authorization.
 6. Run profile scope checks when touched paths cross profile boundaries.
 7. Run:
    - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`

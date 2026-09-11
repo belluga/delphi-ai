@@ -16,9 +16,9 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
 
 ## Git Topology Authorization Boundary
 - Subagent, delegation, and parallelism authorization is independent from worktree/auxiliary-checkout authorization.
-- Default executor topology is `primary-checkout-single-writer`: all edits occur in the principal checkout, only one agent writes at a time, additional writers are serialized, and parallel readers/reviewers must not edit.
+- Default executor topology is `primary-checkout-single-writer`: all edits occur in the principal checkout, only one agent mutates product/runtime code at a time across code repositories and executable surfaces, and additional code writers are serialized. Distinct Foundation tactical-TODO owners may write concurrently only when their exact TODO paths do not overlap and each owner stages, commits, and promotes only its own TODO; shared canonical docs/artifacts and the same TODO remain serialized. Parallel readers/reviewers may inspect without editing their reviewed source.
 - Do not create `git worktree`, auxiliary checkouts, `worker/*`, `reconcile/*`, or writable repository copies without separate human authorization that explicitly mentions worktrees or auxiliary checkouts.
-- If simultaneous writers need isolation, stop and request that specific authorization. Only then load `subagent-worktree-reconciliation-method.md`.
+- If simultaneous code writers need isolation, stop and request that specific authorization. Only then load `subagent-worktree-reconciliation-method.md`.
 - Authoritative Docker, browser, device, and CI-Equivalent validation always targets the consolidated principal-checkout state.
 
 ## Triggers

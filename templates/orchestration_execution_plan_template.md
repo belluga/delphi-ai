@@ -105,7 +105,7 @@ Derive workstreams from the Acceptance Traceability Matrix. A workstream may gro
 | `<WS-01>` | `<files/modules/packages>` | `<dependencies>` | `<commit/evidence expected>` | `<tests/checks>` |
 
 ## Execution Ownership Ledger
-For `primary-checkout-single-writer`, every implementation owner may be a subagent, but only the currently scheduled owner may edit; additional writers are serialized. For `worktree-isolated`, use worker checkpoints and reconciliation evidence under the explicitly authorized topology.
+For `primary-checkout-single-writer`, every implementation owner may be a subagent, but only the currently scheduled product/runtime code owner may edit code repositories or executable surfaces; additional code writers are serialized. Distinct Foundation tactical-TODO owners may concurrently edit disjoint TODO paths when each stages, commits, and promotes only its own TODO; the same TODO and shared canonical docs/artifacts remain serialized. For `worktree-isolated`, use worker checkpoints and reconciliation evidence under the explicitly authorized topology.
 | Workstream | Implementation Owner | Orchestrator Code Scope | Worker Checkpoint Evidence | Reconciliation Evidence |
 | --- | --- | --- | --- | --- |
 | `<WS-01>` | `<worker/subagent name>` | `<none|merge-conflict-only|reconciliation-only>` | `<checkpoint commit/evidence expected>` | `<merge/cherry-pick/test evidence expected>` |
@@ -131,7 +131,7 @@ Waves are orchestrator-owned control checkpoints. They are not user feedback gat
 - <No-code/readiness actions before execution>
 
 ### Wave 1 - <Name>
-- <Serialized writer work items for primary-checkout-single-writer, or isolated parallel work items only when worktrees are explicitly authorized>
+- <Serialized product/runtime code-writer work items for primary-checkout-single-writer; disjoint Foundation tactical-TODO writers may run concurrently; isolated parallel code work only when worktrees are explicitly authorized>
 - **Gate to next wave:** <objective gate>
 
 ### Wave 2 - <Name>

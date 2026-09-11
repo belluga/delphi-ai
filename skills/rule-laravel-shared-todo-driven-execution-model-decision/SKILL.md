@@ -19,7 +19,7 @@ This skill is the Laravel trigger surface for TODO-driven execution. Do not dupl
 When this skill triggers, load the global rule first. For Laravel implementation, also load the relevant Laravel workflow/rules for touched endpoints, domains, tenant access, domain resolution, package boundaries, and foundation-doc sync.
 
 ## Required Application
-0. Keep subagent/delegation authority independent from Git-isolation authority. Default to one writer at a time in the principal checkout. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate human authorization explicitly naming worktrees or auxiliary checkouts.
+0. Keep subagent/delegation authority independent from Git-isolation authority. Default to one product/runtime code writer at a time across code repositories and executable surfaces in the principal checkout. Distinct Foundation tactical-TODO owners may concurrently edit disjoint TODO paths and must promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate human authorization explicitly naming worktrees or auxiliary checkouts.
 1. Classify the lane before implementation:
    - exemption;
    - Operational Micro-Fix;

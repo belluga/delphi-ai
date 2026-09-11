@@ -18,7 +18,7 @@ This skill is the trigger surface for the canonical TODO-driven execution rule. 
 When this skill triggers, load the canonical rule first and follow it as the source of truth. Use the workflow when execution, planning, approval, or delivery sequencing is in scope.
 
 ## Required Application
-0. Keep subagent/delegation authority independent from Git-isolation authority. Default to one writer at a time in the principal checkout. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate human authorization explicitly naming worktrees or auxiliary checkouts.
+0. Keep subagent/delegation authority independent from Git-isolation authority. Default to one product/runtime code writer at a time across code repositories and executable surfaces in the principal checkout. Distinct Foundation tactical-TODO owners may concurrently edit disjoint TODO paths and must promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate human authorization explicitly naming worktrees or auxiliary checkouts.
 1. Classify the lane before implementation:
    - exemption;
    - Operational Micro-Fix;
