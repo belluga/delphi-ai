@@ -44,6 +44,7 @@ Centralize how Delphi chooses effort tiers, model routing, executor state, and G
 - For high-risk implementation whose `HOW` still requires deep reasoning after planning, keep the executor handoff but select the configured escalation model instead of changing authority boundaries.
 - Monitoring is deterministic first. If an LLM is needed for process status, use an ephemeral low/medium mini pass over bounded output; do not create a standing watcher or let the main chat consume verbose logs continuously.
 - Before governed implementation, implementation-side validation, monitoring, approval, delivery review, or formal review begins, resolve the selected lane through `config/agent_role_routing.json` and require `python3 delphi-ai/tools/agent_role_routing_guard.py ...` to return `Overall outcome: go`.
+- Keep agent-role routing independent from Git topology. Selecting an executor subagent never selects a worktree, auxiliary checkout, `worker/*`, `reconcile/*`, or repository copy. The default executor topology is `primary-checkout-single-writer`; `worktree-isolated` requires separate human authorization that explicitly mentions worktrees or auxiliary checkouts.
 
 ## Sticky Executor State Policy
 - Sticky means per chat/TODO only, never global across unrelated work.
@@ -98,8 +99,9 @@ If none of those are true, prefer the routine default instead of escalation.
    - session note for standalone strategic reasoning;
    - TODO review/delivery gate notes when approval or closure depends on it;
    - orchestration execution plan when subagents are dispatched.
+   - For implementation lanes, also record `execution_topology`. Use `primary-checkout-single-writer` by default. Record `worktree-isolated` only with a separate worktree-authorization reference; generic subagent/delegation approval is invalid evidence.
 9. For governed execution/review surfaces, run the deterministic routing guard before the action begins:
-   - `python3 delphi-ai/tools/agent_role_routing_guard.py --client <client> --surface <surface> --role <role> --model <model> --effort <effort-or-n/a> --proof-mode <artifact|declared|waiver> [--exception-reason <reason>] [--waiver-reference <ref>]`
+   - `python3 delphi-ai/tools/agent_role_routing_guard.py --client <client> --surface <surface> --role <role> --model <model> --effort <effort-or-n/a> --proof-mode <artifact|declared|waiver> [--execution-topology primary-checkout-single-writer|worktree-isolated] [--worktree-authorization not-authorized|explicit] [--worktree-authorization-reference <exact-human-reference>] [--exception-reason <reason>] [--waiver-reference <ref>]`
    - if the outcome is `delegate-required`, `review-required`, `waiver-required`, or `blocked`, stop and repair the routing instead of proceeding.
 10. If the effort/model decision is still disputed, use the advisory helper:
    - `python3 delphi-ai/tools/effort_selection_advisor.py --surface <surface> [--material-strategic-ambiguity] [--goals-supported]`
@@ -126,3 +128,4 @@ If none of those are true, prefer the routine default instead of escalation.
 - Review subagents remain stateless by default unless resumable reviewer state is explicitly required by the client/tool.
 - The highest review-focused tier is reserved for approval-material or review-material judgment surfaces rather than routine execution.
 - Governed execution/review surfaces do not proceed unless `agent_role_routing_guard.py` resolves to `go` and the routing evidence is recorded in the governing TODO or orchestration plan.
+- Routine executor routing succeeds on the principal checkout without worktree authorization when single-writer serialization is recorded; a worktree-isolated route is blocked without a worktree-specific human authorization reference.

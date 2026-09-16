@@ -73,7 +73,41 @@ assert_outcome go \
   --role routine-executor \
   --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
-  --proof-mode declared
+  --proof-mode declared \
+  --execution-topology primary-checkout-single-writer \
+  --worktree-authorization not-authorized
+
+assert_outcome blocked \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium \
+  --proof-mode declared \
+  --execution-topology worktree-isolated \
+  --worktree-authorization not-authorized
+
+assert_outcome blocked \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium \
+  --proof-mode declared \
+  --execution-topology worktree-isolated \
+  --worktree-authorization explicit \
+  --worktree-authorization-reference "APROVADO: use subagents in parallel"
+
+assert_outcome go \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium \
+  --proof-mode declared \
+  --execution-topology worktree-isolated \
+  --worktree-authorization explicit \
+  --worktree-authorization-reference "Human explicitly authorizes git worktrees for isolated writers"
 
 assert_outcome go \
   --client codex \

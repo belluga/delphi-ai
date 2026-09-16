@@ -22,13 +22,15 @@ Run the canonical delivery-side final review once `wf-docker-audit-escalation-me
 2. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, Pipeline/Copilot P1/P2 Preflight status, Rule-Spirit Anti-Pattern Hunt status, residual risks, existing waivers, and unresolved verification debt.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
-3. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence.
+3. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence. Recycle only terminal inactive reviewer lanes; a live reviewer is never recyclable.
 4. Ask for findings first, ordered by severity, focusing on regressions, adherence, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, pipeline/Copilot-style P1/P2 defects, rule-spirit anti-patterns, performance or elegance regressions, structural regressions, and residual risk rather than redesign.
-5. Retry once with a tighter package if the first attempt fails or times out.
-6. If a required final review still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy closure.
-7. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
+5. Treat reviewer lifecycle as status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline; a polling timeout is not failure and requires continued waiting.
+6. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
+7. Retry once only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric.
+8. If a required final review still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy closure.
+9. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
    - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
-8. Treat `audit-protocol-triple-review` as additive only; it remains the compatibility id for the dedicated delivery-side multi-lane audit and does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
+10. Treat `audit-protocol-triple-review` as additive only; it remains the compatibility id for the dedicated delivery-side multi-lane audit and does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
 
 ## Outputs
 - Final-review gate decision with rationale.

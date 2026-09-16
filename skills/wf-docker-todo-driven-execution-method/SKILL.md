@@ -22,12 +22,18 @@ Load the phase skill that matches the current TODO state:
 ## Package-Stage Methods
 - When multiple approved TODOs must run sequentially on one lane to reduce rework, also load `wf-docker-todo-sequencing-method`.
 - When sequencing is active, the sequencing plan owns checkpoint granularity and branch-state gate topology; downstream delivery gates must inherit that recorded gate, and isolated pre-browser prefixes keep delivery claims provisional until replay plus the deferred authoritative broad gate succeed.
-- When multiple workers/subagents are used, also load `wf-docker-subagent-worktree-reconciliation-method`.
+- When workers/subagents are used without separate worktree-specific human authorization, load `wf-docker-subagent-orchestration-method` and serialize writers in the principal checkout.
+- Load `wf-docker-subagent-worktree-reconciliation-method` only when separate human authorization explicitly names worktrees or auxiliary checkouts. Multiple workers/subagents alone is not a trigger.
+
+## Classification and Version Package Topology
+- Classification families and version packages are orthogonal when the project uses both.
+- Classification families decide intake/ownership/follow-up family; version packages decide admitted delivery-wave membership and shared package authority.
+- Do not assume version folders are legacy just because classification families exist. Follow the project-owned package authority.
 
 ## Required State Machine
 1. Classify lane and framing.
 2. Refine the TODO contract.
-3. Run approval gates, including optional bounded pre-approval RED evidence capture when the TODO requires it, and obtain explicit `APROVADO`.
+3. Run approval gates, including optional bounded pre-approval RED evidence capture when the TODO requires it; require `todo_authority_guard.py <todo-path> --pre-approval` to return `Overall outcome: preflight-go`, then obtain explicit `APROVADO`. `preflight-go` grants no execution authority.
 4. Record approval/rule-ingestion evidence and require `todo_authority_guard.py <todo-path>` to return `Overall outcome: go`.
 5. Execute only inside the approved boundary.
 6. Complete delivery gates and deterministic guards.
@@ -40,10 +46,12 @@ Load the phase skill that matches the current TODO state:
 - `Gate: Review Baseline Freeze` committed and pushed before the first planning-side review/guard run.
 - Any review-packet preparation recorded before that freeze is satisfied must stay explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) and must not be labeled as a passed planning-side review/guard result.
 - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` must return `Overall outcome: go` before `APROVADO` whenever the TODO used the review loop.
+- `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` must return `Overall outcome: preflight-go` before `APROVADO`; general deterministic validation does not replace this execution-readiness check.
 - Complexity policy (`small|medium|big`) and `Plan Review Gate` before approval when required.
 - If the user/TODO/external reference asks for a `devil's advocate` loop, map it canonically to `wf-docker-independent-critique-method`; add `audit-protocol-triple-review` when the request also implies a persistent objection ledger, evidence-based reopening, or repeated no-context rounds until blocking objections are closed through the dedicated delivery-side multi-lane audit protocol.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` before implementation after approval/rule ingestion.
 - `Completion Evidence Matrix` before delivery claims.
+- Strict `Diff Expectation Contract` and `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>` before delivery claims.
 - `Local CI-Equivalent Suite Matrix` executed locally for in-scope CI jobs.
 - `Decision Adherence` before delivery.
 - `Pipeline/Copilot P1/P2 Preflight` before delivery claims.
@@ -51,6 +59,7 @@ Load the phase skill that matches the current TODO state:
 - `Rule-Spirit Anti-Pattern Hunt` before delivery claims.
 - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` must return `Overall outcome: go` before any close/delivery claim.
 - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` must return `Overall outcome: go` before any close/delivery claim.
+- `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>` must return `Overall outcome: go` after every `Diff Deviation Analysis`; a no-go is not an automatic rollback, but unnecessary deviations must be reverted and necessary scope expansion requires user validation and renewed approval.
 - `python3 delphi-ai/tools/todo_closeout_guard.py <todo-path>` must return `Overall outcome: go` before pausing after a delivered TODO or changing closeout path/status.
 
 ## Non-Negotiables

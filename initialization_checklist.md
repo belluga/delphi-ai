@@ -77,6 +77,12 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 - **Artifacts**: `.cline/skills/`, `.clinerules/workflows/`, `.clinerules/hooks/` (symlinked to `delphi-ai/.cline/` and `delphi-ai/.clinerules/`)
 - **Plan Tracking**: Cline's built-in `task_progress` may help with local planning, but it does **not** replace Delphi's tactical TODO + `APROVADO` + Decision Adherence gates when those are required by the instructions
 
+### Claude Code
+- **Bootloader**: `CLAUDE.md` at repository root
+- **Rules**: `.claude/rules/` directory (auto-loaded by Claude Code)
+- **Artifacts**: `.claude/skills/`, `.claude/hooks/`, `.claude/settings.json` (symlinked to `delphi-ai/.claude/`)
+- **Hook Governance**: `.claude/settings.json` and `.claude/hooks/` are the canonical client-side enforcement surfaces for session-start, pre-edit, validation, and closeout loops where Claude Code supports deterministic hooks
+
 ### Codex / Antigravity
 - **Bootloader**: `AGENTS.md` at repository root
 - **Skills**: `.codex/skills/` symlinked to `delphi-ai/skills/`

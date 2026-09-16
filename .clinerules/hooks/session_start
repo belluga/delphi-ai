@@ -1,17 +1,16 @@
-#!/bin/bash
-# TaskStart hook - Initialize session with proper context
+#!/usr/bin/env bash
+set -euo pipefail
 
-INPUT=$(cat)
-WORKSPACE=$(echo "$INPUT" | jq -r '.workspacePath')
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || pwd)"
 
-# Check for project context file
-declare -a messages=()
-if [[ -f "$WORKSPACE/foundation_documentation/project_mandate.md" ]]; then
-  messages+=("Project mandate found. Remember to load context from foundation_documentation/.")
+if [[ -f "$REPO_ROOT/main_instructions.md" && -d "$REPO_ROOT/tools" ]]; then
+  DELPHI_ROOT="$REPO_ROOT"
+elif [[ -f "$REPO_ROOT/delphi-ai/main_instructions.md" && -d "$REPO_ROOT/delphi-ai/tools" ]]; then
+  DELPHI_ROOT="$REPO_ROOT/delphi-ai"
+else
+  printf '%s\n' '{"cancel":false,"contextModification":"Delphi session-start hook could not resolve delphi-ai. Manually load main_instructions.md and the profile-selection workflow before editing."}'
+  exit 0
 fi
 
-messages+=("Before implementation, implementation-side validation, monitoring, or formal review, resolve Agent Routing Preflight via workflows/docker/effort-selection-method.md and record it in the governing TODO.")
-
-CONTEXT="$(printf '%s ' "${messages[@]}" | sed 's/[[:space:]]*$//')"
-
-echo "{\"cancel\":false,\"contextModification\":\"$CONTEXT\"}"
+python3 "$DELPHI_ROOT/tools/session_hook_guard.py" --client cline-ide --event TaskStart --repo-root "$REPO_ROOT"

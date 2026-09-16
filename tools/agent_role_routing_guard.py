@@ -128,8 +128,13 @@ def set_outcome(current: str, new: str) -> str:
 
 
 def validate_contract(contract: dict[str, Any]) -> None:
-    if "clients" not in contract or "surfaces" not in contract or "effort_aliases" not in contract:
-        raise ValueError("Contract must define clients, surfaces, and effort_aliases.")
+    if (
+        "clients" not in contract
+        or "surfaces" not in contract
+        or "effort_aliases" not in contract
+        or "execution_topologies" not in contract
+    ):
+        raise ValueError("Contract must define clients, surfaces, effort_aliases, and execution_topologies.")
 
 
 def evaluate_routing(
@@ -144,6 +149,9 @@ def evaluate_routing(
     proof_mode: str,
     exception_reason: str | None,
     waiver_reference: str | None,
+    execution_topology: str | None,
+    worktree_authorization: str | None,
+    worktree_authorization_reference: str | None,
 ) -> dict[str, Any]:
     validate_contract(contract)
     context: dict[str, Any] = {
@@ -190,6 +198,49 @@ def evaluate_routing(
 
     client_cfg = contract["clients"][client]
     surface_cfg = contract["surfaces"][surface]
+    implementation_surface = surface in {"implementation", "implementation-validation"}
+    selected_topology = strip_markup(execution_topology or "primary-checkout-single-writer") if implementation_surface else "n/a"
+    context["execution_topology"] = selected_topology
+    context["worktree_authorization"] = strip_markup(worktree_authorization or "not-authorized") if implementation_surface else "n/a"
+    context["worktree_authorization_reference_present"] = (
+        not is_missing(worktree_authorization_reference) if implementation_surface else False
+    )
+
+    if implementation_surface:
+        topology_cfg = contract["execution_topologies"].get(selected_topology)
+        if topology_cfg is None:
+            outcome = set_outcome(outcome, OUTCOME_BLOCKED)
+            violations.append(
+                build_violation(
+                    "EXECUTION-TOPOLOGY-UNKNOWN",
+                    f"Unknown execution topology `{selected_topology}`.",
+                    "Use `primary-checkout-single-writer` by default or `worktree-isolated` only with separate worktree-specific human authorization.",
+                )
+            )
+        else:
+            context["max_concurrent_writers"] = topology_cfg.get("max_concurrent_writers", "isolated-by-explicit-topology")
+            if topology_cfg.get("requires_explicit_worktree_authorization"):
+                authorization_value = normalize_token(worktree_authorization or "")
+                if authorization_value != "explicit":
+                    outcome = set_outcome(outcome, OUTCOME_BLOCKED)
+                    violations.append(
+                        build_violation(
+                            "WORKTREE-AUTHORIZATION-MISSING",
+                            "Worktree-isolated execution was selected without separate explicit worktree authorization.",
+                            "Obtain human authorization that explicitly names worktrees or auxiliary checkouts, then pass `--worktree-authorization explicit` and its exact reference. Generic subagent/delegation approval is insufficient.",
+                        )
+                    )
+                authorization_reference = normalize_token(worktree_authorization_reference or "")
+                required_terms = [normalize_token(item) for item in topology_cfg.get("authorization_must_name_one_of", [])]
+                if is_missing(worktree_authorization_reference) or not any(term in authorization_reference for term in required_terms):
+                    outcome = set_outcome(outcome, OUTCOME_BLOCKED)
+                    violations.append(
+                        build_violation(
+                            "WORKTREE-AUTHORIZATION-REFERENCE-INVALID",
+                            "Worktree-isolated execution lacks a concrete human authorization reference that names worktrees or auxiliary checkouts.",
+                            "Record the exact human authorization text/reference containing `worktree(s)` or `auxiliary checkout(s)`; do not use generic `APROVADO`, subagent, delegation, or parallelism approval.",
+                        )
+                    )
     role_value = normalize_token(role)
     model_family = surface_cfg["preferred_model_family"]
     if review_kind:
@@ -400,6 +451,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Explicit waiver or approval reference when proof or role deviation requires one.",
     )
     parser.add_argument(
+        "--execution-topology",
+        help="Implementation topology. Defaults to primary-checkout-single-writer; worktree-isolated requires separate explicit authorization.",
+    )
+    parser.add_argument(
+        "--worktree-authorization",
+        choices=("not-authorized", "explicit"),
+        help="Separate worktree/auxiliary-checkout authorization state for implementation surfaces.",
+    )
+    parser.add_argument(
+        "--worktree-authorization-reference",
+        help="Exact human authorization reference explicitly naming worktrees or auxiliary checkouts.",
+    )
+    parser.add_argument(
         "--contract",
         default=str(DEFAULT_CONTRACT_PATH),
         help="Optional path to an alternate routing contract JSON file.",
@@ -427,6 +491,9 @@ def main(argv: list[str] | None = None) -> int:
         proof_mode=args.proof_mode,
         exception_reason=args.exception_reason,
         waiver_reference=args.waiver_reference,
+        execution_topology=args.execution_topology,
+        worktree_authorization=args.worktree_authorization,
+        worktree_authorization_reference=args.worktree_authorization_reference,
     )
     result["context"]["contract_path"] = str(contract_path)
     result["context"]["contract_id"] = contract.get("contract_id", "unknown")

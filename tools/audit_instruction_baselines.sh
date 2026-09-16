@@ -323,6 +323,62 @@ check_claude_skill_mirrors() {
   [ "$status" = "PASS" ]
 }
 
+check_claude_hook_surfaces() {
+  local status="PASS"
+  local notes=()
+  local hook_root="$DEL_ROOT/.claude/hooks"
+  local settings="$DEL_ROOT/.claude/settings.json"
+  local required_hooks=(
+    "_delphi_hook_common.sh"
+    "session_start.sh"
+    "pre_tool_use.sh"
+    "post_tool_use.sh"
+    "config_change.sh"
+  )
+
+  if [ ! -d "$hook_root" ]; then
+    status="FAIL"
+    notes+=(".claude/hooks directory missing")
+  fi
+
+  if [ ! -f "$settings" ]; then
+    status="FAIL"
+    notes+=(".claude/settings.json missing")
+  fi
+
+  local hook_name
+  for hook_name in "${required_hooks[@]}"; do
+    if [ ! -f "$hook_root/$hook_name" ]; then
+      status="FAIL"
+      notes+=("missing .claude/hooks/$hook_name")
+      continue
+    fi
+    if [ ! -x "$hook_root/$hook_name" ]; then
+      status="FAIL"
+      notes+=(".claude/hooks/$hook_name is not executable")
+    fi
+    if [ "$hook_name" != "_delphi_hook_common.sh" ] && [ -f "$settings" ] && ! contains "$settings" "$hook_name"; then
+      status="FAIL"
+      notes+=(".claude/settings.json does not reference $hook_name")
+    fi
+  done
+
+  if [ ! -f "$DEL_ROOT/.clinerules/hooks/session_start" ]; then
+    status="FAIL"
+    notes+=("missing .clinerules/hooks/session_start")
+  elif [ ! -x "$DEL_ROOT/.clinerules/hooks/session_start" ]; then
+    status="FAIL"
+    notes+=(".clinerules/hooks/session_start is not executable")
+  fi
+
+  local note_text="Claude and Cline hook governance surfaces are present and linked"
+  if [ ${#notes[@]} -gt 0 ]; then
+    note_text="$(IFS='; '; echo "${notes[*]}")"
+  fi
+  emit "| Hook governance surfaces | $status | $note_text |"
+  [ "$status" = "PASS" ]
+}
+
 check_public_mirrors() {
   local status="PASS"
   local notes=()
@@ -418,6 +474,7 @@ check_workflow_counterparts || coherence_failed=$((coherence_failed + 1))
 check_cline_counterparts || coherence_failed=$((coherence_failed + 1))
 check_skill_mirrors || coherence_failed=$((coherence_failed + 1))
 check_claude_skill_mirrors || coherence_failed=$((coherence_failed + 1))
+check_claude_hook_surfaces || coherence_failed=$((coherence_failed + 1))
 check_public_mirrors || coherence_failed=$((coherence_failed + 1))
 check_skill_tooling_register || coherence_failed=$((coherence_failed + 1))
 

@@ -12,6 +12,7 @@ Use after `APROVADO` and before or during implementation. Canonical details live
 - Ingest touched-surface rules/workflows.
 - Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>` after approval/rule ingestion.
 - Execute only inside the approved objective.
+- Default executor subagents to one writer at a time in the principal checkout. Use worktrees/auxiliary checkouts, `worker/*`, or `reconcile/*` only when separate human authorization explicitly names that topology; otherwise stop and ask if concurrent writers require isolation.
 - Stop for renewed approval when execution reveals a new objective, behavior, or risk conversation.
 
 ## Outputs

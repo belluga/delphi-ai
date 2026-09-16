@@ -2,6 +2,7 @@
 set -euo pipefail
 
 mirrored_skills=(
+  "laravel-suite-tail-recovery"
   "review-finding-classification"
   "test-quality-audit"
   "test-creation-standard"

@@ -109,7 +109,7 @@ For promotion, CI-equivalent, or readiness claims, the review order is mandatory
 2. local fixes, targeted validation, commit on the active review branch, and packet rebuild
 3. a fresh internal no-context confirmation pass
 
-Do not invoke an external provider as a promotion review gate. If the internal reviewer capacity is unavailable, recycle an internal review lane or record the required gate as blocked pending a human waiver.
+Do not invoke an external provider as a promotion review gate. Reviewer lifecycle is status-based, not elapsed-time-based: while an internal reviewer is `pending_init` or `running`, wait without a rigid deadline, and treat polling timeout only as an incomplete poll. Never interrupt, close, recycle, replace, duplicate, or shrink/repackage a live review. If reviewer capacity is unavailable, recycle only a terminal inactive review lane or record the required gate as blocked pending a human waiver. Retry only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default; change the package only to repair a concrete proven defect while preserving the full rubric.
 
 ## Promotion-lane constraint
 

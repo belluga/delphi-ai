@@ -9,7 +9,7 @@ Coordinate one execution lane across multiple approved TODOs when the main risk 
 
 Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Equivalent`, decide whether a named broad local gate such as `stage-full` is truly parity-complete, or judge whether a narrower local bundle is merely diagnostic.
 
-The sequencing branch is execution topology only. It is not a second TODO authority, not a promotion lane, and not a replacement for the normal TODO delivery/closeout guards. Prefer the branch family `sequence/*` so the lane is visibly distinct from orchestration-only `reconcile/*`.
+The default sequencing topology is the current principal checkout and its authoritative branch. A dedicated `sequence/*` branch or isolated worktree is auxiliary Git topology and requires separate explicit human authorization recorded in the sequencing plan; generic TODO approval, subagent approval, delegation, or parallelism is insufficient. If an isolated worktree is proposed, the authorization must explicitly name worktrees or auxiliary checkouts. An authorized sequencing branch is execution topology only: it is not a second TODO authority, promotion lane, or replacement for normal delivery/closeout guards.
 
 Checkpoint commits/pushes still obey the canonical governed-commit rule. The sequencing plan must record the exact authority source that authorizes checkpoint commits/pushes on the sequencing branch before any checkpoint commit is created. Valid sources include explicit user instruction, explicit workflow/plan lane authority, or another governing approval artifact that makes the sequencing checkpoint write-path autonomous.
 
@@ -44,7 +44,7 @@ Checkpoint commits/pushes still obey the canonical governed-commit rule. The seq
    - If the chosen order or granularity changes later, refresh the plan before continuing.
 3. **Establish sequencing topology**
    - Freeze one base branch or base commit for the sequencing wave.
-   - Create one sequencing branch from that base, preferably `sequence/<slug>`.
+   - Default to the current authoritative branch in the principal checkout. Create a dedicated `sequence/<slug>` branch only when separate human authorization explicitly covers that auxiliary Git topology; create an isolated worktree only when the authorization specifically names worktrees or auxiliary checkouts.
    - Record the canonical return branch that will receive the accepted net effect after final user validation.
    - Record the exact affected-area checkpoint bundle that must pass after each sequencing unit. It must contain the direct touched/consumed test, guard, build, or runtime surfaces; it must not default to `stage-full`, a promotable wrapper, or another parity-complete broad gate. For every Flutter-changing unit, record the separate mandatory stable full-workspace live Problems snapshot and matching architecture/rule review; never replace it with an edited-file or directory subset, and never start a concurrent CLI analyzer.
    - Record one later package-closeout broad local gate and the state where it runs. If the sequencing branch is isolated, that state is the principal canonical branch after replay; if the sequencing branch is principal, it runs there after the final unit only.
@@ -92,7 +92,7 @@ Checkpoint commits/pushes still obey the canonical governed-commit rule. The seq
 
 ## Outputs
 - Sequencing execution plan under `foundation_documentation/artifacts/execution-plans/`.
-- One checkpoint-only sequencing branch, preferably `sequence/*`.
+- Principal-checkout sequencing on the current authoritative branch by default, or one explicitly authorized checkpoint-only `sequence/*` branch.
 - A deliberate TODO order plus an explicit checkpoint-granularity board that keeps micro-batch exceptions reviewable.
 - A functional checkpoint commit/push after each completed sequencing unit that already passed its recorded checkpoint gate.
 - Checkpoint manifests under `foundation_documentation/artifacts/checkpoints/`.

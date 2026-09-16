@@ -1,0 +1,158 @@
+{
+  "contract_id": "delphi.hook-governance.v1",
+  "version": 1,
+  "runtime_state": {
+    "logical_path": "artifacts/tmp/session-runtime-state.json",
+    "notes": [
+      "The runtime state is non-authoritative and reconstructible.",
+      "Hooks use it to enforce session-start, task-shift, pre-edit, validation, and closeout loops."
+    ]
+  },
+  "clients": {
+    "claude-code": {
+      "display_name": "Claude Code",
+      "mode": "enforced",
+      "supported_events": [
+        "SessionStart",
+        "PreToolUse",
+        "PostToolUse",
+        "ConfigChange"
+      ],
+      "notes": [
+        "Claude Code is the primary deterministic hook target.",
+        "Use command hooks to enforce fail-closed decisions for governed Delphi surfaces."
+      ]
+    },
+    "cline-ide": {
+      "display_name": "Cline IDE",
+      "mode": "reminder-only",
+      "supported_events": [
+        "TaskStart"
+      ],
+      "notes": [
+        "Cline remains declarative and reminder-oriented for this slice.",
+        "The session-start hook initializes the same runtime state, but it does not block tools."
+      ]
+    },
+    "codex": {
+      "display_name": "Codex",
+      "mode": "workflow-guarded",
+      "supported_events": [],
+      "notes": [
+        "Codex currently relies on workflow guards and explicit GOAL discipline rather than client-side hooks."
+      ]
+    }
+  },
+  "read_groups": {
+    "bootstrap": [
+      "main_instructions.md",
+      "workflows/docker/profile-selection-method.md"
+    ],
+    "self_improvement": [
+      "workflows/docker/session-lifecycle-method.md",
+      "workflows/docker/self-improvement-session-method.md"
+    ],
+    "tool_inventory": [
+      "tools/manifest.md"
+    ],
+    "hook_contract": [
+      "config/hook_governance.json"
+    ]
+  },
+  "path_classes": {
+    "canonical_instruction_surface": {
+      "matchers": [
+        "main_instructions.md",
+        "workflows/**",
+        "rules/**",
+        "templates/**",
+        "skills/deterministic-tooling-register.md"
+      ],
+      "required_read_groups": [
+        "bootstrap",
+        "self_improvement"
+      ],
+      "required_validation_categories": [
+        "self_check",
+        "diff_check"
+      ]
+    },
+    "canonical_tooling_surface": {
+      "matchers": [
+        "tools/**"
+      ],
+      "required_read_groups": [
+        "bootstrap",
+        "self_improvement",
+        "tool_inventory"
+      ],
+      "required_validation_categories": [
+        "self_check",
+        "diff_check",
+        "tool_tests"
+      ]
+    },
+    "hook_governance_surface": {
+      "matchers": [
+        "config/hook_governance.json",
+        ".claude/settings.json",
+        ".claude/hooks/**",
+        ".clinerules/hooks/**",
+        "scripts/setup_delphi.sh",
+        "initialization_checklist.md"
+      ],
+      "required_read_groups": [
+        "bootstrap",
+        "self_improvement",
+        "hook_contract"
+      ],
+      "required_validation_categories": [
+        "self_check",
+        "diff_check",
+        "tool_tests"
+      ]
+    }
+  },
+  "validation_command_categories": {
+    "self_check": [
+      "(^|\\s)(bash\\s+)?((delphi-ai|\\.)/)?tools/self_check\\.sh(\\s|$)"
+    ],
+    "diff_check": [
+      "(^|\\s)git\\s+diff\\s+--check(\\s|$)"
+    ],
+    "tool_tests": [
+      "(^|\\s)(bash\\s+)?((delphi-ai|\\.)/)?tools/tests/[^ ]+_test\\.sh(\\s|$)",
+      "(^|\\s)python3\\s+-m\\s+py_compile\\b.*\\btools/"
+    ]
+  },
+  "closeout_command_patterns": [
+    "(^|\\s)git\\s+commit(\\s|$)",
+    "(^|\\s)git\\s+push(\\s|$)"
+  ],
+  "required_claude_project_hooks": {
+    "SessionStart": [
+      "session_start.sh"
+    ],
+    "PreToolUse": [
+      "pre_tool_use.sh"
+    ],
+    "PostToolUse": [
+      "post_tool_use.sh"
+    ],
+    "ConfigChange": [
+      "config_change.sh"
+    ]
+  },
+  "forbidden_claude_deny_rules": [
+    "Write(delphi-ai/**)",
+    "Write(main_instructions.md)",
+    "Write(config/**)",
+    "Write(rules/**)",
+    "Write(tools/**)",
+    "Write(workflows/**)",
+    "Write(.claude/rules/**)",
+    "Write(.claude/skills/**)",
+    "Write(.claude/settings.json)",
+    "Write(CLAUDE.md)"
+  ]
+}

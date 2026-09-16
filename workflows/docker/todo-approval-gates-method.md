@@ -32,6 +32,8 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - `medium|big`: full issue cards, failure modes, and residual unknowns.
    - Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. TODO approval/plan review and any gate-satisfying review subagents use the highest review-focused tier; review subagents remain stateless by default unless the tool/client requires resumable reviewer state for a bounded package.
    - When those controls apply, predeclare the planned implementation, monitoring, and review lanes so post-approval execution can record `Agent Routing Preflight` and run the deterministic routing guard fail-closed.
+   - Record two independent decisions: `Subagent / delegation authorization` and `Git isolation authorization`. `APROVADO`, subagent approval, delegation, or parallelism never satisfies the second decision unless the human authorization explicitly names worktrees or auxiliary checkouts.
+   - Default the execution topology to `primary-checkout-single-writer`. If the plan proposes `worktree-isolated`, require a concrete worktree-specific authorization reference before approval can authorize execution.
 6. Populate the TODO `Audit Trigger Matrix` and run:
    - `python3 delphi-ai/tools/audit_escalation_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before trusting audit decisions.
@@ -53,14 +55,21 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
    - `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
    - require `Overall outcome: go` before requesting `APROVADO`, unless the current human approval authority explicitly waives the guard;
    - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes before approval; treat this as a reconvergence checkpoint, not a rigid rejection.
-12. Ask the user to reply with **`APROVADO`** for tactical and ephemeral TODO lanes.
-13. After approval, record the compact `Approval` evidence section in the TODO: approver/reference, exact approved scope, exclusions, and renewed-approval trigger.
+12. Run the execution-readiness authority preflight:
+   - predeclare the planned implementation `Agent Routing Preflight` as one concrete executable surface/role/model tuple; keep review/approval lane history in separate evidence fields instead of combining multiple governed surfaces in machine-readable fields;
+   - prepare `Rules Acknowledgement / Ingestion` rows with concrete rule/workflow/skill paths; actual binding reload/ingestion still happens after approval;
+   - run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` and require `Overall outcome: preflight-go`;
+   - treat `preflight-go` only as structural readiness. It explicitly grants no implementation authority and never substitutes for the normal post-approval guard;
+   - `todo_deterministic_validator.py` and the planning review guards do not substitute for this preflight because they validate different contracts.
+13. Ask the user to reply with **`APROVADO`** for tactical and ephemeral TODO lanes.
+14. After approval, record the compact `Approval` evidence section in the TODO: approver/reference, exact approved scope, exclusions, and renewed-approval trigger.
 
 ## Outputs
 - Plan Review Gate evidence.
 - Audit-floor evidence and required critique/dedicated multi-lane audit evidence.
 - Optional bounded RED evidence capture results when used.
 - Frozen decision baseline.
+- Execution-readiness authority preflight evidence with `Overall outcome: preflight-go` and no execution authority claim.
 - Explicit approval record.
 
 ## Non-Negotiables
@@ -70,8 +79,12 @@ Validate the refined TODO before execution and obtain explicit approval. This ph
 - Pre-freeze packet preparation must not masquerade as authoritative review completion; use explicit provisional wording such as `prepared-pre-freeze` or `pending-freeze` until the freeze requirement is satisfied or waived and the actual review/guard has run.
 - The assumption-vs-code coherence guard must be clean or explicitly waived before `APROVADO`.
 - The post-review scope-drift guard must be clean or explicitly waived before `APROVADO`.
+- The authority preflight must return `Overall outcome: preflight-go` before requesting `APROVADO`; a generic deterministic-validator PASS is insufficient.
+- Pre-approval routing fields must describe one concrete planned implementation surface. Do not combine approval, review, and implementation surfaces in one machine-readable field.
+- `preflight-go` never authorizes implementation; only explicit `APROVADO`, recorded approval/rule ingestion, and the normal authority guard returning `Overall outcome: go` do so.
 - A required architecture decision review must be resolved or explicitly waived before `APROVADO`.
 - Approval evidence must be recorded in the TODO; do not rely on chat memory alone after the gate has passed.
+- Approval for subagents does not authorize Git isolation. Missing worktree-specific authorization keeps `git worktree`, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` out of scope.
 - If approval-material scope, decision, validation, or architecture facts change, refresh the TODO, revalidate the new scope with the user, and request renewed `APROVADO`.
 - Do not treat post-review scope-drift `no-go` as terminal failure; it means the TODO must reconverge through renewed user scope validation before approval resumes.
 - Do not substitute ad hoc reviewer sequencing for the dedicated multi-lane audit workflow when the derived floor requires or recommends it.

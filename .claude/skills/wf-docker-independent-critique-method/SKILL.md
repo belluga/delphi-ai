@@ -24,15 +24,17 @@ Run the canonical planning-side critique lane once `wf-docker-audit-escalation-m
 3. Build a bounded package; do not pass the whole session transcript.
    - If using a `bounded-summary`, include at minimum: frozen decisions, approved scope boundary, assumptions preview, execution plan summary, material issue cards, residual risks, and existing waivers/blockers.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
-4. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence.
+4. Use a fresh internal reviewer with no inherited thread context; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence. Recycle only terminal inactive reviewer lanes; a live reviewer is never recyclable.
 5. Ask for findings first, ordered by severity, with no implementation.
-6. Retry once with a tighter package if the first attempt fails or times out.
-7. If a required critique still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy the gate.
-8. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
+6. Treat reviewer lifecycle as status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline; a polling timeout is not failure and requires continued waiting.
+7. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
+8. Retry once only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric.
+9. If a required critique still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy the gate.
+10. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
    - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
-9. After critique findings converge, run `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>` and record the result under `Gate: Assumption Code Coherence`.
-10. Before approval resumes, run `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` and return to the review loop if the guard reports material scope-governing drift against the pushed baseline.
-11. Treat `audit-protocol-triple-review` as additive only; it remains the compatibility id for the dedicated delivery-side multi-lane audit and does not silently replace this planning critique gate.
+11. After critique findings converge, run `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>` and record the result under `Gate: Assumption Code Coherence`.
+12. Before approval resumes, run `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>` and return to the review loop if the guard reports material scope-governing drift against the pushed baseline.
+13. Treat `audit-protocol-triple-review` as additive only; it remains the compatibility id for the dedicated delivery-side multi-lane audit and does not silently replace this planning critique gate.
 
 ## Outputs
 - Critique gate decision with rationale.

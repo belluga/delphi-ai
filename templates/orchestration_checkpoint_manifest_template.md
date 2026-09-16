@@ -10,7 +10,9 @@ This artifact belongs to the downstream project's `foundation_documentation/arti
 - **Artifact type:** `orchestration_checkpoint_manifest`
 - **Checkpoint status:** `<wip_checkpoint|validated_local_checkpoint|promotion_ready_checkpoint|superseded_checkpoint>`
 - **Created:** `<YYYY-MM-DD>`
-- **Governing workflow / skill:** `delphi-ai/workflows/docker/subagent-worktree-reconciliation-method.md`
+- **Governing workflow / skill:** `<delphi-ai/workflows/docker/subagent-orchestration-method.md|delphi-ai/workflows/docker/subagent-worktree-reconciliation-method.md>`
+- **Execution topology:** `<primary-checkout-single-writer|worktree-isolated>`
+- **Worktree authorization evidence:** `<n/a|exact human worktree/auxiliary-checkout authorization reference>`
 - **Authority boundary:** governing TODOs and canonical module docs remain authoritative.
 
 ## Scope

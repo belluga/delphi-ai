@@ -3,7 +3,7 @@
 
 This guard validates execution evidence, not just plan shape. It is intended to
 run before claiming local implementation or delivery completion for a
-subagent/worktree orchestration wave.
+subagent orchestration wave, with or without separately authorized worktrees.
 
 Exit codes:
   0  GO: delivery evidence satisfies the approved plan.
@@ -208,7 +208,7 @@ def validate_delivery(
                 build_violation(
                     "TRACEABILITY-ORCHESTRATOR-OWNER",
                     f"Traceability implementation owner is orchestrator for requirement `{requirement_id}`.",
-                    "Assign implementation evidence to the responsible worker/subagent. The orchestrator may only reconcile and validate.",
+                    "Assign implementation evidence to the responsible worker/subagent. The orchestrator validates the consolidated principal-checkout state and may reconcile only in explicitly worktree-authorized topology.",
                     "Acceptance Traceability Matrix",
                 )
             )
@@ -247,7 +247,7 @@ def validate_delivery(
                 build_violation(
                     "TRACEABILITY-RUNTIME-EVIDENCE-MISSING",
                     f"UI/runtime requirement `{requirement_id}` lacks concrete runtime/web/device/navigation evidence.",
-                    "Run the required real browser/device/navigation validation against the reconciliation branch runtime and record the evidence in the traceability row.",
+                    "Run the required real browser/device/navigation validation against the consolidated principal-checkout runtime and record the evidence in the traceability row.",
                     "Acceptance Traceability Matrix",
                 )
             )
@@ -433,7 +433,7 @@ def validate_delivery(
                 build_violation(
                     "RUNTIME-FRESHNESS-MISSING",
                     "Runtime/browser/device/build validation is in scope but no runtime freshness evidence was found.",
-                    "Add branch, commit, build artifact, served runtime target, and proof that the runtime resolves to the reconciliation branch build.",
+                    "Add branch, commit, build artifact, served runtime target, and proof that the runtime resolves to the authoritative consolidated principal-checkout build.",
                     "Runtime Freshness Evidence",
                 )
             )
@@ -451,7 +451,7 @@ def validate_delivery(
                 build_violation(
                     "RUNTIME-FRESHNESS-INCOMPLETE",
                     "Runtime freshness evidence does not prove branch/commit, build artifact, served target, and freshness/provenance.",
-                    "Record the reconciliation branch/commit, build command or artifact id, served URL/device/tunnel, and the proof that the served runtime matches that build.",
+                    "Record the authoritative principal-checkout branch/commit, build command or artifact id, served URL/device/tunnel, and proof that the served runtime matches that build.",
                     "Runtime Freshness Evidence",
                 )
             )

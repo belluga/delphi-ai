@@ -25,12 +25,14 @@ Run a fresh internal audit focused on whether the tests that justify delivery co
 3. Build a bounded package; do not pass the whole session transcript.
    - When using subagents programmatically, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind test_quality_audit ...`.
 4. Require gate-satisfying evidence to cover the full applicable `test-quality-audit` workload, not just a short answer set.
-5. Use a fresh internal no-context reviewer/subagent; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence.
+5. Use a fresh internal no-context reviewer/subagent; it must not be the implementing agent. Do not invoke or treat an external provider as gate-satisfying evidence. Recycle only terminal inactive reviewer lanes; a live reviewer is never recyclable.
 6. If no internal reviewer is available, any bounded self-review is supporting evidence only and does not satisfy a `required` gate by itself.
 7. Ask for findings first, ordered by severity, explicitly covering product/test delta alignment, workaround risk, assertion efficacy, assertion efficiency, coverage sufficiency, and fail-first/TDD alignment when relevant.
-8. Retry once with a tighter package if the first attempt fails or times out.
-9. If a required audit still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy delivery.
-10. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
+8. Treat reviewer lifecycle as status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline; a polling timeout is not failure and requires continued waiting.
+9. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
+10. Retry once only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric.
+11. If a required audit still cannot be obtained, only the current human approval authority may waive it; `blocked` alone does not satisfy delivery.
+12. Resolve each material finding as `Integrated|Challenged|Deferred with rationale`.
     - If reviewers returned structured JSON, merge it with `python3 delphi-ai/tools/subagent_review_merge.py ...` before recording the authoritative resolution.
 
 ## Outputs

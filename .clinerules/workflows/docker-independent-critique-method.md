@@ -42,7 +42,7 @@ It must also challenge whether the planned path is sound for performance, elegan
 - Preserve the key constraints and open risks rather than paraphrasing them into soft language.
 
 ## Required-Gate Waiver Control
-- If a `required` no-context critique cannot be completed after one retry, a `blocked` record alone does not permit `APROVADO`.
+- If a `required` no-context critique cannot be completed after an objectively terminal failed attempt and one retry of the complete gate-satisfying package, a `blocked` record alone does not permit `APROVADO`.
 - Only the current human approval authority for the TODO may waive a required critique gate.
 - The waiver record must include:
   - `waiver_reason`
@@ -62,9 +62,11 @@ It must also challenge whether the planned path is sound for performance, elegan
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind critique ...`.
 4. Run one fresh internal critique with no inherited thread context.
    - This critique pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
-   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle another review lane and open a fresh reviewer instead of downgrading to self-review.
+   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable.
    - Do not invoke or treat an external provider as gate-satisfying review evidence.
    - In other environments, use the closest internal equivalent that guarantees no prior thread contamination.
+   - Reviewer lifecycle is status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline.
+   - A polling timeout means only that no terminal event arrived during that polling window. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
 5. Prompt the reviewer to return findings first, ordered by severity, and to avoid implementation.
    - Require explicit positions on:
      - performance acceptability;
@@ -73,8 +75,8 @@ It must also challenge whether the planned path is sound for performance, elegan
 6. Treat the critique as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may invalidate assumptions or planning quality, but it does not replace user approval.
-7. If the first no-context critique attempt fails or times out, retry once with a tighter package.
-8. If a `required` critique still cannot be obtained after one retry:
+7. If the first no-context critique attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric; a polling timeout while the reviewer remains live requires continued waiting.
+8. If a `required` critique still cannot be obtained after an objectively terminal failed attempt and one retry:
    - record the tooling limitation explicitly;
    - do not silently treat bounded self-review as equivalent to a true fresh no-context critique;
    - require either a blocker state or an explicit waiver before `APROVADO`;

@@ -50,10 +50,10 @@ python3 delphi-ai/tools/finding_carry_forward_extract.py --todo <todo-path>
      - must be fixed, explicitly challenged as by-design, or re-approved before the lane is clean
    - `follow-up-fast-follow`
      - real issue, but not a blocker for the current release/package
-     - requires an explicit TODO under `foundation_documentation/todos/active/fast_follow_required/followup/`
+     - requires an explicit TODO under the project-approved active classification/version topology
    - `follow-up-hardening`
      - real issue, but not a blocker for the current release/package
-     - requires an explicit TODO under `foundation_documentation/todos/active/post_release_hardening/hardening/`
+     - requires an explicit TODO under the project-approved active classification/version topology
    - `by-design/no-action`
      - expected behavior, reviewer noise, or already-approved intent
      - requires rationale tied back to approved scope/decision/evidence
@@ -61,6 +61,7 @@ python3 delphi-ai/tools/finding_carry_forward_extract.py --todo <todo-path>
    - repeated findings stay historical/noise unless the current bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient
    - only `release-blocker` rows block the current delivery/promotion claim
    - non-blocking real findings are not disposable; split or cite the explicit follow-up owner before calling the lane clean
+   - when the project uses both classification families and version packages, classification chooses the family root while package authority decides whether the follow-up joins an immediate version wave or remains outside the current package
 
 ## Deterministic Support
 

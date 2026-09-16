@@ -138,6 +138,52 @@
     "cutover_integrity_audit": "technical_review",
     "final_review": "strongest_review"
   },
+  "execution_topologies": {
+    "primary-checkout-single-writer": {
+      "requires_explicit_worktree_authorization": false,
+      "max_concurrent_writers": 1,
+      "writer_scope": "product-runtime-code",
+      "parallel_disjoint_foundation_todo_writers": true,
+      "allows": [
+        "executor-subagents",
+        "parallel-read-only-reviewers",
+        "serialized-additional-code-writers",
+        "parallel-disjoint-foundation-todo-writers"
+      ],
+      "forbids": [
+        "git-worktree",
+        "auxiliary-checkout",
+        "worker-branch",
+        "reconcile-branch",
+        "writable-repository-copy"
+      ],
+      "notes": [
+        "This is the default implementation topology whenever worktrees or auxiliary checkouts were not explicitly authorized by a human.",
+        "The single-writer limit applies to product/runtime code across code repositories and executable surfaces, including Laravel, Flutter, Docker, root tooling, and runtime configuration.",
+        "Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths; each owner stages, commits, and promotes only its own TODO, while shared canonical docs/artifacts and the same TODO remain serialized.",
+        "Subagent, delegation, parallelism, or generic plan approval never authorizes parallel code writers or Git-isolation topology."
+      ]
+    },
+    "worktree-isolated": {
+      "requires_explicit_worktree_authorization": true,
+      "authorization_must_name_one_of": [
+        "worktree",
+        "worktrees",
+        "auxiliary checkout",
+        "auxiliary checkouts"
+      ],
+      "allows": [
+        "git-worktree",
+        "auxiliary-checkout",
+        "worker-branch",
+        "reconcile-branch"
+      ],
+      "notes": [
+        "Use only after a separate human authorization explicitly names worktrees or auxiliary checkouts.",
+        "A subagent/delegation/parallelism authorization is never sufficient evidence."
+      ]
+    }
+  },
   "surfaces": {
     "implementation": {
       "required_lane": "executor",
@@ -158,7 +204,8 @@
       "goal_policy": "required-when-supported",
       "notes": [
         "Code writing and direct file-edit execution belong to the routine executor lane.",
-        "Primary-chat implementation is allowed only through an explicit approved exception."
+        "Primary-chat implementation is allowed only through an explicit approved exception.",
+        "Routine executor subagents default to primary-checkout-single-writer; role selection does not authorize worktrees."
       ]
     },
     "implementation-validation": {
@@ -180,7 +227,8 @@
       "goal_policy": "required-when-supported",
       "notes": [
         "Implementation-side test/build/command execution stays in the same lane as the owned implementation.",
-        "Do not pull implementation validation back into the primary chat by default."
+        "Do not pull implementation validation back into the primary chat by default.",
+        "Implementation validation inherits the separately authorized execution topology and remains authoritative only on the consolidated principal checkout."
       ]
     },
     "monitoring": {

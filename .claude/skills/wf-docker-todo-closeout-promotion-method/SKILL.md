@@ -13,7 +13,8 @@ Use after delivery evidence is complete or when the TODO must pause blocked. Can
 - Record `TODO Closeout Disposition` as `keep-active`, `move-promotion-lane`, `move-completed`, or `blocked`.
 - If the TODO remains in `active/`, record `Active Work State` explicitly as `implementation`, `review`, or `blocked`.
 - Before routing post-review findings, run `review-finding-classification` so the same taxonomy/ledger contract used by delivery and promotion stays authoritative here too.
-- Route post-review findings explicitly: `release-blocker` stays in the current governing TODO/package; `follow-up-fast-follow` splits under `active/fast_follow_required/followup/`; `follow-up-hardening` splits under `active/post_release_hardening/hardening/`; `by-design/no-action` stays as rationale only.
+- Route post-review findings explicitly: `release-blocker` stays in the current governing TODO/package; `follow-up-fast-follow` and `follow-up-hardening` split under the project-approved active classification/version topology; `by-design/no-action` stays as rationale only.
+- When both classification families and version packages are active, classification chooses the family root while the governing version package decides admitted delivery-wave membership.
 - During package-wide review loops, move individually clean TODOs to `promotion_lane/` progressively as soon as they have explicit `clean/no-reopen` sweep evidence and only lane follow-through remains.
 - Move the same TODO to `promotion_lane/` or `completed/` only when the lane threshold supports it.
 - If the delivered package was first integrated on `reconcile/*`, require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan foundation_documentation/artifacts/execution-plans/<short-slug>.md --repo <authoritative-source-repo>` to return `Overall outcome: go` before promotion or non-orchestration closeout resumes from the canonical branch.

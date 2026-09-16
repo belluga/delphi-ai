@@ -19,6 +19,8 @@ Its explicit goal is to remove disposable temporary noise while promoting any du
 ## Boundaries
 - Default to dry-run inventory first. Do not delete until the candidate list, keep reasons, and consolidation blockers are explicit.
 - Do not delete an artifact referenced by an active TODO, execution plan, delivery gate, checkpoint, promotion/reconcile plan, failure review, unresolved finding, or pending user validation.
+- Treat `artifacts/tmp/**` as temporary-by-contract. Once the governing closeout/promotion is complete, a `tmp` artifact is no longer authoritative promotion evidence by default.
+- If a promoted/completed package or historical closeout doc still points at `artifacts/tmp/**`, classify that as documentation debt first, not as an automatic keep reason for the raw `tmp` artifact.
 - Do not delete canonical documentation, source code, project configuration, live TODO folders, promotion ledgers, or environment topology contracts as "artifact cleanup".
 - Do not use symlink traversal casually. Report symlinked artifact roots before sizing or pruning them, because a local `delphi-ai/rules/*/local` link may point into another repository.
 - Do not use this skill for Git branch deletion, worktree pruning, rebase/reset, remote cleanup, or gitlink correction. Route those through `prune-repository` and `branch-rebaseline-preflight`.
@@ -28,7 +30,8 @@ Its explicit goal is to remove disposable temporary noise while promoting any du
 ## Artifact Classes
 - `artifacts/tmp/**`
   - Default prune candidate after successful closeout.
-  - Keep only `.gitkeep`, active lock/state files, or files referenced by still-open work.
+  - Keep only `.gitkeep`, active lock/state files, restricted local harness inputs still required by active work, or files referenced by still-open unresolved work.
+  - A completed/promotion-finished package should not depend on `tmp` for durable authority. Replace or remove those references, then prune the raw packet.
 - `artifacts/execution-plans/**`
   - Keep while the plan, branch, TODO, or orchestration package is active.
   - After closeout, consolidate durable decisions into the governing TODO, closeout report, or canonical documentation before pruning.
@@ -60,9 +63,11 @@ Its explicit goal is to remove disposable temporary noise while promoting any du
 4. **Run reference guards**
    - Search active TODOs, execution plans, promotion/reconcile plans, closeout reports, and foundation documentation for candidate paths and salient filenames.
    - Any hit in active or unresolved work changes the candidate to `keep` or `blocked` until the reference is resolved.
+   - A hit from a completed/promoted package does not automatically protect a `tmp` artifact. First classify whether the reference is stale historical coupling that should be replaced by a closeout summary, checkpoint, or governing TODO note.
 5. **Consolidate before delete**
    - Move durable decisions to the correct authoritative surface before deleting the artifact copy.
    - If the destination is canonical system documentation, present the proposed canonicalization to the user for confirmation before applying it.
+   - If a completed/promoted package still cites `artifacts/tmp/**`, preferred repair is to move that authority into the package closeout record, checkpoint, or governing TODO and remove the `tmp` dependency rather than preserving the raw packet indefinitely.
    - Preferred destination depends on the truth being preserved:
      - system-wide or cross-module rules/invariants -> `project_constitution.md`
      - enduring product intent/domain language -> `project_mandate.md` or `domain_entities.md`
@@ -97,6 +102,7 @@ Its explicit goal is to remove disposable temporary noise while promoting any du
 - Artifact roots inspected and symlink status.
 - Dry-run table with `delete|compact|keep|blocked` classification.
 - Consolidation actions performed or required, including the intended authoritative destination for each durable decision/evidence item.
+- Explicit identification of any `artifacts/tmp/**` path that survives only because a promoted/completed document still references it.
 - Explicit note for any proposed canonical promotion that still requires user confirmation before the artifact can be safely deleted.
 - Exact destructive commands run, if any.
 - Remaining blockers and the document/TODO that owns each blocker.
@@ -105,4 +111,5 @@ Its explicit goal is to remove disposable temporary noise while promoting any du
 - Disposable artifact volume is reduced without deleting active evidence.
 - Durable decisions are represented in authoritative documents rather than only in raw artifacts, especially when the artifact previously held the only copy of system-relevant truth.
 - Active TODOs, promotion/reconcile lanes, review findings, and pending validation are not orphaned.
+- Promoted/completed packages do not retain raw `artifacts/tmp/**` dependence as their authoritative promotion proof; any such surviving dependence is explicitly routed as documentation debt.
 - Repository branch/worktree cleanup remains separate and, when needed, is routed through `prune-repository`.
