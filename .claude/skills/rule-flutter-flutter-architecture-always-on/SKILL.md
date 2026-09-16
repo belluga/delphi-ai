@@ -5,11 +5,15 @@ description: "Rule: MUST use whenever the scope matches this purpose: Enforce Fl
 
 ## Rule
 Apply these Flutter architectural tenets on every task:
-- Keep widgets pure UI; controllers own all state (`StreamValue`), UI controllers, side effects, and orchestration; widgets never touch repositories/infrastructure.
+- Keep widgets pure UI; controllers own local interaction state, UI controllers, side effects, and orchestration; repositories own canonical shared state. Widgets never touch repositories/infrastructure.
 - Controllers are the only allowed data ingress gate for screens/widgets; no repository/service/state-holder bypasses are allowed in presentation non-controller files.
 - Apply DI/ownership boundaries from the canonical contract in `foundation_documentation/modules/flutter_client_experience_module.md` (section `2.1.1`) and enforce rule IDs/treatments from the PACED ecosystem-global analyzer plugin, normally available from the Flutter workspace as `tool/belluga_analysis_plugin/docs/rules.md`.
 - `StreamValue` in controllers is allowed for local screen/stage state and for pure delegation of repository-owned canonical streams.
 - Canonical shared state (cross-controller/module lifespan, cache-backed, persistence-aligned) must be owned by repository contracts/implementations.
+- A persistent repository-owned `StreamValue` is the canonical application-level reactive in-memory cache for shared entities, collections, and pages. It is the one mutable representation of that canonical data.
+- Controllers expose or delegate canonical repository streams; they must not mirror their values into a mutable list, map, `_cache`, `cached*`, or equivalent second store. Pagination reconciliation, upsert/removal, delta application, refresh, and invalidation update the repository `StreamValue`.
+- Cursor, `hasMore`, and in-flight guards are operational metadata, not automatically duplicate caches, but their ownership must remain coherent with repository pagination. Transport, image, filesystem, and persistence-adapter caches are allowed only when they do not become a competing application-state source of truth.
+- Treat `cache`, `cached`, and `Cache` matches in controller/repository state surfaces as mandatory semantic-review signals: presume a deviation until the holder is classified as the canonical `StreamValue`, non-duplicative metadata, or a technical adapter cache. Naming alone is not a violation.
 - Services/DAL are technical adapters only; they must not own canonical shared state via `StreamValue`, `StreamController`, `ValueNotifier`, `ChangeNotifier`, or custom `*State/*Store/*Manager` holders.
 - Maintain feature-first structure (`tenant/<feature>/screens/...`) with controllers registered via ModuleScope/GetIt; controllers never accept `BuildContext`.
 - Enforce DTO → Domain → Projection flow; DTOs never reach widgets, and projections expose UI-ready primitives only.

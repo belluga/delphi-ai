@@ -37,7 +37,7 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 | `rule-docker-docker-ci-pipeline-model-decision` | `skill-only` | Governance trigger; keep as rule, not tool. |
 | `rule-docker-docker-runtime-ingress-model-decision` | `skill-only` | Governance trigger; keep as rule, not tool. |
 | `rule-docker-documentation-migration-model-decision` | `skill-only` | Governance trigger; keep as rule, not tool. |
-| `rule-docker-flutter-architecture` | `skill-only` | Governance trigger; keep as rule, not tool. |
+| `rule-docker-flutter-architecture` | `lint/analyzer` | Shares reusable Flutter architecture enforcement with the canonical Flutter rule. Prefer analyzer rules for statically reliable ownership shapes; semantic duplicate-cache classification still requires review. |
 | `rule-docker-shared-audit-escalation-model-decision` | `skill-only` | Governance trigger for deterministic audit-floor enforcement; the tool belongs to the workflow, not the rule itself. |
 | `rule-docker-shared-core-instructions-always-on` | `partial-tool` | Always-on baseline remains governance-first, but the git-write subset is now backed by [`git_write_authority_guard.py`](../tools/git_write_authority_guard.py), which deterministically blocks protected promotion branches, detached-HEAD ambiguity, and non-`main` writes in `foundation_documentation` while allowing documented work-branch/direct-doc surfaces. |
 | `rule-docker-shared-delphi-project-setup-model-decision` | `skill-only` | Setup trigger belongs in governance; setup reporting is backed by workflow helpers. The rule now points to `config/stack_capabilities.yaml` as available-capability context only, while project-active topology remains foundation/project-owned. |
@@ -54,7 +54,7 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 ### Flutter Rules
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
-| `rule-flutter-flutter-architecture-always-on` | `lint/analyzer` | Architecture enforcement should keep moving into analyzer rules, not shell helpers. |
+| `rule-flutter-flutter-architecture-always-on` | `lint/analyzer` | Prefer analyzer rules for statically reliable ownership shapes, including controller mirrors of repository streams; lifecycle and duplicated-data semantics still need review where static evidence is incomplete. |
 | `rule-flutter-flutter-contract-alignment-always-on` | `skill-only` | Contract alignment still needs doc and code judgment. |
 | `rule-flutter-flutter-controller-workflow-glob` | `skill-only` | File-path trigger; deterministic value lives in the target workflow, not the glob rule. |
 | `rule-flutter-flutter-documentation-contracts-always-on` | `skill-only` | Canonical doc sync is judgment-heavy even when checks assist. |
@@ -83,13 +83,13 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 ## Flutter Umbrella and Smell Skills
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
-| `flutter-architecture-adherence` | `already-backed` | The global analyzer plugin remains the static-rule source, [`rule_spirit_anti_pattern_scan.sh`](../tools/rule_spirit_anti_pattern_scan.sh) supports delivery-side bypass review, and [`vscode_diagnostics_bridge/`](../tools/vscode_diagnostics_bridge/README.md) exposes the editor-owned Dart Analysis Server Problems collection without starting a second analyzer. First-party product packages remain a Pub Workspace where applicable, and every Flutter-changing sequential/orchestration checkpoint requires a stable full-workspace bridge snapshot plus Rule-Spirit review; affected-area tests remain narrow and the broad test/runtime gate remains deferred to package closeout. The agent must not start a concurrent CLI analyzer. The bridge is live diagnostic evidence, not a public-API proof of Analysis Server completion; append-only LSP logs remain forensic only. |
+| `flutter-architecture-adherence` | `already-backed` | The global analyzer plugin remains the static-rule source, [`rule_spirit_anti_pattern_scan.sh`](../tools/rule_spirit_anti_pattern_scan.sh) supports delivery-side bypass review, and [`vscode_diagnostics_bridge/`](../tools/vscode_diagnostics_bridge/README.md) exposes the editor-owned Dart Analysis Server Problems collection without starting a second analyzer. Prefer analyzer enforcement for statically reliable ownership shapes; semantic classification of `cache` holders remains a review obligation. First-party product packages remain a Pub Workspace where applicable, and every Flutter-changing sequential/orchestration checkpoint requires a stable full-workspace bridge snapshot plus Rule-Spirit review; affected-area tests remain narrow and the broad test/runtime gate remains deferred to package closeout. The agent must not start a concurrent CLI analyzer. The bridge is live diagnostic evidence, not a public-API proof of Analysis Server completion; append-only LSP logs remain forensic only. |
 | `flutter-performance-smell-scanner` | `skill-only` | Umbrella orchestration skill; deterministic support belongs in the smell-specific rules or analyzers. |
-| `flutter-smell-async-navigation` | `lint/analyzer` | Best prevented by analyzer rules for async navigation ownership. |
-| `flutter-smell-build-side-effects` | `lint/analyzer` | Best prevented by analyzer rules for side effects in widget lifecycle/build. |
-| `flutter-smell-image-media` | `lint/analyzer` | Static heuristics are a better fit than a standalone shell tool. |
-| `flutter-smell-layout-hotspots` | `lint/analyzer` | Static heuristics are a better fit than a standalone shell tool. |
-| `flutter-smell-list-performance` | `lint/analyzer` | Static heuristics are a better fit than a standalone shell tool. |
+| `flutter-smell-async-navigation` | `lint/analyzer` | Prefer AST rules for router calls after `await` and async callbacks (`then`, listeners, timers); final route-intent ownership can still need review. |
+| `flutter-smell-build-side-effects` | `lint/analyzer` | Prefer AST rules for IO, timers, and subscriptions started in widget build/lifecycle methods. |
+| `flutter-smell-image-media` | `lint/analyzer` | Prefer static heuristics for bounded network images that omit decode sizing; rendered-size knowledge can require review. |
+| `flutter-smell-layout-hotspots` | `lint/analyzer` | Prefer AST rules for nested `shrinkWrap` scrollables; actual hot-path cost still needs review. |
+| `flutter-smell-list-performance` | `lint/analyzer` | Prefer AST rules for large transforms in `build` and unstable dynamic-list keys; collection-size and identity semantics can require review. |
 | `flutter-smell-mounted-checks` | `lint/analyzer` | Analyzer/lint route is stronger than shell scripting for `mounted` misuse. |
 | `flutter-widget-local-state-heuristics` | `lint/analyzer` | Widget-state boundary is primarily static-shape governance. |
 
@@ -171,7 +171,7 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 ## Flutter Workflow Skills
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
-| `wf-flutter-create-controller-method` | `already-backed` | Existing support via [`flutter_workflow_scaffold.sh`](../tools/flutter_workflow_scaffold.sh) with `--kind controller`; use it for the repeatable checklist before controller implementation. |
+| `wf-flutter-create-controller-method` | `already-backed` | Existing support via [`flutter_workflow_scaffold.sh`](../tools/flutter_workflow_scaffold.sh) with `--kind controller`; use it for repeatable preparation while the workflow enforces local-controller versus canonical-repository stream ownership. |
 | `wf-flutter-create-domain-method` | `already-backed` | Existing support via [`flutter_workflow_scaffold.sh`](../tools/flutter_workflow_scaffold.sh) with `--kind domain`; use it for repeatable doc/file/test preparation before aggregate design. |
 | `wf-flutter-create-repository-method` | `already-backed` | Existing support via [`flutter_workflow_scaffold.sh`](../tools/flutter_workflow_scaffold.sh) with `--kind repository`; use it for repeatable mapper/contract/test preparation before implementation. |
 | `wf-flutter-create-route-method` | `already-backed` | Existing support via [`flutter_route_contract_audit.sh`](../tools/flutter_route_contract_audit.sh); use it after route generation and classify every hit before delivery. |

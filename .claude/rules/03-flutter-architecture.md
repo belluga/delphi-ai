@@ -10,10 +10,10 @@ alwaysApply: false
 
 ### Widget/Controller Boundaries
 
-- Screens are pure UI; state/logic lives in controllers.
+- Screens are pure UI; local interaction state and logic live in controllers, while repositories own canonical shared state.
 - Repositories and domain layers must stay aligned with documented contracts.
 - Widget state is only allowed for true ephemeral UI. Anything ModuleScope-adjacent must be controller-driven.
-- UI must not own `StreamValue` instances directly; StreamValue belongs in controllers only.
+- UI must not own `StreamValue` instances directly; it consumes controller-local or controller-delegated repository streams.
 - Form keys (`GlobalKey<FormState>`) must live in controllers; screens/widgets only reference `_controller.formKey`.
 - Screens resolve controllers via GetIt; routes should not pass controllers.
 - Child widgets should resolve their own controllers via GetIt; screens must not instantiate "pass-through" child controllers.
@@ -24,10 +24,13 @@ alwaysApply: false
 
 ### State Management Baseline
 
-- Official state pattern: `StreamValue` + `StreamValueBuilder` (controller-owned streams only).
+- Official state pattern: `StreamValue` + `StreamValueBuilder`. Controllers own only local screen/stage/form/interaction streams; repositories own persistent canonical shared streams.
 - Allowed local exception: constrained `setState` for ephemeral widget concerns only.
 - `StreamValue` in controllers is allowed for local screen/stage state and for pure delegation of repository-owned canonical streams.
 - Canonical shared state (cross-controller/module lifespan, cache-backed, persistence-aligned) must be owned by repository contracts/implementations.
+- A persistent repository-owned `StreamValue` is the canonical reactive in-memory cache for shared entities, collections, and pages. Controllers expose/delegate it without mirroring data into mutable lists, maps, `_cache`, `cached*`, or equivalent stores.
+- Pagination reconciliation, upsert/removal, deltas, refresh, and invalidation update the repository stream. Cursor, `hasMore`, and in-flight guards are operational metadata, not automatically duplicate caches.
+- Treat `cache`, `cached`, and `Cache` in controller/repository state surfaces as semantic-review signals: they are presumed suspect until classified as the canonical stream, non-duplicative metadata, or a technical adapter cache. Identifier spelling alone is not a violation.
 - Services/DAL are technical adapters only; they must not own canonical shared state.
 
 ### Data/Domain Boundaries

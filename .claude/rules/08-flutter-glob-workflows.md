@@ -14,7 +14,7 @@ These workflows are triggered when editing files matching specific path patterns
 
 When working inside controller directories, run the Controller Workflow:
 
-- Controllers own StreamValue state, UI controllers, and orchestration; they never accept `BuildContext`.
+- Controllers own local `StreamValue` state, UI controllers, and orchestration; they expose repository-owned canonical `StreamValue` state by delegation and never accept `BuildContext`.
 - Register controllers via ModuleScope/GetIt and document responsibilities.
 - Follow the canonical contract in `foundation_documentation/modules/flutter_client_experience_module.md`.
 

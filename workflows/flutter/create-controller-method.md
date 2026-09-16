@@ -29,14 +29,16 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
    - Inject repositories/services via constructor; resolve with GetIt.
    - Controllers (and domain services they call) are the *only* presentation-layer actors allowed to talk to repositories or infrastructure adapters. Widgets, routes, and helper builders must depend on controller APIs instead of touching data sources.
 5. **State management**
-   - Expose state via `StreamValue<T>` fields (with default values when appropriate).
-   - Provide intent methods (e.g., `loadData`, `applyDecision`) that update these streams.
+   - Use controller-owned `StreamValue<T>` only for screen-, stage-, form-, or interaction-local state (with default values when appropriate).
+   - Expose canonical cross-screen, paginated, cache-backed, or persistence-aligned state by delegating the persistent repository-owned `StreamValue`; do not copy it into controller lists, maps, `_cache`, `cached*`, or equivalent mutable stores.
+   - Provide intent methods (e.g., `loadData`, `applyDecision`) that update local controller streams or invoke repository operations that update the canonical stream.
 6. **UI controllers** – if `TextEditingController`, `ScrollController`, etc. are needed, instantiate and dispose them inside the controller (`onDispose`). Widgets obtain them via getters.
 7. **BuildContext independence** – controllers must not receive `BuildContext`. Any navigation/dialog work happens in widgets via callbacks.
 8. **DI registration** – register the controller in the feature module (`GetIt.registerFactory` or `registerLazySingleton`) and ensure the ModuleScope provides it.
 9. **Realtime delta handling (when applicable)** – if the feature has SSE delta streams:
-   - Maintain a paginated cache in the controller and apply delta updates by `id`.
-   - On stream reconnect, re-fetch the first page to resync.
+   - Keep the persistent repository-owned `StreamValue` as the canonical paginated reactive cache; apply delta updates by `id` and reconnect resyncs to that stream.
+   - Keep cursor, `hasMore`, and in-flight guards as clearly owned operational metadata; do not create a second canonical collection cache in the controller.
+   - Let the controller request repository refresh/reconnect work and expose/delegate the resulting stream.
 10. **Tests/static analysis** – add controller tests if behaviour is complex; capture the stable full-workspace VS Code Problems snapshot. Do not start a concurrent CLI analyzer.
 11. **Race-condition validation (when applicable)** – if the controller owns async actions that can be retriggered or reordered in flight, pair the work with `frontend-race-condition-validation`.
 

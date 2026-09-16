@@ -7,7 +7,8 @@
 When working inside controller directories, run the Controller Workflow:
 
 ### Controller Responsibilities
-- Own StreamValue state
+- Own local StreamValue state
+- Expose repository-owned canonical StreamValue state by delegation
 - Own UI controllers (TextEditingController, ScrollController, etc.)
 - Orchestrate repository calls
 - Never accept `BuildContext`

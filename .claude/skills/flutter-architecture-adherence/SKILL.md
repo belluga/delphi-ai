@@ -59,7 +59,11 @@ If these sources differ, prefer project-owned module/scope contracts for project
 - Route/screen ownership must follow the project scope/subscope policy. New subscopes require explicit decision and policy update.
 
 ## State And Navigation
-- Official shared state pattern is controller-owned `StreamValue` consumed by UI builders.
+- Controller-owned `StreamValue` is for screen-, stage-, form-, or interaction-local state. Widgets consume it through UI builders.
+- Canonical cross-screen, paginated, cache-backed, or persistence-aligned state belongs to a persistent repository-owned `StreamValue`. That stream is the application's canonical reactive in-memory cache and the sole mutable representation of its data.
+- Controllers expose or delegate canonical repository streams without mirroring them into mutable lists, maps, `_cache`, `cached*`, or equivalent stores. Pagination reconciliation, upsert/removal, deltas, refresh, and invalidation update the repository stream.
+- Cursor, `hasMore`, and in-flight guards are operational metadata rather than duplicate caches, but must have ownership coherent with repository pagination. Transport, image, filesystem, and persistence-adapter caches are allowed only when they do not compete as application-state sources of truth.
+- `cache`, `cached`, and `Cache` in controller/repository state surfaces require semantic review. Treat a match as suspect until it is classified as the canonical stream, non-duplicative metadata, or a technical adapter cache; do not block on spelling alone.
 - Widget-local state is allowed only for isolated ephemeral UI with no repository/service calls, persistence, navigation handoff, or feature-controller ownership.
 - UI controllers and keys (`TextEditingController`, `FocusNode`, `ScrollController`, `AnimationController`, `GlobalKey<FormState>`) belong in feature controllers when they drive feature behavior.
 - AutoRoute/project router is the navigation authority. Avoid ad hoc `Navigator` usage, synthetic browser-history seeding, or controller-owned navigation.
@@ -71,6 +75,7 @@ If these sources differ, prefer project-owned module/scope contracts for project
 - Does domain stay independent from transport DTOs?
 - Are route parameters, scopes, and ownership aligned with `foundation_documentation`?
 - Does widget state remain ephemeral, or has ownership moved to the controller?
+- Is each canonical shared collection/page represented only by its persistent repository `StreamValue`, with controllers delegating rather than caching a second copy?
 - Did the stable full-workspace Problems snapshot and plugin rule matrix evidence run on the project-declared Flutter surface?
 - At a sequential/orchestration checkpoint, did the stable full-workspace Problems snapshot, Rule-Spirit review, and affected-area test bundle all pass before the next unit was opened?
 - Did the Rule-Spirit Anti-Pattern Hunt include Flutter bypass shapes such as direct DI, DTO leakage, state-manager substitution, weakened tests, or manual navigation?
@@ -79,4 +84,5 @@ If these sources differ, prefer project-owned module/scope contracts for project
 - Per-file lint ignores, analyzer allowlists, or wrapper scripts that hide architecture findings.
 - Direct presentation access to data/services/repositories/DTOs.
 - Controller navigation or `BuildContext` ownership that violates the active rules.
+- A mutable controller/repository list, map, or cache that duplicates data already held by the canonical repository `StreamValue`.
 - New project-specific Flutter exceptions stored in Delphi core instead of downstream `foundation_documentation` or a project-local analyzer plugin.

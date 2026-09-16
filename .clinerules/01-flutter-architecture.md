@@ -3,10 +3,10 @@
 ## Core Enforcement
 
 ### Widget/Controller Boundaries
-- Screens are pure UI; state/logic lives in controllers.
+- Screens are pure UI; local interaction state and logic live in controllers, while repositories own canonical shared state.
 - Repositories and domain layers must stay aligned with documented contracts.
 - Widget state is only allowed for true ephemeral UI (see local-state heuristics). Anything ModuleScope-adjacent must be controller-driven.
-- UI must not own `StreamValue` instances directly; StreamValue belongs in controllers only.
+- UI must not own `StreamValue` instances directly; it consumes controller-local or controller-delegated repository streams.
 - Form keys (`GlobalKey<FormState>`) must live in controllers; screens/widgets only reference `_controller.formKey`.
 - Screens resolve controllers via GetIt; routes should not pass controllers.
 - Widgets may accept controllers for testability, but default to resolving via GetIt when needed.
@@ -17,10 +17,13 @@
 - UI controllers (TextEditingController/ScrollController/AnimationController/GlobalKey<FormState>/etc.) live in feature controllers, not screens/widgets.
 - Screens/widgets only accept `_controller` and static view data parameters; any controlling parameter belongs in the controller.
 - Navigation is owned by widgets/screens; controllers never navigate. Widget calls controller for decisions, then performs non-async navigation.
-- Widgets/screens never construct `StreamValue` or `StreamValueBuilder` sources; they only consume controller-owned `StreamValue`.
+- Widgets/screens never construct `StreamValue` or `StreamValueBuilder` sources; they consume controller-local or controller-delegated repository `StreamValue` instances.
 
 ### State Management Baseline
-- Official state pattern: `StreamValue` + `StreamValueBuilder` (controller-owned streams only).
+- Official state pattern: `StreamValue` + `StreamValueBuilder`. Controllers own only local screen/stage/form/interaction streams; repositories own persistent canonical shared streams.
+- A persistent repository-owned `StreamValue` is the canonical reactive in-memory cache for shared entities, collections, and pages. Controllers expose/delegate it without mirroring data into mutable lists, maps, `_cache`, `cached*`, or equivalent stores.
+- Pagination reconciliation, upsert/removal, deltas, refresh, and invalidation update the repository stream. Cursor, `hasMore`, and in-flight guards are operational metadata, not automatically duplicate caches.
+- Treat `cache`, `cached`, and `Cache` in controller/repository state surfaces as semantic-review signals: they are presumed suspect until classified as the canonical stream, non-duplicative metadata, or a technical adapter cache. Identifier spelling alone is not a violation.
 - Allowed local exception: constrained `setState` for ephemeral widget concerns only.
 - Any residual/legacy manager is a deviation that must be removed or justified with explicit architecture decision.
 - Residual scan targets:
@@ -60,8 +63,8 @@ These patterns must be blocked on sight:
 - Business logic in screens (filters, mapping, validation, formatting).
 - Direct GetIt access in widgets (controllers only).
 - Network calls or side effects inside UI (no async work in widgets).
-- StreamValue instances created/owned inside widgets/screens (must live in controllers).
-- StreamValue passed into widgets/screens as a parameter (must be owned by controller and resolved via GetIt).
+- StreamValue instances created/owned inside widgets/screens (they must be controller-local or repository-canonical streams exposed through controllers).
+- StreamValue passed into widgets/screens as a parameter (must be controller-local or repository-canonical and resolved through the controller).
 - UI controllers (TextEditingController/ScrollController/AnimationController/GlobalKey<FormState>/etc.) owned in screens/widgets.
 - Screens/widgets with controlling parameters (callbacks, state flags, stream values, controllers) passed in instead of owned by controller.
 - `stream.listen` subscriptions inside widgets/screens (use `StreamValueBuilder`-driven UI only; effect handling must be centralized and explicitly approved).
@@ -98,7 +101,7 @@ Allowed only if truly ephemeral:
 
 ## Quick Boundary Check
 
-- If it touches a repository, router, domain model, or persists across navigation → controller + StreamValue.
+- If it touches a repository, router, domain model, or persists across navigation → controller orchestration plus a repository-owned canonical `StreamValue` when the state is shared/persistent.
 - If it is a transient UI-only interaction (single sheet/dialog, no side effects) → local state allowed.
 
 ---
