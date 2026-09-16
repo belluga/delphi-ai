@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -11,6 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from lib.stack_capability_registry import RegistryValidationError, load_registry
 
 
 SECRET_KEY_RE = re.compile(
@@ -60,19 +62,61 @@ class EnvValue:
 @dataclass(frozen=True)
 class StackEvidence:
     stack: str
+    lifecycle: str
     evidence_state: str
     evidence: str
     confidence: str
     validation: str
 
 
-@dataclass(frozen=True)
-class StackDetection:
-    stack: str
-    root_files: tuple[str, ...]
-    nested_files: tuple[str, ...]
-    composer_requires: tuple[str, ...]
-    companion_files: tuple[str, ...]
+@dataclass
+class RepositoryInventory:
+    root: Path
+    files: tuple[Path, ...]
+    manifest_cache: dict[Path, object]
+    diagnostics: list[str]
+    inventory_builds: int = 1
+    manifest_parses: int = 0
+
+    @classmethod
+    def build(cls, root: Path) -> "RepositoryInventory":
+        return cls(root, tuple(iter_project_files(root, "*", max_depth=5)), {}, [])
+
+    def manifests(self) -> tuple[Path, ...]:
+        return tuple(path for path in self.files if path.name == "package.json")
+
+    def diagnostic(self, message: str) -> None:
+        if message not in self.diagnostics:
+            self.diagnostics.append(message)
+
+    def manifest(self, path: Path) -> object:
+        return self.json_object(path, "manifest")
+
+    def composer(self, path: Path) -> object:
+        return self.json_object(path, "composer")
+
+    def json_object(self, path: Path, kind: str) -> object:
+        if path in self.manifest_cache:
+            return self.manifest_cache[path]
+        self.manifest_parses += 1
+        try:
+            if path.is_symlink() or path.stat().st_size > 1_000_000:
+                raise ValueError("unsafe or oversized manifest")
+            try:
+                path.resolve().relative_to(self.root.resolve())
+            except ValueError as error:
+                raise ValueError("manifest escapes repository root") from error
+            value: object = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(value, dict):
+                self.diagnostic(
+                    f"{kind} ignored: {rel(path, self.root)} (root must be an object)"
+                )
+                value = None
+        except (OSError, ValueError, json.JSONDecodeError):
+            self.diagnostic(f"{kind} ignored: {rel(path, self.root)}")
+            value = None
+        self.manifest_cache[path] = value
+        return value
 
 
 def run_git_root(path: Path) -> Path:
@@ -91,7 +135,7 @@ def run_git_root(path: Path) -> Path:
 
 def rel(path: Path, root: Path) -> str:
     try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
+        return path.relative_to(root).as_posix()
     except ValueError:
         return path.as_posix()
 
@@ -101,20 +145,6 @@ def read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return ""
-
-
-def strip_yaml_comment(line: str) -> str:
-    quote: str | None = None
-    for idx, char in enumerate(line):
-        if char in {"'", '"'}:
-            quote = None if quote == char else char
-        elif char == "#" and quote is None:
-            return line[:idx]
-    return line
-
-
-def clean_yaml_scalar(value: str) -> str:
-    return value.strip().strip('"').strip("'")
 
 
 def discover_files(root: Path, names: set[str] | tuple[str, ...], max_depth: int = 3) -> list[Path]:
@@ -215,128 +245,95 @@ def parse_env_files(root: Path) -> list[EnvValue]:
     return rows
 
 
-def is_composer_for_stack(path: Path, composer_requires: tuple[str, ...], companion_files: tuple[str, ...]) -> bool:
-    text = read_text(path)
-    if any(re.search(rf'"{re.escape(package)}"', text) for package in composer_requires):
+def is_composer_for_stack(
+    path: Path,
+    data: object,
+    composer_requires: tuple[str, ...],
+    companion_files: tuple[str, ...],
+) -> bool:
+    if not isinstance(data, dict):
+        return False
+    requires = data.get("require")
+    if isinstance(requires, dict) and any(
+        isinstance(requires.get(package), str) and requires[package].strip()
+        for package in composer_requires
+    ):
         return True
-    return any((path.parent / companion).exists() for companion in companion_files)
+    return any(
+        (path.parent / companion).is_file() and not (path.parent / companion).is_symlink()
+        for companion in companion_files
+    )
 
 
 def default_stack_capability_registry() -> Path:
     return Path(__file__).resolve().parents[1] / "config" / "stack_capabilities.yaml"
 
 
-def load_stack_detections(registry_path: Path) -> list[StackDetection]:
-    if not registry_path.is_file():
+def detect_stack_evidence(
+    root: Path,
+    registry_path: Path,
+    inventory: RepositoryInventory | None = None,
+) -> list[StackEvidence]:
+    inventory = inventory or RepositoryInventory.build(root)
+    try:
+        registry = load_registry(registry_path)
+    except RegistryValidationError:
+        inventory.diagnostic("stack registry ignored: invalid registry")
         return []
-
-    raw: dict[str, dict[str, list[str]]] = {}
-    in_capabilities = False
-    current_stack: str | None = None
-    in_detection_markers = False
-    current_marker: str | None = None
-
-    for raw_line in registry_path.read_text(encoding="utf-8").splitlines():
-        line = strip_yaml_comment(raw_line).rstrip()
-        if not line.strip():
-            continue
-
-        if re.match(r"^capabilities:\s*$", line):
-            in_capabilities = True
-            current_stack = None
-            in_detection_markers = False
-            current_marker = None
-            continue
-
-        if re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:", line):
-            if not re.match(r"^capabilities:\s*$", line):
-                in_capabilities = False
-            current_stack = None
-            in_detection_markers = False
-            current_marker = None
-            continue
-
-        if not in_capabilities:
-            continue
-
-        stack_match = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line)
-        if stack_match:
-            current_stack = stack_match.group(1)
-            raw.setdefault(current_stack, {})
-            in_detection_markers = False
-            current_marker = None
-            continue
-
-        if not current_stack:
-            continue
-
-        field_match = re.match(r"^    ([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$", line)
-        if field_match:
-            field, value = field_match.groups()
-            in_detection_markers = field == "detection_markers"
-            current_marker = None
-            if in_detection_markers and value and clean_yaml_scalar(value) not in {"", "[]"}:
-                raw.setdefault(current_stack, {}).setdefault("_inline", []).append(clean_yaml_scalar(value))
-            continue
-
-        if not in_detection_markers:
-            continue
-
-        marker_match = re.match(r"^      ([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$", line)
-        if marker_match:
-            current_marker, value = marker_match.groups()
-            raw.setdefault(current_stack, {}).setdefault(current_marker, [])
-            if value and clean_yaml_scalar(value) not in {"", "[]"}:
-                raw[current_stack][current_marker].append(clean_yaml_scalar(value))
-            continue
-
-        item_match = re.match(r"^        -\s+(.+?)\s*$", line)
-        if item_match and current_marker:
-            raw.setdefault(current_stack, {}).setdefault(current_marker, []).append(clean_yaml_scalar(item_match.group(1)))
-
-    detections: list[StackDetection] = []
-    for stack, markers in raw.items():
-        detections.append(
-            StackDetection(
-                stack=stack,
-                root_files=tuple(markers.get("root_files", [])),
-                nested_files=tuple(markers.get("nested_files", [])),
-                composer_requires=tuple(markers.get("composer_requires", [])),
-                companion_files=tuple(markers.get("companion_files", [])),
-            )
-        )
-    return detections
-
-
-def marker_applies(path: Path, detection: StackDetection) -> bool:
-    if path.name == "composer.json" and (detection.composer_requires or detection.companion_files):
-        return is_composer_for_stack(path, detection.composer_requires, detection.companion_files)
-    return True
-
-
-def detect_stack_evidence(root: Path, registry_path: Path) -> list[StackEvidence]:
     rows: list[StackEvidence] = []
-    detections = load_stack_detections(registry_path)
-
-    for detection in detections:
+    for detection in registry.capabilities.values():
+        markers = detection.detection_markers
         evidence: set[str] = set()
-
-        for marker in detection.root_files:
+        for marker in markers.root_files:
             candidate = root / marker
-            if candidate.is_file() and marker_applies(candidate, detection):
-                evidence.add(marker)
-
-        for marker in detection.nested_files:
-            for candidate in iter_project_files(root, marker, max_depth=3):
-                if candidate.is_file() and marker_applies(candidate, detection):
-                    evidence.add(rel(candidate, root))
-
+            if candidate.is_file() and not candidate.is_symlink(): evidence.add(marker)
+        for marker in markers.nested_files:
+            evidence.update(
+                rel(candidate, root)
+                for candidate in inventory.files
+                if (
+                    (Path(marker).name == marker and candidate.name == marker)
+                    or rel(candidate, root) == marker
+                )
+                and not (
+                    candidate.name == "composer.json"
+                    and (markers.composer_requires or markers.companion_files)
+                )
+                and candidate.is_file()
+                and not candidate.is_symlink()
+            )
+        for manifest in inventory.manifests():
+            data = inventory.manifest(manifest)
+            if not isinstance(data, dict): continue
+            for section in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+                values = data.get(section)
+                if values is not None and not isinstance(values, dict):
+                    inventory.diagnostic(f"manifest ignored section: {rel(manifest, root)}:{section}")
+                    continue
+                if not isinstance(values, dict):
+                    continue
+                for package in markers.package_json_requires_any:
+                    version = values.get(package)
+                    if isinstance(version, str) and version.strip(): evidence.add(f"{rel(manifest, root)} [{section}:{package}]")
+        for candidate in inventory.files:
+            if candidate.name != "composer.json":
+                continue
+            if not (markers.composer_requires or markers.companion_files):
+                continue
+            if is_composer_for_stack(
+                candidate,
+                inventory.composer(candidate),
+                markers.composer_requires,
+                markers.companion_files,
+            ):
+                evidence.add(rel(candidate, root))
         sorted_evidence = sorted(evidence)
         rows.append(
             StackEvidence(
-                stack=detection.stack,
+                stack=detection.name,
+                lifecycle=detection.lifecycle,
                 evidence_state="candidate" if sorted_evidence else "unknown",
-                evidence=", ".join(sorted_evidence) if sorted_evidence else f"No {detection.stack} registry marker found",
+                evidence=", ".join(sorted_evidence) if sorted_evidence else f"No {detection.name} registry marker found",
                 confidence="high" if sorted_evidence else "low",
                 validation="user_validation_required" if sorted_evidence else "n/a",
             )
@@ -433,7 +430,8 @@ def table_row(values: list[str]) -> str:
 
 def render_contract(root: Path, registry_path: Path) -> str:
     now = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%Y-%m-%d %H:%M %Z")
-    stack_rows = detect_stack_evidence(root, registry_path)
+    inventory = RepositoryInventory.build(root)
+    stack_rows = detect_stack_evidence(root, registry_path, inventory)
     env_rows = parse_env_files(root)
     runner_rows = detect_safe_runners(root)
     compose_rows = detect_compose(root)
@@ -464,12 +462,16 @@ def render_contract(root: Path, registry_path: Path) -> str:
             "This scaffold can surface repository evidence and documentation hints, but it does not mark a stack as active by itself. Do not promote inferred domains, tenants, runtime owners, or stack activation into hard validation targets until the user or project owner confirms them.",
             "",
             "## Active Stack Topology",
-            table_row(["Stack", "Activation Evidence State", "Evidence", "Confidence", "User Validation"]),
-            table_row(["---", "---", "---", "---", "---"]),
+            table_row(["Stack", "Lifecycle", "Candidate Evidence State", "Evidence", "Confidence", "User Validation"]),
+            table_row(["---", "---", "---", "---", "---", "---"]),
         ]
     )
     for row in stack_rows:
-        lines.append(table_row([row.stack, row.evidence_state, row.evidence, row.confidence, row.validation]))
+        lines.append(table_row([row.stack, row.lifecycle, row.evidence_state, row.evidence, row.confidence, row.validation]))
+
+    if inventory.diagnostics:
+        lines.extend(["", "## Detection Diagnostics"])
+        lines.extend(f"- {diagnostic}" for diagnostic in inventory.diagnostics)
 
     lines.extend(
         [

@@ -124,3 +124,70 @@ capabilities:
       nested_files:
         - go.mod
     execution_policy: Reserved capability. Adding Go scripts/rules later must remain additive and must not disable existing Laravel/Flutter/Docker support.
+
+  nestjs:
+    lifecycle: experimental
+    purpose: Node.js API capability admission pending a later minimum support package.
+    default_surfaces: []
+    activation_markers:
+      - Project-owned Node API documentation or validated dependency evidence
+    detection_markers:
+      root_files: []
+      nested_files: []
+      package_json_requires_any:
+        - "@nestjs/core"
+    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+
+  react:
+    lifecycle: experimental
+    purpose: React web capability admission pending a later minimum support package.
+    default_surfaces: []
+    activation_markers:
+      - Project-owned web documentation or validated dependency evidence
+    detection_markers:
+      root_files: []
+      nested_files: []
+      package_json_requires_any:
+        - "react-dom"
+    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+
+  postgresql:
+    lifecycle: experimental
+    purpose: PostgreSQL capability admission pending a later minimum support package.
+    default_surfaces: []
+    activation_markers:
+      - Project-owned database documentation, configuration, or user validation
+    detection_markers:
+      root_files: []
+      nested_files: []
+    execution_policy: Discoverable only; automatic detection remains unknown until project-owned evidence is validated.
+
+  prisma:
+    lifecycle: experimental
+    purpose: Prisma data-access capability admission pending a later minimum support package.
+    default_surfaces: []
+    activation_markers:
+      - Project-owned Prisma documentation or validated schema/dependency evidence
+    detection_markers:
+      root_files:
+        - prisma/schema.prisma
+      nested_files:
+        - schema.prisma
+      package_json_requires_any:
+        - "@prisma/client"
+    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+
+  railway:
+    lifecycle: experimental
+    purpose: Railway deployment capability admission pending a later minimum support package.
+    default_surfaces: []
+    activation_markers:
+      - Project-owned Railway configuration or user validation
+    detection_markers:
+      root_files:
+        - railway.toml
+        - railway.json
+      nested_files:
+        - railway.toml
+        - railway.json
+    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.

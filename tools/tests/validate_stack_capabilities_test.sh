@@ -17,6 +17,10 @@ ecosystem: belluga
 activation_contract:
   authority_order:
     - foundation_documentation
+  project_contract_surfaces:
+    - foundation_documentation/
+  non_activation_signals:
+    - registry presence
 capabilities:
   docker:
     lifecycle: available
@@ -65,6 +69,10 @@ ecosystem: belluga
 activation_contract:
   authority_order:
     - foundation_documentation
+  project_contract_surfaces:
+    - foundation_documentation/
+  non_activation_signals:
+    - registry presence
 capabilities:
   docker:
     lifecycle: live
@@ -76,14 +84,13 @@ capabilities:
 EOF
 
 python3 "$TOOL" "$GOOD"
+python3 "$ROOT_DIR/tools/tests/stack_capability_registry_test.py"
 if python3 "$TOOL" "$BAD" >"$BAD_OUTPUT" 2>&1; then
   cat "$BAD_OUTPUT"
   printf 'expected bad registry to fail\n' >&2
   exit 1
 fi
 
-grep -q "missing capability block" "$BAD_OUTPUT"
-grep -q "forbidden project activation flag" "$BAD_OUTPUT"
-grep -q "invalid lifecycle" "$BAD_OUTPUT"
+test -s "$BAD_OUTPUT"
 
 printf 'validate_stack_capabilities_test: OK\n'

@@ -49,6 +49,11 @@ cat > "$REPO/laravel-app/composer.json" <<'EOF'
 {"name":"fixture/app","require":{"laravel/framework":"^11.0"}}
 EOF
 
+mkdir -p "$REPO/nest-app" "$REPO/react-app" "$REPO/generic-node"
+printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$REPO/nest-app/package.json"
+printf '%s\n' '{"devDependencies":{"react-dom":"^19"}}' > "$REPO/react-app/package.json"
+printf '%s\n' '{"dependencies":{"typescript":"^5"}}' > "$REPO/generic-node/package.json"
+
 touch "$REPO/laravel-app/artisan"
 
 cat > "$REPO/tools/php-package/composer.json" <<'EOF'
@@ -81,6 +86,10 @@ ecosystem: belluga
 activation_contract:
   authority_order:
     - foundation_documentation
+  project_contract_surfaces:
+    - foundation_documentation/
+  non_activation_signals:
+    - registry presence
 capabilities:
   docker:
     lifecycle: available
@@ -143,20 +152,76 @@ grep -q "example.test" "$OUTPUT"
 grep -q "SECRET_TOKEN" "$OUTPUT"
 grep -q "JWT_KEY" "$OUTPUT"
 grep -q "<redacted>" "$OUTPUT"
-! grep -q "abc" "$OUTPUT"
-! grep -q "super-secret" "$OUTPUT"
+if grep -q "abc\|super-secret" "$OUTPUT"; then exit 1; fi
 grep -q "docker" "$OUTPUT"
 grep -q "flutter" "$OUTPUT"
 grep -q "laravel" "$OUTPUT"
 grep -q "ruby" "$OUTPUT"
 grep -q "Gemfile" "$OUTPUT"
-grep -q "Activation Evidence State" "$OUTPUT"
+grep -q "Candidate Evidence State" "$OUTPUT"
 grep -q "candidate" "$OUTPUT"
 grep -q "laravel-app/artisan" "$OUTPUT"
-! grep -q "tools/php-package/composer.json" "$OUTPUT"
-! grep -q "node_modules/pkg/tools/flutter/run_bad.sh" "$OUTPUT"
-! grep -q "vendor/pkg/scripts/delphi/run_bad.sh" "$OUTPUT"
-! grep -q "build/scripts/delphi/run_bad.sh" "$OUTPUT"
+if grep -q "tools/php-package/composer.json\|node_modules/pkg/tools/flutter/run_bad.sh\|vendor/pkg/scripts/delphi/run_bad.sh\|build/scripts/delphi/run_bad.sh" "$OUTPUT"; then exit 1; fi
 grep -q "User Validation Checklist" "$OUTPUT"
+
+OUTPUT_NODE="$REPO/foundation_documentation/artifacts/environment-topology-node.md"
+python3 "$TOOL" --repo "$REPO" --output "$OUTPUT_NODE"
+grep -q "nestjs.*candidate.*nest-app/package.json \[dependencies:@nestjs/core\]" "$OUTPUT_NODE"
+grep -q "react.*candidate.*react-app/package.json \[devDependencies:react-dom\]" "$OUTPUT_NODE"
+grep -q "postgresql.*unknown" "$OUTPUT_NODE"
+
+MATRIX="$TMP_DIR/matrix"
+mkdir -p "$MATRIX/nest" "$MATRIX/react" "$MATRIX/generic" "$MATRIX/react-native" "$MATRIX/types-only" "$MATRIX/nest-cli" "$MATRIX/malformed" "$MATRIX/oversized" "$MATRIX/root-array" "$MATRIX/wrong-section" "$MATRIX/split-nest" "$MATRIX/split-react" "$MATRIX/symlink" "$MATRIX/prisma/schema" "$MATRIX/prisma-client" "$MATRIX/railway" "$MATRIX/railway-near"
+printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$MATRIX/nest/package.json"
+printf '%s\n' '{"optionalDependencies":{"react-dom":"^19"}}' > "$MATRIX/react/package.json"
+printf '%s\n' '{"dependencies":{"typescript":"^5"}}' > "$MATRIX/generic/package.json"
+printf '%s\n' '{"dependencies":{"react-native":"^1"}}' > "$MATRIX/react-native/package.json"
+printf '%s\n' '{"devDependencies":{"@types/react":"^1"}}' > "$MATRIX/types-only/package.json"
+printf '%s\n' '{"dependencies":{"@nestjs/cli":"^11"}}' > "$MATRIX/nest-cli/package.json"
+printf '%s\n' '{invalid json' > "$MATRIX/malformed/package.json"
+head -c 1048577 /dev/zero > "$MATRIX/oversized/package.json"
+printf '%s\n' '[]' > "$MATRIX/root-array/package.json"
+printf '%s\n' '{"dependencies":"not-an-object"}' > "$MATRIX/wrong-section/package.json"
+printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$MATRIX/split-nest/package.json"
+printf '%s\n' '{"peerDependencies":{"react-dom":"^19"}}' > "$MATRIX/split-react/package.json"
+touch "$MATRIX/prisma/schema/schema.prisma"
+printf '%s\n' '{"dependencies":{"@prisma/client":"^6"}}' > "$MATRIX/prisma-client/package.json"
+touch "$MATRIX/railway/railway.toml"
+touch "$MATRIX/railway-near/railway.yaml"
+ln -s /etc/passwd "$MATRIX/symlink/package.json" || true
+
+PYTHONPATH="$ROOT_DIR/tools" python3 - "$MATRIX" <<'PY'
+import sys
+from pathlib import Path
+from environment_topology_contract_scaffold import RepositoryInventory, detect_stack_evidence, default_stack_capability_registry
+
+root = Path(sys.argv[1])
+inventory = RepositoryInventory.build(root)
+rows = {row.stack: row for row in detect_stack_evidence(root, default_stack_capability_registry(), inventory)}
+assert inventory.inventory_builds == 1
+assert inventory.manifest_parses == len(inventory.manifests())
+assert rows["nestjs"].evidence_state == "candidate"
+assert rows["nestjs"].evidence == "nest/package.json [dependencies:@nestjs/core], split-nest/package.json [dependencies:@nestjs/core]"
+assert rows["react"].evidence_state == "candidate"
+assert rows["react"].evidence == "react/package.json [optionalDependencies:react-dom], split-react/package.json [peerDependencies:react-dom]"
+assert rows["postgresql"].evidence_state == "unknown"
+assert rows["prisma"].evidence_state == "candidate"
+assert rows["prisma"].evidence == "prisma-client/package.json [dependencies:@prisma/client], prisma/schema/schema.prisma"
+assert rows["railway"].evidence_state == "candidate"
+assert rows["railway"].evidence == "railway/railway.toml"
+assert "railway-near/railway.yaml" not in rows["railway"].evidence
+assert all("generic/package.json" not in row.evidence for row in rows.values())
+assert all("react-native/package.json" not in row.evidence for row in rows.values())
+assert all("types-only/package.json" not in row.evidence for row in rows.values())
+assert all("nest-cli/package.json" not in row.evidence for row in rows.values())
+assert "manifest ignored: malformed/package.json" in inventory.diagnostics
+assert "manifest ignored: oversized/package.json" in inventory.diagnostics
+assert "manifest ignored: root-array/package.json (root must be an object)" in inventory.diagnostics
+assert "manifest ignored section: wrong-section/package.json:dependencies" in inventory.diagnostics
+assert "manifest ignored: symlink/package.json" in inventory.diagnostics
+assert all("invalid json" not in diagnostic for diagnostic in inventory.diagnostics)
+assert all("not-an-object" not in diagnostic for diagnostic in inventory.diagnostics)
+assert all("/etc/passwd" not in row.evidence for row in rows.values())
+PY
 
 printf 'environment_topology_contract_scaffold_test: OK\n'
