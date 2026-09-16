@@ -135,12 +135,91 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - [x] `D-05` Validate every capability block generically while retaining an explicit required baseline set for Delphi's existing compatibility contract.
 - [x] `D-06` Keep tenant/business-unit scope and cross-stack dependencies conditional on downstream declarations.
 
+## Decision Baseline (Frozen Before Implementation)
+- [x] `D-01` Four independent experimental capabilities enter through one generic registry/detection contract; no monolithic project stack is introduced.
+- [x] `D-02` Registry validation covers every declared capability, while an explicit baseline set preserves existing compatibility requirements.
+- [x] `D-03` Node detection is dependency-discriminating and must prove a generic Node-only negative case.
+- [x] `D-04` Experimental descriptors provide discovery metadata only and cannot activate a stack or claim its operational package is available.
+- [x] `D-05` Stack-specific rules/workflows/skills and lifecycle promotion are separate approved stories.
+
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** ST-01 establishes the reusable admission and detection contract that every future stack capability will use.
+- **Deviation / debt being retired:** Optional capability blocks can currently bypass required-field/lifecycle validation, and Node stacks have no dependency-discriminating detection model.
+- **Target steady-state after closeout:** Every registry block is validated uniformly; stack candidates use precise evidence; lifecycle truth distinguishes experimental discovery from available operating support.
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** Focused tests prove existing and new descriptors under the generic validator/detector and all four candidates remain non-activating experimental entries.
+
+### Patterns To Enforce
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| Registry presence is not activation | `D-03` | all capabilities | Prevents global Delphi contents from becoming downstream topology claims. |
+| Validate all declared capabilities | `D-02` | registry parser | Prevents optional/new blocks from escaping schema and lifecycle validation. |
+| Discriminating ecosystem evidence | `D-04` | Node detection | Prevents generic `package.json` projects from being mislabeled NestJS or React. |
+| Lifecycle reflects delivered support | `D-02` | new capability descriptors | Prevents `available` from becoming a registry-only marketing claim. |
+
+### Prohibited Anti-Patterns
+| Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
+| --- | --- | --- | --- |
+| Hard-coded validation only for original capability names | validator intersects declared keys with a fixed set before field checks | New capabilities could be malformed without failing. | `none` |
+| `package.json`-only NestJS/React detection | Node manifest existence without dependency/companion evidence | Produces broad false-positive activation candidates. | `none` |
+| Project bundle namespace | one `leadshug` capability or copied project authority | Couples reusable technology support to one downstream product. | `none` |
+| Premature `available` lifecycle | new descriptor has no delivered stack rule/workflow/skill package | Overstates operational support. | Promote only in the stack-specific TODO. |
+
+### Architecture Protection Harness
+| Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| `guard` | registry schema | `tools/validate_stack_capabilities.py` | malformed optional/new capability blocks | `implement-in-this-todo` | accepted/rejected fixtures in `validate_stack_capabilities_test.sh` |
+| `test` | topology detection | `tools/tests/environment_topology_contract_scaffold_test.sh` | Node false positives and missed dependency evidence | `implement-in-this-todo` | positive NestJS/React plus generic Node-only negative fixtures |
+| `rule` | activation authority | `rules/core/environment-topology-contract-model-decision.md` | registry presence treated as project activation | `already-enforced` | preserve rule and test report wording |
+| `review` | project agnosticism | rejected-term scan and bounded review | LeadsHug naming, versions, paths, or mandatory cross-stack coupling | `implement-in-this-todo` | review changed Delphi surfaces before delivery |
+
+## Architecture Review Gates
+- **Architecture decision review:** `required`
+- **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
+- **Decision review kind:** `architecture_opinion`
+- **Decision review package:** `bounded-file-set`
+- **Decision review status:** `not_run`
+- **Decision review evidence / resolution:** `awaiting fresh no-context planning reviewer after baseline freeze`
+- **Architecture adherence review:** `required`
+- **Adherence review lifecycle:** `after implementation and before Completed`
+- **Adherence review kind:** `architecture_adherence`
+- **Adherence review package:** `bounded-file-set`
+- **Adherence review status:** `not_run`
+- **Adherence review evidence / resolution:** `implementation not authorized`
+- **No-go handling:** `return to the affected decision or evidence loop; do not request APROVADO or claim delivery with unresolved architecture divergence`
+
+## Gate: Review Baseline Freeze
+- **Gate decision:** `required`
+- **Why this decision:** The medium cross-module admission contract needs a stable pushed package before planning review.
+- **Trigger stage:** `before the first planning-side review or guard run`
+- **Baseline branch:** `feat/add-stack-capabilities`
+- **Baseline commit:** `cb4da5e6a23d9598fcdf9f951555a81ef3d3b77c`
+- **Baseline push reference:** `origin/feat/add-stack-capabilities`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `The feature brief and ST-01 TODO were committed and pushed before planning review.`
+- **Evidence / reference:** `git merge-base --is-ancestor cb4da5e origin/feat/add-stack-capabilities` exit 0
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Gate: Review Scope Drift
+- **Gate decision:** `required`
+- **Why this decision:** Review-driven changes to scope, decisions, evidence, or validation must reconverge before approval.
+- **Trigger stage:** `after planning review convergence and before APROVADO`
+- **Baseline source:** `Gate: Review Baseline Freeze -> Baseline commit`
+- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan|Local CI-Equivalent Suite Matrix`
+- **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md`
+- **No-go handling rule:** `refresh and push the reviewed baseline, then rerun affected planning gates before requesting approval`
+- **Gate status:** `not_run`
+- **Findings summary:** `Awaiting planning review convergence.`
+- **Evidence / reference:** `n/a before review`
+- **Waiver authority / reference (required if waived):** `n/a`
+
 ## Assumptions Preview
 | Assumption ID | Assumption | Evidence | If False | Confidence (`High|Medium|Low`) | Handling (`Keep as Assumption|Promote to Decision|Block`) |
 | --- | --- | --- | --- | --- | --- |
 | `A-01` | Dependency-name matching can extend the existing dependency-free registry parser safely. | Composer markers are already parsed without PyYAML in `tools/environment_topology_contract_scaffold.py`; Node manifests are JSON. | Split detection into a dedicated parser/helper before adding candidates. | `High` | `Keep as Assumption` |
 | `A-02` | `experimental` accurately represents discoverable but not fully supported capabilities. | It is an allowed lifecycle and avoids overstating `available`; current activation contract already separates presence from activation. | Add a distinct lifecycle only through a separately reviewed schema decision. | `High` | `Promote to Decision` |
-| `A-03` | The four reference capability descriptors can be generalized without importing project authority. | The reusable cores are short; project-specific terms are identifiable by repository-wide search. | Stop and split any capability whose semantics cannot be made project-agnostic. | `High` | `Keep as Assumption` |
+| `A-03` | The four reference capability descriptors can be generalized without importing project authority. | `/home/elton/Dev/repos/Clientes/Unifast/leadshug-engineering/config/stack_capabilities.yaml`, `rules/stacks/nestjs/nestjs-api-slice-model-decision.md`, `rules/stacks/react/react-web-slice-model-decision.md`, `rules/stacks/postgres-prisma/persistence-contract-model-decision.md`, and `rules/stacks/railway/railway-release-readiness-model-decision.md` expose short reusable cores; project-specific terms are separately identifiable. | Stop and split any capability whose semantics cannot be made project-agnostic. | `High` | `Keep as Assumption` |
 
 ## Gate: Assumption Code Coherence
 - **Gate decision:** `required`
@@ -174,6 +253,97 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Strategy:** `test-first`
 - **Why:** Registry and detection behavior are deterministic; fixtures can prove the false-positive boundary before implementation.
 - **Fail-first target(s) (when required):** arbitrary invalid capability block currently passes validation; NestJS/React dependency markers are currently unsupported; generic Node-only fixture must remain negative.
+
+## Local CI-Equivalent Suite Matrix
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `delphi-ai / focused capability tests` | Registry and topology-detection behavior changes. | `bash tools/tests/validate_stack_capabilities_test.sh && bash tools/tests/environment_topology_contract_scaffold_test.sh` | `Local-Implemented` | `planned` | exact commands | Must cover invalid arbitrary blocks, positive stack evidence, and generic Node-only negatives. |
+| `delphi-ai / self-check` | Canonical Delphi tooling and instruction surfaces must remain coherent. | `bash self_check.sh` | `Local-Implemented` | `planned` | exact command | Full Delphi self-maintenance suite. |
+
+## Plan Review Gate
+### Review Sections
+- [ ] Architecture
+- [ ] Code Quality
+- [ ] Tests
+- [ ] Performance
+- [ ] Security
+- [ ] Elegance
+- [ ] Structural Soundness
+
+### Issue Cards
+- `pending fresh no-context planning review`
+
+### Failure Modes & Edge Cases
+- [ ] Scoped dependency names in `package.json` are parsed without substring false positives.
+- [ ] Dependencies in `dependencies`, `devDependencies`, `peerDependencies`, and `optionalDependencies` follow an explicit tested policy.
+- [ ] Malformed or unreadable JSON yields bounded unknown evidence rather than guessed activation.
+- [ ] A monorepo can expose different capabilities in different nested manifests without one manifest labeling every package.
+- [ ] Existing Composer/Laravel and file-marker detection remains unchanged.
+
+### Residual Unknowns / Risks
+- [ ] Planning review must decide whether `nest-cli.json` alone is sufficient high-confidence NestJS evidence or should be combined with `@nestjs/core`.
+- [ ] Planning review must decide whether `react` alone is sufficient evidence or whether framework wrappers such as Next.js require a broader React-family marker policy in a later story.
+
+## Audit Trigger Matrix
+- **Canonical method:** `wf-docker-audit-escalation-method`
+- **Guard command:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md`
+- **Latest TEACH evidence / artifact:** `pending first post-freeze guard run`
+
+| Trigger | Value | Notes |
+| --- | --- | --- |
+| `complexity` | `medium` | Matches the TODO complexity classification. |
+| `blast_radius` | `cross-module` | Registry validation and topology detection share the contract. |
+| `behavioral_change_or_bugfix` | `yes` | Deterministic validation/detection behavior changes. |
+| `changes_public_contract` | `yes` | Capability descriptor validation and marker semantics are public Delphi contracts. |
+| `touches_auth_or_tenant` | `no` | Tenant/BU semantics are explicitly excluded from ST-01. |
+| `touches_runtime_or_infra` | `no` | No runtime, deployment, or infrastructure mutation occurs. |
+| `touches_tests` | `yes` | Focused deterministic fixtures change. |
+| `critical_user_journey` | `no` | No downstream UI or product flow changes. |
+| `release_or_promotion_critical` | `yes` | Incorrect availability/detection claims would contaminate future project setup. |
+| `high_severity_plan_review_issue` | `no` | No issue has yet been classified high. |
+| `explicit_three_lane_request` | `no` | The user requested the normal Delphi admission process. |
+
+## Independent No-Context Critique Gate
+- **Critique decision:** `required`
+- **Why this decision:** Medium cross-module public-contract work needs an independent challenge before approval.
+- **Impact signals in scope:** `cross-module blast radius|public capability contract`
+- **Package mode:** `bounded-file-set`
+- **Package minimum contents:** `feature brief|TODO|current registry validator/detector|reference descriptors|known rejected project-specific terms`
+- **Critique isolation mode:** `fresh internal no-context reviewer`
+- **Internal reviewer mandate:** `required; reviewer not yet dispatched`
+- **Canonical multi-lane audit protocol (when required):** `n/a unless audit escalation raises the floor`
+- **Audit session / round evidence (when protocol used):** `n/a`
+- **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`
+- **Critique status:** `not_run`
+- **Findings summary:** `Awaiting post-freeze planning review.`
+- **Resolution ledger:** `none before review`
+- **Evidence / reference:** `n/a before review`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `main_instructions.md` | Defines additive capabilities and project-owned activation. | Capability/activation separation and agnostic core. | Project truth in Delphi registry. | Keep descriptors non-activating. |
+| `rules/core/environment-topology-contract-model-decision.md` | Governs detection evidence and downstream validation. | Project-owned topology authority. | Inferring activation from Delphi files. | Detection remains candidate evidence only. |
+| `workflows/docker/environment-topology-contract-method.md` | Owns topology discovery semantics. | Explicit user validation for inferred stack candidates. | Silent activation. | Preserve report language and tests. |
+| `workflows/docker/self-improvement-session-method.md` | This is Delphi instruction/tooling maintenance. | Agnosticism and instruction-only boundary. | Downstream edits. | Limit all changes to Delphi. |
+| `workflows/docker/todo-driven-execution-method.md` | Durable tooling behavior requires approved TODO execution. | Approval, strict diff, evidence. | Implementation before APROVADO. | Stop after approval-ready planning. |
+
+## Agent Routing Preflight
+- **Client surface:** `codex`
+- **Current governed action:** `implementation`
+- **Selected role:** `routine-executor`
+- **Selected model:** `gpt-5.6-terra`
+- **Selected effort:** `medium`
+- **Proof mode:** `declared`
+- **Exception reason:** `n/a`
+- **Subagent / delegation authorization:** `not-requested`
+- **Execution topology:** `primary-checkout-single-writer`
+- **Worktree / auxiliary-checkout authorization:** `not-authorized`
+- **Worktree authorization evidence:** `n/a`
+- **Writer scheduling policy:** `single-writer-serialized`
+- **Guard outcome:** `go`
+- **Waiver / exception reference:** `n/a`
 
 ## Authorization Note
 - **Implementation authorization:** `none until explicit APROVADO`
