@@ -34,14 +34,14 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Rationale:** One coherent instruction package is the smallest faithful implementation. It corrects the regression and records deterministic support expectations without coupling Delphi to one downstream analyzer checkout.
 
 ## Delivery Status Canon (Required)
-- **Current delivery stage:** `Pending`
+- **Current delivery stage:** `Local-Implemented`
 - **Qualifiers:** `none`
-- **Next exact step:** `await an explicit branch integration or promotion decision before moving this TODO from active/review`
+- **Next exact step:** `frame the separate Delphi capability-admission TODO for NestJS, React, PostgreSQL/Prisma, and Railway without mixing implementation into this Flutter slice`
 
 ## Active Work State (Required While TODO Remains In `active/`)
 - **Work state:** `review`
-- **Why this state now:** The approved instruction package is implemented and local validation has passed; it awaits the branch-owned delivery review/closeout.
-- **Exit condition:** The bounded diff, validation evidence, and architecture-adherence review are accepted by the owning closeout lane.
+- **Why this state now:** Local implementation and clean review evidence are complete; the TODO remains in review until the feature branch is integrated.
+- **Exit condition:** The branch integration or promotion path is explicitly completed by the owning closeout lane.
 
 ## Scope
 - [x] Reconcile the Flutter umbrella skill, always-on rules, and controller workflow around one state-ownership contract.
@@ -383,12 +383,12 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ## Pipeline/Copilot P1/P2 Preflight
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| `active Flutter instruction coherence diff and evidence packet` | `release-blocking review modes` | `planned` | `branch-owned final review pending` | `none; review pending` | `Root closeout lane will replace this provisional row after final review.` |
+| `active Flutter instruction coherence diff and evidence packet` | `release-blocking review modes` | `passed` | `no-context reviewer /root/flutter_coherence_clean_final_review; artifacts/tmp/flutter-streamvalue-coherence-final-confirmation/review-packet.md` | `NO P1/P2` | `Clean final confirmation; historical findings are resolved or routed.` |
 
 ## Rule-Spirit Anti-Pattern Hunt
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| `Flutter ownership/cache and mirror rules` | `direct violation or disguised controller-owned canonical cache, mirror drift, or obsolete analyzer guidance` | `planned` | `branch-owned final scan pending` | `none; final scan pending` | `Root closeout lane will replace this provisional row after final scan.` |
+| `Flutter ownership/cache and mirror rules` | `direct violation or disguised controller-owned canonical cache, mirror drift, or obsolete analyzer guidance` | `passed` | `artifacts/tmp/flutter-streamvalue-coherence-rule-spirit-final.json; rg -n ownership/cache/analyzer-guidance scan across skills rules workflows .cline .claude .clinerules` | `none` | `Clean rule-spirit scan; resolved findings remain in their historical ledgers.` |
 
 ## Security Risk Assessment
 - **Risk level:** `none`
@@ -436,7 +436,7 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Planning status:** `completed by fresh reviewer`
 - **Findings summary:** `NO P1/P2. No-risk/bypass review found no product, test, fixture, or runner diff; the instruction-only package does not require downstream runtime test evidence. The residual risk is P2-05 only, already routed to its real future hardening TODO.`
 - **Resolution ledger:** `none`
-- **Evidence / reference:** `fresh review packet foundation_documentation/artifacts/tmp/flutter-streamvalue-coherence-test-audit/review-packet.md; reconciliador bash self_check.sh; independent canonical/mirror parity cmp checks; python3 tools/todo_deterministic_validator.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md; python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md --repo-root .; git diff --check`
+- **Evidence / reference:** `fresh review packet artifacts/tmp/flutter-streamvalue-coherence-test-audit/review-packet.md; reconciliador bash self_check.sh; independent canonical/mirror parity cmp checks; python3 tools/todo_deterministic_validator.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md; python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md --repo-root .; git diff --check`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Independent No-Context Final Review Gate
@@ -446,20 +446,20 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Package mode:** `bounded-file-set`
 - **Package minimum contents:** `frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence|residual risks|verification debt`
 - **Review isolation mode:** `fresh internal no-context reviewer`
-- **Internal reviewer mandate:** `required; the completed final review was independent of the implementer`
+- **Internal reviewer mandate:** `required; fresh internal no-context reviewer /root/flutter_coherence_clean_final_review`
 - **Canonical multi-lane audit protocol (when required):** `recommended; not executed`
 - **Audit session / round evidence (when protocol used):** `n/a`
 - **Review focus:** `adherence|regressions|validation evidence|security/performance residuals|elegance residuals|structural regressions|verification debt`
-- **Final review status:** `findings_integrated`
-- **Findings summary:** `The recently completed round found the four final-review P2 findings below. All were integrated into the bounded package or its routed hardening contract; a new confirmation-clean review remains mandatory after this remediation.`
-- **Resolution ledger:**
+- **Final review status:** `no_material_findings`
+- **Findings summary:** `NO P1/P2; clean. The fresh final confirmation found no new material findings; prior FR-P2 findings remain preserved below as concluded historical carry-forward.`
+- **Resolution ledger:** `historical carry-forward/resolved findings:`
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
 | `FR-P2-01` | `Integrated` | `useful` | `yes` | `project` | `n/a` | The screen example no longer downgrades the canonical repository `StreamValue` to `.stream`; it directly delegates `StreamValue<YourEntity?>` and uses `StreamValueBuilder<YourEntity?>`. |
-| `FR-P2-02` | `Integrated` | `useful` | `yes` | `paced` | `n/a` | Derived audit gates and the pushed review baseline are recorded and validated. The required test-quality audit remains separately `not_run`/planned for the root reviewer, and final confirmation remains pending. |
+| `FR-P2-02` | `Integrated` | `useful` | `yes` | `paced` | `n/a` | Derived audit gates and the pushed review baseline are recorded and validated; the independent test-quality audit concluded `no_material_findings`, and this clean final confirmation is concluded. |
 | `FR-P2-03` | `Integrated` | `useful` | `partial` | `project` | `n/a` | The missing hardening contract is now the real Pending/unapproved TODO `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md`; no guard implementation was smuggled into this session. |
-| `FR-P2-04` | `Integrated` | `useful` | `partial` | `paced` | `n/a` | Review-packet baseline evidence is frozen at pushed checkpoint `d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9`; packet regeneration for the next confirmation-clean review remains pending. |
-- **Evidence / reference:** `current remediation diff and routed real follow-up TODO`
+| `FR-P2-04` | `Integrated` | `useful` | `partial` | `paced` | `n/a` | Review-packet baseline evidence is frozen at pushed checkpoint `d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9`; the confirmation packet was regenerated and cleanly reviewed. |
+- **Evidence / reference:** `no-context reviewer /root/flutter_coherence_clean_final_review; artifacts/tmp/flutter-streamvalue-coherence-final-confirmation/review-packet.md; current remediation diff and routed real follow-up TODO`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Decision Adherence Validation
@@ -576,5 +576,5 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ## TODO Closeout Disposition
 - **Disposition:** `keep-active`
 - **Disposition reason:** The implementation and local review are complete, but the feature branch has not been integrated or promoted and the user authorized only commit/push in this step.
-- **Post-commit/push status:** `complete - implementation commit d08390e and remediation checkpoint d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9 pushed to origin/feat/add-stack-capabilities on 2026-09-16; delivery stage remains Pending`
+- **Post-commit/push status:** `complete - implementation commit d08390e, remediation checkpoint d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9, and final clean-review checkpoint cab69fb95386501364b14b8ab43c9717e31a235e pushed to origin/feat/add-stack-capabilities on 2026-09-16; delivery stage is Local-Implemented`
 - **Next path/status action:** `remain in active/review after push until the branch integration or promotion path is explicitly selected`
