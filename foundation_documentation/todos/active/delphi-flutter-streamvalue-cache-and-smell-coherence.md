@@ -36,7 +36,7 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** `publish the approved implementation commit, record push evidence, and keep the TODO active for the branch integration/promotion decision`
+- **Next exact step:** `await an explicit branch integration or promotion decision before moving this TODO from active/review`
 
 ## Active Work State (Required While TODO Remains In `active/`)
 - **Work state:** `review`
@@ -384,5 +384,5 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ## TODO Closeout Disposition
 - **Disposition:** `keep-active`
 - **Disposition reason:** The implementation and local review are complete, but the feature branch has not been integrated or promoted and the user authorized only commit/push in this step.
-- **Post-commit/push status:** `pending`
+- **Post-commit/push status:** `complete - implementation commit d08390e pushed to origin/feat/add-stack-capabilities on 2026-09-16`
 - **Next path/status action:** `remain in active/review after push until the branch integration or promotion path is explicitly selected`
