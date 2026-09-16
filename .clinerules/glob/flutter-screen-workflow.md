@@ -7,7 +7,7 @@
 Whenever a file under screens directory is active or modified, run the Screen Workflow:
 
 ### Requirements
-- Keep screens pure UI; all logic/state lives in controllers per the architecture rule
+- Keep screens pure UI. Controllers own local interaction state and orchestration; canonical entity/list streams remain repository-owned and are exposed through controller delegation without copying
 - Ensure ModuleScope/GetIt registrations and documentation updates (`screens/*.md`) accompany the change
 - Confirm DTO projections and mock data are current before merging
 
@@ -27,7 +27,7 @@ See: `.clinerules/workflows/create-screen.md`
 ## Quick Checklist
 
 - [ ] Screen is pure UI (no business logic)
-- [ ] Controller exists for state/logic
+- [ ] Controller owns only local state/orchestration and delegates canonical repository streams
 - [ ] ModuleScope registration complete
 - [ ] Documentation updated (`screens/*.md`)
 - [ ] DTO projections current

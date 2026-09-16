@@ -35,6 +35,7 @@ Introduce a controller that owns UI state, side effects, and StreamValue exposur
    - Use controller-owned `StreamValue<T>` only for screen-, stage-, form-, or interaction-local state (with default values when appropriate).
    - Expose canonical cross-screen, paginated, cache-backed, or persistence-aligned state by delegating the persistent repository-owned `StreamValue`; do not copy it into controller lists, maps, `_cache`, `cached*`, or equivalent mutable stores.
    - Provide intent methods (e.g., `loadData`, `applyDecision`) that update local controller streams or invoke repository operations that update the canonical stream.
+   - Dispose only streams and resources created by the controller. A delegated repository `StreamValue` belongs to the repository lifecycle and must never be closed/disposed by the controller.
 6. **UI controllers** – if `TextEditingController`, `ScrollController`, etc. are needed, instantiate and dispose them inside the controller (`onDispose`). Widgets obtain them via getters.
 7. **BuildContext independence** – controllers must not receive `BuildContext`. Any navigation/dialog work happens in widgets via callbacks.
 8. **DI registration** – register the controller in the feature module (`GetIt.registerFactory` or `registerLazySingleton`) and ensure the ModuleScope provides it.

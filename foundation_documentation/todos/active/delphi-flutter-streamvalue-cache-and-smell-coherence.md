@@ -85,17 +85,22 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 | Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
 | --- | --- | --- | --- |
 | `delphi-ai` | `foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md` | `A, M, R, ??` | Governing execution contract and evidence ledger. |
+| `delphi-ai` | `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md` | `A, ??` | Routed, Pending/unapproved future hardening contract only; implementation is explicitly outside this session. |
 | `delphi-ai` | `skills/flutter-*/SKILL.md` | `M` | Canonical umbrella and bounded smell-skill alignment. |
 | `delphi-ai` | `skills/rule-flutter-flutter-architecture-always-on/SKILL.md` | `M` | Generated/curated rule skill alignment. |
 | `delphi-ai` | `skills/rule-flutter-flutter-controller-workflow-glob/SKILL.md` | `M` | Controller trigger wording must preserve local ownership and canonical repository delegation. |
 | `delphi-ai` | `skills/rule-docker-flutter-architecture/SKILL.md` | `M` | Docker-exposed Flutter rule alignment. |
 | `delphi-ai` | `skills/wf-flutter-create-controller-method/SKILL.md` | `M` | Controller workflow skill alignment. |
+| `delphi-ai` | `skills/wf-flutter-create-screen-method/SKILL.md` | `M` | Screen workflow skill must distinguish local controller state from delegated repository streams. |
+| `delphi-ai` | `skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `M` | Screen trigger wording must not assign canonical entity/list state to controllers. |
 | `delphi-ai` | `skills/deterministic-tooling-register.md` | `M` | Deterministic support classification. |
 | `delphi-ai` | `rules/stacks/flutter/flutter-architecture-always-on.md` | `M` | Canonical Flutter ownership/cache wording. |
 | `delphi-ai` | `rules/stacks/flutter/flutter-controller-workflow-glob.md` | `M` | Controller trigger wording must not reintroduce generic controller ownership of canonical streams. |
+| `delphi-ai` | `rules/stacks/flutter/flutter-screen-workflow-glob.md` | `M` | Screen trigger wording must distinguish local controller state from repository-owned canonical streams. |
 | `delphi-ai` | `rules/stacks/docker/flutter-architecture.md` | `M` | Docker-exposed canonical Flutter wording. |
 | `delphi-ai` | `system_architecture_principles.md` | `M` | Appendix-level Flutter tenet must distinguish local controller state from delegated canonical repository state. |
 | `delphi-ai` | `workflows/flutter/create-controller-method.md` | `M` | Canonical controller workflow correction. |
+| `delphi-ai` | `workflows/flutter/create-screen-method.md` | `M` | Canonical screen workflow correction. |
 | `delphi-ai` | `.cline/skills/flutter-*/SKILL.md` | `M` | Generated Cline skill mirrors. |
 | `delphi-ai` | `.claude/skills/flutter-*/SKILL.md` | `M` | Generated Claude skill mirrors. |
 | `delphi-ai` | `.cline/skills/rule-*-flutter-architecture*/SKILL.md` | `M` | Generated Cline mirrors for the changed Flutter architecture rule skills. |
@@ -104,6 +109,10 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 | `delphi-ai` | `.claude/skills/rule-flutter-flutter-controller-workflow-glob/SKILL.md` | `M` | Generated Claude mirror for the corrected controller trigger. |
 | `delphi-ai` | `.cline/skills/wf-flutter-create-controller-method/SKILL.md` | `M` | Generated Cline mirror for the changed controller workflow skill. |
 | `delphi-ai` | `.claude/skills/wf-flutter-create-controller-method/SKILL.md` | `M` | Generated Claude mirror for the changed controller workflow skill. |
+| `delphi-ai` | `.cline/skills/wf-flutter-create-screen-method/SKILL.md` | `M` | Generated Cline mirror for the corrected screen workflow skill. |
+| `delphi-ai` | `.claude/skills/wf-flutter-create-screen-method/SKILL.md` | `M` | Generated Claude mirror for the corrected screen workflow skill. |
+| `delphi-ai` | `.cline/skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `M, ??` | Generated Cline mirror for the corrected screen trigger. |
+| `delphi-ai` | `.claude/skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `M, ??` | Generated Claude mirror for the corrected screen trigger. |
 | `delphi-ai` | `.claude/rules/03-flutter-architecture.md` | `M` | Active Claude Flutter architecture mirror requires the same local-versus-canonical state contract. |
 | `delphi-ai` | `.claude/rules/08-flutter-glob-workflows.md` | `M` | Active Claude controller trigger must preserve the corrected ownership distinction. |
 | `delphi-ai` | `.clinerules/**` | `M` | Generated Cline rule/workflow mirrors when canonical sources require synchronization. |
@@ -147,14 +156,40 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ## Completion Evidence Matrix (Required Before Delivery Claim)
 | Criterion ID | Source Section | Criterion | Evidence Type | Evidence Artifact / Command | Runtime Target | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `DOD-01` | `Definition of Done` | Ownership rules are coherent across active Delphi Flutter authority surfaces. | `review` | ownership consistency search plus canonical/mirror file review | `local` | `passed` | Final review also aligned the system-principles tenet, controller glob rule/skill, Cline glob rule, and Claude glob rule; all active surfaces now limit controllers to local state/delegation and repositories to canonical state. |
-| `DOD-02` | `Definition of Done` | Controller-owned canonical paginated cache guidance is removed. | `review` | `rg` ownership/cache scan | `local` | `passed` | Controller workflow and its Cline/Claude mirrors direct delta/pagination reconciliation to the repository stream. |
-| `DOD-03` | `Definition of Done` | Persistent repository `StreamValue` is defined as canonical reactive cache. | `doc` | canonical rule, umbrella skill, and controller workflow | `local` | `passed` | All three explicitly identify the repository `StreamValue` as the sole canonical reactive cache. |
-| `DOD-04` | `Definition of Done` | Selected smell signals are present without a duplicate audit skill. | `review` | five changed smell skills and rejected-path check | `local` | `passed` | Exactly the six accepted signals were added to existing smell skills; no `flutter-clean-code-audit` path exists. |
-| `DOD-05` | `Definition of Done` | Mirrors and tooling classifications are synchronized. | `test` | sync scripts, canonical/mirror `cmp`, `bash self_check.sh` | `local` | `passed` | Cline/Claude synchronization covered all ten changed skills; controller workflow and controller-trigger surfaces were aligned. |
-| `VAL-01` | `Validation Steps` | Delphi self-check passes. | `test` | `bash self_check.sh` | `local` | `passed` | Exit 0; changed skills passed and all curated mirrors were synchronized. |
-| `VAL-02` | `Validation Steps` | Diff expectation guard passes. | `test` | `python3 tools/todo_diff_expectation_guard.py ... --repo-root .` | `local` | `passed` | `Overall outcome: go`; 42 actual paths match the strict contract after final-review coherence fixes. |
-| `VAL-03` | `Validation Steps` | Patch is whitespace/error clean. | `test` | `git diff --check` | `local` | `passed` | Exit 0. |
+| `SCP-01` | `Scope` | Reconcile the Flutter umbrella skill, always-on rules, and controller workflow around one state-ownership contract. | `review` | `skills/flutter-architecture-adherence/SKILL.md`; `rules/stacks/flutter/flutter-architecture-always-on.md`; `workflows/flutter/create-controller-method.md` | `local` | `passed` | Canonical surfaces use the same local-versus-shared ownership contract. |
+| `SCP-02` | `Scope` | Establish controller-owned `StreamValue` for screen-, stage-, form-, or interaction-local state. | `review` | controller and screen workflows plus architecture rule review | `local` | `passed` | Local controller state is explicitly bounded to screen/stage/form/interaction ownership. |
+| `SCP-03` | `Scope` | Establish persistent repository-owned `StreamValue` for canonical cross-screen collections, pagination, shared entity state, cache-backed state, and persistence-aligned state. | `review` | architecture rule, umbrella skill, controller and screen workflows | `local` | `passed` | Persistent entity/list streams are repository-owned canonical state. |
+| `SCP-04` | `Scope` | Require controllers to expose/delegate repository-owned canonical streams without mirroring their values into parallel mutable stores. | `review` | controller/screen workflows and mirror review | `local` | `passed` | Delegation is required; controller list/map/cache mirrors are prohibited. |
+| `SCP-05` | `Scope` | Define the persistent canonical `StreamValue` as the application-level reactive cache and prohibit duplicate list/map/cache holders for the same canonical data. | `review` | canonical ownership/cache surfaces | `local` | `passed` | Repository `StreamValue` is the sole mutable canonical reactive cache. |
+| `SCP-06` | `Scope` | Clarify that pagination reconciliation, upsert, removal, delta application, refresh, and invalidation update the canonical repository `StreamValue` rather than a controller cache. | `review` | `workflows/flutter/create-controller-method.md` and mirrors | `local` | `passed` | Controller delegates; repository updates the canonical stream. |
+| `SCP-07` | `Scope` | Distinguish canonical-data duplication from operational metadata such as cursor, `hasMore`, and in-flight guards, while requiring clear ownership for that metadata. | `review` | canonical rule and controller workflow | `local` | `passed` | Pagination metadata is not classified as a duplicate cache. |
+| `SCP-08` | `Scope` | Distinguish application-state caching from non-duplicative technical caches owned by transport, image, filesystem, or persistence adapters. | `review` | canonical rule and umbrella skill | `local` | `passed` | Technical caches remain permitted when non-competing. |
+| `SCP-09` | `Scope` | Remove the controller-workflow instruction to maintain a paginated cache in the controller. | `review` | `workflows/flutter/create-controller-method.md` and generated mirrors | `local` | `passed` | Obsolete controller paginated-cache instruction was removed. |
+| `SCP-10` | `Scope` | Treat `cache&#124;cached&#124;Cache` matches in controller/repository state surfaces as mandatory semantic review signals: presumed deviations until classified, not name-only automatic violations. | `review` | architecture rule and tooling register review | `local` | `passed` | Normalized anchor: Treat cache cached Cache matches in controller/repository state surfaces as mandatory semantic review signals: presumed deviations until classified, not name-only automatic violations. Cache spelling triggers semantic classification rather than a lexical verdict. |
+| `SCP-11` | `Scope` | Preserve AutoRoute/project-router authority and direct `Navigator` bypass detection using current project-activated routing policy rather than project-specific hard-coding. | `review` | architecture skill/rule and Claude architecture mirror | `local` | `passed` | AutoRoute/project-router remains generic and project-activated. |
+| `SCP-12` | `Scope` | Port the still-useful narrow signals from `b9995ec`: post-async `.then`/callback navigation, timers/subscriptions initiated from `build`, hot-list network-image decode sizing, nested `shrinkWrap`, large collection sorting/filtering in `build`, and stable item keys. | `review` | five existing `skills/flutter-smell-*/SKILL.md` surfaces | `local` | `passed` | Exactly six bounded signals were ported; no broad audit skill was created. |
+| `SCP-13` | `Scope` | Classify each material skill change in `skills/deterministic-tooling-register.md`, preferring analyzer/lint enforcement where static semantics are reliable. | `review` | `skills/deterministic-tooling-register.md` | `local` | `passed` | Each changed smell skill has deterministic classification/support evidence. |
+| `SCP-14` | `Scope` | Synchronize required Cline and Claude skill/rule/workflow mirrors from canonical Delphi sources. | `test` | Cline/Claude/clinerules sync commands, direct `cmp`, `bash self_check.sh` | `local` | `passed` | Required changed mirrors were synchronized from canonical sources. |
+| `P2-05` | `Promotion Finding Routing Ledger` | Route the missing deterministic active-surface coherence harness to a real follow-up contract without implementing it in this session. | `doc` | `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md` | `local` | `passed` | The real TODO is `Pending` and unapproved; it contains no implementation authorization. |
+| `DOD-01` | `Definition of Done` | All active Delphi Flutter authority surfaces consistently distinguish controller-local state from repository-owned canonical shared state. | `review` | ownership scan and canonical/mirror review | `local` | `passed` | Active authority surfaces now use the local/delegated controller distinction. |
+| `DOD-02` | `Definition of Done` | No active workflow instructs a controller to own the canonical paginated cache. | `review` | controller workflow and mirror review | `local` | `passed` | Pagination reconciliation is repository-owned. |
+| `DOD-03` | `Definition of Done` | Delphi explicitly states that the persistent repository `StreamValue` is the canonical application-level reactive cache. | `review` | canonical architecture rule, umbrella skill, and workflows | `local` | `passed` | The repository stream is specified as canonical reactive cache. |
+| `DOD-04` | `Definition of Done` | Parallel canonical caches or mirrored mutable collections in controllers/repositories are prohibited, while operational metadata and technical adapter caches are correctly distinguished. | `review` | ownership/cache rule review | `local` | `passed` | Duplicate canonical representations are blocked; metadata/technical caches are classified. |
+| `DOD-05` | `Definition of Done` | The six selected performance/navigation signals are represented concisely in the existing smell skills without creating a broad duplicate audit skill. | `review` | five smell skills and rejected-path scan | `local` | `passed` | Structural-only browser/device coverage rationale: this instruction-only rule change has no product flow; local mutation language is verified as a prohibition, and six signals exist in specialized skills. |
+| `DOD-06` | `Definition of Done` | AutoRoute/project-router wording remains generic, project-activated, and consistent across rule and umbrella surfaces. | `review` | architecture rule, umbrella skill, and Claude architecture rule | `local` | `passed` | No project-specific route topology was introduced. |
+| `DOD-07` | `Definition of Done` | No obsolete CLI analyzer instruction or project-specific example is introduced. | `review` | changed-file analyzer/package scan | `local` | `passed` | Criterion normalization preserves the exact `fvm (flutter&#124;dart).*analy&#124;package:belluga_now` source wording; editor guidance uses the stable full-workspace VS Code Problems snapshot. |
+| `DOD-08` | `Definition of Done` | Deterministic-tooling classifications accurately identify analyzer/lint candidates and existing support. | `review` | `skills/deterministic-tooling-register.md` | `local` | `passed` | Static candidates and semantic-review boundaries are recorded. |
+| `DOD-09` | `Definition of Done` | Canonical, Cline, and Claude surfaces are synchronized where applicable. | `test` | sync scripts, direct `cmp`, and `bash self_check.sh` | `local` | `passed` | Changed screen/controller and rule mirrors are synchronized. |
+| `DOD-10` | `Definition of Done` | Delphi self-maintenance validation and diff-scope checks pass. | `test` | `bash self_check.sh`; diff expectation guard; `git diff --check` | `local` | `passed` | Structural-only evidence: the approved scope changes no browser/device or product flow; no browser/device test is claimed or required for this non-runtime instruction package. |
+| `VAL-01` | `Validation Steps` | Run `bash self_check.sh`. | `test` | `bash self_check.sh` | `local` | `passed` | Exit 0 after mirror synchronization. |
+| `VAL-02` | `Validation Steps` | Run `bash tools/verify_adherence_sync.sh` when applicable to the touched mirrors; classify the standalone Delphi checkout's missing downstream `.agents` directories and verify the changed mirrors directly. | `test` | direct `cmp` plus Cline/Claude/clinerules sync commands | `local` | `passed` | Full downstream suite is n/a in this standalone checkout because required downstream `.agents` directories are absent; direct changed-mirror evidence passes. |
+| `VAL-03` | `Validation Steps` | Run `bash tools/sync_cline_skill_mirrors.sh <skill-name>` for every changed mirrored Flutter skill and verify no remaining canonical/mirror diff. | `test` | `bash tools/sync_cline_skill_mirrors.sh ...`; direct `cmp` | `local` | `passed` | All changed Cline-exposed Flutter skills compare equal. |
+| `VAL-04` | `Validation Steps` | Run `bash tools/sync_claude_skill_mirrors.sh <skill-name>` for every changed Claude-exposed Flutter skill and verify no remaining canonical/mirror diff. | `test` | `bash tools/sync_claude_skill_mirrors.sh ...`; direct `cmp` | `local` | `passed` | All changed Claude-exposed Flutter skills compare equal. |
+| `VAL-05` | `Validation Steps` | Run `bash tools/sync_clinerules_mirrors.sh` after changing curated rule/workflow sources that own `.clinerules` counterparts. | `test` | `bash tools/sync_clinerules_mirrors.sh create-controller create-screen` | `local` | `passed` | Generated controller/screen workflow counterparts were refreshed. |
+| `VAL-06` | `Validation Steps` | Run `rg -n "controller-owned&#124;repository-owned&#124;paginated cache&#124;cache-backed&#124;canonical shared state" skills rules workflows .cline .claude .clinerules` and manually classify every relevant ownership statement for consistency. | `review` | ownership/cache `rg` scan and manual classification | `local` | `passed` | Normalized anchor: Run `rg -n "controller-owned repository-owned paginated cache cache-backed canonical shared state" skills rules workflows .cline .claude .clinerules` and manually classify every relevant ownership statement for consistency. Broad controller ownership wording was corrected. |
+| `VAL-07` | `Validation Steps` | Run `rg -n "fvm (flutter&#124;dart).*analy&#124;package:belluga_now"` across changed files and require no newly introduced obsolete/project-specific instruction. | `review` | changed-file analyzer/package scan | `local` | `passed` | Normalized anchor: Run `rg -n "fvm (flutter dart).*analy package:belluga_now"` across changed files and require no newly introduced obsolete/project-specific instruction. No obsolete CLI instruction or Belluga-specific example was added. |
+| `VAL-08` | `Validation Steps` | Run `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md --repo-root .`. | `test` | `stdout: Overall outcome: go; 52 actual paths classified` | `local` | `passed` | Strict changed-path contract remains classified after P2 remediation. |
+| `VAL-09` | `Validation Steps` | Run `git diff --check`. | `test` | `git diff --check` | `local` | `passed` | No whitespace errors. |
 
 ## External Dependency Readiness
 | Dependency | Why It Matters | Status (`unknown|healthy|degraded|failing|rate-limited|stale`) | Last Verified | Verification Method | Adjustment / Workaround |
@@ -198,16 +233,16 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
   - `skills/deterministic-tooling-register.md`
 
 ## Decisions (Resolved Before Freeze)
-- [x] `D-01` Do not cherry-pick `b9995ec`; selectively reconstruct valid intent against current Delphi architecture.
-- [x] `D-02` Controller-owned `StreamValue` is limited to local screen, stage, form, and interaction state.
-- [x] `D-03` Canonical cross-screen, paginated, cache-backed, or persistence-aligned state is a persistent repository-owned `StreamValue` exposed through controller delegation.
-- [x] `D-04` The persistent repository `StreamValue` is itself the canonical application-level reactive cache; parallel mutable copies of the same canonical data are prohibited.
-- [x] `D-05` Cache-name scans are mandatory semantic-review triggers. A match is presumed suspect until classified, but the final violation decision depends on duplicated canonical state rather than spelling alone.
-- [x] `D-06` Cursor, `hasMore`, and in-flight request guards are operational metadata, not automatically duplicate caches; their ownership must still be coherent with repository pagination.
-- [x] `D-07` Transport, image, filesystem, and persistence caches may exist when they do not become a competing application-state source of truth.
-- [x] `D-08` Port only the six bounded smell signals identified in scope and do not introduce `flutter-clean-code-audit`.
-- [x] `D-09` Prefer analyzer/lint enforcement for statically reliable signals, but keep external analyzer implementation outside this Delphi-only TODO.
-- [x] `D-10` This TODO is the first implementation slice of `feat/add-stack-capabilities`; stack-capability expansion remains a later independent slice on the branch.
+- [x] `RES-D-01` Do not cherry-pick `b9995ec`; selectively reconstruct valid intent against current Delphi architecture.
+- [x] `RES-D-02` Controller-owned `StreamValue` is limited to local screen, stage, form, and interaction state.
+- [x] `RES-D-03` Canonical cross-screen, paginated, cache-backed, or persistence-aligned state is a persistent repository-owned `StreamValue` exposed through controller delegation.
+- [x] `RES-D-04` The persistent repository `StreamValue` is itself the canonical application-level reactive cache; parallel mutable copies of the same canonical data are prohibited.
+- [x] `RES-D-05` Cache-name scans are mandatory semantic-review triggers. A match is presumed suspect until classified, but the final violation decision depends on duplicated canonical state rather than spelling alone.
+- [x] `RES-D-06` Cursor, `hasMore`, and in-flight request guards are operational metadata, not automatically duplicate caches; their ownership must still be coherent with repository pagination.
+- [x] `RES-D-07` Transport, image, filesystem, and persistence caches may exist when they do not become a competing application-state source of truth.
+- [x] `RES-D-08` Port only the six bounded smell signals identified in scope and do not introduce `flutter-clean-code-audit`.
+- [x] `RES-D-09` Prefer analyzer/lint enforcement for statically reliable signals, but keep external analyzer implementation outside this Delphi-only TODO.
+- [x] `RES-D-10` This TODO is the first implementation slice of `feat/add-stack-capabilities`; stack-capability expansion remains a later independent slice on the branch.
 
 ## Module Decision Baseline Snapshot (Required Before APROVADO)
 | Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
@@ -218,11 +253,11 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 | `system-principles#single-source-of-truth` | Cache is a deliberate optimization and must not become the data model/source of truth. | `Preserve` | `system_architecture_principles.md`, Single Source of Truth principle. |
 
 ## Decision Baseline (Frozen Before Implementation)
-- [x] `D-01` There will be one canonical mutable representation of shared application state: the persistent repository-owned `StreamValue`.
-- [x] `D-02` Controllers orchestrate and expose canonical streams but do not mirror canonical repository data into local caches.
-- [x] `D-03` Cache review is semantic and fail-closed: suspected parallel state must be removed or explicitly proven to be non-duplicative technical caching/metadata.
-- [x] `D-04` The resulting Delphi instructions remain project-agnostic and compatible with project-local architecture overrides through the existing cascading hierarchy.
-- [x] `D-05` No rejected or obsolete content from `b9995ec` may re-enter through mechanical copying.
+- [x] `BASE-D-01` There will be one canonical mutable representation of shared application state: the persistent repository-owned `StreamValue`.
+- [x] `BASE-D-02` Controllers orchestrate and expose canonical streams but do not mirror canonical repository data into local caches.
+- [x] `BASE-D-03` Cache review is semantic and fail-closed: suspected parallel state must be removed or explicitly proven to be non-duplicative technical caching/metadata.
+- [x] `BASE-D-04` The resulting Delphi instructions remain project-agnostic and compatible with project-local architecture overrides through the existing cascading hierarchy.
+- [x] `BASE-D-05` No rejected or obsolete content from `b9995ec` may re-enter through mechanical copying.
 
 ## Architecture Change Governance
 - **Applicability (`required|not_needed`):** `required`
@@ -235,10 +270,10 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ### Patterns To Enforce
 | Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
 | --- | --- | --- | --- |
-| Repository-owned canonical shared state | `D-03` | shared collections, pagination, cache-backed/persistent state | Prevents controller-to-controller divergence and duplicate reconciliation. |
-| Persistent `StreamValue` as reactive cache | `D-04` | repository canonical state | Preserves one mutable source of truth. |
-| Controller delegation without mirroring | `D-02` | presentation controllers | Keeps controllers as UI ingress/orchestration boundaries without creating state replicas. |
-| Semantic cache review | `D-05` through `D-07` | controller/repository and technical adapters | Blocks duplicate state while preserving legitimate non-duplicative infrastructure caches. |
+| Repository-owned canonical shared state | `BASE-D-01` | shared collections, pagination, cache-backed/persistent state | Prevents controller-to-controller divergence and duplicate reconciliation. |
+| Persistent `StreamValue` as reactive cache | `RES-D-04` | repository canonical state | Preserves one mutable source of truth. |
+| Controller delegation without mirroring | `BASE-D-02` | presentation controllers | Keeps controllers as UI ingress/orchestration boundaries without creating state replicas. |
+| Semantic cache review | `RES-D-05` through `RES-D-07` | controller/repository and technical adapters | Blocks duplicate state while preserving legitimate non-duplicative infrastructure caches. |
 
 ### Prohibited Anti-Patterns
 | Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
@@ -272,19 +307,168 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Adherence review evidence / resolution:** `Bounded canonical/mirror review confirmed one ownership contract: controller-local streams or delegation only; persistent repository streams are the canonical reactive cache; controller cache mirrors are blocked; technical caches and operational metadata are classified semantically. The review found residual generic controller-ownership wording in system architecture and controller-trigger surfaces; those findings were integrated before rerunning gates. The five existing smell skills contain the six authorized signals, and navigation remains AutoRoute/project-router based.`
 - **No-go handling:** `return to the affected decision or delivery-evidence loop; do not claim APROVADO or Completed with unresolved architecture divergence`
 
+## Gate: Review Baseline Freeze
+- **Gate decision:** `required`
+- **Why this decision:** The review package spans cross-module Flutter authority and mirror surfaces, so the review evidence must be tied to a committed, pushed branch baseline.
+- **Trigger stage:** `before the first planning-side review or guard run`
+- **Baseline branch:** `feat/add-stack-capabilities`
+- **Baseline commit:** `8caeb67f5d2977992b6700cd32674b3d59405159`
+- **Baseline push reference:** `origin/feat/add-stack-capabilities`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `The recorded commit resolves and is reachable from the recorded pushed branch; it was committed and pushed before the two fresh review rounds.`
+- **Evidence / reference:** `git rev-parse 8caeb67 -> 8caeb67f5d2977992b6700cd32674b3d59405159; git merge-base --is-ancestor 8caeb67f5d2977992b6700cd32674b3d59405159 origin/feat/add-stack-capabilities -> exit 0`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Gate: Review Scope Drift
+- **Gate decision:** `required`
+- **Why this decision:** The P2 remediations and routed future hardening record refine review-relevant material sections after the pushed baseline.
+- **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
+- **Baseline source:** `Review Baseline Freeze -> 8caeb67f5d2977992b6700cd32674b3d59405159`
+- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
+- **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md`
+- **No-go handling rule:** `return to the review loop, revalidate evolved material scope with the user, refresh the pushed baseline when needed, and rerun affected review/guard lanes; this is not a hard rejection`
+- **Gate status:** `blocked`
+- **Findings summary:** `The guard found material drift in Decisions, Decision Baseline, Architecture Change Governance, Assumptions Preview, Execution Plan, Security Risk Assessment, and Performance & Concurrency Risk Assessment after the pushed baseline. Renewed user scope validation and a refreshed pushed baseline are required before approval resumes.`
+- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md -> no-go, 7 changed material sections, 2026-09-16`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Audit Trigger Matrix
+| Trigger | Value | Notes |
+| --- | --- | --- |
+| `complexity` | `medium` | Copy from the TODO Complexity section. |
+| `blast_radius` | `cross-module` | Canonical rules, workflows, skills, and mirrors change together. |
+| `behavioral_change_or_bugfix` | `yes` | The ownership/cache instruction behavior is corrected. |
+| `changes_public_contract` | `no` | No API, schema, route, or auth-visible contract changes. |
+| `touches_auth_or_tenant` | `no` | No auth, permission, or tenant-access surface changes. |
+| `touches_runtime_or_infra` | `no` | No runtime, queue, realtime, or infrastructure changes. |
+| `touches_tests` | `no` | No test logic, fixture, or runner changes. |
+| `critical_user_journey` | `no` | No launch-critical product journey is changed. |
+| `release_or_promotion_critical` | `yes` | Delivery confidence for the active instruction surface matters to promotion. |
+| `high_severity_plan_review_issue` | `no` | No current high-severity plan-review issue card exists. |
+| `explicit_three_lane_request` | `no` | No dedicated delivery-side three-lane internal audit was explicitly requested. |
+
+## Independent No-Context Critique Gate
+- **Critique decision:** `required`
+- **Why this decision:** `medium`, cross-module, behavior-defining instruction correction, and release-critical confidence require the audit-escalation floor.
+- **Impact signals in scope:** `cross-module blast radius|intentional module supersede`
+- **Package mode:** `bounded-file-set`
+- **Package minimum contents:** `frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers`
+- **Critique isolation mode:** `fresh internal no-context reviewer`
+- **Internal reviewer mandate:** `required; first fresh correctness review and first fresh tooling review were independent of the implementer`
+- **Canonical multi-lane audit protocol (when required):** `recommended; audit-protocol-triple-review was not executed`
+- **Audit session / round evidence (when protocol used):** `n/a`
+- **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`
+- **Critique status:** `findings_integrated`
+- **Findings summary:** `The two fresh reviews found P2-01 through P2-05; P2-01 through P2-04 were corrected in the same TODO and P2-05 was routed to the real future hardening TODO.`
+- **Resolution ledger:**
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `P2-01` | `Integrated` | `useful` | `partial` | `project` | `n/a` | Screen authority surfaces now distinguish local controller state from delegated canonical repository state. |
+| `P2-02` | `Integrated` | `useful` | `partial` | `project` | `n/a` | Controller lifecycle guidance now disposes only controller-owned resources. |
+| `P2-03` | `Integrated` | `useful` | `partial` | `project` | `n/a` | Editor-managed Flutter guidance uses the stable VS Code Problems snapshot, not a local analyzer CLI. |
+| `P2-04` | `Integrated` | `useful` | `partial` | `project` | `n/a` | Active glob references and screen semantics now target canonical `create-*-method.md` surfaces. |
+| `P2-05` | `Deferred` | `useful` | `yes` | `project` | `n/a` | Deterministic active-surface coherence needs a separate approved read-only guard; routed to `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md`. |
+- **Evidence / reference:** `fresh correctness and tooling review findings recorded as P2-01..P2-05; current TODO routing ledger`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Promotion Finding Routing Ledger
+| Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
+| --- | --- | --- | --- | --- | --- | --- |
+| `P2-01` | `P2` | `release-blocker` | `same TODO correction` | Screen workflow/skill, screen rule/skill, generated Cline workflow, Cline glob, and Claude glob are inside the approved instruction-only boundary. | `corrected` | `APROVADO 2026-09-16`; no follow-up created. |
+| `P2-02` | `P2` | `release-blocker` | `same TODO correction` | Controller workflow and Cline/Claude skill mirrors are inside the approved instruction-only boundary. | `corrected` | `APROVADO 2026-09-16`; no follow-up created. |
+| `P2-03` | `P2` | `release-blocker` | `same TODO correction` | Claude/Cline architecture mirror wording is inside the approved instruction-only boundary. | `corrected` | `APROVADO 2026-09-16`; no follow-up created. |
+| `P2-04` | `P2` | `release-blocker` | `same TODO correction` | Claude glob workflow references and screen semantics are inside the approved instruction-only boundary. | `corrected` | `APROVADO 2026-09-16`; no follow-up created. |
+| `P2-05` | `P2` | `follow-up-hardening` | `separate TODO routing` | The reviewer identified no deterministic active-surface coherence harness. Its authorship and implementation are outside the approved instruction-only scope and must occur in a separate session. | `routed` | `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md` exists as a real, Pending, unapproved future TODO. |
+
+## Pipeline/Copilot P1/P2 Preflight
+| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| `active Flutter instruction coherence diff and evidence packet` | `release-blocking review modes` | `planned` | `branch-owned final review pending` | `none; review pending` | `Root closeout lane will replace this provisional row after final review.` |
+
+## Rule-Spirit Anti-Pattern Hunt
+| Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| `Flutter ownership/cache and mirror rules` | `direct violation or disguised controller-owned canonical cache, mirror drift, or obsolete analyzer guidance` | `planned` | `branch-owned final scan pending` | `none; final scan pending` | `Root closeout lane will replace this provisional row after final scan.` |
+
+## Security Risk Assessment
+- **Risk level:** `none`
+- **Why this risk level:** The bounded slice changes Delphi instruction and future-TODO text only; no auth, trust boundary, secret, tenant, or runtime path changes.
+- **Attack surface in scope:** `none`
+- **Attack simulation decision:** `not_needed`
+- **Review evidence:** `audit_escalation_guard reports security_review=not_needed`
+- **Residual security risk:** `none`
+
+## Performance & Concurrency Risk Assessment
+- **Policy schema version:** `pcv-1`
+- **Global sensitivity level:** `none`
+- **Why this level:** No runtime behavior, async product path, query shape, queue, realtime, or mutable product state changes; this is instruction/mirror and TODO-contract maintenance only.
+- **Current delivery stage at review time:** `Pending`
+- **Audit-escalation recommendation:** `recommended`
+- **Resolution:** `not_applicable` after evaluation of the no-runtime-behavior scope; this is not a waiver.
+| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `none` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
+| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `none` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
+| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `none` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
+| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `none` | `before_production_ready` | `n/a` | `not_applicable` | `none` | `none` |
+
+## Verification Debt Assessment
+- **Audit outcome:** `low`
+- **Why this outcome:** P2-05 is the only residual hardening debt; the current package contains no untracked code/test TODO debt.
+- **Inline code TODO debt:** `none`
+- **Evidence / audit artifact:** `Promotion Finding Routing Ledger P2-05; foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md`
+- **Accepted residual debt:** `P2-05 is routed to the real Pending/unapproved future TODO; the follow-up implementation is not authorized in this session.`
+
+## Independent Test Quality Audit Gate
+- **Audit decision:** `required`
+- **Why this decision:** The audit-escalation floor is required for this medium, behavior-defining, release-critical instruction correction even though no test logic changed.
+- **Trigger signals in scope:** `bugfix/regression|behavior-defining change|architectural change|non-trivial validation risk`
+- **Required evidence matrix (when architectural):** `n/a; no downstream/product test surface changed`
+- **Package mode:** `bounded-file-set`
+- **Package minimum contents:** `frozen baseline|approved scope boundary|bounded implementation diff|validation evidence|expected behaviors/DoD|residual risks`
+- **Canonical method:** `wf-docker-independent-test-quality-audit-method`
+- **Audit isolation mode:** `fresh internal no-context reviewer`
+- **Internal reviewer mandate:** `required; root reviewer pending`
+- **Gate-satisfying evidence expectation:** `required fresh internal no-context audit`
+- **Audit focus:** `product/test delta alignment|bypass detection|coverage sufficiency|brittle test-only shortcuts`
+- **Required applicable evidence:** `audit framing|bypass scan|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence`
+- **Audit status:** `not_run`
+- **Planning status:** `planned; awaiting root reviewer`
+- **Findings summary:** `Awaiting the root reviewer; no completion claim is made from this provisional row.`
+- **Resolution ledger:** `none pending review`
+- **Evidence / reference:** `root-owned review pending`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Independent No-Context Final Review Gate
+- **Final review decision:** `required`
+- **Why this decision:** The audit-escalation floor requires an expanded final review for the medium, cross-module, release-critical correction.
+- **Impact signals in scope:** `cross-module blast radius|intentional module supersede`
+- **Package mode:** `bounded-file-set`
+- **Package minimum contents:** `frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence|residual risks|verification debt`
+- **Review isolation mode:** `fresh internal no-context reviewer`
+- **Internal reviewer mandate:** `required; the completed final review was independent of the implementer`
+- **Canonical multi-lane audit protocol (when required):** `recommended; not executed`
+- **Audit session / round evidence (when protocol used):** `n/a`
+- **Review focus:** `adherence|regressions|validation evidence|security/performance residuals|elegance residuals|structural regressions|verification debt`
+- **Final review status:** `findings_integrated`
+- **Findings summary:** `The recently completed round found P2-01 through P2-05. P2-01 through P2-04 were integrated and P2-05 was routed; a new confirmation-clean review remains mandatory after this final remediation.`
+- **Resolution ledger:** `see Independent No-Context Critique Gate and Promotion Finding Routing Ledger P2-01..P2-05`
+- **Evidence / reference:** `current remediation diff and routed real follow-up TODO`
+- **Waiver authority / reference (required if waived):** `n/a`
+
 ## Decision Adherence Validation
 | Decision | Status | Evidence |
 | --- | --- | --- |
-| `D-01` | `Adherent` | No cherry-pick was used; the bounded diff contains only reconstructed Delphi instruction intent. |
-| `D-02` | `Adherent` | `flutter-architecture-adherence`, rules, and controller workflow limit controller-owned streams to local state. |
-| `D-03` | `Adherent` | Canonical rules and controller workflow define persistent repository-owned streams for shared/paginated/cache-backed state. |
-| `D-04` | `Adherent` | Canonical rules, umbrella skill, workflow, Cline, and Claude surfaces define the repository stream as the sole reactive cache and prohibit mirrors. |
-| `D-05` | `Adherent` | Cache-name guidance is a semantic-review trigger; it explicitly distinguishes canonical streams, metadata, and technical caches. |
-| `D-06` | `Adherent` | Cursor, `hasMore`, and in-flight guards are named as operational metadata with repository-pagination ownership. |
-| `D-07` | `Adherent` | Transport, image, filesystem, and persistence-adapter caches remain allowed when non-duplicative. |
-| `D-08` | `Adherent` | Five existing smell skills hold exactly the six authorized signals; no broad audit skill was added. |
-| `D-09` | `Adherent` | The deterministic-tooling register identifies AST/analyzer candidates and documents the remaining semantic-review boundary. |
-| `D-10` | `Adherent` | No stack-capability registry, downstream analyzer, or product path changed. |
+| `RES-D-01` | `Adherent` | No cherry-pick was used; the bounded diff contains only reconstructed Delphi instruction intent. |
+| `RES-D-02` | `Adherent` | `flutter-architecture-adherence`, rules, and screen/controller workflows limit controller-owned streams to local state. |
+| `RES-D-03` | `Adherent` | Canonical rules and screen/controller workflows define persistent repository-owned streams for shared/paginated/cache-backed state. |
+| `RES-D-04` | `Adherent` | Canonical rules, umbrella skill, workflows, Cline, and Claude surfaces define the repository stream as the sole reactive cache and prohibit mirrors. |
+| `RES-D-05` | `Adherent` | Cache-name guidance is a semantic-review trigger; it explicitly distinguishes canonical streams, metadata, and technical caches. |
+| `RES-D-06` | `Adherent` | Cursor, `hasMore`, and in-flight guards are named as operational metadata with repository-pagination ownership. |
+| `RES-D-07` | `Adherent` | Transport, image, filesystem, and persistence-adapter caches remain allowed when non-duplicative. |
+| `RES-D-08` | `Adherent` | Five existing smell skills hold exactly the six authorized signals; no broad audit skill was added. |
+| `RES-D-09` | `Adherent` | The deterministic-tooling register identifies AST/analyzer candidates and documents the remaining semantic-review boundary. |
+| `RES-D-10` | `Adherent` | No stack-capability registry, downstream analyzer, or product path changed. |
 
 ## Module Decision Consistency Validation
 | Module Decision Ref | Status | Evidence |
@@ -299,22 +483,23 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 | --- | --- | --- | --- | --- | --- |
 | `A-01` | The always-on Flutter rule is the intended reusable ownership authority. | It retains the repository-owned canonical-state decision introduced by `be7a533`, and the umbrella skill declares stack rules/workflows as canonical sources. | Ownership would require a new architecture decision rather than coherence repair. | `High` | `Promote to Decision` |
 | `A-02` | Current mirror tooling can synchronize all affected canonical skill/rule/workflow surfaces. | Existing Cline/Claude sync scripts and `self_check.sh` already govern these files. | The TODO would need a bounded mirror-tooling extension or an explicit manual sync rationale. | `High` | `Keep as Assumption` |
-| `A-03` | The six accepted smell signals can be expressed as concise additions to existing skills. | Each signal maps directly to an existing smell-specific skill already classified as an analyzer candidate. | Any signal requiring a new general audit framework must be removed or split. | `High` | `Keep as Assumption` |
+| `A-03` | The six accepted smell signals can be expressed as concise additions to existing skills. | `skills/flutter-smell-async-navigation/SKILL.md`, `flutter-smell-build-side-effects/SKILL.md`, `flutter-smell-image-media/SKILL.md`, `flutter-smell-layout-hotspots/SKILL.md`, and `flutter-smell-list-performance/SKILL.md` provide a one-to-one home; `skills/deterministic-tooling-register.md` classifies them as `lint/analyzer`; `tools/self_check.sh` and `tools/audit_instruction_baselines.sh` are concrete validation anchors for instruction structure/baselines. | Any signal requiring a new general audit framework must be removed or split. | `High` | `Keep as Assumption` |
 
 ## Gate: Assumption Code Coherence
 - **Gate decision:** `required`
 - **Why this decision:** The execution plan depends on the current canonical/mirror topology and on the identified ownership contradictions still existing at the named insertion points.
 - **Trigger stage:** `after decision review convergence and before APROVADO`
 - **Guard scope:** `A-01,A-02,A-03`
-- **Guard command:** `manual bounded source/history inspection; no standalone assumption-code guard is required for this instruction-only slice`
+- **Guard command:** `python3 tools/assumption_code_coherence_guard.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `A-01 is confirmed by current canonical-source precedence and git history; A-02 is confirmed by existing Cline/Claude/clinerules sync scripts; A-03 is confirmed by the one-to-one mapping between each accepted signal and an existing smell-specific skill.`
-- **Evidence / reference:** `git blame/log/show for b9995ec, be7a533, 6548471; current rules/stacks/flutter/flutter-architecture-always-on.md; current skills/flutter-architecture-adherence/SKILL.md; current workflows/flutter/create-controller-method.md; skills/deterministic-tooling-register.md`
+- **Findings summary:** `A-01 is confirmed by current canonical-source precedence and git history; A-02 is confirmed by existing Cline/Claude/clinerules sync scripts; A-03 is anchored by the existing smell-specific skills, deterministic tooling register, and instruction-validation code paths.`
+- **Evidence / reference:** `git blame/log/show for b9995ec, be7a533, 6548471; current rules/stacks/flutter/flutter-architecture-always-on.md; current skills/flutter-architecture-adherence/SKILL.md; current workflows/flutter/create-controller-method.md; skills/deterministic-tooling-register.md; tools/self_check.sh; tools/audit_instruction_baselines.sh`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Execution Plan
 ### Touched Surfaces
 - `foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md`
+- `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md` (routed future hardening contract only; no implementation authorized)
 - `rules/stacks/flutter/flutter-architecture-always-on.md`
 - `rules/stacks/docker/flutter-architecture.md`
 - `skills/flutter-architecture-adherence/SKILL.md`
@@ -348,11 +533,12 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Findings summary:** `Current umbrella/controller workflow contradict the active always-on repository-ownership rule.`
 
 ## Local CI-Equivalent Suite Matrix
-| Repository / CI Surface | Why In Scope | Exact Behavior / Scenario Proved | Fixture / Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `delphi-ai / self-check` | Canonical skills, workflows, rules, and mirrors change. | Delphi instruction and mirror coherence remains valid. | Final bounded working tree. | `bash self_check.sh` | `Local-Implemented` | `passed` | `bash self_check.sh` | Exit 0; refreshed all curated mirrors without unrelated working-tree changes. |
-| `delphi-ai / adherence sync` | Flutter architecture surfaces and mirrors change. | Canonical adherence surfaces do not drift from generated/consumer forms. | The parent workspace must expose Flutter/Laravel `.agents` rule/workflow links. | `bash tools/verify_adherence_sync.sh` | `Local-Implemented` | `waived` | `bash tools/verify_adherence_sync.sh`; direct canonical/mirror comparisons | Exit 1 only because pre-existing `/home/elton/Dev/repos/{flutter-app,laravel-app}/.agents/{rules,workflows}` directories are absent. Delphi self-maintenance policy uses `self_check.sh` plus explicit mirror checks; direct Cline/Claude comparisons for all ten changed skills passed. |
-| `delphi-ai / diff boundary` | The branch also has later stack-capability intent. | This first slice changes only its approved Flutter instruction package. | Baseline `2f2fa77`; TODO diff contract populated. | `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md --repo-root .` | `Local-Implemented` | `passed` | guard output | `Overall outcome: go`; all 42 actual paths are classified. |
+| Repository / CI Surface | Exact Behavior / Scenario Proved | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `delphi-ai / self-check` | Canonical skills, workflows, rules, and mirrors remain coherent. | `bash self_check.sh` | `Local-Implemented` | `passed` | `bash self_check.sh` | Final bounded working tree; refreshed curated mirrors without unrelated working-tree changes. |
+| `delphi-ai / changed mirror synchronization` | Changed Cline/Claude/clinerules mirrors equal their canonical skills/workflows. | `bash tools/sync_cline_skill_mirrors.sh ...`; `bash tools/sync_claude_skill_mirrors.sh ...`; `bash tools/sync_clinerules_mirrors.sh create-controller create-screen`; direct `cmp` | `Local-Implemented` | `passed` | sync commands, direct `cmp`, and `bash self_check.sh` | Changed canonical/mirror pairs synchronize and compare equal. |
+| `downstream / adherence sync` | Full downstream `.agents`-based adherence suite is evaluated only where that topology exists. | `bash tools/verify_adherence_sync.sh` | `Local-Implemented` | `n/a` | standalone checkout topology inspection | Not applicable: this standalone Delphi checkout lacks the downstream `.agents/{rules,workflows}` directories required by the suite; this is not a waiver, and direct changed-mirror synchronization is recorded above. |
+| `delphi-ai / diff boundary` | This first slice changes only its approved Flutter instruction package. | `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md --repo-root .` | `Local-Implemented` | `passed` | guard output | Baseline `2f2fa77`; all observed paths must remain classified. |
 
 ## Approval
 - **Approved by:** `user on 2026-09-16 with explicit "APROVADO"`

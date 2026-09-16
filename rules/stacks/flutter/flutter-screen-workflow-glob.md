@@ -1,13 +1,13 @@
 ---
 trigger: always_on
-description: 
+description: Enforce pure Flutter screen UI, controller-local state, and delegation of repository-owned canonical streams.
 ---
 
 
 ## Rule
 Whenever a file under `flutter-app/lib/presentation/**/screens/**` is active or modified, run the Screen Workflow:
 - Load and reference `foundation_documentation/policies/scope_subscope_governance.md` before placement/ownership decisions.
-- Keep screens pure UI; all logic/state lives in controllers per the architecture rule.
+- Keep screens pure UI. Controllers own local interaction state and orchestration; canonical entity/list streams remain repository-owned and are exposed through controller delegation without copying.
 - Ensure each screen is attributed to a canonical scope/subscope boundary; reject ambiguous legacy placement.
 - Ensure ModuleScope/GetIt registrations and documentation updates (`screens/*.md`) accompany the change.
 - Do not introduce undefined subscopes or ad-hoc scope folders without explicit decision + policy update.

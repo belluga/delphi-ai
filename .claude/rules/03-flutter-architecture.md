@@ -74,7 +74,7 @@ Allowed only if truly ephemeral:
 
 ## Analyzer & Test Requirements
 
-- Analyzer: `fvm flutter analyze` must be clean.
+- Local analyzer evidence is a stable, full-workspace VS Code Problems snapshot with no `Error` or `Warning`; do not start a concurrent CLI analyzer. Pipeline-owned analyzer jobs remain separate CI evidence.
 - Tests: add/maintain unit/widget tests where impacted flows change.
 - Any large or architectural Flutter change must carry a multi-lane test matrix.
 - Reference `foundation_documentation/system_architecture_principles.md` Appendix A for full context.

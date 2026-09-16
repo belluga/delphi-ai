@@ -1,6 +1,6 @@
 ---
 name: "create-screen"
-description: "Scaffold a new feature screen following the Feature-First architecture with proper separation between Controller (state) and Screen (UI)."
+description: "Scaffold a new feature screen with controller-local UI state, repository-owned canonical stream delegation, and pure Screen UI."
 ---
 
 <!-- Generated from `workflows/flutter/create-screen-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
@@ -8,7 +8,7 @@ description: "Scaffold a new feature screen following the Feature-First architec
 # Workflow: Create Screen (Flutter)
 
 ## Purpose
-Scaffold a new feature screen following the Feature-First architecture with proper separation between Controller (state) and Screen (UI).
+Scaffold a new feature screen following the Feature-First architecture with proper separation between controller-local state, repository-owned canonical streams, and screen UI.
 
 ## Prerequisites
 - Feature domain entities defined
@@ -39,40 +39,38 @@ lib/presentation/<module>/<feature>/
 ```
 
 ### 2. Implement Controller
-The controller owns all business logic and state:
+The controller owns orchestration and only its local UI state. It delegates canonical entity/list streams to the repository instead of copying or owning them:
 
 ```dart
 @injectable
 class YourFeatureController {
   final YourRepository _repository;
-  
+
   YourFeatureController(this._repository);
 
-  // State using StreamValue
-  final _state = StreamValue<YourEntity?>(null);
-  Stream<YourEntity?> get state => _state.stream;
-  YourEntity? get currentState => _state.value;
+  // Controller-local interaction state.
+  final isSubmitting = StreamValue<bool>(false);
 
-  // Business logic methods
+  // Canonical entity state belongs to the repository and is delegated only.
+  StreamValue<YourEntity?> get entity => _repository.entity;
+
+  // Repository operations update the canonical stream.
   Future<void> loadData(String id) async {
-    try {
-      final entity = await _repository.fetchById(id);
-      _state.add(entity);
-    } catch (e) {
-      _state.addError(e);
-    }
+    await _repository.loadById(id);
   }
 
   Future<void> performAction() async {
-    final current = currentState;
-    if (current == null) return;
-    
-    // Business logic here
-    await _repository.updateEntity(current);
+    isSubmitting.add(true);
+    try {
+      await _repository.performAction();
+    } finally {
+      isSubmitting.add(false);
+    }
   }
 
   void dispose() {
-    _state.close();
+    isSubmitting.close(); // Owns this local stream.
+    // Never close `entity`: repository owns its canonical stream lifecycle.
   }
 }
 ```
@@ -91,18 +89,13 @@ class YourFeatureScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Your Feature')),
-      body: StreamBuilder<YourEntity?>(
-        stream: controller.state,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return ErrorWidget(snapshot.error!);
-          }
-          
-          if (!snapshot.hasData) {
+      body: StreamValueBuilder<YourEntity?>(
+        streamValue: controller.entity,
+        builder: (context, entity) {
+          if (entity == null) {
             return const LoadingWidget();
           }
 
-          final entity = snapshot.data!;
           return YourFeatureContent(
             entity: entity,
             onAction: controller.performAction,
@@ -180,9 +173,9 @@ fvm flutter pub run build_runner build --delete-conflicting-outputs
 - For async CTA/search/filter/pagination flows, pair verification with `frontend-race-condition-validation`
 
 ## Architecture Principles
-- **Controller Owns State**: All business logic and state in controller, never in widgets
+- **Controller Owns Local State**: Controllers own local interaction streams, UI controllers, and orchestration; repositories own canonical entity/list streams that controllers delegate.
 - **Pure UI**: Screens and widgets are stateless, receive data via streams or parameters
-- **StreamValue Pattern**: Use `StreamValue` for reactive state management
+- **StreamValue Pattern**: Use a controller `StreamValue` for local interaction state and a persistent repository `StreamValue` as the canonical reactive entity/list cache; dispose only resources owned by the controller.
 - **Dependency Injection**: Controllers injected via GetIt, registered in modules
 - **Feature-First**: All feature code in one directory
 - **Scope Governance**: Screen placement/ownership must match canonical scope/subscope policy.

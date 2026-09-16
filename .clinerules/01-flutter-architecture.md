@@ -108,7 +108,7 @@ Allowed only if truly ephemeral:
 
 ## Analyzer & Test Requirements
 
-- Analyzer: `fvm flutter analyze` must be clean.
+- Local analyzer evidence is a stable, full-workspace VS Code Problems snapshot with no `Error` or `Warning`; do not start a concurrent CLI analyzer. Pipeline-owned analyzer jobs remain separate CI evidence.
 - Tests: add/maintain unit/widget tests where impacted flows change.
 - Route contract audit: classify required non-URL route args in `flutter-app/lib/application/router/app_router.gr.dart`.
 - Reference `foundation_documentation/system_architecture_principles.md` Appendix A for full context.
