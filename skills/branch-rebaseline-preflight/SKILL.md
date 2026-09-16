@@ -10,10 +10,13 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 
 ## Scope Controls
 - Run this skill when the user explicitly asks to reset/rebaseline the repository to the latest `dev`, prepare for the next implementation, or audit local/remote branch leftovers before cleanup.
+- This skill is the branch/rebaseline component of repository prune. For broader repository cleanup that includes worktrees, stale local residue, or artifact handoff, route through `prune-repository`.
 - This skill is a preflight plus safe cleanup flow. It must not destroy unmerged work.
 - Remote branch deletion is never automatic here. The skill only reports merged remote cleanup candidates.
-- This skill must not manually edit, stage, or rewrite Docker submodule gitlinks as part of "getting the workspace ready". Gitlink creation, adjustment, or reconciliation belongs only to the promotion-lane workflow.
+- This skill must not manually edit, stage, or rewrite Docker submodule gitlinks as part of "getting the workspace ready". Gitlink creation, adjustment, or reconciliation belongs only to the project-authorized promotion/pipeline flow.
+- When submodules are configured with `ignore = all` in `.gitmodules`, a clean-looking root status is not authority that gitlink work is missing or required. Treat the source repositories and pipeline-produced gitlink artifacts as the deciding surfaces instead of trying to make the superproject look "clean".
 - In multi-repository ecosystems, restrict the default rebaseline scope to the implementation repositories that the user is actively preparing for the next coding cycle. Do not automatically widen the audit to adjacent generated repos, deployment mirrors, documentation mirrors, or artifact-only repositories unless the user explicitly asks.
+- This skill must not delete `artifacts/**`; when repository preparation reveals artifact pollution, hand it to `prune-artifacts` after branch/worktree safety is understood.
 - PACED Docker ecosystem default:
   - include: the Docker/orchestration root repository and implementation source repositories named by the project (commonly `flutter-app` and `laravel-app`).
   - exclude by default: derived artifact repositories and documentation authority repositories (commonly `web-app` and `foundation_documentation`).
@@ -22,8 +25,9 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 - If a branch is not merged by ancestry but its non-merge commit set is patch-equivalent to content already in `origin/dev`, classify it as a `patch-equivalent false positive`, not as a real blocker.
 - Safe automatic cleanup is limited to local branches that:
   - are outside the promotion lane
-  - have no remote/upstream branch
+  - have no matching remote branch with the same name on `origin`
   - are already present in `origin/dev` by ancestry or validated patch-equivalence
+- A local branch that merely tracks `origin/dev` or `origin/stage` is not protected from safe cleanup by that tracking alone when no same-name remote branch exists.
 - If any non-lane branch still contains work not present in `origin/dev` after ancestry + patch-equivalence validation, do not continue with destructive rebaseline/reset behavior until the user decides how to treat it.
 
 ## Preferred Deterministic Helper
@@ -76,10 +80,10 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
    - `patch-equivalent false positives`
      - local or remote branches outside the lane that are not merged by ancestry but whose content is already present in `origin/dev`
    - `safe local cleanup`
-     - local branches outside the lane, without upstream remote, already present in `origin/dev` by ancestry or validated patch-equivalence
+     - local branches outside the lane, without a same-name remote branch on `origin`, already present in `origin/dev` by ancestry or validated patch-equivalence
    - `remote cleanup candidates`
      - remote branches outside the lane, already present in `origin/dev` by ancestry or validated patch-equivalence
-     - local branches with upstream remote that are already present in `origin/dev` should also point to the matching remote cleanup candidate
+     - local branches whose same-name remote branch exists and is already present in `origin/dev` should also point to that matching remote cleanup candidate
    - `local anomalies`
      - local `bot/next-version`
      - any unexpected local branch that looks like stale promotion-lane residue
@@ -93,7 +97,7 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
    - Proceed only if:
      - no blocking branches remain
      - the current workspace state is safe to move away from
-     - the repo does not require manual gitlink adjustment to appear "clean"; if gitlink movement would be needed, stop and defer that work to the promotion-lane workflow instead of editing submodule pointers here
+     - the repo does not require manual gitlink adjustment to appear "clean"; if gitlink movement would be needed, or if root cleanliness is ambiguous because `ignore = all` masks submodule drift, stop and defer that work to the project-authorized promotion/pipeline flow instead of editing submodule pointers here
    - Then:
      - switch to `dev`
      - update it to the latest `origin/dev`
@@ -126,5 +130,5 @@ Prepare a repository for the next implementation cycle without hiding unmerged w
 - Safe local-only merged branches are removed when applicable.
 - Merged remote branches are reported, not auto-deleted.
 - `bot/next-version` is treated as a remote promotion-lane branch, not a normal local branch.
-- Gitlink ownership remains with the promotion lane; this skill never performs manual gitlink surgery as part of rebaseline.
+- Gitlink ownership remains with the project-authorized promotion/pipeline flow; this skill never performs manual gitlink surgery as part of rebaseline.
 - The repository only lands on updated `dev` when no blocking branch ambiguity remains.

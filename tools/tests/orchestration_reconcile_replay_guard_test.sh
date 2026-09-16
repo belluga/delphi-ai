@@ -82,6 +82,12 @@ This plan covers only orchestrator reconciliation of approved worker-owned TODO 
 - worker-alpha must land its approved slice before the reconcile validation wave.
 
 ## Orchestration Topology
+- **Execution topology:** worktree-isolated
+- **Subagent / delegation authorization:** User explicitly approved delegated implementation.
+- **Worktree / auxiliary-checkout authorization:** explicit
+- **Worktree authorization evidence:** Human explicitly authorized git worktrees for isolated writers.
+- **Writer scheduling policy:** isolated-parallel-writers
+- **Auxiliary topology policy:** explicitly authorized worktree topology
 - **Base branch / commit:** release/v0.2.0+8~1
 - **Orchestrator reconciliation branch:** reconcile/v0.2.0+8/test-plan
 - **Principal checkout policy:** Principal checkout runs the authoritative CI Equivalent and runtime validation against the reconciliation branch.

@@ -1,6 +1,6 @@
 ---
 name: "docker-independent-final-review-method"
-description: "Define the canonical no-context external final-review gate for implemented tactical TODOs, including trigger rules, bounded review packages, retry discipline, and resolution handling."
+description: "Define the canonical no-context internal final-review gate for implemented tactical TODOs, including trigger rules, bounded review packages, retry discipline, and resolution handling."
 ---
 
 <!-- Generated from `workflows/docker/independent-final-review-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
@@ -8,7 +8,7 @@ description: "Define the canonical no-context external final-review gate for imp
 # Workflow: Independent No-Context Final Review
 
 ## Purpose
-Provide the canonical delivery-side external review lane for an implemented tactical TODO once `wf-docker-audit-escalation-method` has derived the final-review floor.
+Provide the canonical delivery-side internal review lane for an implemented tactical TODO once `wf-docker-audit-escalation-method` has derived the final-review floor.
 
 This method critiques the delivered implementation and its evidence. It is not a late-stage redesign gate unless the reviewer finds a material defect or approval-breaking divergence.
 
@@ -59,7 +59,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 - Preserve concrete evidence and explicit residual risks rather than smoothing them into generic prose.
 
 ## Required-Gate Waiver Control
-- If a `required` no-context final review cannot be completed after one retry, a `blocked` record alone does not permit `Completed` or `Production-Ready`.
+- If a `required` no-context final review cannot be completed after an objectively terminal failed attempt and one retry of the complete gate-satisfying package, a `blocked` record alone does not permit `Completed` or `Production-Ready`.
 - Only the current human approval authority for the TODO may waive a required final-review gate.
 - The waiver record must include:
   - `waiver_reason`
@@ -74,10 +74,13 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - If implementation changed any trigger materially, rerun the audit-escalation guard before trusting the old final-review decision.
 2. Build the bounded final-review package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind final_review ...`.
-3. Run one fresh auxiliary final review with no inherited thread context.
-   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
-   - If no subagent is available, document the constraint and run a bounded no-context self-review from the package only.
-   - In other environments, use the closest equivalent that guarantees no prior thread contamination.
+3. Run one fresh internal final review with no inherited thread context.
+   - This final-review pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
+   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable.
+   - Do not invoke or treat an external provider as gate-satisfying review evidence.
+   - In other environments, use the closest internal equivalent that guarantees no prior thread contamination.
+   - Reviewer lifecycle is status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline.
+   - A polling timeout means only that no terminal event arrived during that polling window. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
 4. Prompt the reviewer to return findings first, ordered by severity, focusing on:
    - bugs/regressions;
    - adherence breaks;
@@ -92,8 +95,8 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 5. Treat the review as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may block closure if it exposes unresolved material defects, but it does not replace the TODO contract or user approval model.
-6. If the first no-context final-review attempt fails or times out, retry once with a tighter package.
-7. If a `required` final review still cannot be obtained after one retry:
+6. If the first no-context final-review attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric; a polling timeout while the reviewer remains live requires continued waiting.
+7. If a `required` final review still cannot be obtained after an objectively terminal failed attempt and one retry:
    - record the tooling limitation explicitly;
    - do not silently treat bounded self-review as equivalent to a true fresh no-context final review;
    - require either a blocker state or an explicit waiver before `Completed` or `Production-Ready`;
@@ -110,6 +113,7 @@ The reviewer should not reopen the whole architecture by default. Only a materia
    - a true approval-material scope/design change, refresh the TODO and request renewed `APROVADO` before continuing.
 10. Treat `audit-protocol-triple-review` as additive only.
    - It may coexist with this final-review lane.
+   - It remains the compatibility id for the dedicated delivery-side multi-lane audit.
    - It does not silently replace a required final review unless a future canonical rule explicitly authorizes that replacement.
 
 ## Outputs
@@ -119,5 +123,5 @@ The reviewer should not reopen the whole architecture by default. Only a materia
 - A blocker or waiver record if a required no-context final review could not be executed.
 
 ## Non-Authority Rule
-- Fresh auxiliary final reviews are intentionally independent, but they do not own the delivery decision.
+- Fresh internal final reviews are intentionally independent, but they do not own the delivery decision.
 - Closure authority remains the tactical TODO, explicit approvals, and the normal adherence/risk gates.

@@ -63,7 +63,7 @@ Create or refactor a Flutter package or library so it follows the proprietary pa
    - README must be faithful to implemented code — no aspirational content.
 
 8. Run validation.
-   - `flutter analyze` passes with no errors in the package.
+   - Capture the stable, full-workspace VS Code Problems bridge snapshot. It must contain no `Error` or `Warning`; classify every retained `Information` diagnostic in the governing TODO. Do not start a CLI analyzer locally.
    - Package tests pass.
    - Host app builds successfully with the new dependency.
 
@@ -80,7 +80,7 @@ Create or refactor a Flutter package or library so it follows the proprietary pa
 - Package is declared as path dependency in root `pubspec.yaml`.
 - Package root contains `README.md` following canonical template.
 - README content matches implemented public API.
-- `flutter analyze` passes for the package.
+- A stable full-workspace VS Code Problems bridge snapshot has no `Error` or `Warning`, and every retained `Information` diagnostic is classified.
 - Package tests pass.
 - Host app builds successfully.
 - Package appears in `delphi-ai/config/ecosystem_packages.yaml & foundation_documentation/local_packages.yaml` checklist as `[x]`.

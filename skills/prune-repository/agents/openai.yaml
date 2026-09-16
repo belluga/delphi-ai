@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prune Repository"
+  short_description: "Safely prune repo branches and worktrees"
+  default_prompt: "Use $prune-repository to prepare repositories for the next implementation cycle."

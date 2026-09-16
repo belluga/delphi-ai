@@ -35,6 +35,7 @@ Use this workflow before trusting closure claims from `promotion_lane/`, `comple
 - `Provisional Notes` when `Qualifiers` includes `Provisional`
 - `Blocked` qualifier coherence vs `Blocker Notes`
 - `Independent No-Context Critique Gate`
+- `Gate: Assumption Code Coherence`
 - `Independent Test Quality Audit Gate`
 - `Independent No-Context Final Review Gate`
 - required waiver references for waived gates

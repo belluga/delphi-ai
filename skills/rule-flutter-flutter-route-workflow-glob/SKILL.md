@@ -16,14 +16,14 @@ Edits under `flutter-app/lib/**/routes/**` must follow the Route Workflow:
 - If that architectural route change is compatibility-critical or backend-coupled, require real-backend web + mobile integration evidence for the affected flow.
 - Do not use synthetic browser-history seeding or manual ancestry fabrication as a substitute for proper route/history design.
 - Do not create or imply undefined subscopes/folders; explicit decision + policy update is required first.
-- Regenerate routes via build_runner and ensure analyzer passes.
+- Regenerate routes via build_runner and capture a stable full-workspace VS Code Problems bridge snapshot with no `Error` or `Warning`; do not start a CLI analyzer locally.
 
 ## Rationale
 Routing governs navigation and domain hydration. The workflow preserves RouteModelResolver discipline and documentation parity.
 
 ## Enforcement
 - Run the Route Workflow steps before merging changes to these files.
-- PRs should reference the updated docs and analyzer output.
+- PRs should reference the updated docs and stable full-workspace Problems bridge snapshot.
 - PRs must include the route contract audit result (or explicit statement that no new required non-URL args were introduced).
 - PRs should record the route entry-mode classification and boundary-route contract whenever affected.
 - PRs/TODOs must record the required unit + widget + integration evidence for architectural route changes, plus required real-backend web + mobile evidence when the affected flow is compatibility-critical or backend-coupled, or an explicit human waiver/blocker reference.

@@ -41,6 +41,19 @@ POST_REPLAY_CI_ALLOWED = {"passed", "not-needed", "waived", "blocked", "pending"
 COMMIT_RE = re.compile(r"\b[0-9a-fA-F]{7,40}\b")
 
 
+def extract_repo_qualified_value(value: str | None, repo_name: str, separator: str) -> str | None:
+    if value is None:
+        return None
+    text = value.strip().strip("`")
+    pattern = re.compile(
+        rf"(?:^|[,;]\s*){re.escape(repo_name)}\s*{re.escape(separator)}\s*([^,;]+)"
+    )
+    match = pattern.search(text)
+    if match:
+        return match.group(1).strip()
+    return text
+
+
 def git(repo_path: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", "-C", str(repo_path), *args],
@@ -165,10 +178,31 @@ def validate_replay(
     replay_proof_summary = extract_field(replay_lines, "Replay proof summary")
     post_replay_ci_status = extract_field(replay_lines, "Post-replay authoritative CI-equivalent status")
 
+    repo_name = repo_path.name
+    resolved_topology_return_branch = extract_repo_qualified_value(topology_return_branch, repo_name, ":")
+    resolved_topology_promotion_source = extract_repo_qualified_value(topology_promotion_source, repo_name, ":")
+    resolved_accepted_reconcile_commit = extract_repo_qualified_value(accepted_reconcile_commit, repo_name, "@")
+    resolved_authoritative_return_branch_verified = extract_repo_qualified_value(
+        authoritative_return_branch_verified, repo_name, ":"
+    )
+    resolved_promotion_source_branch_verified = extract_repo_qualified_value(
+        promotion_source_branch_verified, repo_name, ":"
+    )
+    resolved_authoritative_return_head = extract_repo_qualified_value(authoritative_return_head, repo_name, "@")
+    resolved_replay_commits = extract_repo_qualified_value(replay_commits, repo_name, "@")
+
     context["replay_status"] = replay_status or "missing"
     context["replay_mode"] = replay_mode or "missing"
-    context["authoritative_return_branch"] = authoritative_return_branch_verified or topology_return_branch or "missing"
-    context["promotion_source_branch"] = promotion_source_branch_verified or topology_promotion_source or "missing"
+    context["authoritative_return_branch"] = (
+        resolved_authoritative_return_branch_verified
+        or resolved_topology_return_branch
+        or "missing"
+    )
+    context["promotion_source_branch"] = (
+        resolved_promotion_source_branch_verified
+        or resolved_topology_promotion_source
+        or "missing"
+    )
     context["post_replay_ci_status"] = post_replay_ci_status or "missing"
 
     if replay_required is None or is_placeholder(replay_required):
@@ -256,7 +290,7 @@ def validate_replay(
                 "Post-Reconcile Replay Evidence",
             )
         )
-    elif not COMMIT_RE.fullmatch(accepted_reconcile_commit.strip()):
+    elif not resolved_accepted_reconcile_commit or not COMMIT_RE.fullmatch(resolved_accepted_reconcile_commit.strip()):
         violations.append(
             build_violation(
                 "ACCEPTED-RECONCILE-COMMIT-INVALID",
@@ -294,7 +328,10 @@ def validate_replay(
                 "Post-Reconcile Replay Evidence",
             )
         )
-    elif topology_return_branch and authoritative_return_branch_verified != topology_return_branch:
+    elif (
+        resolved_topology_return_branch
+        and resolved_authoritative_return_branch_verified != resolved_topology_return_branch
+    ):
         violations.append(
             build_violation(
                 "RETURN-BRANCH-VERIFIED-MISMATCH",
@@ -313,7 +350,10 @@ def validate_replay(
                 "Post-Reconcile Replay Evidence",
             )
         )
-    elif topology_promotion_source and promotion_source_branch_verified != topology_promotion_source:
+    elif (
+        resolved_topology_promotion_source
+        and resolved_promotion_source_branch_verified != resolved_topology_promotion_source
+    ):
         violations.append(
             build_violation(
                 "PROMOTION-SOURCE-VERIFIED-MISMATCH",
@@ -322,7 +362,7 @@ def validate_replay(
                 "Post-Reconcile Replay Evidence",
             )
         )
-    elif references_reconcile_branch(promotion_source_branch_verified):
+    elif references_reconcile_branch(resolved_promotion_source_branch_verified or promotion_source_branch_verified):
         violations.append(
             build_violation(
                 "PROMOTION-SOURCE-VERIFIED-INVALID",
@@ -333,9 +373,9 @@ def validate_replay(
         )
 
     if (
-        authoritative_return_branch_verified
-        and promotion_source_branch_verified
-        and authoritative_return_branch_verified != promotion_source_branch_verified
+        resolved_authoritative_return_branch_verified
+        and resolved_promotion_source_branch_verified
+        and resolved_authoritative_return_branch_verified != resolved_promotion_source_branch_verified
     ):
         violations.append(
             build_violation(
@@ -355,7 +395,7 @@ def validate_replay(
                 "Post-Reconcile Replay Evidence",
             )
         )
-    elif not COMMIT_RE.fullmatch(authoritative_return_head.strip()):
+    elif not resolved_authoritative_return_head or not COMMIT_RE.fullmatch(resolved_authoritative_return_head.strip()):
         violations.append(
             build_violation(
                 "RETURN-HEAD-INVALID",
@@ -384,7 +424,10 @@ def validate_replay(
                 "Post-Reconcile Replay Evidence",
             )
         )
-    elif normalize_text(replay_mode or "") == "curated-replay" and normalize_text(replay_commits) == "same-as-reconcile":
+    elif (
+        normalize_text(replay_mode or "") == "curated-replay"
+        and normalize_text(resolved_replay_commits or replay_commits or "") == "same-as-reconcile"
+    ):
         violations.append(
             build_violation(
                 "CURATED-REPLAY-COMMIT-LIST-INVALID",
@@ -423,11 +466,15 @@ def validate_replay(
         )
 
     if repo_is_git_root(repo_path):
-        source_branch = promotion_source_branch_verified or topology_promotion_source
-        return_branch = authoritative_return_branch_verified or topology_return_branch
+        source_branch = resolved_promotion_source_branch_verified or resolved_topology_promotion_source
+        return_branch = resolved_authoritative_return_branch_verified or resolved_topology_return_branch
         source_head = branch_head(repo_path, source_branch) if source_branch and not is_placeholder(source_branch) else None
         return_head = branch_head(repo_path, return_branch) if return_branch and not is_placeholder(return_branch) else None
-        reconcile_commit = resolve_commit(repo_path, accepted_reconcile_commit) if accepted_reconcile_commit else None
+        reconcile_commit = (
+            resolve_commit(repo_path, resolved_accepted_reconcile_commit)
+            if resolved_accepted_reconcile_commit
+            else None
+        )
 
         if source_branch and source_head is None:
             violations.append(
@@ -449,28 +496,28 @@ def validate_replay(
                 )
             )
 
-        if authoritative_return_head and return_head and authoritative_return_head != return_head:
+        if resolved_authoritative_return_head and return_head and resolved_authoritative_return_head != return_head:
             violations.append(
                 build_violation(
                     "RETURN-HEAD-MISMATCH",
-                    f"Recorded canonical head `{authoritative_return_head}` does not match the local branch head `{return_head}`.",
+                    f"Recorded canonical head `{resolved_authoritative_return_head}` does not match the local branch head `{return_head}`.",
                     "Refresh the replay evidence after the canonical branch reaches the final replay SHA, then rerun this guard.",
                     "Post-Reconcile Replay Evidence",
                 )
             )
 
-        if accepted_reconcile_commit and reconcile_commit is None:
+        if resolved_accepted_reconcile_commit and reconcile_commit is None:
             violations.append(
                 build_violation(
                     "RECONCILE-COMMIT-NOT-FOUND",
-                    f"Accepted reconcile commit cannot be resolved locally: {accepted_reconcile_commit}",
+                    f"Accepted reconcile commit cannot be resolved locally: {resolved_accepted_reconcile_commit}",
                     "Fetch or restore the accepted reconcile commit locally so the canonical replay can be verified against a real git anchor.",
                     "Post-Reconcile Replay Evidence",
                 )
             )
 
         normalized_mode = normalize_text(replay_mode or "")
-        normalized_replay_commits = normalize_text(replay_commits or "")
+        normalized_replay_commits = normalize_text(resolved_replay_commits or replay_commits or "")
         if source_head and reconcile_commit and normalized_mode in {"fast-forward", "merge-commit", "same-commit-alias"}:
             if not is_ancestor(repo_path, reconcile_commit, source_head):
                 violations.append(
@@ -483,7 +530,7 @@ def validate_replay(
                 )
 
         if source_head and normalized_mode == "curated-replay":
-            commit_list = parse_commit_list(replay_commits or "")
+            commit_list = parse_commit_list(resolved_replay_commits or replay_commits or "")
             if not commit_list:
                 violations.append(
                     build_violation(

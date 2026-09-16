@@ -11,6 +11,7 @@ When a session begins, switches scope, or ends:
 - When any runtime-index predicate is true (`2+ active TODOs`, `any Blocked TODO`, `any open handoff`, or session-memory carry-over that changes the likely resume front), use `delphi-ai/workflows/docker/runtime-index-method.md` to generate a derived runtime index before resuming execution.
 - For any route/module/screen scope, confirm `foundation_documentation/policies/scope_subscope_governance.md` is loaded before implementation tasks proceed.
 - At session end, follow `delphi-ai/workflows/docker/post-session-review-method.md`: analyze new principles, update mandates if needed, and deliver English feedback before acknowledging closure.
+- Track subagent/delegation authorization separately from Git-isolation authorization. Without explicit human authorization naming worktrees or auxiliary checkouts, keep all subagent execution in the principal checkout with one writer at a time and no `worker/*` or `reconcile/*` branches.
 
 ## Rationale
 Session lifecycle discipline keeps context consistent across profiles, reduces re-navigation overhead during tactical resumes, ensures instruction updates trigger session restarts, and enforces the mandated post-session review steps.

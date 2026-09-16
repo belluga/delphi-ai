@@ -3,9 +3,25 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 GUARD="$ROOT_DIR/tools/todo_authority_guard.py"
+CONTRACT="$ROOT_DIR/config/agent_role_routing.json"
+ROUTINE_EXECUTOR_MODEL="$(
+  python3 - "$CONTRACT" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(contract["clients"]["codex"]["preferred_models"]["routine_executor"][0])
+PY
+)"
 
 TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"' EXIT
+cleanup() {
+  local status=$?
+  rm -rf "$TMP_DIR"
+  exit "$status"
+}
+trap cleanup EXIT
 
 OUTPUT_FILE="$TMP_DIR/todo-authority-guard.out"
 
@@ -23,8 +39,31 @@ assert_no_go() {
 assert_go() {
   local todo_file="$1"
   shift || true
-  python3 "$GUARD" "$todo_file" "$@" > "$OUTPUT_FILE" 2>&1
+  if ! python3 "$GUARD" "$todo_file" "$@" > "$OUTPUT_FILE" 2>&1; then
+    cat "$OUTPUT_FILE"
+    return 1
+  fi
   grep -q "Overall outcome: go" "$OUTPUT_FILE"
+}
+
+assert_preflight_go() {
+  local todo_file="$1"
+  if ! python3 "$GUARD" "$todo_file" --pre-approval > "$OUTPUT_FILE" 2>&1; then
+    cat "$OUTPUT_FILE"
+    return 1
+  fi
+  grep -q "Overall outcome: preflight-go" "$OUTPUT_FILE"
+  grep -q "execution_authority_granted: False" "$OUTPUT_FILE"
+}
+
+assert_preflight_no_go() {
+  local todo_file="$1"
+  if python3 "$GUARD" "$todo_file" --pre-approval > "$OUTPUT_FILE" 2>&1; then
+    cat "$OUTPUT_FILE"
+    printf 'expected preflight-no-go for %s\n' "$todo_file" >&2
+    exit 1
+  fi
+  grep -q "Overall outcome: preflight-no-go" "$OUTPUT_FILE"
 }
 
 cat > "$TMP_DIR/missing-approval.md" <<'TODO'
@@ -56,6 +95,25 @@ TODO
 assert_no_go "$TMP_DIR/missing-rules.md"
 grep -q "RULE-INGESTION-MISSING" "$OUTPUT_FILE"
 
+cat > "$TMP_DIR/missing-routing-preflight.md" <<'TODO'
+# TODO: Missing Routing Preflight
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/effort-selection-method.md` | Governed routing is in scope. | executor/reviewer split | silent fallback | require explicit routing |
+TODO
+
+assert_no_go "$TMP_DIR/missing-routing-preflight.md"
+grep -q "ROUTING-PREFLIGHT-MISSING" "$OUTPUT_FILE"
+
 cat > "$TMP_DIR/approved-no-delivery-claim.md" <<'TODO'
 # TODO: Approved No Delivery Claim
 
@@ -73,6 +131,241 @@ cat > "$TMP_DIR/approved-no-delivery-claim.md" <<'TODO'
 TODO
 
 assert_go "$TMP_DIR/approved-no-delivery-claim.md"
+
+cat > "$TMP_DIR/pre-approval-ready.md" <<'TODO'
+# TODO: Pre-Approval Ready
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `rules/core/todo-driven-execution-model-decision.md` | TODO execution. | Approval gate. | Silent changes. | Check before execution. |
+TODO
+
+assert_preflight_go "$TMP_DIR/pre-approval-ready.md"
+assert_no_go "$TMP_DIR/pre-approval-ready.md"
+grep -q "APPROVAL-SECTION-MISSING" "$OUTPUT_FILE"
+
+sed 's#rules/core/todo-driven-execution-model-decision.md#package-first-verification#' \
+  "$TMP_DIR/pre-approval-ready.md" > "$TMP_DIR/weak-rule-source.md"
+assert_preflight_no_go "$TMP_DIR/weak-rule-source.md"
+grep -q "RULE-INGESTION-SOURCE-WEAK" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/approval-prefix-collision.md" <<'TODO'
+# TODO: Exact Approval Section Wins
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval and execution gates
+- [x] Planning checks completed.
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `rules/core/todo-driven-execution-model-decision.md` | TODO execution. | Approval gate. | Silent changes. | Check before execution. |
+TODO
+
+assert_go "$TMP_DIR/approval-prefix-collision.md"
+
+cat > "$TMP_DIR/approved-with-routing-preflight.md" <<'TODO'
+# TODO: Approved With Routing Preflight
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** implement the bounded guard.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/effort-selection-method.md` | Governed routing is in scope. | executor/reviewer split | silent fallback | require explicit routing |
+
+## Agent Routing Preflight
+- **Client surface:** `codex`
+- **Current governed action:** `implementation`
+- **Selected role:** `routine-executor`
+- **Selected model:** `__ROUTINE_EXECUTOR_MODEL__`
+- **Selected effort:** `medium`
+- **Proof mode:** `declared`
+- **Exception reason:** `n/a`
+- **Guard outcome:** `go`
+- **Waiver / exception reference:** `n/a`
+TODO
+
+python3 - "$TMP_DIR/approved-with-routing-preflight.md" "$ROUTINE_EXECUTOR_MODEL" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.write_text(
+    path.read_text(encoding="utf-8").replace("__ROUTINE_EXECUTOR_MODEL__", sys.argv[2]),
+    encoding="utf-8",
+)
+PY
+
+assert_go "$TMP_DIR/approved-with-routing-preflight.md"
+
+sed 's/`implementation`/final `todo-approval` plus planned `implementation` handoff/' \
+  "$TMP_DIR/approved-with-routing-preflight.md" > "$TMP_DIR/composite-routing-preflight.md"
+assert_preflight_no_go "$TMP_DIR/composite-routing-preflight.md"
+grep -q "ROUTING-SURFACE-UNKNOWN" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/architecture-supersede-missing-governance.md" <<'TODO'
+# TODO: Architecture Supersede Missing Governance
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** standardize the shared API envelope.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit architectural cutover. | Silent regressions. | Guard the architecture package. |
+
+## Module Decision Baseline Snapshot
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `accounts#D-03` | Legacy mixed envelopes remain tolerated. | `Supersede (Intentional)` | `foundation_documentation/modules/accounts.md#decision-d03` |
+TODO
+
+assert_no_go "$TMP_DIR/architecture-supersede-missing-governance.md"
+grep -q "ARCHITECTURE-GOVERNANCE-MISSING" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/architecture-required-incomplete.md" <<'TODO'
+# TODO: Architecture Required Incomplete
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** standardize the shared API envelope.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit architectural cutover. | Silent regressions. | Guard the architecture package. |
+
+## Module Decision Baseline Snapshot
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `accounts#D-03` | Legacy mixed envelopes remain tolerated. | `Supersede (Intentional)` | `foundation_documentation/modules/accounts.md#decision-d03` |
+
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** replace the mixed envelope family with one canonical contract
+- **Deviation / debt being retired:** exposing multiple envelope shapes for the same paginated discovery use case
+- **Target steady-state after closeout:** every paginated collection uses the same response envelope
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** all targeted consumers and producers use the canonical envelope
+
+### Patterns To Enforce
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| `canonical paginated envelope` | `accounts#D-07` | `account discovery surfaces` | `all consumers must decode one stable contract` |
+TODO
+
+assert_no_go "$TMP_DIR/architecture-required-incomplete.md"
+grep -q "ARCHITECTURE-ANTI-PATTERNS-MISSING" "$OUTPUT_FILE"
+grep -q "ARCHITECTURE-HARNESS-MISSING" "$OUTPUT_FILE"
+assert_preflight_no_go "$TMP_DIR/architecture-required-incomplete.md"
+grep -q "ARCHITECTURE-ANTI-PATTERNS-MISSING" "$OUTPUT_FILE"
+grep -q "ARCHITECTURE-HARNESS-MISSING" "$OUTPUT_FILE"
+
+cat > "$TMP_DIR/architecture-required-complete.md" <<'TODO'
+# TODO: Architecture Required Complete
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** standardize the shared API envelope.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit architectural cutover. | Silent regressions. | Guard the architecture package. |
+
+## Module Decision Baseline Snapshot
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `accounts#D-03` | Legacy mixed envelopes remain tolerated. | `Supersede (Intentional)` | `foundation_documentation/modules/accounts.md#decision-d03` |
+
+## Architecture Change Governance
+- **Applicability (`required|not_needed`):** `required`
+- **Why this applies:** replace the mixed envelope family with one canonical contract
+- **Deviation / debt being retired:** exposing multiple envelope shapes for the same paginated discovery use case
+- **Target steady-state after closeout:** every paginated collection uses the same response envelope
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** all targeted consumers and producers use the canonical envelope
+
+### Patterns To Enforce
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| `canonical paginated envelope` | `accounts#D-07` | `account discovery surfaces` | `all consumers must decode one stable contract` |
+
+### Prohibited Anti-Patterns
+| Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
+| --- | --- | --- | --- |
+| `raw paginator shape exposed at the API boundary` | `guard + contract review` | `reintroduces multi-envelope drift` | `none` |
+
+### Architecture Protection Harness
+| Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| `guard` | `shared TODO architecture contract` | `python3 delphi-ai/tools/todo_authority_guard.py foundation_documentation/todos/active/v0.2.5/TODO-canonical-envelope.md` | `missing architecture governance on future supersede TODOs` | `already-enforced` | `guard output` |
+| `test` | `API contract suite` | `php artisan test --filter CanonicalEnvelopeContractTest` | `legacy envelope emitted again` | `implement-in-this-todo` | `DOD + validation rows in the governing TODO` |
+
+## Architecture Review Gates
+- **Architecture decision review:** `required`
+- **Decision review status:** `passed`
+- **Architecture adherence review:** `required`
+- **Adherence review status:** `n/a`
+TODO
+
+assert_go "$TMP_DIR/architecture-required-complete.md"
+
+sed 's/Decision review status:\*\* `passed`/Decision review status:** `no_material_findings`/' \
+  "$TMP_DIR/architecture-required-complete.md" > "$TMP_DIR/architecture-review-status-compatible.md"
+assert_preflight_go "$TMP_DIR/architecture-review-status-compatible.md"
+
+cat > "$TMP_DIR/architecture-not-needed.md" <<'TODO'
+# TODO: Architecture Not Needed
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+
+## Approval
+- **Approved by:** user approved with "APROVADO" on 2026-05-25.
+- **Approval scope:** correct a bounded screen layout regression.
+
+## Rules Acknowledgement / Ingestion
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-driven-execution-method.md` | TODO execution. | Explicit authority gate. | Silent scope expansion. | Guard the bounded correction. |
+
+## Architecture Change Governance
+- **Applicability:** `not_needed`
+- **Why this applies:** no architecture is established or superseded.
+- **Deviation / debt being retired:** `n/a`
+- **Target steady-state after closeout:** `n/a`
+- **Temporary exceptions allowed:** `none`
+- **Cutover / removal condition:** `n/a`
+TODO
+
+assert_go "$TMP_DIR/architecture-not-needed.md"
 
 cat > "$TMP_DIR/local-implemented-missing-gates.md" <<'TODO'
 # TODO: Local Implemented Missing Gates

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Deterministic authority/process guard for tactical TODO execution.
 
-This companion guard validates evidence that should already exist in a tactical
-TODO after approval and before implementation/delivery claims:
+This companion guard validates execution-readiness structure before approval
+and full authority evidence after approval and before implementation/delivery
+claims:
 
   - explicit approval evidence and approved scope;
   - touched-surface rule/workflow ingestion;
@@ -12,7 +13,7 @@ TODO after approval and before implementation/delivery claims:
 It intentionally does not scrape chat history and does not replace
 todo_completion_guard.py. It emits a TEACH runtime response and exits with:
 
-  0  GO: no authority/process blocker was found.
+  0  GO or PREFLIGHT-GO: no blocker was found for the selected mode.
   2  NO-GO: deterministic authority/process blockers were found.
   1  Tool/runtime misuse.
 """
@@ -26,6 +27,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from agent_role_routing_guard import DEFAULT_CONTRACT_PATH, evaluate_routing, load_contract
 from orchestration_plan_completion_guard import (
     build_violation,
     extract_field,
@@ -49,6 +51,13 @@ DELIVERY_STAGE_MARKERS = (
 APPROVAL_TOKENS = ("aprovado", "approved")
 APPROVAL_SECTION_NAMES = ("Approval", "Approval Evidence")
 RULES_SECTION = "Rules Acknowledgement / Ingestion"
+ROUTING_SECTION = "Agent Routing Preflight"
+MODULE_DECISION_BASELINE_SECTION = "Module Decision Baseline Snapshot"
+ARCHITECTURE_GOVERNANCE_SECTION = "Architecture Change Governance"
+PATTERNS_TO_ENFORCE_SECTION = "Patterns To Enforce"
+PROHIBITED_ANTI_PATTERNS_SECTION = "Prohibited Anti-Patterns"
+ARCHITECTURE_PROTECTION_HARNESS_SECTION = "Architecture Protection Harness"
+ARCHITECTURE_REVIEW_GATES_SECTION = "Architecture Review Gates"
 CI_EQ_SECTION = "Local CI-Equivalent Suite Matrix"
 PIPELINE_PREFLIGHT_SECTION = "Pipeline/Copilot P1/P2 Preflight"
 RULE_SPIRIT_HUNT_SECTION = "Rule-Spirit Anti-Pattern Hunt"
@@ -59,6 +68,30 @@ DELIVERY_GATE_SECTIONS = (
     (RULE_SPIRIT_HUNT_SECTION, 2),
 )
 PASSING_STATUSES = {"passed", "waived", "n/a"}
+ARCHITECTURE_REVIEW_PASSING_STATUSES = PASSING_STATUSES | {
+    "no_material_findings",
+    "findings_integrated",
+    "no material findings",
+    "findings integrated",
+}
+ROUTING_ALLOWED_OUTCOMES = {
+    "go",
+    "delegate-required",
+    "review-required",
+    "waiver-required",
+    "blocked",
+}
+ROUTING_REQUIRED_SOURCE_TOKENS = (
+    "effort-selection-method",
+    "agent_role_routing_guard.py",
+)
+ARCHITECTURE_GOVERNANCE_APPLICABILITY = {"required", "not needed"}
+ARCHITECTURE_HARNESS_TIMINGS = {
+    "already-enforced",
+    "implement-in-this-todo",
+    "follow-up-approved",
+    "manual-only-with-rationale",
+}
 PROMOTION_BLOCKING_STATUSES = {"open", "pending", "planned", "blocked", "unresolved", "failing"}
 PROMOTION_SCOPE_CHANGE_TOKENS = (
     "split",
@@ -117,8 +150,10 @@ def extract_sections(lines: list[str]) -> dict[str, list[str]]:
 def find_section(sections: dict[str, list[str]], section_name: str) -> list[str]:
     wanted = normalize(section_name)
     for title, lines in sections.items():
-        normalized = normalize(title)
-        if normalized == wanted or normalized.startswith(wanted):
+        if normalize(title) == wanted:
+            return lines
+    for title, lines in sections.items():
+        if normalize(title).startswith(wanted):
             return lines
     return []
 
@@ -281,6 +316,342 @@ def validate_rules_ingestion(sections: dict[str, list[str]]) -> tuple[list[dict[
     return violations, context
 
 
+def routing_preflight_required(sections: dict[str, list[str]]) -> bool:
+    for row in table_rows(find_section(sections, RULES_SECTION)):
+        if not row:
+            continue
+        source = normalize(row[0])
+        if any(token in source for token in ROUTING_REQUIRED_SOURCE_TOKENS):
+            return True
+    return False
+
+
+def validate_agent_routing_preflight(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    required = routing_preflight_required(sections)
+    lines = find_section(sections, ROUTING_SECTION)
+    context: dict[str, Any] = {
+        "routing_preflight_required": required,
+        "routing_preflight_section_present": bool(lines),
+        "routing_preflight_outcome": "missing",
+    }
+    violations: list[dict[str, str]] = []
+
+    if not required and not lines:
+        return violations, context
+
+    if not lines:
+        violations.append(
+            build_violation(
+                "ROUTING-PREFLIGHT-MISSING",
+                "No `Agent Routing Preflight` section was found even though the touched rules/workflows require routing resolution.",
+                "Add the canonical routing preflight section and record the selected client, governed action, role, model, proof mode, and guard outcome before execution.",
+                ROUTING_SECTION,
+            )
+        )
+        return violations, context
+
+    client = extract_field(lines, "Client surface")
+    surface = extract_field(lines, "Current governed action")
+    role = extract_field(lines, "Selected role")
+    model = extract_field(lines, "Selected model")
+    effort = extract_field(lines, "Selected effort")
+    proof_mode = extract_field(lines, "Proof mode")
+    exception_reason = extract_field(lines, "Exception reason")
+    guard_outcome = extract_field(lines, "Guard outcome")
+    waiver_reference = extract_field(lines, "Waiver / exception reference")
+    execution_topology = extract_field(lines, "Execution topology")
+    worktree_authorization = extract_field(lines, "Worktree authorization")
+    worktree_authorization_reference = extract_field(lines, "Worktree authorization reference")
+
+    required_fields = (
+        ("Client surface", client),
+        ("Current governed action", surface),
+        ("Selected role", role),
+        ("Proof mode", proof_mode),
+        ("Guard outcome", guard_outcome),
+    )
+    for label, value in required_fields:
+        if value_is_missing(value):
+            violations.append(
+                build_violation(
+                    "ROUTING-PREFLIGHT-FIELD-MISSING",
+                    f"`Agent Routing Preflight` is missing `{label}`.",
+                    f"Fill `{label}` with the concrete routing declaration before execution.",
+                    ROUTING_SECTION,
+                )
+            )
+
+    normalized_outcome = normalize(guard_outcome or "")
+    context["routing_preflight_outcome"] = normalized_outcome or "missing"
+    if normalized_outcome and normalized_outcome not in ROUTING_ALLOWED_OUTCOMES:
+        violations.append(
+            build_violation(
+                "ROUTING-PREFLIGHT-OUTCOME-INVALID",
+                f"`Agent Routing Preflight` uses invalid guard outcome `{guard_outcome}`.",
+                "Use one of: go, delegate-required, review-required, waiver-required, blocked.",
+                ROUTING_SECTION,
+            )
+        )
+
+    if violations:
+        return violations, context
+
+    try:
+        contract = load_contract(DEFAULT_CONTRACT_PATH)
+    except Exception as exc:  # pragma: no cover - defensive
+        violations.append(
+            build_violation(
+                "ROUTING-CONTRACT-LOAD-FAILED",
+                f"Unable to load the canonical routing contract: {exc}",
+                "Repair config/agent_role_routing.json before trusting routing preflight evidence.",
+                ROUTING_SECTION,
+            )
+        )
+        return violations, context
+
+    routing_result = evaluate_routing(
+        contract=contract,
+        client=strip_markup(client or ""),
+        surface=strip_markup(surface or ""),
+        role=strip_markup(role or ""),
+        model=strip_markup(model or "") or None,
+        review_kind=None,
+        effort=strip_markup(effort or "") or None,
+        proof_mode=strip_markup(proof_mode or ""),
+        exception_reason=strip_markup(exception_reason or "") or None,
+        waiver_reference=strip_markup(waiver_reference or "") or None,
+        execution_topology=strip_markup(execution_topology or "") or None,
+        worktree_authorization=strip_markup(worktree_authorization or "") or None,
+        worktree_authorization_reference=strip_markup(worktree_authorization_reference or "") or None,
+    )
+    context["routing_preflight_outcome"] = routing_result["outcome"]
+
+    if normalized_outcome != routing_result["outcome"]:
+        violations.append(
+            build_violation(
+                "ROUTING-PREFLIGHT-OUTCOME-MISMATCH",
+                f"`Agent Routing Preflight` records outcome `{guard_outcome}`, but the canonical guard evaluates to `{routing_result['outcome']}`.",
+                "Refresh the preflight section so the recorded outcome matches the canonical routing guard result.",
+                ROUTING_SECTION,
+            )
+        )
+
+    if routing_result["outcome"] != "go":
+        for violation in routing_result["violations"]:
+            violations.append(
+                build_violation(
+                    f"ROUTING-{violation['code']}",
+                    f"Agent routing preflight did not resolve to go: {violation['message']}",
+                    violation["resolution"],
+                    ROUTING_SECTION,
+                )
+            )
+
+    return violations, context
+
+
+def architecture_supersede_trigger(sections: dict[str, list[str]]) -> bool:
+    rows = table_rows(find_section(sections, MODULE_DECISION_BASELINE_SECTION))
+    for row in rows:
+        if len(row) >= 3 and "supersede" in normalize(row[2]):
+            return True
+    return False
+
+
+def validate_architecture_governance(sections: dict[str, list[str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    context: dict[str, Any] = {
+        "architecture_governance_section_present": False,
+        "architecture_governance_required": False,
+        "architecture_supersede_trigger": False,
+    }
+    violations: list[dict[str, str]] = []
+    supersede_trigger = architecture_supersede_trigger(sections)
+    context["architecture_supersede_trigger"] = supersede_trigger
+
+    section_lines = find_section(sections, ARCHITECTURE_GOVERNANCE_SECTION)
+    if not section_lines:
+        if supersede_trigger:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-GOVERNANCE-MISSING",
+                    "TODO intentionally supersedes module decisions but is missing `Architecture Change Governance`.",
+                    "Add the architecture governance contract covering the retired deviation, target steady-state, required patterns, prohibited anti-patterns, and protection harness.",
+                    ARCHITECTURE_GOVERNANCE_SECTION,
+                )
+            )
+        return violations, context
+
+    context["architecture_governance_section_present"] = True
+    applicability = first_field(section_lines, ("Applicability (`required|not_needed`)", "Applicability"))
+    normalized_applicability = normalize(applicability or "")
+
+    if normalized_applicability not in ARCHITECTURE_GOVERNANCE_APPLICABILITY:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-GOVERNANCE-APPLICABILITY-INVALID",
+                "Architecture Change Governance applicability is missing or invalid.",
+                "Set `Applicability` to `required` or `not_needed`.",
+                ARCHITECTURE_GOVERNANCE_SECTION,
+            )
+        )
+        return violations, context
+
+    required = normalized_applicability == "required" or supersede_trigger
+    context["architecture_governance_required"] = required
+
+    if normalized_applicability == "not needed" and supersede_trigger:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-GOVERNANCE-CONTRADICTION",
+                "Architecture Change Governance says `not_needed` while the module baseline records an intentional supersede.",
+                "Mark the section `required` and document the architecture correction package.",
+                ARCHITECTURE_GOVERNANCE_SECTION,
+            )
+        )
+        return violations, context
+
+    if not required:
+        return violations, context
+
+    required_fields = (
+        "Why this applies",
+        "Deviation / debt being retired",
+        "Target steady-state after closeout",
+        "Temporary exceptions allowed",
+        "Cutover / removal condition",
+    )
+    for label in required_fields:
+        allow_na = label == "Temporary exceptions allowed"
+        value = extract_field(section_lines, label)
+        if value_is_missing(value, allow_na=allow_na):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-GOVERNANCE-FIELD-MISSING",
+                    f"Architecture Change Governance field `{label}` is missing or still placeholder.",
+                    f"Fill `{label}` with the concrete architecture-correction contract detail.",
+                    ARCHITECTURE_GOVERNANCE_SECTION,
+                )
+            )
+
+    pattern_rows = table_rows(find_section(sections, PATTERNS_TO_ENFORCE_SECTION))
+    if not pattern_rows:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-PATTERNS-MISSING",
+                "Required architecture-correction TODO is missing `Patterns To Enforce` rows.",
+                "Add at least one concrete pattern/decision row that must remain true after cutover.",
+                PATTERNS_TO_ENFORCE_SECTION,
+            )
+        )
+    for row in pattern_rows:
+        if len(row) < 4:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-PATTERN-ROW-INCOMPLETE",
+                    f"Patterns To Enforce row has fewer than four cells: {row_text(row)}",
+                    "Use columns: Pattern / Decision, Source / ID, Scope, Why It Must Hold After Cutover.",
+                    PATTERNS_TO_ENFORCE_SECTION,
+                )
+            )
+            continue
+        row_missing = [
+            value_is_missing(row[0]),
+            value_is_missing(row[1], allow_na=True),
+            value_is_missing(row[2]),
+            value_is_missing(row[3]),
+        ]
+        if any(row_missing):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-PATTERN-ROW-PLACEHOLDER",
+                    f"Patterns To Enforce row contains missing or placeholder cells: {row_text(row)}",
+                    "Replace placeholders with the concrete pattern, source, scope, and rationale.",
+                    PATTERNS_TO_ENFORCE_SECTION,
+                )
+            )
+
+    anti_pattern_rows = table_rows(find_section(sections, PROHIBITED_ANTI_PATTERNS_SECTION))
+    if not anti_pattern_rows:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-ANTI-PATTERNS-MISSING",
+                "Required architecture-correction TODO is missing `Prohibited Anti-Patterns` rows.",
+                "Add at least one concrete wrong-path row that becomes forbidden after cutover.",
+                PROHIBITED_ANTI_PATTERNS_SECTION,
+            )
+        )
+    for row in anti_pattern_rows:
+        if len(row) < 4:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-ANTI-PATTERN-ROW-INCOMPLETE",
+                    f"Prohibited Anti-Patterns row has fewer than four cells: {row_text(row)}",
+                    "Use columns: Anti-Pattern / Wrong Path, Detection Signal, Why It Is Forbidden After Cutover, Exception Policy.",
+                    PROHIBITED_ANTI_PATTERNS_SECTION,
+                )
+            )
+            continue
+        row_missing = [
+            value_is_missing(row[0]),
+            value_is_missing(row[1]),
+            value_is_missing(row[2]),
+            value_is_missing(row[3], allow_na=True),
+        ]
+        if any(row_missing):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-ANTI-PATTERN-ROW-PLACEHOLDER",
+                    f"Prohibited Anti-Patterns row contains missing or placeholder cells: {row_text(row)}",
+                    "Replace placeholders with the retired wrong path, detection signal, rationale, and exception policy.",
+                    PROHIBITED_ANTI_PATTERNS_SECTION,
+                )
+            )
+
+    harness_rows = table_rows(find_section(sections, ARCHITECTURE_PROTECTION_HARNESS_SECTION))
+    if not harness_rows:
+        violations.append(
+            build_violation(
+                "ARCHITECTURE-HARNESS-MISSING",
+                "Required architecture-correction TODO is missing `Architecture Protection Harness` rows.",
+                "Add the concrete lasting protection rows that will defend the corrected architecture from regression.",
+                ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+            )
+        )
+    for row in harness_rows:
+        if len(row) < 6:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-HARNESS-ROW-INCOMPLETE",
+                    f"Architecture Protection Harness row has fewer than six cells: {row_text(row)}",
+                    "Use columns: Harness Type, Surface, Command / Rule / Artifact, Regression It Must Catch, Adoption Timing, Evidence Plan / Follow-up.",
+                    ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+                )
+            )
+            continue
+        if any(value_is_missing(cell) for cell in row[:6]):
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-HARNESS-ROW-PLACEHOLDER",
+                    f"Architecture Protection Harness row contains missing or placeholder cells: {row_text(row)}",
+                    "Replace placeholders with the real harness surface, command/rule, regression target, timing, and evidence/follow-up plan.",
+                    ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+                )
+            )
+            continue
+        timing = normalize(row[4])
+        if timing not in ARCHITECTURE_HARNESS_TIMINGS:
+            violations.append(
+                build_violation(
+                    "ARCHITECTURE-HARNESS-TIMING-INVALID",
+                    f"Architecture Protection Harness row uses invalid adoption timing `{row[4]}`: {row_text(row)}",
+                    "Use one of: already-enforced, implement-in-this-todo, follow-up-approved, manual-only-with-rationale.",
+                    ARCHITECTURE_PROTECTION_HARNESS_SECTION,
+                )
+            )
+
+    return violations, context
+
+
 def validate_delivery_gates(
     sections: dict[str, list[str]],
     delivery_claim: bool,
@@ -354,6 +725,33 @@ def validate_delivery_gates(
                     )
                 )
 
+    return violations, context
+
+
+def validate_architecture_review_gates(
+    sections: dict[str, list[str]], *, architecture_required: bool, delivery_claim: bool, allow_waivers: bool
+) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    context: dict[str, Any] = {"architecture_review_gates_required": architecture_required}
+    violations: list[dict[str, str]] = []
+    if not architecture_required:
+        return violations, context
+
+    lines = find_section(sections, ARCHITECTURE_REVIEW_GATES_SECTION)
+    if not lines:
+        return [build_violation("ARCHITECTURE-REVIEW-GATES-MISSING", "Required architecture TODO is missing Architecture Review Gates.", "Add the canonical Architecture Review Gates section and record both derived reviews.", ARCHITECTURE_REVIEW_GATES_SECTION)], context
+
+    checks = [("Architecture decision review", "Decision review status")]
+    if delivery_claim:
+        checks.append(("Architecture adherence review", "Adherence review status"))
+    for decision_label, status_label in checks:
+        decision = normalize(first_field(lines, (decision_label,)) or "")
+        status = normalize(first_field(lines, (status_label,)) or "")
+        if decision != "required":
+            violations.append(build_violation("ARCHITECTURE-REVIEW-DECISION-MISMATCH", f"{decision_label} must be `required` when Architecture Change Governance is required.", "Record the guard-derived required decision in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
+        if status not in ARCHITECTURE_REVIEW_PASSING_STATUSES:
+            violations.append(build_violation("ARCHITECTURE-REVIEW-STATUS-NOT-PASSING", f"{status_label} `{status or 'missing'}` does not satisfy the required architecture review.", "Run the review, resolve findings, or record an explicit human-approved waiver.", ARCHITECTURE_REVIEW_GATES_SECTION))
+        if status == "waived" and not allow_waivers and "approval" not in normalize("\n".join(lines)):
+            violations.append(build_violation("ARCHITECTURE-REVIEW-WAIVER-UNAPPROVED", f"{status_label} is waived without explicit approval evidence.", "Record the human waiver/approval reference in Architecture Review Gates.", ARCHITECTURE_REVIEW_GATES_SECTION))
     return violations, context
 
 
@@ -448,12 +846,15 @@ def validate_todo(
     todo_path: Path,
     require_delivery_gates: bool,
     allow_waivers: bool,
+    pre_approval: bool = False,
 ) -> dict[str, Any]:
     context: dict[str, Any] = {
         "todo_path": str(todo_path),
         "current_delivery_stage": "missing",
         "delivery_claim": False,
         "require_delivery_gates": require_delivery_gates,
+        "validation_mode": "pre-approval" if pre_approval else "execution-authority",
+        "execution_authority_granted": False,
     }
     violations: list[dict[str, str]] = []
 
@@ -469,6 +870,7 @@ def validate_todo(
                 )
             ],
             "context": context,
+            "pre_approval": pre_approval,
         }
 
     lines = todo_path.read_text(encoding="utf-8").splitlines()
@@ -479,7 +881,16 @@ def validate_todo(
     delivery_claim = is_delivery_claim(todo_path, stage, require_delivery_gates)
     context["delivery_claim"] = delivery_claim
 
-    for validator in (validate_approval, validate_rules_ingestion, validate_promotion_routing):
+    validators = [
+        validate_rules_ingestion,
+        validate_agent_routing_preflight,
+        validate_architecture_governance,
+        validate_promotion_routing,
+    ]
+    if not pre_approval:
+        validators.insert(0, validate_approval)
+
+    for validator in validators:
         section_violations, section_context = validator(sections)
         violations.extend(section_violations)
         context.update(section_context)
@@ -491,19 +902,33 @@ def validate_todo(
     )
     violations.extend(delivery_violations)
     context.update(delivery_context)
+    architecture_review_violations, architecture_review_context = validate_architecture_review_gates(
+        sections,
+        architecture_required=bool(context.get("architecture_governance_required")),
+        delivery_claim=delivery_claim,
+        allow_waivers=allow_waivers,
+    )
+    violations.extend(architecture_review_violations)
+    context.update(architecture_review_context)
 
+    context["execution_authority_granted"] = not pre_approval and not violations
     return {
         "blocked": bool(violations),
         "violations": violations,
         "context": context,
+        "pre_approval": pre_approval,
     }
 
 
 def format_response(result: dict[str, Any]) -> str:
+    if result.get("pre_approval"):
+        outcome = "preflight-no-go" if result["blocked"] else "preflight-go"
+    else:
+        outcome = "no-go" if result["blocked"] else "go"
     lines = [
         "TODO Authority Guard",
         f"Rule: {RULE_ID}",
-        f"Overall outcome: {'no-go' if result['blocked'] else 'go'}",
+        f"Overall outcome: {outcome}",
         "",
         "Context:",
     ]
@@ -547,6 +972,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Allow waived delivery rows without requiring inline approval evidence in the row.",
     )
+    parser.add_argument(
+        "--pre-approval",
+        action="store_true",
+        help=(
+            "Validate execution-readiness structure before human approval. "
+            "Approval evidence is the only skipped gate; a successful result is preflight-go and never grants execution authority."
+        ),
+    )
     parser.add_argument("--json-output", help="Optional path for machine-readable JSON output.")
     return parser.parse_args(argv)
 
@@ -557,6 +990,7 @@ def main(argv: list[str]) -> int:
         Path(args.todo_path),
         require_delivery_gates=args.require_delivery_gates,
         allow_waivers=args.allow_waivers,
+        pre_approval=args.pre_approval,
     )
     if args.json_output:
         write_json(Path(args.json_output), result)

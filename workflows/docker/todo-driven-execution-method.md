@@ -7,12 +7,18 @@ description: Execute work through a tactical TODO by routing each state to the c
 ## Purpose
 Use this workflow as the TODO-driven **orchestrator**. It owns the state machine, phase order, and non-negotiable gates. Phase-specific instructions live in supporting workflows so the active context stays small and the model loads only the current phase details.
 
+## Classification and Version Package Topology
+- Classification families and version packages are orthogonal when the project uses both.
+- Classification families (`bugs-performance`, `features`, severity buckets, and analogous project-defined roots) help decide intake, ownership family, and follow-up routing.
+- Version-package folders (`active/<version>/`, `promotion_lane/<version>/`, and analogous project-defined package buckets) remain valid live delivery surfaces when backed by a governing release-package TODO; they freeze the admitted child-owner set for that delivery wave.
+- Do not collapse version folders into "legacy" merely because classification families exist. Use project authority to determine whether both surfaces are active simultaneously.
+
 ## Phase Workflows
 | Phase | Use When | Supporting Workflow |
 | --- | --- | --- |
 | Lane and framing | The work is not yet classified as micro-fix, ephemeral TODO, profile-scoped ledger, feature brief, or tactical TODO. | `workflows/docker/todo-lane-framing-method.md` |
 | Contract refinement | A tactical TODO exists or will be made executable, but scope, decisions, anchors, matrices, or complexity need refinement. | `workflows/docker/todo-contract-refinement-method.md` |
-| Approval gates | The TODO is refined enough to seek plan review, audit-floor decisions, critique, and explicit `APROVADO`. | `workflows/docker/todo-approval-gates-method.md` |
+| Approval gates | The TODO is refined enough to seek plan review, optional bounded pre-approval RED evidence capture, audit-floor decisions, critique, and explicit `APROVADO`. | `workflows/docker/todo-approval-gates-method.md` |
 | Execution boundary | `APROVADO` exists and implementation is about to start or is underway. | `workflows/docker/todo-execution-boundary-method.md` |
 | Delivery gates | Implementation is complete enough for a local delivery claim, promotion readiness, or close-claim evidence. | `workflows/docker/todo-delivery-gates-method.md` |
 | Closeout and promotion | Stable outcomes need canonicalization, promotion-lane movement, completion, or blocked-state handling. | `workflows/docker/todo-closeout-promotion-method.md` |
@@ -22,7 +28,7 @@ Use this workflow as the TODO-driven **orchestrator**. It owns the state machine
 2. **Refine contract** with `todo-contract-refinement-method`.
 3. **Freeze baseline and approval gates** with `todo-approval-gates-method`.
 4. **Wait for explicit `APROVADO`** before implementation.
-5. **Execute within approved boundary** with `todo-execution-boundary-method`.
+5. **Resolve routing preflight and execute within approved boundary** with `todo-execution-boundary-method`.
 6. **Complete delivery gates** with `todo-delivery-gates-method`.
 7. **Close or promote** with `todo-closeout-promotion-method`.
 
@@ -30,18 +36,49 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 
 ## Non-Negotiable Gates Visible At The Umbrella
 - **No implementation before `APROVADO`** for tactical and ephemeral TODO lanes.
+- **Pre-APROVADO RED Evidence Capture**, when used, is a bounded test-only evidence lane rather than implementation:
+  - it applies only to maintenance/regression or tactical bugfix TODOs;
+  - it may touch only tests and strictly test-only support surfaces recorded in the TODO;
+  - it must never touch production code, runtime/config/deploy surfaces, or canonical project docs outside TODO authoring;
+  - it must record `red_reproduced|red_not_reproduced|blocked` and send the TODO back through reconvergence if the evidence invalidates the current path.
 - **Decision Baseline (Frozen)** must exist before implementation and must be refreshed with renewed approval if approval-material facts change.
+- **Architecture-correction governance** is mandatory when a TODO retires a recurring architectural deviation, intentionally supersedes canonical module decisions, standardizes competing shared patterns, or establishes a new shared steady-state contract:
+  - before approval, the TODO must declare the deviation being retired, the target steady-state, the patterns to enforce, the anti-patterns to prohibit, and the concrete protection harness that will defend the corrected architecture;
+  - protection harness rows must name the real lasting enforcement surfaces where applicable (for example rules, lint/analyzer commands, Pint/style guards, Laravel/Flutter guardrails, targeted tests, or dedicated audits), not just generic promises to "watch for regressions";
+  - any harness row marked for implementation in the current TODO must also be reflected into `Definition of Done`, `Validation Steps`, and the relevant execution/delivery evidence sections before approval;
+  - follow-up harness rows are acceptable only when they have an explicit approved follow-up reference instead of an implicit "we should remember this later".
+- **Review Baseline Freeze** must be committed and pushed before the first planning-side review or guard run, and its branch/commit/push evidence must be recorded in `Gate: Review Baseline Freeze`.
+- **Pre-freeze review packet prep** may be recorded before that gate is satisfied, but it must stay explicitly provisional (`prepared-pre-freeze` / `pending-freeze` or equivalent) and must not be labeled as a passed planning-side review/guard result.
+- **Post-review scope drift** must be checked before `APROVADO`:
+  - `python3 delphi-ai/tools/review_scope_drift_guard.py <todo-path>`
+  - if the guard reports material drift in scope-governing sections, return the TODO to the review loop, revalidate the evolved scope with the user, and refresh the pushed baseline as required before approval resumes.
+- **Execution-readiness authority preflight** must pass before `APROVADO` is requested:
+  - prepare concrete rule/workflow/skill paths and one planned implementation routing tuple;
+  - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` must return `Overall outcome: preflight-go`;
+  - `preflight-go` grants no implementation authority and does not replace the normal post-approval guard;
+  - `todo_deterministic_validator.py` validates a different structural contract and is not a substitute for this preflight.
 - **Approval and rule-ingestion evidence** must be recorded in the TODO after `APROVADO` and before implementation:
+  - `Agent Routing Preflight` must also be recorded whenever the active client exposes governed effort/model routing or declared routing policy that this TODO is using.
+  - `python3 delphi-ai/tools/agent_role_routing_guard.py ...`
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path>`
+- **Subagent and Git-topology authority are independent:** record subagent/delegation authority separately from Git-isolation authority. Default to `primary-checkout-single-writer`; load `subagent-worktree-reconciliation-method.md` and permit worktrees/`worker/*`/`reconcile/*` only after explicit human authorization naming worktrees or auxiliary checkouts.
 - **Complexity policy (`small|medium|big`)** must be recorded during contract refinement.
 - **Plan Review Gate** must run according to the recorded complexity and risk.
+- **Devil's-Advocate alias mapping** is canonical at the TODO-driven umbrella:
+  - when the user, TODO, or an external reference asks for a `devil's advocate` critique/review/loop, treat the canonical planning-side equivalent as `wf-docker-independent-critique-method`;
+  - when that request also expects a persistent objection/finding ledger, evidence-based reopening, or repeated no-context rounds until no blocking objection remains, layer `audit-protocol-triple-review` on top as the dedicated delivery-side multi-lane audit protocol;
+  - `audit-protocol-triple-review` is additive and does not silently replace the required planning-side independent critique gate.
 - **Completion Evidence Matrix** must contain criterion-specific evidence for every `Definition of Done` and `Validation Steps` item before delivery claims.
+- **Diff Expectation Contract** must be completed before approval and must enumerate each repository baseline, expected changed file/folder/type pattern, and explicitly not-expected pattern. Any unclassified or forbidden real diff is an analysis blocker: classify it as scope deviation, necessary/justifiable need, or noise; do not automatically regress implementation merely because the policy is strict.
 - **Local CI-Equivalent Suite Matrix** must list and pass every in-scope repo-owned CI suite/job for the touched slice, or carry an approved `n/a`/waiver.
+- **Behavior-targeted CI validity** is mandatory: every CI-equivalent row must declare the exact scenario it proves plus the required fixture/seed/runtime preconditions, and a green suite is invalid when the intended behavior was never actually exercised.
+- **Sequencing topology inheritance** is mandatory when an approved sequencing plan governs the current TODO: the plan owns checkpoint granularity and branch-state gate topology, delivery gates must use the recorded checkpoint gate, and any TODO that closes only on a non-authoritative isolated-worktree prefix remains provisional until replay plus the deferred authoritative broad gate succeed.
 - **Decision Adherence** must be validated before delivery.
 - **Pipeline/Copilot P1/P2 Preflight** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
-- **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root and referenced in the governing TODO.
+- **Review Finding Classification** must run after Copilot/audit/reviewer findings are collected and deduplicated. Use `review-finding-classification`. Reviewers keep their normal detection behavior; blocking vs follow-up is decided in a separate triage step recorded in the governing TODO's `Promotion Finding Routing Ledger`. Every finding must be classified as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`. Only findings classified as `release-blocker` may block the current delivery/promotion claim. Findings classified as `follow-up-fast-follow` or `follow-up-hardening` must be split into explicit post-version TODOs under an approved active lane root, and the governing TODO must record the exact follow-up path/reference before the delivery claim is clean.
 - **Rule-Spirit Anti-Pattern Hunt** must be completed before delivery claims; unresolved `P1|P2` blocks delivery.
 - **Final Deterministic Guards** must return `Overall outcome: go`:
+  - `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>`
   - `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`
   - `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>`
 - **Closeout Disposition** must be explicit before pausing after a delivery claim:
@@ -59,12 +96,14 @@ Do not skip ahead because a later phase feels obvious. A phase may be recorded a
 - One explicit `Active Work State` whenever the governing TODO still lives under `foundation_documentation/todos/active/`.
 - Supporting feature brief only when needed.
 - Canonical module/doc updates when stable truth changed.
-- When package-level orchestration or pre-promotion review loops are in scope, the authoritative package-stage ledger lives in the orchestration execution plan, not in a parallel version-status file. Per-finding dispositions remain authoritative in the governing TODOs.
+- When package-level sequencing, orchestration, or pre-promotion review loops are in scope, the authoritative package-stage ledger lives in the active package execution plan (`sequencing_execution_plan` or `orchestration_execution_plan`), not in a parallel version-status file. Per-finding dispositions remain authoritative in the governing TODOs.
 
 ## Validation
 - The TODO records which phase workflow governed each major transition.
 - Any TODO that remains in `active/` records `Active Work State = implementation|review|blocked` plus an exact exit condition.
 - No phase-specific requirements are left only in chat.
-- Delivery claims are blocked unless `todo_authority_guard.py --require-delivery-gates` and `todo_completion_guard.py` both return `Overall outcome: go`.
+- Approval requests are blocked unless `todo_authority_guard.py --pre-approval` returns `Overall outcome: preflight-go`.
+- Delivery claims are blocked unless `todo_diff_expectation_guard.py`, `todo_authority_guard.py --require-delivery-gates`, and `todo_completion_guard.py` all return `Overall outcome: go`.
+- Governed execution is blocked unless `Agent Routing Preflight` resolves to `go` before `todo_authority_guard.py` is trusted.
 - Closeout is blocked unless delivered active TODOs have a valid `TODO Closeout Disposition` and `todo_closeout_guard.py` returns `Overall outcome: go`.
 - Any waived or `n/a` gate has explicit rationale and approval evidence where required.

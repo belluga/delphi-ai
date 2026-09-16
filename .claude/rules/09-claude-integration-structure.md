@@ -12,9 +12,11 @@ alwaysApply: true
 | Bootloader | `CLAUDE.md` (project root) | Markdown entry point |
 | Rules | `.claude/rules/` | Markdown with YAML frontmatter |
 | Skills | `.claude/skills/` | Directories with `SKILL.md` inside |
+| Agents | `.claude/agents/` | Markdown files with YAML frontmatter |
 | Settings | `.claude/settings.json` | JSON permissions config |
-| Deterministic Guards | `delphi-ai/deterministic/` | Python scripts |
-| Workflows | `delphi-ai/workflows/` | Markdown step-by-step |
+| Deterministic Guards | `tools/` | Python/shell scripts |
+| Routing Contract | `config/agent_role_routing.json` | JSON |
+| Workflows | `workflows/` | Markdown step-by-step |
 
 ## Rules Format
 
@@ -65,6 +67,16 @@ The `name` field must exactly match the directory name.
   }
 }
 ```
+
+## Generated Routing Agents
+
+Project-local Claude routing agents are generated from the canonical routing contract:
+
+```bash
+python3 tools/sync_claude_agent_routing.py
+```
+
+Do not hand-maintain `.claude/agents/*.md` when the same change can be expressed in `config/agent_role_routing.json`.
 
 ## Cross-Agent Compatibility
 

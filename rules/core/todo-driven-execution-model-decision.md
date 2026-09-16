@@ -5,7 +5,15 @@ description: "Before any implementation work (code/docs) that changes the projec
 
 
 ## Rule
+Subagent/delegation authorization and Git-isolation authorization are independent. Generic `APROVADO`, subagent approval, delegation, or parallelism never authorizes `git worktree`, auxiliary checkouts/copies, `worker/*`, or `reconcile/*`. Default to `primary-checkout-single-writer`: one active product/runtime code writer across code repositories and executable surfaces, with additional code writers serialized. Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths and must stage, commit, and promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized. Use `worktree-isolated` only after separate human authorization explicitly names worktrees or auxiliary checkouts; otherwise stop and ask if simultaneous code writers require isolation. Authoritative Docker, browser, device, and CI-Equivalent validation remains on the consolidated principal checkout.
+
 Before starting any implementation work that changes project code, submodule code, or project-specific documentation (`foundation_documentation/`), Delphi must operate from a tactical TODO file under `foundation_documentation/todos/active/`, except for the exemptions, Operational Micro-Fix lane, and Maintenance/Regression Fix flow below.
+
+## Simplification First and Explicit Implementation Authority
+
+Choose the simplest faithful Clean Code/SOLID design for the approved intent. This is not minimum diff or automatic avoidance of abstraction; simplification may require subtraction, consolidation, or redesign of unnecessary layers. Do not replace a justified abstraction with scattered conditionals, duplicated decisions, or hidden coupling.
+
+Foundation documents may describe future architecture, but they do not authorize future-facing implementation for the current delivery. The TODO must distinguish current delivery and planned next steps from any anticipatory implementation authorized now. Without explicit authorization, reviewers must not invent future-facing work. Planning reviewers may challenge proposed intent; delivery/adherence reviewers must preserve approved intent or return for renewed approval.
 
 For `medium|big` work that is not already one clearly bounded execution slice, and for materially ambiguous work of any size, Delphi must first decide whether direct-to-TODO is genuinely safe or whether a non-authoritative `Feature Brief / Story Decomposition` artifact is required under `foundation_documentation/artifacts/feature-briefs/`.
 
@@ -18,7 +26,15 @@ The canonical operational workflow is `workflows/docker/todo-driven-execution-me
 - `todo-delivery-gates-method`
 - `todo-closeout-promotion-method`
 
-The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Rules Acknowledgement / Ingestion`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, `todo_authority_guard.py`, and `todo_completion_guard.py` remain blocking obligations at their respective phases.
+The phase split is a progressive-disclosure implementation detail; it does not weaken this rule. `APROVADO`, `Decision Baseline (Frozen)`, `Rules Acknowledgement / Ingestion`, `Diff Expectation Contract`, `Completion Evidence Matrix`, `Local CI-Equivalent Suite Matrix`, `Pipeline/Copilot P1/P2 Preflight`, `Rule-Spirit Anti-Pattern Hunt`, the pre-approval execution-readiness mode of `todo_authority_guard.py`, the normal post-approval `todo_authority_guard.py`, `todo_diff_expectation_guard.py`, and `todo_completion_guard.py` remain blocking obligations at their respective phases. A `Local CI-Equivalent Suite Matrix` is valid only when each row explicitly identifies the intended behavior/scenario plus the fixture/seed/runtime preconditions required to exercise it; a generic green suite is not acceptable evidence when the new/changed behavior was never actually provable in that run.
+
+### Classification vs Versioned Delivery
+- Classification family roots (for example `active/bugs-performance/<severity>/`, `active/features/`, or analogous project-defined intake families) classify work, triage admission, and help decide which delivery conversation the owner belongs to.
+- Those family roots do not automatically replace version-based delivery. When a project also uses active version-package folders plus a governing release-package TODO, treat the version folder as live delivery authority rather than as stale or historical by default.
+- The interpretation is orthogonal:
+  - classification answers "what kind of owner is this and which intake/follow-up family should govern it?"
+  - version packaging answers "which approved owners are admitted into this concrete delivery wave and therefore share package/promotion authority?"
+- Do not infer from the presence of classification families that version folders are deprecated. Read the project-owned constitution, roadmap, and governing package TODO to determine whether classification and version packaging are active together.
 
 ### Exemptions (no TODO required)
 - Edits limited to `foundation_documentation/artifacts/tmp/**` (local run logs/checklists).
@@ -148,6 +164,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - For bugfix/regression or behavior-defining contract/UI work, define fail-first test target(s) before implementation or record explicit rationale for non-applicability.
 - The execution plan may resolve implementation-local details autonomously, but it must not silently change the TODO contract.
 - If planning reveals contract changes, update the TODO first and do not continue with stale assumptions or plan notes.
+- The TODO must also freeze a `Diff Expectation Contract` before `APROVADO`: one resolvable baseline per implementation repository, expected changed file/folder/type patterns, and `Not Expected Changed Paths` patterns. The policy must be strict and must require analysis for any deviation: classify it as actual scope deviation, necessary/justifiable need, or noise. A no-go is not an automatic rollback; a necessary change may be defended with evidence, noise must be cleaned or explained, an unnecessary deviation must be reverted, and necessary scope expansion requires user validation plus renewed approval.
 
 ### Gate I — Plan Review Gate (mandatory for `medium|big`)
 - Review the `Assumptions Preview` and `Execution Plan`.
@@ -161,7 +178,7 @@ If the change restores previously documented or verifiably working behavior (inc
 - Include `Failure Modes & Edge Cases` and `Residual Unknowns / Risks`.
 - Challenge weak or low-confidence assumptions; either strengthen them with evidence, promote them to contract decisions, or block implementation.
 - If no clearly dominant architectural path remains after first-pass planning, proactively obtain second and, when useful, third bounded no-context opinions before locking the recommendation.
-- If subagents are available in the execution environment, delegate these opinions to fresh no-context subagents; otherwise document the constraint and proceed with bounded no-context self-opinions.
+- If subagents are available in the execution environment, delegate these opinions to fresh internal no-context subagents; otherwise document the constraint and proceed with bounded no-context self-opinions.
 - Every additional opinion must compare the viable options on correctness, performance, elegance (simplicity/coherence/minimal incidental complexity), structural soundness, and operational fit.
 - Record each additional opinion in the TODO as `Integrated|Challenged|Deferred with rationale`.
 - `small` tasks can use a shortened version if risk is low and scope is local.
@@ -171,18 +188,52 @@ If the change restores previously documented or verifiably working behavior (inc
 - Treat the guard result as the minimum audit floor:
   - stricter manual escalation is allowed
   - weaker execution is forbidden
+- Apply the reviewer lifecycle invariant to every delegated review gate:
+  - reviewer lifecycle is status-based, not elapsed-time-based;
+  - while a reviewer is `pending_init` or `running`, wait without a rigid deadline;
+  - a polling timeout means only that no terminal event arrived during that polling window; it is not reviewer failure;
+  - do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review;
+  - retry only after objective terminal failure or explicit human cancellation, using the same complete gate-satisfying package by default;
+  - change a retry package only to repair a concrete proven package defect while preserving the full review rubric;
+  - recycle only terminal inactive reviewer lanes.
 - Use the derived `critique` decision to execute the Independent No-Context Critique Gate
-- Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- If a subagent is available in the execution environment, the critique must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
-- When the derived floor marks `triple_review` as `required|recommended`, use `audit-protocol-triple-review` as the canonical additive orchestration surface instead of ad hoc reviewer sequencing.
+- Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh internal reviewer with no inherited thread context.
+- Every critique pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
+- When the derived floor marks `triple_review` as `required|recommended`, use `audit-protocol-triple-review` as the canonical additive orchestration surface for the dedicated delivery-side multi-lane audit instead of ad hoc reviewer sequencing.
 - Record the audit session path plus the decisive round summary (`clean`, `needs_resolution`, or `needs_adjudication`) in the TODO evidence whenever that protocol is used.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, assumptions preview that still matters, execution plan summary, material issue cards, residual risks, and any existing waivers/blockers.
 - Ask for findings first, ordered by severity, with no implementation.
 - Every critique must state whether the recommended path is acceptable for performance, whether it is elegant relative to the available alternatives, and whether it preserves structural soundness rather than relying on brittle workarounds or structural shortcuts.
-- Retry once with a tighter package if the first attempt fails or times out.
+- If the first attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. A polling timeout while the reviewer remains live requires continued waiting, not retry or package reduction.
 - If a required critique still cannot be obtained, record blocker/waiver handling before approval.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required critique gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
+- After critique findings converge and before approval, run the dedicated assumption-vs-code coherence guard:
+  - `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path>`
+  - use the governing TODO plus the exact code/test files cited by the still-live assumptions;
+  - require concrete code/test path evidence for those assumptions;
+  - if the guard finds a wrong code assumption or code-contradicting direction, refresh the TODO and rerun the affected review/critique loop before `APROVADO`.
+
+### Gate I1 — Pre-APROVADO RED Evidence Capture (optional, bounded for bugfix/regression)
+- This gate exists only for maintenance/regression or tactical bugfix TODOs when reproducing the observed external symptom before implementation would materially reduce scope ambiguity.
+- It is evidence capture, not implementation. Its purpose is to prove or disprove the symptom path, not to lock in a preferred solution or silently advance delivery.
+- Preconditions:
+  - a refined TODO already exists with a concrete symptom, route/surface, and intended fail-first target;
+  - the TODO records why pre-approval RED capture is `required|recommended|not_needed`;
+  - the TODO lists the exact allowed test/support surfaces for this gate.
+- Allowed edits are limited to:
+  - test files;
+  - strictly test-only support surfaces such as fixtures, builders, fakes, or harness glue;
+  - framework-specific test support paths stored outside the usual test directory only when the TODO explicitly lists them as test-only support.
+- Forbidden edits during this gate:
+  - production code, runtime/config/deploy surfaces, migrations, routes, schemas, or application logic;
+  - canonical project docs outside TODO authoring;
+  - weakening existing assertions or writing solution-shaped expectations that merely encode the planned implementation.
+- Required outcome recording in the TODO:
+  - `red_reproduced`
+  - `red_not_reproduced`
+  - `blocked`
+- If the RED capture disproves the current path, reveals a materially different failure surface, or requires production changes just to become testable, stop, refresh the TODO, and rerun the affected review/critique lanes before approval resumes.
 
 ### Gate J — Decision baseline freeze (mandatory)
 - Assign stable decision IDs (`D-01`, `D-02`, ...) and freeze approved decisions under `Decision Baseline (Frozen)` before implementation starts.
@@ -195,17 +246,25 @@ If the change restores previously documented or verifiably working behavior (inc
 - If any decision is `Conflict`, block implementation until TODO/module decisions are reconciled and re-approved.
 - If any module decision has unintended divergence, block implementation until it is either preserved or explicitly approved for supersede.
 
+### Gate K1 — Execution-readiness authority preflight (mandatory before requesting approval)
+- Prepare the `Rules Acknowledgement / Ingestion` rows with concrete rule/workflow/skill paths. This is a structural declaration only; reload and bind the applicable sources after approval under Gate M.
+- Record the planned implementation `Agent Routing Preflight` as one concrete executable surface/role/model tuple. Keep approval/review history in separate evidence fields; do not combine several governed surfaces in one machine-readable value.
+- Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --pre-approval` and require `Overall outcome: preflight-go` before asking for `APROVADO`.
+- This mode skips only approval evidence that cannot exist yet. It still validates rule paths, routing, architecture governance, architecture review status, and other execution-readiness structure.
+- `preflight-go` explicitly grants no execution authority. A generic `todo_deterministic_validator.py` PASS does not substitute for it, and the normal post-approval authority guard remains mandatory.
+
 ### Gate L — Explicit approval token (mandatory)
 - After Gates 0-J, including any required independent no-context critique handling, Delphi must ask for explicit user approval of the TODO before any implementation begins.
 - The approval token is: **APROVADO**.
 - After approval, record a compact `Approval` section in the TODO with the approval evidence, exact approved scope, explicit exclusions, and renewed-approval trigger.
 - Until the user replies with **APROVADO** (case-insensitive), Delphi must not:
-  - call `apply_patch`,
-  - run write commands that change project files,
-  - or make any project/submodule/code/docs modifications.
+  - call `apply_patch` or run write commands that change project files outside the bounded Gate I1 lane;
+  - modify production code, runtime/config/deploy surfaces, or canonical project docs outside TODO authoring;
+  - or treat test-only RED evidence as implementation authority.
+- During Gate I1, any allowed write must stay inside the exact test/support surfaces listed in the TODO and remains subject to renewed review-loop convergence before `APROVADO`.
 
 ### Gate M — Rules Acknowledgement / Ingestion (mandatory after `APROVADO` and before execution)
-- Use the approved execution plan to identify the exact touched surfaces.
+- Reload the predeclared sources against the approved execution plan and confirm the exact touched surfaces.
 - Load the relevant stack rules/workflows for those surfaces and record:
   - `source`
   - `why it applies now`
@@ -228,16 +287,20 @@ If the change restores previously documented or verifiably working behavior (inc
 - Before claiming `Local-Implemented`, moving the TODO to `promotion_lane/` or `completed/`, or claiming `Production-Ready`, fill the TODO `Completion Evidence Matrix`.
 - Every `Definition of Done` item and every `Validation Steps` item must have one concrete row with criterion-specific evidence.
 - Evidence must name the exact required artifact when the criterion names one: UI control, route, endpoint, schema, migration, browser/device journey, integration test, runtime target, or equivalent.
-- User-visible, interactive, or user-flow-impacting criteria must name the exact integration/device test or navigation/browser test that exercises the item. In Flutter scope, integration means ADB/device execution and navigation/browser means Playwright against the final browser-facing domain. Analyzer output, code inspection, screenshots, unit tests, widget tests, and aggregate suite summaries are valid supporting implementation evidence, but cannot satisfy final flow acceptance by themselves.
+- User-visible, interactive, or user-flow-impacting criteria must name the exact integration/device test or navigation/browser test that exercises the item. In Flutter scope, integration means ADB/device execution and navigation/browser means Playwright against the final browser-facing domain. A stable full-workspace Problems bridge snapshot, code inspection, screenshots, unit tests, widget tests, and aggregate suite summaries are valid supporting implementation evidence, but cannot satisfy final flow acceptance by themselves.
 - User-flow impact must be assessed case by case. CRUD/mutation is a strong signal, but field refactors, DTO/domain/payload changes, validation, projections, query/filter semantics, settings/capabilities, read models, and persisted state changes require flow assessment when they can feed a screen or user journey.
 - Flutter flow-impacting criteria must record platform parity. If Android and Web behavior is the same, either ADB integration or Playwright navigation may satisfy final runtime acceptance. If Android and Web behavior differs materially, both lanes must pass before delivery.
-- Browser/web-visible criteria must name source-owned Playwright spec + runner evidence when the repository exposes a Playwright suite. Flutter web evidence must name the `tools/flutter/web_app_tests/**` spec, the project-owned navigation runner, target URL/lane, project-defined build/publish proof from `foundation_documentation` or dependency-readiness notes, and refreshed real-domain bundle provenance.
+- Browser/web-visible criteria must name source-owned Playwright spec + runner evidence when the repository exposes a Playwright suite. Flutter web evidence must name the `tools/flutter/web_app_tests/**` spec, the project-owned navigation runner, target URL/lane, project-defined build/publish proof from `foundation_documentation` or dependency-readiness notes, and a runtime freshness attestation that records the authoritative `branch@sha`, the local build/publish artifact or fingerprint, the served runtime target, and the proof that the served target matched that exact build before the result was trusted.
+- Manual/browser/device/runtime-visible validation is `blocked` whenever that freshness attestation is missing, ambiguous, or mismatched. In that state, observed behavior is not product evidence and cannot close the criterion.
 - User-flow CRUD/mutation criteria must name integration/device or navigation/browser evidence that performs the local mutation path on the approved non-main validation target.
 - Browser/web CRUD/mutation criteria must name the Playwright `mutation` lane on an approved non-`main` target. `readonly` Playwright, screenshots, and route-load smoke do not satisfy mutation evidence.
 - If integration/device or navigation/browser coverage is not applicable because the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation with the reason.
 - Aggregate validation summaries are supporting notes only. They do not replace row-level evidence for each DoD/validation criterion.
 - If a criterion cannot be validated, mark it `blocked` or record an explicit approved waiver; do not mark it passed from adjacent or representative evidence.
-- Run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` and `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` after all delivery-side gates are recorded and before any delivery-complete claim; require `Overall outcome: go` from both.
+- If a CI-equivalent row or evidence packet depends on seeded data, fixture bootstrap, user linkage, runtime publication state, or other scenario preconditions, those preconditions must be recorded explicitly in the TODO and actually satisfied in the proving run. A green command without the required scenario data is not valid delivery evidence.
+- When a stronger final runtime lane is realistically available for the changed behavior, prefer navigation/browser or device runtime evidence over weaker backend-only or aggregate coverage; if the exact expected scenario is still unclear, stop and validate it with the user before closing the gate.
+- Run `python3 delphi-ai/tools/todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>`, `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates`, and `python3 delphi-ai/tools/todo_completion_guard.py <todo-path>` after all delivery-side gates are recorded and before any delivery-complete claim; require `Overall outcome: go` from all three.
+- If the diff guard reports an unclassified/forbidden path or incompatible change type, stop delivery and record the `Diff Deviation Analysis`. Do not regress automatically: classify the item as scope deviation, necessary/justifiable need, or noise; defend a necessary change with evidence, clean noise, revert an unnecessary deviation, or obtain user validation and renewed approval before widening the contract.
 
 ### Gate O — Decision Adherence Gate (mandatory before delivery)
 - Before delivery, build a `Decision Adherence Validation` table for every baseline decision ID.
@@ -253,7 +316,7 @@ If the change restores previously documented or verifiably working behavior (inc
 
 ### Gate O1 — Pipeline/Copilot P1/P2 Preflight (mandatory before delivery)
 - Before delivery, build a bounded review package from the implemented diff, touched-surface summary, frozen decisions, local CI-equivalent suite evidence, validation output, and any current PR/check context if it already exists.
-- Use a fresh no-context reviewer when available. If no subagent/reviewer is available, perform a bounded no-context self-review and clearly label it as supporting evidence rather than equivalent to a required external review.
+- Use a fresh internal no-context reviewer for every review pass; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
 - The review must look for issues that would reasonably be raised as `P1` or `P2` by CI, static analysis, Copilot review, test execution, integration/browser/device lanes, missing evidence, or contract drift.
 - Record a `Pipeline/Copilot P1/P2 Preflight` table with columns: `Reviewer Surface / Package`, `Review Focus`, `Status`, `Evidence Artifact / Command`, `Findings`, `Resolution / Notes`.
 - `Status` must be `passed`, `waived`, or `n/a`. `n/a` is allowed only for non-code/non-pipeline slices with explicit rationale; `waived` requires explicit human approval evidence.
@@ -333,15 +396,15 @@ If the change restores previously documented or verifiably working behavior (inc
 - Run `wf-docker-independent-test-quality-audit-method` using `test-quality-audit` as the primary audit lens.
 - Treat gate-satisfying evidence as the full applicable output of `test-quality-audit`, not just the explicit review questions below.
 - Build a bounded package containing frozen baseline, bounded implementation diff, bounded test diff (or explicit `no test diff`), validation evidence, expected behaviors/DoD, and residual risks.
-- Use one fresh auxiliary reviewer with no inherited thread context.
-- If a subagent is available in the execution environment, the test audit must be delegated to that subagent (no-context). If no subagent is available, document the constraint and any bounded no-context self-review may only count as supporting evidence, not as satisfaction of a `required` audit gate.
+- Use one fresh internal reviewer with no inherited thread context.
+- Every test-audit pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
 - Require explicit answers on:
   - whether changed test logic reflects a real product/contract change
   - whether any changed test logic appears to be a pass-the-test workaround or other brittle test-only shortcut
   - whether assertions are effective enough to catch the intended regression/behavior break
   - whether assertions and coverage are efficient rather than bloated, redundant, or brittle
   - whether changed and nearby tests actually cover the required behaviors and failure modes
-- Retry once with a tighter package if the first attempt fails or times out.
+- If the first attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. A polling timeout while the reviewer remains live requires continued waiting, not retry or package reduction.
 - If a required audit still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
 - `Blocked` alone does not satisfy the gate. Only the current human approval authority may waive a required test-audit gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
@@ -357,13 +420,13 @@ If the change restores previously documented or verifiably working behavior (inc
   - residual risks and waivers
 - Use the latest `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
 - If implementation changed any audit trigger materially after planning, rerun the guard before trusting the existing decision.
-- Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh auxiliary reviewer with no inherited thread context.
-- If a subagent is available in the execution environment, the final review must be delegated to that subagent (no-context). If no subagent is available, document the constraint and proceed with a bounded no-context self-review.
-- When the derived floor marks `triple_review` as `required|recommended`, run it through `audit-protocol-triple-review`; do not substitute an undocumented manual sequence of reviewers.
+- Use a bounded package (`bounded-file-set` or `bounded-summary`) and a fresh internal reviewer with no inherited thread context.
+- Every final-review pass must be delegated to a fresh internal no-context reviewer/subagent in the active client; the reviewer must not be the implementing agent. If no free internal reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable. An external provider is neither required nor gate-satisfying evidence.
+- When the derived floor marks `triple_review` as `required|recommended`, run it through `audit-protocol-triple-review` as the dedicated delivery-side multi-lane audit (`Performance`, `Test Quality`, plus conditional `cutover_integrity_audit`); do not substitute an undocumented manual sequence of reviewers.
 - Record the audit session path and the clean/latest round summary in the TODO before claiming the gate is satisfied.
 - A `bounded-summary` must still include the frozen baseline, approved scope boundary, bounded touched-surface/diff summary, adherence status, validation evidence index, test-quality-audit evidence/status, residual risks, and any existing waivers or unresolved verification debt.
 - Ask for findings first, ordered by severity, focused on regressions, adherence breaks, missing/weak evidence, missing full applicable test-quality-audit outputs, weak or bypass-prone test logic, performance or elegance regressions, structural regressions caused by brittle workarounds or structural shortcuts, waiver/debt misuse, and residual risks. This is not a generic redesign gate unless a material defect is found.
-- Retry once with a tighter package if the first attempt fails or times out.
+- If the first attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. A polling timeout while the reviewer remains live requires continued waiting, not retry or package reduction.
 - If a required final review still cannot be obtained, record blocker/waiver handling before `Completed` or `Production-Ready`.
 - `Blocked` alone does not satisfy closure. Only the current human approval authority may waive a required final-review gate.
 - Record each material finding resolution as `Integrated|Challenged|Deferred with rationale`.
@@ -410,6 +473,8 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If the execution plan does not contain a recorded test strategy, block implementation.
 - If bugfix/regression or behavior-defining work does not contain fail-first targets (or explicit rationale for non-applicability), block implementation.
 - If explicit approval evidence is missing from the TODO after approval, block implementation.
+- If `todo_authority_guard.py <todo-path> --pre-approval` did not return `Overall outcome: preflight-go`, block the request for `APROVADO` until structural execution readiness is corrected.
+- Never treat `preflight-go` as implementation authority; it skips approval evidence by design.
 - If relevant rules/workflows for the touched surfaces were not explicitly ingested after `APROVADO`, block implementation.
 - If `todo_authority_guard.py <todo-path>` does not return `Overall outcome: go` after approval/rule ingestion, block implementation.
 - If implementation absorbs a new independently testable behavior, a new primary objective, or a new approval/risk conversation without TODO update/split + renewed approval, block delivery.
@@ -417,6 +482,7 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If `Qualifiers` includes `Provisional` and `Provisional Notes` are missing, block implementation/delivery until TODO status is coherent.
 - If `Qualifiers` includes `Blocked` and `Blocker Notes` or `Next exact step` are missing, block implementation/delivery until TODO status is coherent.
 - If a TODO claims `Local-Implemented`, is moved to `promotion_lane/` or `completed/`, or claims `Production-Ready` without a complete `Completion Evidence Matrix`, block delivery.
+- If a TODO claims delivery without a complete `Diff Expectation Contract`, or if `todo_diff_expectation_guard.py` does not return `Overall outcome: go`, block delivery until every reported item has a recorded `Diff Deviation Analysis`; a strict no-go must not cause automatic regression, but an unnecessary deviation must be reverted and necessary scope expansion must be user-validated with renewed approval.
 - If any `Definition of Done` or `Validation Steps` item lacks a criterion-specific evidence row, block delivery.
 - If any evidence row uses only aggregate/representative proof that does not prove the exact criterion, block delivery.
 - If any criterion names a UI control, route, endpoint, schema, migration, integration test, browser/device journey, or runtime target and the evidence does not name the same artifact or an approved waiver/deviation, block delivery.
@@ -428,6 +494,7 @@ This prevents scope creep and cross-cutting consolidation refactors by forcing a
 - If any refactor of fields, DTOs, payloads, projections, validation, query/filter semantics, settings, capabilities, or persisted state can feed user-visible behavior and lacks flow-impact assessment plus either runtime evidence or a non-applicability rationale, block delivery.
 - If the `Pipeline/Copilot P1/P2 Preflight` section is missing, unexecuted, or records unresolved `P1`/`P2` findings, block delivery and promotion readiness.
 - If the `Rule-Spirit Anti-Pattern Hunt` section is missing, unexecuted, or records unresolved `P1`/`P2` rule-spirit or anti-pattern findings, block delivery and promotion readiness.
+- If `todo_diff_expectation_guard.py <todo-path> --repo-root <authoritative-checkout>` does not return `Overall outcome: go`, block delivery and promotion readiness; first classify each path/type finding as deviation, necessary need, or noise. The agent may defend a necessary change, but an unnecessary deviation must be reverted and contract changes require user validation plus renewed approval.
 - If `todo_authority_guard.py <todo-path> --require-delivery-gates` does not return `Overall outcome: go`, block delivery and promotion readiness.
 - If `todo_completion_guard.py <todo-path>` does not return `Overall outcome: go`, block delivery.
 - If a delivered TODO remains in `active/` without a valid `TODO Closeout Disposition`, or if `todo_closeout_guard.py <todo-path>` returns anything other than `Overall outcome: go`, block pausing, closeout, and promotion-readiness handoff until the TODO is moved, blocked, or given a real active next step.

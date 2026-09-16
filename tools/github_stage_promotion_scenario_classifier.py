@@ -204,6 +204,7 @@ def classify(
         "normal_paths": normal_paths,
         "generated_artifact_paths": generated_paths,
         "path_roles": roles,
+        "docker_diff_shape": ["n/a"],
     }
 
     if generated_paths:
@@ -214,10 +215,13 @@ def classify(
 
     if repo_kind == "docker":
         if gitlink_paths and normal_paths:
+            details["docker_diff_shape"] = ["source+gitlinks"]
             return "docker-mixed", details, violations
         if gitlink_paths:
+            details["docker_diff_shape"] = ["gitlink-only"]
             return "docker-bot-next-version", details, violations
         if normal_paths:
+            details["docker_diff_shape"] = ["source-only"]
             return "docker-normal", details, violations
         return None, details, violations or ["No authoritative Docker/source diff remains after excluding generated artifacts."]
 
@@ -233,6 +237,18 @@ def classify(
     if has_laravel:
         return "laravel-only", details, violations
     return None, details, violations or ["Unable to classify the promotion scenario from stack evidence and changed paths."]
+
+
+def primary_surface_for_scenario(scenario: str | None) -> str:
+    if scenario in {"docker-normal", "docker-bot-next-version", "docker-mixed"}:
+        return "docker"
+    if scenario == "flutter-only":
+        return "flutter"
+    if scenario == "laravel-only":
+        return "laravel"
+    if scenario == "flutter-laravel":
+        return "flutter+laravel"
+    return "unknown"
 
 
 def format_list(values: list[str]) -> str:
@@ -299,6 +315,8 @@ def main() -> int:
         f"source_ref: {args.source}",
         f"source_sha: {source_sha[:12]}",
         f"repo_kind: {repo_kind}",
+        f"primary_surface: {primary_surface_for_scenario(scenario)}",
+        f"docker_diff_shape: {format_list(details['docker_diff_shape'])}",
         f"scenario: {scenario or 'unknown'}",
         f"changed_path_count: {len(entries)}",
         f"gitlink_paths: {format_list(details['gitlink_paths'])}",
@@ -312,11 +330,15 @@ def main() -> int:
 
     if scenario:
         resolutions = [
-            f"Record scenario `{scenario}` in the promotion intake before any mutating PR action.",
+            f"Record scenario `{scenario}` in the promotion intake before any mutating PR action. Treat it as a compatibility alias on top of primary surface `{primary_surface_for_scenario(scenario)}`.",
             "Use the existing promotion contract, source preflight, guarded wrappers, and completion guards after this classification.",
         ]
         if scenario == "docker-mixed":
-            resolutions.append("Split Docker normal changes first, then handle gitlink movement through the lane-owned bot path.")
+            resolutions.append("Record Docker diff shape `source+gitlinks` and require this order: `bot/next-version -> dev`, then Docker source `-> dev`, then `dev -> stage` only after both are absorbed into `origin/dev`.")
+        elif scenario == "docker-normal":
+            resolutions.append("Record Docker diff shape `source-only`; promote the authoritative Docker source branch into `dev` before any later lane movement.")
+        elif scenario == "docker-bot-next-version":
+            resolutions.append("Record Docker diff shape `gitlink-only`; use the lane-owned `bot/next-version -> dev` path only.")
     else:
         resolutions = ["Stop before promotion and provide explicit repo/source evidence or a repo-kind override."]
 

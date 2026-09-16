@@ -170,7 +170,7 @@ fvm flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### 8. Verify
-- Run `fvm flutter analyze` - must be clean
+- Capture the stable full-workspace VS Code Problems snapshot with no `Error` or `Warning`; do not start a concurrent CLI analyzer
 - Test screen navigation
 - Verify state updates correctly
 - Check error handling

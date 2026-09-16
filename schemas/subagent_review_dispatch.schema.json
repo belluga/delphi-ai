@@ -32,6 +32,7 @@
     "review_kind": {
       "enum": [
         "architecture_opinion",
+        "architecture_adherence",
         "critique",
         "test_quality_audit",
         "final_review",
@@ -69,6 +70,10 @@
         "type": "string"
       },
       "minItems": 1
+    },
+    "review_result_dispatch_path": {
+      "type": "string",
+      "minLength": 1
     },
     "todo_path": {
       "type": "string"

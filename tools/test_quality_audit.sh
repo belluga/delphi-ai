@@ -9,6 +9,7 @@ Deterministic support tool for test-quality audits. It scans selected test paths
 - hard bypass markers (`skip`, `.only`, `markTestSkipped`, etc.);
 - test-only support route usage;
 - auth shortcut hints (`Sanctum::actingAs`);
+- ambient subject fallback hints (`rows[0]`, `hostCandidates[0]`, ambient `candidates.slice(0, minimum)`);
 - weak-assertion hints (status-only / no-exception-only);
 - DI override and mock/fallback hints that deserve manual review.
 
@@ -123,6 +124,7 @@ TEST_ONLY_ROUTE_PATTERN='/test-support\b|\btest-support\b'
 AUTH_SHORTCUT_PATTERN='\bSanctum::actingAs\b'
 STATUS_ONLY_PATTERN='assertStatus\((200|201|202|204)\)|assertOk\s*\(|assertCreated\s*\(|assertNoContent\s*\(|statusCode\s*==\s*(200|201|202|204)|\.toBe\((200|201|202|204)\)'
 NO_EXCEPTION_PATTERN='assertDoesNotThrow|doesNotThrow|not\.toThrow'
+AMBIENT_SUBJECT_FALLBACK_PATTERN='\brows\[0\]([^A-Za-z0-9_]|$)|\|\|\s*candidates\[0\]([^A-Za-z0-9_]|$)|\bhostCandidates\[0\]([^A-Za-z0-9_]|$)|candidates\s*:\s*candidates\.slice\(\s*0\s*,\s*minimum\s*\)'
 DI_OVERRIDE_PATTERN='GetIt\.(I|instance)\.register|registerSingleton|registerLazySingleton|registerFactory|app\(\)->instance\s*\('
 MOCK_HINT_PATTERN='\bMock[A-Z][A-Za-z0-9_]*\b|\bFake[A-Z][A-Za-z0-9_]*\b|when\s*\(|thenReturn\s*\(|thenAnswer\s*\(|spyOn\s*\('
 
@@ -131,6 +133,7 @@ test_support_hits="$(rg -n -I "$TEST_ONLY_ROUTE_PATTERN" "${SCAN_PATHS[@]}" || t
 auth_shortcut_hits="$(rg -n -I "$AUTH_SHORTCUT_PATTERN" "${SCAN_PATHS[@]}" || true)"
 status_only_hits="$(rg -n -I "$STATUS_ONLY_PATTERN" "${SCAN_PATHS[@]}" || true)"
 no_exception_hits="$(rg -n -I "$NO_EXCEPTION_PATTERN" "${SCAN_PATHS[@]}" || true)"
+ambient_subject_fallback_hits="$(rg -n -I "$AMBIENT_SUBJECT_FALLBACK_PATTERN" "${SCAN_PATHS[@]}" || true)"
 di_override_hits="$(rg -n -I "$DI_OVERRIDE_PATTERN" "${SCAN_PATHS[@]}" || true)"
 mock_hint_hits="$(rg -n -I "$MOCK_HINT_PATTERN" "${SCAN_PATHS[@]}" || true)"
 
@@ -148,13 +151,14 @@ test_support_count="$(count_hits "$test_support_hits")"
 auth_shortcut_count="$(count_hits "$auth_shortcut_hits")"
 status_only_count="$(count_hits "$status_only_hits")"
 no_exception_count="$(count_hits "$no_exception_hits")"
+ambient_subject_fallback_count="$(count_hits "$ambient_subject_fallback_hits")"
 di_override_count="$(count_hits "$di_override_hits")"
 mock_hint_count="$(count_hits "$mock_hint_hits")"
 
 outcome="none"
 if [ "$hard_bypass_count" -gt 0 ] || [ "$test_support_count" -gt 0 ]; then
   outcome="high"
-elif [ "$auth_shortcut_count" -gt 0 ] || [ "$status_only_count" -gt 0 ] || [ "$no_exception_count" -gt 0 ]; then
+elif [ "$auth_shortcut_count" -gt 0 ] || [ "$status_only_count" -gt 0 ] || [ "$no_exception_count" -gt 0 ] || [ "$ambient_subject_fallback_count" -gt 0 ]; then
   outcome="medium"
 elif [ "$di_override_count" -gt 0 ] || [ "$mock_hint_count" -gt 0 ]; then
   outcome="low"
@@ -206,20 +210,22 @@ print_block "Status-only assertion hints:" "$status_only_hits"
 printf '\n'
 print_block "No-exception-only assertion hints:" "$no_exception_hits"
 printf '\n'
+print_block "Ambient subject fallback hints:" "$ambient_subject_fallback_hits"
+printf '\n'
 print_block "DI override hints:" "$di_override_hits"
 printf '\n'
 print_block "Mock / fallback hints:" "$mock_hint_hits"
 printf '\n'
-printf 'Counts: hard_bypass=%s test_support=%s auth_shortcut=%s status_only=%s no_exception_only=%s di_override=%s mock_hint=%s\n' \
+printf 'Counts: hard_bypass=%s test_support=%s auth_shortcut=%s status_only=%s no_exception_only=%s ambient_subject_fallback=%s di_override=%s mock_hint=%s\n' \
   "$hard_bypass_count" \
   "$test_support_count" \
   "$auth_shortcut_count" \
   "$status_only_count" \
   "$no_exception_count" \
+  "$ambient_subject_fallback_count" \
   "$di_override_count" \
   "$mock_hint_count"
 
 if [ "$outcome" = "medium" ] || [ "$outcome" = "high" ]; then
   exit 2
 fi
-

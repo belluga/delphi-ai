@@ -1,0 +1,38 @@
+{
+  "name": "delphi-vscode-diagnostics-bridge",
+  "displayName": "Delphi VS Code Diagnostics Bridge",
+  "description": "Read-only localhost bridge for the current VS Code diagnostics collection.",
+  "version": "0.1.0",
+  "publisher": "belluga",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:delphiDiagnosticsBridge.showStatus"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "delphiDiagnosticsBridge.showStatus",
+        "title": "Delphi: Show Diagnostics Bridge Status"
+      }
+    ],
+    "configuration": {
+      "title": "Delphi Diagnostics Bridge",
+      "properties": {
+        "delphiDiagnosticsBridge.port": {
+          "type": "number",
+          "default": 40361,
+          "minimum": 1024,
+          "maximum": 65535,
+          "description": "Loopback-only port used to expose the current VS Code diagnostics snapshot."
+        }
+      }
+    }
+  }
+}

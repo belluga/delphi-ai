@@ -14,7 +14,12 @@ from finding_carry_forward_extract import build_carry_forward_packet
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_dispatch.schema.json"
-
+RESULT_SCHEMA_PATH = REPO_ROOT / "schemas" / "subagent_review_result.schema.json"
+SHARED_INTENT_AUTHORITY_FOCUS = (
+    "When assessing design, seek the simplest faithful Clean Code/SOLID design for the approved intent. Do not "
+    "invent future-facing work or erase explicit TODO intent. Planning review may challenge proposed intent; "
+    "delivery review must preserve approved intent or return for renewed approval."
+)
 CONFIG = {
     "architecture_opinion": {
         "axes": ["correctness", "performance", "elegance", "structural_soundness", "operational_fit"],
@@ -36,6 +41,28 @@ CONFIG = {
             "findings[].formalizable_hint (optional)",
             "findings[].candidate_rule_level (optional)",
             "findings[]"
+        ],
+    },
+    "architecture_adherence": {
+        "axes": ["adherence", "structural_soundness", "operational_fit", "performance", "elegance"],
+        "focus": [
+            "Compare the delivered bounded package against the frozen Architecture Change Governance contract and Decision Baseline.",
+            "Identify any implementation path, temporary exception, or missing protection harness that diverges from the approved target steady-state.",
+            "Do not redesign the approved architecture unless the delivered evidence exposes a material defect or an approval-breaking divergence.",
+            "For each material finding, add category and formalizable-hint when you can judge them honestly.",
+        ],
+        "result_fields": [
+            "overall_assessment",
+            "recommended_path",
+            "performance_position",
+            "elegance_position",
+            "structural_soundness_position",
+            "operational_fit_position",
+            "findings[].finding_id (optional)",
+            "findings[].category (optional)",
+            "findings[].formalizable_hint (optional)",
+            "findings[].candidate_rule_level (optional)",
+            "findings[]",
         ],
     },
     "critique": {
@@ -143,6 +170,58 @@ def validate_schema(payload: dict) -> None:
     raise SystemExit("subagent review dispatch failed schema validation:\n" + "\n".join(rendered))
 
 
+def result_contract_lines(payload: dict) -> list[str]:
+    """Render the canonical reviewer contract from the merge-validator schema."""
+    schema = json.loads(RESULT_SCHEMA_PATH.read_text(encoding="utf-8"))
+    properties = schema["properties"]
+    finding = schema["$defs"]["finding"]
+    finding_properties = finding["properties"]
+
+    lines = [
+        "## Result Contract",
+        "Return exactly one JSON object and no Markdown fence or prose.",
+        "Do not emit `null`; omit optional fields that do not apply.",
+        "No top-level fields other than the following are allowed:",
+    ]
+    for field in schema["required"]:
+        field_schema = properties[field]
+        if "const" in field_schema:
+            lines.append(f"- `{field}`: `{field_schema['const']}`")
+        elif field == "dispatch_path":
+            lines.append(f"- `{field}`: the exact binding shown above")
+        elif field == "review_kind":
+            lines.append(f"- `{field}`: `{payload['review_kind']}`")
+        else:
+            lines.append(f"- `{field}`")
+
+    position_values = ", ".join(f"`{value}`" for value in schema["$defs"]["position"]["enum"])
+    category_values = ", ".join(f"`{value}`" for value in finding_properties["category"]["enum"])
+    severity_values = ", ".join(f"`{value}`" for value in finding_properties["severity"]["enum"])
+    formalizable_values = ", ".join(
+        f"`{value}`" for value in finding_properties["formalizable_hint"]["enum"]
+    )
+    candidate_rule_level_values = ", ".join(
+        f"`{value}`" for value in finding_properties["candidate_rule_level"]["enum"]
+    )
+    optional_finding_fields = ", ".join(
+        f"`{field}`" for field in finding_properties if field not in finding["required"]
+    )
+    lines.extend(
+        [
+            "",
+            f"Every `*_position` value must be one of: {position_values}.",
+            "Each finding may contain only these fields:",
+            f"- required: {', '.join(f'`{field}`' for field in finding['required'])}",
+            f"- optional: {optional_finding_fields}",
+            f"- `severity` values: {severity_values}",
+            f"- `category` values: {category_values}",
+            f"- `formalizable_hint` values: {formalizable_values}",
+            f"- `candidate_rule_level` values: {candidate_rule_level_values}",
+        ]
+    )
+    return lines
+
+
 def render_markdown(payload: dict) -> str:
     lines = [
         f"# PACED Subagent Dispatch: {payload['review_kind']}",
@@ -166,6 +245,17 @@ def render_markdown(payload: dict) -> str:
     lines.extend(["", "## Required Result Fields"])
     for field in payload["result_contract_fields"]:
         lines.append(f"- `{field}`")
+    result_dispatch_path = payload.get("review_result_dispatch_path")
+    if result_dispatch_path:
+        lines.extend(
+            [
+                "",
+                "## Required Result Binding",
+                "The reviewer result's `dispatch_path` must equal this exact dispatch JSON path:",
+                f"`{result_dispatch_path}`",
+                "Do not substitute the bounded package path, governing TODO path, or reviewer output path.",
+            ]
+        )
     if payload.get("goal"):
         lines.extend(["", "## Goal", payload["goal"]])
     if payload.get("todo_path"):
@@ -193,14 +283,7 @@ def render_markdown(payload: dict) -> str:
                     f"  - Reference: {entry['reference']}",
                 ]
             )
-    lines.extend(
-        [
-            "",
-            "## Result Contract",
-            "Each reviewer should answer in JSON compatible with `schemas/subagent_review_result.schema.json`.",
-            "",
-        ]
-    )
+    lines.extend(["", *result_contract_lines(payload), ""])
     return "\n".join(lines)
 
 
@@ -229,7 +312,10 @@ def main() -> int:
         "reviewer_count": args.reviewer_count,
         "no_context_required": True,
         "required_axes": config["axes"],
-        "focus_points": config["focus"],
+        "focus_points": [
+            *config["focus"],
+            SHARED_INTENT_AUTHORITY_FOCUS,
+        ],
         "result_contract_fields": config["result_fields"],
     }
     if args.todo_path:
@@ -239,6 +325,8 @@ def main() -> int:
         payload["historical_dispositions"] = historical["entries"]
     if args.goal:
         payload["goal"] = args.goal
+    if args.json_output:
+        payload["review_result_dispatch_path"] = str(Path(args.json_output).resolve())
 
     validate_schema(payload)
     rendered_json = json.dumps(payload, indent=2) + "\n"

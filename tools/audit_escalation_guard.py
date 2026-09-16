@@ -28,11 +28,15 @@ REQUIRED_TRIGGERS = {
 
 TRIGGER_ORDER = list(REQUIRED_TRIGGERS.keys())
 AUDIT_TRIGGER_HEADING = "## Audit Trigger Matrix"
+ARCHITECTURE_GOVERNANCE_HEADING = "## Architecture Change Governance"
+ARCHITECTURE_APPLICABILITY = {"required", "not_needed"}
 
 
 def extract_heading_section(text: str, heading: str) -> str | None:
+    # Accept the canonical template heading plus an optional explanatory suffix,
+    # e.g. "## Audit Trigger Matrix (Required Before Audit Decisions Are Trusted)".
     pattern = re.compile(
-        rf"^{re.escape(heading)}\s*$\n(?P<body>.*?)(?=^##\s|\Z)",
+        rf"^{re.escape(heading)}(?:\s+\([^\n]*\))?\s*$\n(?P<body>.*?)(?=^##\s|\Z)",
         re.MULTILINE | re.DOTALL,
     )
     match = pattern.search(text)
@@ -93,6 +97,14 @@ def extract_complexity_from_todo(text: str) -> str | None:
     return match.group(1).lower()
 
 
+def extract_architecture_applicability(text: str) -> str | None:
+    section = extract_heading_section(text, ARCHITECTURE_GOVERNANCE_HEADING)
+    if section is None:
+        return None
+    match = re.search(r"Applicability.*?:\*{0,2}\s*`?(required|not_needed)`?", section, re.IGNORECASE)
+    return match.group(1).lower() if match else None
+
+
 def detect_high_severity_issue(text: str) -> bool:
     return bool(
         re.search(
@@ -123,7 +135,7 @@ def any_high_risk_signal(data: dict[str, str]) -> bool:
     )
 
 
-def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
+def derive_decisions(data: dict[str, str], architecture_applicability: str) -> dict[str, dict[str, object]]:
     high_risk = any_high_risk_signal(data)
     release_sensitive = yes(data, "release_or_promotion_critical")
     critical_journey = yes(data, "critical_user_journey")
@@ -157,7 +169,7 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
     if high_risk:
         final_review_reason_codes.append("FINAL-EXPANDED-RISK-SIGNALS")
 
-    triple_required = explicit_three_lane or (
+    specialized_audit_required = explicit_three_lane or (
         release_sensitive
         and any(
             (
@@ -170,22 +182,26 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
             )
         )
     )
-    triple_recommended = (
-        not triple_required
+    specialized_audit_recommended = (
+        not specialized_audit_required
         and (
             (data["complexity"] == "big" and any((public_contract, critical_journey, runtime_sensitive, auth_sensitive)))
             or (release_sensitive and cross_module)
         )
     )
-    if triple_required:
+    if specialized_audit_required:
         triple_decision = "required"
-        triple_reason_codes = ["TRIPLE-EXPLICIT" if explicit_three_lane else "TRIPLE-HIGH-CRITICALITY"]
-    elif triple_recommended:
+        triple_reason_codes = [
+            "DEDICATED-AUDIT-EXPLICIT"
+            if explicit_three_lane
+            else "DEDICATED-AUDIT-HIGH-CRITICALITY"
+        ]
+    elif specialized_audit_recommended:
         triple_decision = "recommended"
-        triple_reason_codes = ["TRIPLE-EXPANDED-CHALLENGE-RECOMMENDED"]
+        triple_reason_codes = ["DEDICATED-AUDIT-EXPANDED-CHALLENGE-RECOMMENDED"]
     else:
         triple_decision = "not_needed"
-        triple_reason_codes = ["TRIPLE-NOT-TRIGGERED"]
+        triple_reason_codes = ["DEDICATED-AUDIT-NOT-TRIGGERED"]
 
     if test_quality_reason_codes:
         test_quality_decision = "required"
@@ -225,6 +241,8 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
     else:
         verification_debt_decision = "not_needed"
         verification_debt_reason_codes = ["VDA-NOT-TRIGGERED"]
+
+    architecture_required = architecture_applicability == "required"
 
     return {
         "critique": {
@@ -272,6 +290,20 @@ def derive_decisions(data: dict[str, str]) -> dict[str, dict[str, object]]:
             "lifecycle_gate": "before_completed",
             "workflow": "verification-debt-audit",
             "reason_codes": verification_debt_reason_codes,
+        },
+        "architecture_decision_review": {
+            "decision": "required" if architecture_required else "not_needed",
+            "lifecycle_gate": "after_diagnosis_before_aprovado",
+            "review_kind": "architecture_opinion",
+            "workflow": "wf-docker-subagent-orchestration-method",
+            "reason_codes": ["ARCHITECTURE-GOVERNANCE-REQUIRED"] if architecture_required else ["ARCHITECTURE-GOVERNANCE-NOT-TRIGGERED"],
+        },
+        "architecture_adherence_review": {
+            "decision": "required" if architecture_required else "not_needed",
+            "lifecycle_gate": "after_implementation_before_completed",
+            "review_kind": "architecture_adherence",
+            "workflow": "wf-docker-subagent-orchestration-method",
+            "reason_codes": ["ARCHITECTURE-GOVERNANCE-REQUIRED"] if architecture_required else ["ARCHITECTURE-GOVERNANCE-NOT-TRIGGERED"],
         },
     }
 
@@ -360,6 +392,18 @@ def build_result(todo_path: Path, text: str) -> dict[str, object]:
             }
         )
 
+    architecture_applicability = extract_architecture_applicability(text)
+    if architecture_applicability is None:
+        architecture_applicability = "not_needed"
+    elif architecture_applicability not in ARCHITECTURE_APPLICABILITY:
+        violations.append(
+            {
+                "code": "ARCHITECTURE-GOVERNANCE-APPLICABILITY-INVALID",
+                "message": "Architecture Change Governance applicability is missing or invalid.",
+                "resolution": "Set Architecture Change Governance Applicability to `required` or `not_needed` before rerunning the audit guard.",
+            }
+        )
+
     if violations:
         return {
             "blocked": True,
@@ -372,11 +416,12 @@ def build_result(todo_path: Path, text: str) -> dict[str, object]:
     fingerprint = hashlib.sha256(
         json.dumps(matrix, sort_keys=True).encode("utf-8")
     ).hexdigest()[:12]
-    decisions = derive_decisions(matrix)
+    decisions = derive_decisions(matrix, architecture_applicability)
     return {
         "blocked": False,
         "violations": [],
         "trigger_matrix": matrix,
+        "architecture_governance_applicability": architecture_applicability,
         "decisions": decisions,
         "fingerprint": fingerprint,
         "todo_path": str(todo_path),
@@ -408,7 +453,7 @@ def render_text(result: dict[str, object]) -> str:
             lines.append(f"  - {violation['resolution']}")
     else:
         lines.append("  - Record the derived decisions into the TODO sections for critique, security, performance/concurrency, verification debt, test-quality audit, and final review.")
-        lines.append("  - Run the critique gate before `APROVADO`; do not treat the triple review as a replacement for critique.")
+        lines.append("  - Run the critique gate before `APROVADO`; do not treat the dedicated multi-lane audit as a replacement for critique.")
         lines.append("  - Do not downgrade any derived `required` decision. Manual escalation may be stricter, never looser, than this deterministic floor.")
         lines.append("  - Rerun this guard whenever trigger fields change after implementation, especially for tests, auth/tenant scope, runtime/infra scope, or release-critical scope.")
 

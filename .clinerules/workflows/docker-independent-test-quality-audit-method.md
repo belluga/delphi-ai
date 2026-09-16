@@ -70,7 +70,7 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
 - Preserve concrete test deltas and expectations instead of paraphrasing them into soft language.
 
 ## Required-Gate Waiver Control
-- If a `required` independent test-quality audit cannot be completed after one retry, a `blocked` record alone does not permit `Completed` or `Production-Ready`.
+- If a `required` independent test-quality audit cannot be completed after an objectively terminal failed attempt and one retry of the complete gate-satisfying package, a `blocked` record alone does not permit `Completed` or `Production-Ready`.
 - Only the current human approval authority for the TODO may waive a required test-quality audit gate.
 - The waiver record must include:
   - `waiver_reason`
@@ -84,10 +84,13 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
 1. Use the latest successful `wf-docker-audit-escalation-method` output as the minimum decision authority for this gate.
 2. Build the bounded test-audit package.
    - If orchestration tooling is desired, derive a dispatch packet with `python3 delphi-ai/tools/subagent_review_dispatch.py --review-kind test_quality_audit ...`.
-3. Run one fresh auxiliary audit with no inherited thread context.
-   - If a subagent is available in the environment, use that subagent with `fork_context=false`.
-   - If no subagent is available, document the constraint and optionally run a bounded no-context self-review from the package only as supporting evidence; this does not satisfy a `required` independent audit gate by itself.
-   - In other environments, use the closest equivalent that guarantees no prior thread contamination.
+3. Run one fresh internal audit with no inherited thread context.
+   - This audit pass must use a fresh internal no-context reviewer/subagent with `fork_context=false`; it must not be the implementing agent.
+   - Internal no-context reviewer availability inside the active client is treated as operationally mandatory. If no free reviewer slot is available, close/recycle only a terminal inactive review lane and open a fresh reviewer instead of downgrading to self-review; a live reviewer is never recyclable.
+   - Do not invoke or treat an external provider as gate-satisfying review evidence.
+   - In other environments, use the closest internal equivalent that guarantees no prior thread contamination.
+   - Reviewer lifecycle is status-based, not elapsed-time-based. While status is `pending_init` or `running`, wait without a rigid deadline.
+   - A polling timeout means only that no terminal event arrived during that polling window. Do not interrupt, close, recycle, replace, duplicate, or repackage/shrink a live review.
 4. Prompt the reviewer to return findings first, ordered by severity, and to stay focused on test quality rather than reopen the full architecture.
    - Require explicit positions on:
      - product/test delta alignment;
@@ -99,10 +102,10 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
 5. Treat the audit as challenge evidence only:
    - advisory, never authoritative by itself;
    - it may block closure if it exposes weak or misleading validation, but it does not replace the TODO contract or user approval model.
-6. If the first no-context audit attempt fails or times out, retry once with a tighter package.
-7. If a `required` audit still cannot be obtained after one retry:
+6. If the first no-context audit attempt reaches objective terminal failure, retry once with the same complete gate-satisfying package by default. Change the package only to repair a concrete proven package defect while preserving the full rubric; a polling timeout while the reviewer remains live requires continued waiting.
+7. If a `required` audit still cannot be obtained after an objectively terminal failed attempt and one retry:
    - record the tooling limitation explicitly;
-   - do not silently treat bounded self-review as equivalent to a true fresh no-context external audit;
+   - do not silently treat bounded self-review as equivalent to a true fresh internal no-context audit;
    - require either a blocker state or an explicit waiver before `Completed` or `Production-Ready`;
    - treat `blocked` as non-satisfying until the gate is actually run or explicitly waived by the approval authority.
 8. Resolve every material finding explicitly in the TODO as one of:
@@ -120,5 +123,5 @@ Gate-satisfying evidence must cover the full applicable `test-quality-audit` wor
 - A blocker or waiver record if a required independent audit could not be executed.
 
 ## Non-Authority Rule
-- Fresh auxiliary audits are intentionally independent, but they do not own the decision.
+- Fresh internal audits are intentionally independent, but they do not own the decision.
 - Delivery authority remains the tactical TODO, the decision-adherence gates, and the normal approval model.

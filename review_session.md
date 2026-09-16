@@ -59,4 +59,7 @@ A review is complete only when:
 2. Material issues are captured with complete issue cards.
 3. Failure modes and uncertainty register are documented.
 4. Validation plan is explicit.
-5. User approval is obtained before implementation.
+5. The first planning-side review/guard ran from a committed and pushed review baseline recorded in `Gate: Review Baseline Freeze`.
+6. The post-critique assumption-vs-code coherence guard is clean, integrated, or explicitly waived with rationale; if it found any approval-material/significant drift, the TODO has already been returned to the review loop and reconverged before approval.
+7. The post-review scope-drift guard is clean, integrated, or explicitly waived with rationale; if it found material drift in scope-governing sections, the TODO has already been returned to the review loop, the evolved scope has been revalidated with the user, and the package has reconverged before approval.
+8. User approval is obtained before implementation.

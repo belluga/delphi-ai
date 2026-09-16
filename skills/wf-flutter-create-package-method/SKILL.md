@@ -23,7 +23,7 @@ Key steps:
 4. Add tests.
 5. Declare in root `pubspec.yaml`.
 6. Create canonical README from `delphi-ai/templates/package_readme_template.md`.
-7. Run validation (`flutter analyze` + tests + host build).
+7. Run validation (stable full-workspace VS Code Problems bridge snapshot + tests + host build). Do not start a CLI analyzer locally; the snapshot must have no `Error` or `Warning`, and retained `Information` diagnostics require TODO classification.
 8. **Consolidate:** run `bash delphi-ai/tools/verify_package_registry.sh` to update the checklist.
 
 ## Validation

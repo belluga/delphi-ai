@@ -16,30 +16,42 @@ Use this skill as the **manual stage-promotion umbrella**. It routes the lane by
 Load the phase skill that matches the current lane state:
 - `github-stage-promotion-intake-classification`
 - `github-stage-promotion-contract-preflight`
-- `github-stage-promotion-source-to-dev`
 - `github-stage-promotion-bot-next-version-recovery`
+- `github-stage-promotion-source-to-dev`
 - `github-stage-promotion-dev-to-stage`
 - `github-stage-promotion-docker-finalization`
 - `github-stage-promotion-failure-review`
 - `github-stage-promotion-closeout-report`
 
 ## Required State Machine
-1. **Intake and classification**: confirm explicit authorization, target scope (`dev-only|through-stage`), source refs, repo set, and scenario.
-2. **Contract and preflight**: create the local promotion contract, inspect clean status, run source preflight, and discover existing PRs.
-3. **Promotion preflight review**: once source preflight is `go` and before the first PR, create a derived remediation branch from the promotable authoritative source branch when the lane wants to preserve promotable history, then run the internal no-context subagent sweep from `copilot-pr-review`, including the dedicated `cutover-integrity` reviewer whenever the lane includes canonical cutover, legacy-path retirement, fallback bridges, or explicit compatibility exceptions; pass the governing TODO so prior adjudicated findings are carried forward into the review packet, iterate until locally clean, and for each accepted remediation wave fix it, validate it, commit it on the active review branch, rebuild the packet, update the orchestration execution plan's package-level pre-promotion review-loop ledger and Review Coverage Board, and only then rerun review. After reviewer output is collected, run a separate finding triage step: reviewers keep their normal detection behavior, while the operator classifies each finding as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`. Only `release-blocker` findings block the current promotion lane; the two follow-up classes must be routed into explicit post-version TODOs. After the internal loop is clean, run the full in-scope local `CI-Equivalent Suite Matrix` on the remediation branch. Only after that matrix is green (or has explicit approved waivers) may the accepted net effect be replayed onto the authoritative source branch as one or a few curated commits. Rebuild the packet on that source branch and only then run the external Claude/Copilot-sim confirmation there before opening the first PR. If the replay was not a pure fast-forward or conflict-free curated replay, rerun the full in-scope local `CI-Equivalent Suite Matrix` on the authoritative source branch before claiming readiness. Compare every finding against the governing TODO decisions and loop until blockers are resolved or explicitly rejected as by-design.
-   - Validation-surface clarification: CI-Equivalent is the generic current-branch local proof for the branch being evaluated. It must run from the current authoritative branch (`feature/*`, `review/*`, `reconcile/*`, or equivalent) using the project-owned local build/publish path and the same product-facing suites the pipeline uses for that scope. `reconcile/*` is not a prerequisite for CI-Equivalent; it is only the execution topology for real reconciliation work. If a package was first integrated on a reconciliation branch, replay that accepted reconciliation state back onto the canonical version/source branch before promotion resumes; the reconciliation branch is evidence topology, not the promotable source branch. Proof against a published `stage` environment is a separate stage-published validation surface and must never be mislabeled as CI-Equivalent.
-4. **Source to dev**: promote normal Docker/app/source branches into `dev` through guarded PR actions.
-5. **Bot next-version recovery**: when Docker gitlink movement is required, ensure the lane-owned `bot/next-version -> dev` path is clean.
+1. **Intake and classification**: confirm explicit authorization, target scope (`dev-only|through-stage`), source refs, repo set, scenario, and when a version/package TODO governs the lane, the governing TODO path plus repo-authority key.
+2. **Contract and preflight**: create the local promotion contract, inspect clean status, require governing-TODO source authority when package/version promotion is in scope, run source preflight, and discover existing PRs.
+3. **Promotion preflight review**: once source preflight is `go` and before the first PR, create a derived remediation branch from the promotable authoritative source branch when the lane wants to preserve promotable history. Run the internal no-context subagent sweep from `copilot-pr-review`, including a dedicated `cutover-integrity` reviewer whenever the lane includes canonical cutover, legacy-path retirement, fallback bridges, or explicit compatibility exceptions. Pass the governing TODO so prior adjudicated findings are carried forward, iterate until locally clean, and for each accepted remediation wave fix it, validate it, commit it on the active review branch, rebuild the packet, and update the orchestration execution plan's package-level review-loop ledger and Review Coverage Board before rerunning review. Triage findings through `review-finding-classification`; only `release-blocker` blocks the lane, and follow-up classes must be routed to explicit post-version TODOs. After the internal loop is clean, run the full in-scope local `CI-Equivalent Suite Matrix` on the remediation branch. Only after that matrix is green (or has an explicit approved waiver) may the accepted net effect be replayed to the authoritative source branch. Rebuild the packet on that source branch and run a fresh internal no-context confirmation there before opening the first PR; that reviewer must not be an implementing agent or a reviewer from the preceding sweep. If the replay was not a pure fast-forward or conflict-free curated replay, rerun the full in-scope local `CI-Equivalent Suite Matrix` on the authoritative source branch before claiming readiness. When a passed broad local gate already exists and the authoritative source branch changed afterward, do not default straight to a rerun on SHA drift alone: run the project-owned CI-equivalent evidence invalidation guard first and only rerun the broad local stage proof when that guard reports `rerun-required` or after a `manual-admission-required` state has been resolved. When the next intended action after that authoritative rerun or reuse decision is to open or resume the remote promotion lane, invoke the broad local stage proof through `bash tools/ci/run_promotable_stage_full.sh --report <report-path>` instead of calling `stage-full` directly. Inside a promotion flow, a current-head green broad local gate on the authoritative source branch is a conversion trigger, not a suggestion: once it exists and no newly frozen finding has been classified as `release-blocker`, the next step must be `replay`, `open/reuse PR`, or `wait on remote lane evidence`, not another precautionary local investigation pass. Compare every finding against the governing TODO decisions and loop until blockers are resolved or explicitly rejected as by-design.
+   - Load `ci-equivalent-governance` before deciding which local matrix or broad stage gate counts as `CI-Equivalent` for this lane.
+   - If a remediation wave changes any stage-facing test row, wrapper, lifecycle step, or readonly/mutation coverage row, load `ci-equivalent-test-surface-admission` before treating either branch as CI-equivalent ready.
+   - When a version/package TODO governs the lane, the authoritative source branch for that first `CI-Equivalent` run is the TODO-recorded version branch, typically `*-rc` such as `v0.2.0+8-rc`. Do not open the remediation branch first and only then run `CI-Equivalent`.
+   - If the required broad local gate is unavailable, hung, or fails because the principal-checkout runtime surface is unhealthy or ambiguous, stop the lane immediately. Do not open PRs, promote, replay, or claim readiness from remote evidence alone. Report the state as a blocked local infrastructure failure with a PACED/TEACH stop message that tells the operator not to evolve the lane until the local gate passes or an explicit human waiver is recorded.
+4. **Bot next-version recovery**: when Docker gitlink movement is required, ensure the lane-owned `bot/next-version -> dev` path is clean.
+5. **Source to dev**: promote normal Docker/app/source branches into `dev` through guarded PR actions. For mixed Docker lanes, this phase starts only after the required `bot/next-version -> dev` track is clear.
 6. **Dev to stage**: only for `through-stage`, promote `dev -> stage` through PR.
 7. **Docker finalization**: for app `through-stage` lanes, complete Docker gitlink follow-through before the lane is finished.
 8. **Failure review**: when CI/Copilot/checks fail or are ambiguous, classify and resolve root cause before retrying.
 9. **Closeout report**: run completion evidence and update the governing TODO/promotion status.
 
+## Remote Wait Cadence
+- Promotion-lane remote waits must be low-noise by default.
+- When waiting on GitHub Actions, PR checks, branch creation, or bot follow-through, use `github_status_wait.py` or an equivalent silent wait path instead of tight manual polling.
+- The minimum manual recheck cadence is 60 seconds. Do not poll GitHub repeatedly in sub-minute loops unless a human explicitly authorizes an exception for an active incident.
+- If nothing actionable changed, stay in wait state instead of re-running broader promotion logic.
+
 ## Classification
-The intake phase must classify exactly one scenario before mutation. Use `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence, then record the human-authorized scenario:
-- `docker-normal`: Docker repo has normal file changes and no intended gitlinks.
-- `docker-bot-next-version`: Docker submodule gitlink promotion only.
-- `docker-mixed`: Docker has both normal changes and submodule gitlink changes; split normal changes first, bot lane second.
+The intake phase must classify exactly one scenario before mutation. Use `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>` as advisory deterministic evidence, then record the human-authorized primary surface plus compatibility scenario:
+- primary surfaces: `docker`, `flutter`, `laravel`, `flutter+laravel`
+- Docker secondary diff shapes: `gitlink-only`, `source-only`, `source+gitlinks`
+- compatibility scenario aliases:
+  - `docker-normal`: Docker primary surface with diff shape `source-only`
+  - `docker-bot-next-version`: Docker primary surface with diff shape `gitlink-only`
+  - `docker-mixed`: Docker primary surface with diff shape `source+gitlinks`; required order is `bot/next-version -> dev`, then Docker source `-> dev`, then `dev -> stage` only after both tracks are absorbed into `origin/dev`
 - `flutter-only`, `laravel-only`, or `flutter-laravel`: app source promotion.
 
 `web-app` is never a scenario. It is a generated artifact surface; treat its PRs/checks/comments only as evidence that may require fixing the authoritative source lane.
@@ -51,33 +63,55 @@ The intake phase must classify exactly one scenario before mutation. Use `python
 - Never push directly to `dev`, `stage`, or `main`; lane movement is PR-only.
 - Feature/fix/source branches must not introduce Docker submodule gitlinks into `dev`.
 - The only accepted gitlink path into `dev` is lane-owned `bot/next-version -> dev`; subsequent `dev -> stage` may carry those gitlinks forward.
+- For mixed Docker packages, `dev -> stage` is forbidden until the promotion contract's required Docker `-> dev` tracks are clear. The action guard is the deterministic source of truth for this admission check.
 - `bot/next-version` may not be promoted directly to `stage`.
 - `web-app` PRs must not be manually created, merged, closed, rebased, or patched through this skill.
 - Required checks with `flaky`, pending, failed, or warning-as-success status are not green.
 - Review Copilot comments even when CI is green. Pertinent P1/P2 comments block until fixed or explicitly rejected with technical rationale.
-- Before the first promotion PR in a lane, run `copilot-pr-review` once the authoritative source branch is preflight-green. The mandatory order is: internal no-context subagents first, Claude/Copilot-sim second. Treat all review output as evidence, not patch authority.
+- Before the first promotion PR in a lane, run `copilot-pr-review` once the authoritative source branch is preflight-green. The mandatory order is: fresh internal no-context subagents first, then a fresh internal no-context confirmation pass by a different reviewer. Treat all review output as evidence, not patch authority; do not invoke an external provider as a gate.
 - During that pre-promotion review loop, do not keep stacking uncommitted fixes while continuing to review an older diff. Each accepted remediation wave must be committed on the active review branch before the next review pass so the lane keeps a stable `base...HEAD` baseline.
 - During that pre-promotion review loop, do not create a parallel manual version-status artifact. Package-level round state belongs in the orchestration execution plan; per-finding authoritative dispositions remain in the governing TODO carry-forward path.
 - During that pre-promotion review loop, keep the orchestration plan's Review Coverage Board current so every governing TODO has an explicit coverage state and latest evidence round.
 - When promotion history should stay readable, the active review branch must be a derived remediation branch and the promotable source branch must stay frozen until the accepted net effect is replayed back as curated commit(s).
-- Do not derive the review branch from a source branch that has not already passed the current in-scope CI-equivalent matrix on that source branch's local runtime surface. If the source branch changed after its last green CI-equivalent pass, rerun CI-Equivalent on that changed source branch before opening review.
+- For code repos such as `flutter-app` and `laravel-app`, the promotable source branch is always the repo-local authoritative branch that already contains the accepted implementation/replay state. The Docker/root repo is allowed to carry the resulting gitlinks later, but it must never substitute for source-branch authority.
+- When a version/package TODO governs the lane, the promotable source branch must also match that TODO's `Current Branch Authority` branch name and exact validated `branch@sha` baseline for the repo under promotion. A newer local branch, older branch, or sibling branch with similar commits is not promotable until the governing TODO is refreshed from real proof.
+- When the governing TODO is a release-package TODO, that authority is live rather than discipline-based: preflight must fail if the version membership under `foundation_documentation/todos/active/<version>/` plus `promotion_lane/<version>/` no longer matches the package rollup, or if a live child TODO is still below the promotable threshold. Refresh the package and renew approval before promotion resumes.
+- Do not derive the review branch from a source branch that has not already passed the current in-scope CI-equivalent matrix on that source branch's local runtime surface. In package/version lanes that means the authoritative `*-rc` branch first. If the source branch changed after its last green CI-equivalent pass, run the project-owned CI-equivalent evidence invalidation guard first; rerun CI-Equivalent on that changed source branch before opening review only when the guard reports `rerun-required` or when a `manual-admission-required` state cannot be cleared without a fresh pass.
+- Do not treat a blocked, hung, or unavailable broad local gate as a de facto waiver. Missing local runtime proof is blocking state until the gate passes or the human approval authority explicitly waives it.
 - Do not replay accepted remediation from the review branch onto the authoritative source branch before the review branch has passed the full in-scope local `CI-Equivalent Suite Matrix`.
-- Reconcile-only wrappers remain special-purpose helpers for reconciliation state. They are not the definition of CI-Equivalent, and they are not automatically the canonical executor for a review-branch gate unless the branch under test is itself a real reconciliation branch.
+- Inside a promotion flow, a current-head green broad local `CI-Equivalent` result on the authoritative source branch is terminal for local pre-PR investigation unless the source heads later change or a newly frozen finding is explicitly classified as `release-blocker`.
+- After that green result, the only valid next states are replay onto the authoritative source branch, `open/reuse PR`, waiting on remote lane evidence, targeted failure review, or closeout.
+- Do not reopen broad local investigation or rerun the broad stage gate merely because of suspicion, curiosity, or desire for more comfort. `follow-up-fast-follow`, `follow-up-hardening`, `by-design/no-action`, and unclassified concern are not reopen triggers.
+- The inverse is also mandatory: do not continue to remote-lane progression, completion, or closeout while the required broad local gate is still missing because the local runtime surface is down, non-responsive, or unresolved.
+- If remote checks later disagree with the last authoritative local green proof, route through `github-stage-promotion-failure-review` first. A local/remote mismatch by itself does not authorize a blind full local rerun or lane rewind.
+- For `through-stage` closeout, the authoritative remote run is the post-merge `push` workflow on branch `stage`. If that SHA also synchronizes an already-open `stage -> main` PR, treat the resulting `pull_request` run as next-lane/main-readiness evidence only unless failure review freezes a current-lane `release-blocker` or the authoritative `stage` push run fails.
+- Reconcile-only wrappers and broad stage-gate naming must obey `ci-equivalent-governance`; do not invent promotion-local exceptions.
+- Promotion remediation may not silently rewrite stage-facing test ownership. If a remediation touches those surfaces, route it through `ci-equivalent-test-surface-admission` before lane-readiness claims.
 - If a package was first integrated on `reconcile/*`, require `orchestration_reconcile_replay_guard.py` to return `Overall outcome: go` against the orchestration plan and authoritative source repo before any promotion branch is treated as ready.
+- If a package is still on `sequence/*`, require explicit user validation plus replay onto the canonical version/source branch before any promotion branch is treated as ready.
 - Do not open promotion PRs from an orchestration-only reconciliation branch. Replay the accepted net effect onto the canonical version/source branch first, then resume promotion from that authoritative branch.
+- Do not open promotion PRs from a checkpoint-only sequencing branch. Validate that branch with the user, replay the accepted net effect onto the canonical version/source branch, and resume promotion from that authoritative branch.
 - Do not open promotion PRs from the remediation branch. Promotion always resumes from the authoritative source branch after replay and reconfirmation.
+- Do not create a fresh Docker/root promotion branch from `dev` or `stage` to stand in for a Flutter/Laravel authoritative source branch.
+- Do not reconstruct Flutter/Laravel source state in the Docker/root repo through cherry-picks, manual gitlink rewrites, or root-level reset/normalization commits intended to "realign" the lane.
+- Docker/root promotion branches may only pin accepted downstream SHAs that already exist on the authoritative source branches or on their approved lane result. They do not redefine source authority for code repos.
+- Manual Docker/root gitlink reset or normalization commits that move app repos away from the accepted authoritative SHAs and back toward unrelated `dev`/`stage` baselines are invalid promotion behavior.
 - Every Copilot-style finding must be cross-checked against the governing TODO's approved objective, decision log, accepted behavior changes, non-goals, and validation matrix before it is classified as defect or noise.
 - Compatibility/cutover findings receive an extra scrutiny rule: a finding about shim/bridge behavior blocks only when the construct is accidental drift or exceeds the TODO's explicit authorization. If the governing TODO intentionally authorizes a bounded compatibility construct, the review must challenge scope/removal criteria instead of blindly blocking on its existence.
 - Repeated Copilot/no-context findings do not automatically reopen work. If the governing TODO already records the same locus/behavior as resolved, challenged, or deferred, keep that disposition unless the current lane materially changed that locus/behavior or the prior rationale is objectively insufficient.
 - Always pursue root cause. Do not patch only to satisfy CI.
-- CI behavior changes and promotion-tooling behavior changes require explicit user authorization in the local promotion contract.
+- CI control-plane changes, CI test-harness workflow changes, and promotion-tooling behavior changes require explicit user authorization in the local promotion contract, but they are not the same authorization class.
+- `ci_test_harness_change_authorized=true` is the narrow escape hatch for workflow edits that only extend or retarget existing test-harness/test-selection surfaces; it must not be used as a blanket approval for broader pipeline behavior changes.
 
 ## Required Deterministic Helpers
 - Create a contract before mutating:
   - `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope dev-only`
   - `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope through-stage --gitlink-policy pipeline-only`
+  - mixed Docker `through-stage`: `bash delphi-ai/tools/github_promotion_contract_init.sh --output delphi-ai/artifacts/tmp/promotion-contract.json --scope through-stage --gitlink-policy pipeline-only --required-dev-track docker-bot-next-version=origin/bot/next-version --required-dev-track docker-source=<authoritative-docker-source-branch>`
 - Classify the scenario before mutating:
   - `python3 delphi-ai/tools/github_stage_promotion_scenario_classifier.py --repo <repo> --base <base-ref> --source <source-ref>`
+- When a version/package TODO governs the lane, validate source authority before first-PR preflight:
+  - `python3 delphi-ai/tools/github_promotion_source_authority_guard.py --repo <repo> --source-ref <source-branch> --governing-todo <todo-path> --repo-key <key>`
 - Use guarded wrappers for mutating local/manual actions:
   - `guarded_git_commit.sh`
   - `guarded_git_push.sh`
@@ -85,13 +119,18 @@ The intake phase must classify exactly one scenario before mutation. Use `python
   - `guarded_pr_merge.sh`
 - Run first-PR source preflight:
   - normal branches: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <source-branch> --base origin/dev`
+  - version/package branches: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <source-branch> --base origin/dev --governing-todo <todo-path> --repo-key <key>`
+    - when `<todo-path>` is a release-package TODO, this preflight automatically runs `github_release_package_rollup_guard.py` first so live child-owner membership, promotable child stages, and the opening-track recommendation are derived before repo-specific source authority is trusted
   - bot lane: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source origin/bot/next-version --base origin/dev --require-diff-shape submodule-only`
   - reconcile-origin package handoff: `bash delphi-ai/tools/github_stage_promotion_preflight.sh --source <canonical-source-branch> --base origin/dev --orchestration-plan foundation_documentation/artifacts/execution-plans/<short-slug>.md`
 - Use `github_stage_promotion_snapshot.sh` for PR/check evidence.
+- Before treating a previously passed broad CI-equivalent artifact as still valid after source-branch movement, run the project-owned evidence invalidation/reuse guard:
+  - `python3 delphi-ai/tools/ci_equivalent_evidence_invalidation_guard.py --governing-todo <todo-path> --policy tools/ci/contracts/stage-full-evidence-reuse-policy.json --report <passed-stage-full-report>`
 - Use the pre-promotion review skills before the first PR after source preflight is green:
   - `copilot-pr-review`
+  - `review-finding-classification`
+  - `ci-equivalent-test-surface-admission`
   - `wf-docker-subagent-orchestration-method`
-  - `claude-cli-calling`
 - For `through-stage` closeout, run:
   - `bash delphi-ai/tools/github_promotion_completion_guard.sh --lane stage --scenario <docker-only|flutter-only|laravel-only|flutter-laravel> --docker-repo <owner/name> [...]`
 
@@ -110,10 +149,12 @@ Do not turn every promotion finding into a new TODO or a lane restart. Route fin
 - Same-scope remediation stays in the governing TODO and promotion lane when it preserves the approved objective, scenario, source branch, and risk conversation. Patch the authoritative source branch and replay only the affected lane evidence.
 - When the lane is using a derived remediation branch for review-loop history preservation, same-scope remediation still stays in the governing TODO and promotion lane, but the iterative commits happen on the remediation branch first; only the accepted net effect is replayed onto the authoritative source branch before PR creation and lane evidence replay.
 - Reviewers/auditors do not change how they detect findings. After findings are gathered, classify each one explicitly:
+- Run `review-finding-classification` before writing or changing any routing row for those findings.
   - `release-blocker`: stays in the current governing TODO/package and blocks promotion.
   - `follow-up-fast-follow`: open/split a TODO under `foundation_documentation/todos/active/fast_follow_required/followup/`.
   - `follow-up-hardening`: open/split a TODO under `foundation_documentation/todos/active/post_release_hardening/hardening/`.
   - `by-design/no-action`: record rationale only; do not patch blindly.
+- After a current-head authoritative broad local gate is green, only findings explicitly classified as `release-blocker` may return the lane to local investigation. Every other classification must preserve forward motion toward promotion or follow-up split.
 - The originating release/package version must be recorded in the split TODO and in the `Promotion Finding Routing Ledger`; it does not need to appear in the directory name.
 - Renew approval or split only when the finding changes the approved scope, introduces a new independently testable behavior, changes promotion/tooling policy, requires an architectural decision, or asks to accept/waive a blocking risk.
 - Record the routing in the TODO `Promotion Finding Routing Ledger` when findings exist, and run `python3 delphi-ai/tools/todo_authority_guard.py <todo-path> --require-delivery-gates` before delivery or promotion-readiness claims.
@@ -121,4 +162,5 @@ Do not turn every promotion finding into a new TODO or a lane restart. Route fin
 ## Closeout
 - `dev-only`: report source repo(s), PR(s), target SHA(s), check evidence, Copilot disposition, and any follow-up such as Docker finalization that was intentionally out of scope.
 - `through-stage`: report source and lane PRs, post-merge run IDs, Docker finalization state, generated `web-app` evidence if relevant, and completion-guard outcome.
+- When both a post-merge `stage` push run and a synchronized `stage -> main` PR run exist for the same SHA, label the push run as authoritative for `through-stage` completion and label the PR run as next-lane evidence in the report.
 - Keep the same governing TODO authoritative through promotion follow-through; do not create a new tactical TODO solely for operational promotion.

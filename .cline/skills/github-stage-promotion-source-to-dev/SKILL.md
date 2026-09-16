@@ -16,9 +16,9 @@ Use when a normal Docker/app/source branch is ready to move into `dev`. Do not u
 - Wait for post-merge `dev` runs to finish green.
 
 ## Scenario Notes
-- `docker-normal`: normal Docker files only; no intended gitlinks.
+- `docker-normal`: Docker primary surface with diff shape `source-only`; promote the authoritative Docker source branch into `dev`.
 - `flutter-only|laravel-only|flutter-laravel`: promote the authoritative app feature/source branch.
-- `docker-mixed`: complete normal Docker changes to `dev` first, then route gitlinks to `github-stage-promotion-bot-next-version-recovery`.
+- `docker-mixed`: this phase starts only after `github-stage-promotion-bot-next-version-recovery` has already cleared the required lane-owned `bot/next-version -> dev` track. Then move the authoritative Docker source branch into `dev`.
 
 ## Dev-Only Close
 If scope is `dev-only`, stop after the requested source repo(s) are healthy on `dev` and route to `github-stage-promotion-closeout-report`.

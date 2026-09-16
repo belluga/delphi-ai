@@ -27,5 +27,8 @@ bash delphi-ai/tools/github_promotion_completion_guard.sh \
 
 ## Non-Negotiables
 - App `through-stage` lanes are not complete while Docker finalization is pending.
+- Docker finalization only carries the accepted app SHAs produced by the authoritative source lanes; it must not choose, reconstruct, or replace those source branches.
+- Do not create a fresh Docker/root branch from `dev` or `stage` to substitute for a Flutter/Laravel authoritative source branch.
 - Do not hand-edit gitlinks when dispatcher regeneration is the correct path.
+- Do not create root-level reset/normalization commits that move app gitlinks away from the accepted authoritative SHAs in order to "realign" Docker to a stale baseline.
 - Do not treat generated `web-app` output as a source repo.

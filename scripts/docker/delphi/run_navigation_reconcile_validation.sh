@@ -13,7 +13,7 @@ checkout.
 Project topology is configuration-owned. Defaults match the current PACED
 Docker shape, but downstream projects may override:
   NAV_RECONCILE_SOURCE_REPOS="laravel-app flutter-app"
-  NAV_RECONCILE_MOUNT_CHECKS="app:laravel-app:/var/www;nginx:web-app:/var/www/flutter"
+  NAV_RECONCILE_MOUNT_CHECKS="app:laravel-app:/var/www;nginx:web-app:/opt/flutter-web-shell"
   NAV_RECONCILE_READONLY_REQUIRED_ENV="NAV_LANDLORD_URL NAV_TENANT_URL"
   NAV_RECONCILE_MUTATION_REQUIRED_ENV="NAV_ADMIN_EMAIL NAV_ADMIN_PASSWORD"
   NAV_RUNNER="tools/flutter/run_web_navigation_smoke.sh"
@@ -210,6 +210,18 @@ fi
 
 cd "$ROOT_DIR"
 
+if [[ -f "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --delphi-root "$ROOT_DIR/delphi-ai" \
+    --script-id "root.run_navigation_reconcile_validation" \
+    --script-path "scripts/delphi/run_navigation_reconcile_validation.sh" \
+    --surface "root-script"
+  delphi_script_usage_set_scenario "$SUITE"
+  delphi_script_usage_install_exit_trap
+fi
+
 require_reconcile_branch "$ROOT_DIR" "Environment root"
 
 declare -a SOURCE_REPOS=()
@@ -237,7 +249,7 @@ fi
 if [[ -z "${NAV_RECONCILE_MOUNT_CHECKS:-}" ]]; then
   NAV_RECONCILE_MOUNT_CHECKS=""
   if [[ -d "$ROOT_DIR/laravel-app" && -d "$ROOT_DIR/web-app" ]]; then
-    NAV_RECONCILE_MOUNT_CHECKS="app:laravel-app:/var/www;app:web-app:/opt/flutter-web-shell;nginx:laravel-app:/var/www;nginx:web-app:/var/www/flutter"
+    NAV_RECONCILE_MOUNT_CHECKS="app:laravel-app:/var/www;app:web-app:/opt/flutter-web-shell;nginx:laravel-app:/var/www;nginx:web-app:/opt/flutter-web-shell"
   fi
 fi
 

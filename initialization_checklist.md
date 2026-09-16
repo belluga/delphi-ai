@@ -77,6 +77,12 @@ Delphi supports multiple AI coding agents with agent-specific instruction loadin
 - **Artifacts**: `.cline/skills/`, `.clinerules/workflows/`, `.clinerules/hooks/` (symlinked to `delphi-ai/.cline/` and `delphi-ai/.clinerules/`)
 - **Plan Tracking**: Cline's built-in `task_progress` may help with local planning, but it does **not** replace Delphi's tactical TODO + `APROVADO` + Decision Adherence gates when those are required by the instructions
 
+### Claude Code
+- **Bootloader**: `CLAUDE.md` at repository root
+- **Rules**: `.claude/rules/` directory (auto-loaded by Claude Code)
+- **Artifacts**: `.claude/skills/`, `.claude/hooks/`, `.claude/settings.json` (symlinked to `delphi-ai/.claude/`)
+- **Hook Governance**: `.claude/settings.json` and `.claude/hooks/` are the canonical client-side enforcement surfaces for session-start, pre-edit, validation, and closeout loops where Claude Code supports deterministic hooks
+
 ### Codex / Antigravity
 - **Bootloader**: `AGENTS.md` at repository root
 - **Skills**: `.codex/skills/` symlinked to `delphi-ai/skills/`
@@ -112,6 +118,6 @@ Optional but recommended for canonical `foundation_documentation` clones:
 ```bash
 bash delphi-ai/tools/install_foundation_main_only_guard.sh --repo foundation_documentation
 ```
-This installs local Git hooks that keep `foundation_documentation` on the single writable canonical branch (`main`) and emit PACED guidance when a checkout or branch mutation tries to leave that model.
+This installs local Git hooks that keep `foundation_documentation` on the single writable canonical branch (`main`) and emit TEACH/PACED guidance when checkout, branch mutation, or linked-worktree usage tries to leave that model. Git does not expose a pre-hook for `git worktree add`, so the guard fail-closes every later writable operation until the linked-worktree artifact is removed. Do not create side branches, linked worktrees, copied writable mirrors, or alternate local authority folders for `foundation_documentation`.
 
 Maintaining this checklist guarantees that every scope—main repo, Flutter app, or Laravel app—operates on the same architectural truth.

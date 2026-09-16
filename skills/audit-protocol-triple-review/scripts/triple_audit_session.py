@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Manage a restartable triple-audit session for no-context review rounds."""
+"""Manage a restartable dedicated multi-lane audit session for no-context review rounds."""
 
 from __future__ import annotations
 
@@ -22,24 +22,11 @@ TOOLS_ROOT = REPO_ROOT / "tools"
 SCHEMAS_ROOT = REPO_ROOT / "schemas"
 RESULT_SCHEMA_PATH = SCHEMAS_ROOT / "subagent_review_result.schema.json"
 
-SESSION_SCHEMA_VERSION = "triple-audit-session-v1"
-ROUND_SUMMARY_SCHEMA_VERSION = "triple-audit-round-summary-v1"
+SESSION_SCHEMA_VERSION = "triple-audit-session-v2"
+ROUND_SUMMARY_SCHEMA_VERSION = "triple-audit-round-summary-v2"
 RESOLUTION_STATUSES = ("resolved", "accepted-debt", "blocked")
 
 BASE_LANES = (
-    {
-        "id": "elegance",
-        "review_kind": "critique",
-        "goal": (
-            "Bounded critique with elegance focus. Treat elegance and structural "
-            "soundness as the primary decision lenses. Escalate as blocking only "
-            "when canonical implementation remnants create real drift, duplicated "
-            "old/new paths are likely to diverge, package-first/domain boundaries "
-            "are bypassed, or the elegance issue also carries correctness, "
-            "performance, or security risk. Marginal refactors, naming polish, "
-            "and beautification without release risk are non-blocking debt."
-        ),
-    },
     {
         "id": "performance",
         "review_kind": "critique",
@@ -129,7 +116,7 @@ def ensure_round_resolution_paths(session: dict) -> None:
 def default_run_root(package_path: Path, label: str | None) -> Path:
     stem = label or package_path.stem
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    return package_path.parent / f"{slugify(stem)}-triple-audit-{timestamp}"
+    return package_path.parent / f"{slugify(stem)}-delivery-audit-{timestamp}"
 
 
 def selected_lanes(extra_lane_ids: list[str] | None = None) -> list[dict]:
@@ -214,9 +201,9 @@ def render_round_package(session: dict, round_number: int, base_package_path: Pa
         )
 
     lines = [
-        "# Effective Triple Audit Round Package",
+        "# Effective Dedicated Multi-Lane Audit Round Package",
         "",
-        "- **Artifact kind:** `triple_audit_effective_round_package`",
+        "- **Artifact kind:** `dedicated_multi_lane_audit_effective_round_package`",
         "- **Authoritative:** `false`",
         f"- **Round:** `{round_number:02d}`",
         f"- **Base package:** `{base_package_path}`",
@@ -227,10 +214,9 @@ def render_round_package(session: dict, round_number: int, base_package_path: Pa
         "",
         "- The close condition is no unresolved blocking finding, not zero findings.",
         "- Performance blockers are concrete severe server/runtime risks such as unbounded scans, request loops where one endpoint/query is required, exact lookup through page walking, high-cardinality in-memory filtering, fetch-all scheduler reconciliation, or resource-exhaustion/security exposure.",
-        "- Elegance blockers are structural remnants that contradict the canonical direction and create real drift, duplicate old/new paths likely to diverge, package-first/domain boundary violations, or elegance issues that also carry correctness/performance/security risk.",
         "- Test-quality blockers are missing or invalid evidence for final behavior, CRUD/mutation, backend semantics, required navigation/integration gates, real-backend coverage, CI execution, or mocks/fallbacks that hide production behavior.",
         "- Cutover-integrity blockers are pseudo-canonical fields, silent fallback mirrors, dual-read/dual-write bridges, or query-time stitching that act as the final architecture without explicit bounded TODO authorization and removal criteria.",
-        "- Marginal performance polish, naming/style preferences, and non-risky architectural beautification should be reported as non-blocking debt, not as a reason to continue the audit loop.",
+        "- Pure elegance/beautification suggestions without concrete delivery risk should stay in critique/final-review debt, not reopen this dedicated delivery audit by themselves.",
         "",
         "## Current Bounded Package",
         "",
@@ -297,7 +283,7 @@ def run_merge(
 def render_progress_markdown(session: dict) -> str:
     ensure_round_resolution_paths(session)
     lines = [
-        "# Triple Audit Session Progress",
+        "# Dedicated Multi-Lane Audit Session Progress",
         "",
         f"- **Session file:** `{session['session_path']}`",
         f"- **Bounded package:** `{session['package_path']}`",
@@ -492,7 +478,7 @@ def classify_round(round_info: dict) -> tuple[str, list[str], dict]:
 
 def render_round_summary_markdown(summary: dict) -> str:
     lines = [
-        f"# Triple Audit Round Summary: Round {summary['round']:02d}",
+        f"# Dedicated Multi-Lane Audit Round Summary: Round {summary['round']:02d}",
         "",
         "- **Artifact kind:** `triple_audit_round_summary`",
         "- **Authoritative:** `false`",
@@ -571,7 +557,7 @@ def start_session(args: argparse.Namespace) -> int:
     session["rounds"].append(build_round(session, 1))
     save_session(session)
 
-    print(f"Created triple audit session: {session_path}")
+    print(f"Created dedicated multi-lane audit session: {session_path}")
     print(f"Progress markdown: {progress_markdown_path}")
     print(f"Current round status: {round_result_status(current_round(session))}")
     return 0
@@ -697,7 +683,7 @@ def render_resolution_template(session: dict, round_info: dict) -> str:
     round_label = f"{round_info['round']:02d}"
 
     lines = [
-        f"# Triple Audit Round {round_label} Resolution",
+        f"# Dedicated Multi-Lane Audit Round {round_label} Resolution",
         "",
         "Derived artifact. Non-authoritative. Record Delphi adjudication, resolution decisions, validation evidence, and remaining blockers before opening another audit round.",
         "",
@@ -749,7 +735,7 @@ def render_resolution_template(session: dict, round_info: dict) -> str:
             "",
             "## Accepted Non-Blocking Debt",
             "",
-            "- Record any valid but non-blocking performance/elegance/test-quality/cutover-integrity findings here with rationale and owner/surface.",
+            "- Record any valid but non-blocking performance/test-quality/cutover-integrity findings here with rationale and owner/surface. Residual elegance concerns belong here only when they still matter as explicit accepted debt tied to delivery evidence.",
             "",
             "## Next Audit Package Requirements",
             "",
@@ -880,11 +866,11 @@ def next_round(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Manage a deterministic triple-audit session."
+        description="Manage a deterministic dedicated multi-lane audit session."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    start = subparsers.add_parser("start", help="Create a new triple-audit session.")
+    start = subparsers.add_parser("start", help="Create a new dedicated multi-lane audit session.")
     start.add_argument("--package", required=True, help="Bounded package markdown path.")
     start.add_argument("--todo", help="Optional related TODO path.")
     start.add_argument(

@@ -15,6 +15,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
 - This skill is for automated test quality and coverage. It does not authorize fallback behavior in production code paths.
 - This skill must prevent false negatives caused by harness/environment readiness defects from being misclassified as product regressions.
 - Prefer test-first sequencing when behavior is verifiable, especially for bugfixes, regressions, user-visible behavior, and contract-level changes.
+- When a new or changed test also changes a stage-facing suite family, wrapper, lifecycle step, or broad local stage gate such as `stage-full`, load `ci-equivalent-test-surface-admission`.
 
 ## Preferred Deterministic Helper
 - Use `bash delphi-ai/tools/test_coverage_matrix_scaffold.sh --intent <compatibility|unit-regression|critical-user-journey> --strategy <test-first|test-after|not-applicable> --platform-matrix <value> --behavior "<critical path>" [--behavior "..."] [--decision "D-T01:..."] [--output <path>]` to scaffold the repeatable coverage matrix before filling in the real decisions.
@@ -45,6 +46,7 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
    - For large or architectural changes, make the unit + widget + integration lanes explicit in the matrix for every affected critical path.
    - If behavior depends on legacy data shape, add fixture/backfill compatibility tests.
    - If the changed flow includes async UI/buttons/search/filter/pagination/retry behavior, add explicit race-condition scenarios (duplicate trigger, stale response, dispose/navigation mid-flight) or record why they are not applicable.
+   - If the test must locate one exact subject from a live list or registry, define a deterministic ownership strategy up front: self-seeded entity, managed fixture, or other canonically owned proof target. Do not rely on ambient `rows[0]`, `candidates[0]`, or registry-first fallbacks for release-gating evidence.
 6. **Define CI prerequisites**
    - Flutter: backend reachable by domain/scheme overrides.
    - Laravel: local MongoDB with replica set.
@@ -55,24 +57,31 @@ Establish a high-confidence testing standard for Flutter + Laravel + Web that tr
    - Flutter tests gate web bundle build.
    - Compatibility gate requires web + mobile execution (or explicit blocked status).
    - Docker validation gates deploy on bundle metadata matching pinned Flutter commit.
-8. **Implement tests with anti-bypass rules**
+8. **Admit stage-facing test-surface changes**
+   - If the test changes `CI Equivalent` or broad stage-gate composition, route it through `ci-equivalent-test-surface-admission`.
+   - Keep local broad-stage parity and stage pipeline on the same owner wrapper/leaf-command family.
+   - Preserve readonly vs mutation separation; mutation remains non-`main`.
+9. **Implement tests with anti-bypass rules**
    - No silent mock fallback for compatibility/critical-user-journey scope.
    - No committed `skip`, `only`, or committed golden update bypass.
+   - No ambient live-data fallback for exact subject selection in release-gating tests. If a proof target matters, bootstrap or manage it deterministically.
+   - No first-page or first-candidate assumptions when the assertion depends on locating one exact registry/list subject.
    - No assertions that pass only on “no exception thrown” without business-state verification.
    - No success criteria based solely on HTTP status when payload semantics matter.
    - No retrofitted tests that only validate the post-fix implementation when a fail-first path was practical.
-9. **Run validation**
+   - Centralize reusable release-gating selector helpers instead of copying local dropdown/picker/actionability fallbacks across specs.
+10. **Run validation**
    - Execute required suites and CI-equivalent commands.
    - Capture evidence for each frozen decision.
    - Run preflight checks before the suite so environment/harness defects are caught as readiness issues, not test failures.
-10. **Classify execution status honestly**
+11. **Classify execution status honestly**
    - `passed`: all required gates executed and green.
    - `blocked`: required gate could not run (for example no mobile device/emulator).
    - `failed`: gate executed and failed.
    - `blocked` is never equivalent to `passed`.
    - If the suite cannot produce valid evidence because of local/transient infra, harness readiness, permission ownership, missing secrets, or target unreachability, classify it as `blocked`/invalid evidence rather than `failed`.
    - Do not justify product-code changes from `blocked` local evidence alone.
-11. **Decision Adherence Validation**
+12. **Decision Adherence Validation**
    - Build a `Decision Adherence Validation` table for `D-T*` decisions.
    - Any unresolved `Exception` blocks completion until decisions are updated and approved.
 

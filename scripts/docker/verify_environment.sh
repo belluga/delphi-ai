@@ -4,6 +4,17 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+if [[ -f "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$ROOT_DIR/delphi-ai/tools/lib/script_usage.sh"
+  delphi_script_usage_init \
+    --delphi-root "$ROOT_DIR/delphi-ai" \
+    --script-id "root.verify_environment" \
+    --script-path "scripts/verify_environment.sh" \
+    --surface "root-script"
+  delphi_script_usage_install_exit_trap
+fi
+
 die() {
   echo "ERROR: $*" >&2
   exit 1
@@ -43,11 +54,15 @@ if [[ -z "$COMPOSE_PROFILES_EFFECTIVE" ]]; then
 fi
 DELPHI_COMPOSE_CONFIG_PROFILES="${DELPHI_COMPOSE_CONFIG_PROFILES:-local-db}"
 DELPHI_DERIVED_ARTIFACT_SUBMODULES="${DELPHI_DERIVED_ARTIFACT_SUBMODULES:-web-app}"
-DELPHI_SCRIPT_LINK_SPECS="${DELPHI_SCRIPT_LINK_SPECS:-flutter-app/scripts:../delphi-ai/scripts/flutter}"
+DELPHI_SCRIPT_LINK_SPECS="${DELPHI_SCRIPT_LINK_SPECS:-flutter-app/scripts:../delphi-ai/scripts/flutter tools/ci/verify_stage_full_promotable_state.sh:../../delphi-ai/tools/verify_stage_full_promotable_state.sh}"
 DELPHI_LOCAL_DB_ENV_FILE="${DELPHI_LOCAL_DB_ENV_FILE:-laravel-app/.env}"
 DELPHI_LOCAL_DB_REQUIRED_PATTERN="${DELPHI_LOCAL_DB_REQUIRED_PATTERN:-^(DB_URI|DB_URI_LANDLORD|DB_URI_TENANTS)=}"
 DELPHI_LOCAL_DB_HOST_PATTERN="${DELPHI_LOCAL_DB_HOST_PATTERN:-mongo:27017}"
 DELPHI_NGINX_STORAGE_REQUIRED_PATTERN="${DELPHI_NGINX_STORAGE_REQUIRED_PATTERN:-alias[[:space:]]+/var/www/storage/app/public/;}"
+
+if [[ "${DELPHI_SCRIPT_USAGE_ENABLED:-0}" == "1" ]]; then
+  delphi_script_usage_add_metadata "compose_profiles" "${COMPOSE_PROFILES_EFFECTIVE:-unset}"
+fi
 
 is_configured_item() {
   local needle="$1"
@@ -67,6 +82,50 @@ echo "OK"
 
 echo "== docker compose config (default) =="
 docker compose config >/dev/null
+echo "OK"
+
+echo "== web shell runtime mount invariants =="
+# The project's Compose file owns the container destination; Nginx must match it.
+web_shell_mount_paths=()
+while IFS= read -r web_shell_mount_path; do
+  [[ -n "${web_shell_mount_path}" ]] && web_shell_mount_paths+=("${web_shell_mount_path}")
+done < <(
+  while IFS= read -r compose_line; do
+    if [[ "${compose_line}" =~ ^[[:space:]]*-[[:space:]]*(.+[^[:space:]])[[:space:]]*$ ]]; then
+      compose_mount_spec="${BASH_REMATCH[1]}"
+      if [[ "${compose_mount_spec}" == \"*\" || "${compose_mount_spec}" == \'*\' ]]; then
+        compose_mount_spec="${compose_mount_spec:1:-1}"
+      fi
+      if [[ "${compose_mount_spec}" =~ ^\./web-app:([^:[:space:]]+):ro$ ]]; then
+        printf '%s\n' "${BASH_REMATCH[1]}"
+      fi
+    fi
+  done < docker-compose.yml | sort -u
+)
+
+if [[ "${#web_shell_mount_paths[@]}" -eq 0 ]]; then
+  die "docker-compose.yml must mount ./web-app read-only at one absolute runtime path"
+fi
+if [[ "${#web_shell_mount_paths[@]}" -ne 1 ]]; then
+  die "docker-compose.yml must mount ./web-app at exactly one runtime path; found: ${web_shell_mount_paths[*]}"
+fi
+
+web_shell_mount_path="${web_shell_mount_paths[0]}"
+if [[ "${web_shell_mount_path}" != /* ]]; then
+  die "docker-compose.yml web shell mount destination must be absolute: ${web_shell_mount_path}"
+fi
+if [[ "${web_shell_mount_path}" == "/var/www/flutter" ]]; then
+  die "docker-compose.yml must not mount web-app into /var/www/flutter; use a dedicated read-only web-shell path to avoid nested bind-mount drift"
+fi
+for nginx_template in docker/nginx/local.conf.template docker/nginx/prod.conf.template; do
+  [[ -f "${nginx_template}" ]] || die "missing ${nginx_template}"
+  if ! grep -Fq "root ${web_shell_mount_path};" "${nginx_template}"; then
+    die "${nginx_template} must serve web assets from ${web_shell_mount_path} to match docker-compose.yml"
+  fi
+  if grep -Fq 'root /var/www/flutter;' "${nginx_template}"; then
+    die "${nginx_template} must not serve Flutter web assets from /var/www/flutter"
+  fi
+done
 echo "OK"
 
 if [[ -n "$DELPHI_COMPOSE_CONFIG_PROFILES" ]]; then

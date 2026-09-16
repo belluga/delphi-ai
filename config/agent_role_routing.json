@@ -1,0 +1,330 @@
+{
+  "contract_id": "delphi.agent-role-routing.v1",
+  "version": 1,
+  "clients": {
+    "codex": {
+      "display_name": "Codex",
+      "allowed_proof_modes": [
+        "declared",
+        "waiver"
+      ],
+      "requires_effort": true,
+      "preferred_models": {
+        "chat_orchestrator": [
+          "gpt-5.4"
+        ],
+        "routine_executor": [
+          "gpt-5.6-terra",
+          "gpt-5.6-luna"
+        ],
+        "strongest_review": [
+          "gpt-5.6-sol"
+        ],
+        "technical_review": [
+          "gpt-5.6-terra"
+        ],
+        "governance_review": [
+          "gpt-5.6-sol"
+        ],
+        "monitoring": [
+          "gpt-5.4-mini"
+        ]
+      },
+      "notes": [
+        "Codex routing is currently enforced through declared preflight evidence plus explicit waiver handling.",
+        "Ordinary Codex chat/orchestrator work should default to gpt-5.4 when the active session model is configurable.",
+        "Routine code and implementation-side execution should default to gpt-5.6-terra, with gpt-5.6-luna kept as the bounded cheaper fallback.",
+        "OpenAI strongest-review lanes use gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra."
+      ]
+    },
+    "claude-code": {
+      "display_name": "Claude Code",
+      "allowed_proof_modes": [
+        "artifact",
+        "declared",
+        "waiver"
+      ],
+            "requires_effort": true,
+            "preferred_models": {
+                "chat_orchestrator": [
+                    "opus"
+                ],
+                "routine_executor": [
+                    "sonnet"
+                ],
+        "strongest_review": [
+          "opus"
+        ],
+        "technical_review": [
+          "sonnet"
+        ],
+        "governance_review": [
+          "sonnet"
+        ],
+        "monitoring": [
+          "haiku",
+          "sonnet"
+        ]
+      },
+      "notes": [
+        "Claude Code can use generated .claude/agents artifacts as first-class routing proof.",
+        "Routine implementation should default to Sonnet-class subagents.",
+        "Formal review should default to Opus-class review agents."
+      ]
+    },
+    "cline-ide": {
+      "display_name": "Cline IDE",
+      "allowed_proof_modes": [
+        "declared",
+        "waiver"
+      ],
+            "requires_effort": false,
+            "preferred_models": {
+                "chat_orchestrator": [
+                    "opus",
+                    "opus-or-strongest-available-review-model"
+                ],
+                "routine_executor": [
+                    "sonnet",
+                    "sonnet-or-best-available-routine-coding-model"
+        ],
+        "strongest_review": [
+          "opus",
+          "opus-or-strongest-available-review-model"
+        ],
+        "technical_review": [
+          "sonnet",
+          "sonnet-or-best-available-routine-coding-model"
+        ],
+        "governance_review": [
+          "sonnet",
+          "sonnet-or-best-available-routine-coding-model"
+        ],
+        "monitoring": [
+          "haiku",
+          "haiku-or-best-available-cheap-monitoring-model"
+        ]
+      },
+      "notes": [
+        "Cline support is declarative/hook-level only in this first slice.",
+        "When the provider/model cannot be proven exactly, keep the declared routing visible and require waiver handling for real deviations."
+      ]
+    }
+  },
+  "effort_aliases": {
+    "medium": [
+      "medium"
+    ],
+    "low_or_medium": [
+      "low",
+      "medium",
+      "low-or-medium"
+    ],
+    "highest_review_tier": [
+      "xhigh",
+      "max",
+      "extra-high",
+      "extra high",
+      "highest-review-tier",
+      "extraright",
+      "extraright-or-closest-equivalent"
+    ]
+  },
+  "review_kind_model_families": {
+    "architecture_opinion": "strongest_review",
+    "architecture_adherence": "governance_review",
+    "critique": "governance_review",
+    "test_quality_audit": "technical_review",
+    "cutover_integrity_audit": "technical_review",
+    "final_review": "strongest_review"
+  },
+  "execution_topologies": {
+    "primary-checkout-single-writer": {
+      "requires_explicit_worktree_authorization": false,
+      "max_concurrent_writers": 1,
+      "writer_scope": "product-runtime-code",
+      "parallel_disjoint_foundation_todo_writers": true,
+      "allows": [
+        "executor-subagents",
+        "parallel-read-only-reviewers",
+        "serialized-additional-code-writers",
+        "parallel-disjoint-foundation-todo-writers"
+      ],
+      "forbids": [
+        "git-worktree",
+        "auxiliary-checkout",
+        "worker-branch",
+        "reconcile-branch",
+        "writable-repository-copy"
+      ],
+      "notes": [
+        "This is the default implementation topology whenever worktrees or auxiliary checkouts were not explicitly authorized by a human.",
+        "The single-writer limit applies to product/runtime code across code repositories and executable surfaces, including Laravel, Flutter, Docker, root tooling, and runtime configuration.",
+        "Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths; each owner stages, commits, and promotes only its own TODO, while shared canonical docs/artifacts and the same TODO remain serialized.",
+        "Subagent, delegation, parallelism, or generic plan approval never authorizes parallel code writers or Git-isolation topology."
+      ]
+    },
+    "worktree-isolated": {
+      "requires_explicit_worktree_authorization": true,
+      "authorization_must_name_one_of": [
+        "worktree",
+        "worktrees",
+        "auxiliary checkout",
+        "auxiliary checkouts"
+      ],
+      "allows": [
+        "git-worktree",
+        "auxiliary-checkout",
+        "worker-branch",
+        "reconcile-branch"
+      ],
+      "notes": [
+        "Use only after a separate human authorization explicitly names worktrees or auxiliary checkouts.",
+        "A subagent/delegation/parallelism authorization is never sufficient evidence."
+      ]
+    }
+  },
+  "surfaces": {
+    "implementation": {
+      "required_lane": "executor",
+      "allowed_roles": [
+        "routine-executor"
+      ],
+      "preferred_model_family": "routine_executor",
+      "required_effort_key": "medium",
+      "failure_outcome": "delegate-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [
+        "bootstrap-guard-implementation",
+        "reconciliation",
+        "merge-conflict",
+        "minimal-integration-glue"
+      ],
+      "state_policy": "sticky-per-chat-or-todo-compact-state",
+      "goal_policy": "required-when-supported",
+      "notes": [
+        "Code writing and direct file-edit execution belong to the routine executor lane.",
+        "Primary-chat implementation is allowed only through an explicit approved exception.",
+        "Routine executor subagents default to primary-checkout-single-writer; role selection does not authorize worktrees."
+      ]
+    },
+    "implementation-validation": {
+      "required_lane": "executor",
+      "allowed_roles": [
+        "routine-executor"
+      ],
+      "preferred_model_family": "routine_executor",
+      "required_effort_key": "medium",
+      "failure_outcome": "delegate-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [
+        "bootstrap-guard-implementation",
+        "reconciliation",
+        "merge-conflict",
+        "minimal-integration-glue"
+      ],
+      "state_policy": "sticky-per-chat-or-todo-compact-state",
+      "goal_policy": "required-when-supported",
+      "notes": [
+        "Implementation-side test/build/command execution stays in the same lane as the owned implementation.",
+        "Do not pull implementation validation back into the primary chat by default.",
+        "Implementation validation inherits the separately authorized execution topology and remains authoritative only on the consolidated principal checkout."
+      ]
+    },
+    "monitoring": {
+      "required_lane": "monitor",
+      "allowed_roles": [
+        "deterministic-only",
+        "process-monitor",
+        "routine-executor"
+      ],
+      "preferred_model_family": "monitoring",
+      "required_effort_key": "low_or_medium",
+      "failure_outcome": "delegate-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "ephemeral-bounded-status-pass",
+      "goal_policy": "not-needed",
+      "notes": [
+        "Monitoring is deterministic first.",
+        "If an LLM is needed, keep the pass bounded and ephemeral instead of letting the primary chat watch verbose logs."
+      ]
+    },
+    "formal-review": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "stateless-no-context-review",
+      "goal_policy": "stateless-default",
+      "notes": [
+        "Formal critique, audit, and no-context review belong to the strongest review lane.",
+        "Review surfaces should stay stateless by default."
+      ]
+    },
+    "todo-approval": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "role_model_family_overrides": {
+        "primary-chat": "chat_orchestrator"
+      },
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "primary-chat-state-or-stateless-review",
+      "goal_policy": "not-needed",
+            "notes": [
+                "Approval and plan-review surfaces are review-material judgment lanes.",
+                "Primary-chat approval stays on the client's chat/orchestrator model; separately dispatched formal reviewers use the strongest-review model."
+            ]
+    },
+    "delivery-review": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "role_model_family_overrides": {
+        "primary-chat": "chat_orchestrator"
+      },
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "primary-chat-state-or-stateless-review",
+      "goal_policy": "not-needed",
+            "notes": [
+                "Primary-chat delivery adjudication stays on the client's chat/orchestrator model; separately dispatched final reviewers use the strongest-review model."
+            ]
+    },
+    "self-improvement": {
+      "required_lane": "review",
+      "allowed_roles": [
+        "primary-chat",
+        "formal-reviewer"
+      ],
+      "preferred_model_family": "strongest_review",
+      "required_effort_key": "highest_review_tier",
+      "failure_outcome": "review-required",
+      "waiver_allowed": true,
+      "allowed_exception_reasons": [],
+      "state_policy": "primary-chat-state-or-stateless-review",
+      "goal_policy": "not-needed",
+      "notes": [
+        "Delphi self-improvement and instruction changes are broad-impact review surfaces."
+      ]
+    }
+  }
+}

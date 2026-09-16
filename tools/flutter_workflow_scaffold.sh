@@ -73,7 +73,7 @@ render_kind_sections() {
 - Inject repositories/services via constructor and register through GetIt.
 - Keep UI controllers (`TextEditingController`, `ScrollController`) owned and disposed by the controller.
 - Keep widgets `BuildContext`-free and dependent on controller APIs only.
-- Run \`fvm flutter analyze\`.
+- Capture a stable full-workspace VS Code Problems bridge snapshot; do not start a CLI analyzer locally.
 EOF
       ;;
     domain)
@@ -92,7 +92,7 @@ EOF
 - Keep DTO-to-domain translation in infrastructure mappers only.
 - Register repository/service dependencies in GetIt.
 - Update controllers/widgets to consume domain types instead of DTOs.
-- Run \`fvm flutter analyze\` and targeted unit tests.
+- Capture a stable full-workspace VS Code Problems bridge snapshot and run targeted unit tests; do not start a CLI analyzer locally.
 EOF
       ;;
     repository)
@@ -109,7 +109,7 @@ EOF
 - Keep raw transport parsing/building out of repository methods.
 - Place DTO decoding and formatting helpers in DAO/mapper boundaries.
 - Update consuming controllers/services to depend on the contract only.
-- Run \`fvm flutter analyze\` and targeted tests.
+- Capture a stable full-workspace VS Code Problems bridge snapshot and run targeted tests; do not start a CLI analyzer locally.
 - If branch-delta enforcement is in use, run the relevant branch guard command.
 EOF
       ;;
@@ -128,7 +128,7 @@ EOF
 - Use one widget per file for feature widgets.
 - Register dependencies in the appropriate module scope.
 - Regenerate router/build artifacts when route annotations change.
-- Run \`fvm flutter analyze\` and navigation verification.
+- Capture a stable full-workspace VS Code Problems bridge snapshot and run navigation verification; do not start a CLI analyzer locally.
 EOF
       ;;
   esac

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paced.internal/schemas/script_usage_event.schema.json",
+  "title": "Script Usage Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_kind",
+    "event_id",
+    "timestamp",
+    "script_id",
+    "script_path",
+    "surface",
+    "scenario",
+    "status",
+    "exit_code",
+    "duration_ms",
+    "repo_root",
+    "repo_name",
+    "branch",
+    "head_sha",
+    "cwd",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "script-usage-event-v1"
+    },
+    "artifact_kind": {
+      "const": "script_usage_event"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "script_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "script_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "surface": {
+      "type": "string",
+      "enum": [
+        "delphi-tool",
+        "root-tool",
+        "root-script"
+      ]
+    },
+    "scenario": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "usage_error",
+        "interrupted"
+      ]
+    },
+    "exit_code": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "repo_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repo_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head_sha": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cwd": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

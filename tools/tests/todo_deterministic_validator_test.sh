@@ -96,6 +96,17 @@ cat > "$ACTIVE_ROOT/cutover-gate-supported.md" <<'TODO'
 - **Why this state now:** The TODO is still gathering implementation and review evidence.
 - **Exit condition:** Implementation is complete and the package moves into review.
 
+## Assumptions Preview
+| Assumption ID | Assumption | Evidence | If False | Confidence (`High|Medium|Low`) | Handling (`Keep as Assumption|Promote to Decision|Block`) |
+| --- | --- | --- | --- | --- | --- |
+| `A-01` | The current direction is anchored in code. | `app/example.php` | Replan | `High` | `Promote to Decision` |
+
+## Gate: Assumption Code Coherence
+- **Gate decision:** `required`
+- **Gate status:** `findings_integrated`
+- **Evidence / reference:** `foundation_documentation/artifacts/assumption-code-guard.md`
+- **Waiver authority / reference (required if waived):** `n/a`
+
 ## Independent Cutover Integrity Audit Gate
 - **Cutover audit decision:** `required`
 - **Cutover audit status:** `findings_integrated`
@@ -107,5 +118,33 @@ cat > "$ACTIVE_ROOT/cutover-gate-supported.md" <<'TODO'
 TODO
 
 assert_go "$ACTIVE_ROOT/cutover-gate-supported.md"
+
+cat > "$ACTIVE_ROOT/missing-assumption-code-gate.md" <<'TODO'
+# TODO: Missing Assumption Code Gate
+
+## Artifact Identity
+- **Artifact type:** `tactical_execution_contract`
+
+## Contract Boundary
+- bounded
+
+## Delivery Status Canon
+- **Current delivery stage:** `Pending`
+- **Qualifiers:** `none`
+- **Next exact step:** Add the missing guard and continue.
+
+## Active Work State
+- **Work state:** `review`
+- **Why this state now:** Review is converging but the guard is still missing.
+- **Exit condition:** The guard is recorded and clean.
+
+## Assumptions Preview
+| Assumption ID | Assumption | Evidence | If False | Confidence (`High|Medium|Low`) | Handling (`Keep as Assumption|Promote to Decision|Block`) |
+| --- | --- | --- | --- | --- | --- |
+| `A-01` | Example assumption. | `app/example.php` | Replan | `Medium` | `Keep as Assumption` |
+TODO
+
+assert_no_go "$ACTIVE_ROOT/missing-assumption-code-gate.md"
+grep -q "GATE-ASSUMPTION_CODE_COHERENCE-SECTION-MISSING" "$OUTPUT_FILE"
 
 printf 'todo_deterministic_validator_test: OK\n'

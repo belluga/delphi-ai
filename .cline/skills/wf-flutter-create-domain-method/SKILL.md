@@ -45,7 +45,7 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 8. **Controller/presentation cleanup**
    - Update controllers/widgets to depend on the new domain types and StreamValues. Remove DTO/view-model leaks; keep widgets pure UI.
 9. **Verification**
-   - Run `fvm flutter analyze` and, if relevant, unit tests for the new controller/use case.
+   - Capture the stable full-workspace VS Code Problems snapshot and, if relevant, run unit tests for the new controller/use case. Do not start a concurrent CLI analyzer.
 10. **Document completion**
     - Reference this method in the work summary/commit so future agents know the domain was introduced via the standard workflow, and confirm the shared roadmap and module docs remain accurate.
 
@@ -57,6 +57,6 @@ Introduce a new Flutter domain aggregate with full architectural rigor—docs, v
 - TODO comments for deferred backend fields.
 
 ## Validation
-- Analyzer/tests pass with the new domain wired.
+- Stable full-workspace Problems snapshot and tests pass with the new domain wired.
 - Documentation reflects the new concept (no dangling placeholders).
 - DTOs remain confined to infrastructure; presentation imports only domain types.

@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<'EOF'
-Usage: github_stage_promotion_preflight.sh --source <ref> [--repo <path>] [--base <ref>] [--require-diff-shape <any|submodule-only>] [--orchestration-plan <path>]
+Usage: github_stage_promotion_preflight.sh --source <ref> [--repo <path>] [--base <ref>] [--require-diff-shape <any|submodule-only>] [--orchestration-plan <path>] [--governing-todo <path> --repo-key <root|belluga_now_docker|flutter-app|laravel-app|web-app|foundation_documentation>]
 
 Run the deterministic first-PR preflight for the GitHub Stage Promotion Orchestrator.
 This helper is a TEACH runtime blocker: objective git checks trigger it, exit code `2`
@@ -23,6 +23,8 @@ Options:
   --base <ref>                         Authoritative base ref that the source must contain. Defaults to origin/dev.
   --require-diff-shape <shape>         Optional additional diff-shape gate. Supported: any, submodule-only.
   --orchestration-plan <path>          Optional orchestration execution plan. When provided, the post-reconcile replay guard must return `Overall outcome: go` before normal source-branch preflight continues.
+  --governing-todo <path>              Optional governing package/release TODO with `Current Branch Authority`. Release-package TODOs also trigger the live rollup guard before repo-specific source authority is checked.
+  --repo-key <key>                     Required with --governing-todo. Selects which repo authority to validate.
   -h, --help                           Show this help text.
 
 Exit codes:
@@ -42,6 +44,8 @@ SOURCE_REF=""
 BASE_REF="origin/dev"
 REQUIRE_DIFF_SHAPE="any"
 ORCHESTRATION_PLAN=""
+GOVERNING_TODO=""
+REPO_KEY=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -70,6 +74,16 @@ while [ $# -gt 0 ]; do
       ORCHESTRATION_PLAN="$2"
       shift 2
       ;;
+    --governing-todo)
+      [ $# -ge 2 ] || die "missing value for --governing-todo"
+      GOVERNING_TODO="$2"
+      shift 2
+      ;;
+    --repo-key)
+      [ $# -ge 2 ] || die "missing value for --repo-key"
+      REPO_KEY="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -87,8 +101,52 @@ case "$REQUIRE_DIFF_SHAPE" in
   *) die "unsupported --require-diff-shape value: $REQUIRE_DIFF_SHAPE" ;;
 esac
 
+if [ -n "$GOVERNING_TODO" ] && [ -z "$REPO_KEY" ]; then
+  die "--repo-key is required when --governing-todo is provided"
+fi
+
+if [ -n "$REPO_KEY" ] && [ -z "$GOVERNING_TODO" ]; then
+  die "--governing-todo is required when --repo-key is provided"
+fi
+
 REPO_ROOT="$(git -C "$REPO_INPUT" rev-parse --show-toplevel 2>/dev/null || true)"
 [ -n "$REPO_ROOT" ] || die "path is not inside a git repository: $REPO_INPUT"
+
+RELEASE_PACKAGE_OPENING_TRACK=""
+RELEASE_PACKAGE_PRIMARY_SURFACE=""
+RELEASE_PACKAGE_OPENING_TRACK_READY=true
+
+if [ -n "$GOVERNING_TODO" ]; then
+  if [[ "$(basename "$GOVERNING_TODO")" == *release-package.md ]]; then
+    ROLLUP_OUTPUT_FILE="$(mktemp)"
+    trap 'rm -f "${ROLLUP_OUTPUT_FILE:-}"' EXIT
+    if python3 "$SCRIPT_DIR/github_release_package_rollup_guard.py" --governing-todo "$GOVERNING_TODO" --base-ref "$BASE_REF" | tee "$ROLLUP_OUTPUT_FILE"; then
+      :
+    else
+      exit $?
+    fi
+    RELEASE_PACKAGE_OPENING_TRACK="$(sed -n 's/^  - recommended opening track: //p' "$ROLLUP_OUTPUT_FILE" | head -n 1)"
+    RELEASE_PACKAGE_PRIMARY_SURFACE="$(sed -n 's/^  recommended_primary_surface: //p' "$ROLLUP_OUTPUT_FILE" | head -n 1)"
+    case "$REPO_KEY:$RELEASE_PACKAGE_OPENING_TRACK" in
+      root:docker-*|root:no-promotable-opening-track|belluga_now_docker:docker-*|belluga_now_docker:no-promotable-opening-track)
+        ;;
+      flutter-app:flutter-only|flutter-app:flutter-laravel)
+        ;;
+      laravel-app:laravel-only|laravel-app:flutter-laravel)
+        ;;
+      foundation_documentation:*|web-app:*)
+        ;;
+      *)
+        RELEASE_PACKAGE_OPENING_TRACK_READY=false
+        ;;
+    esac
+  fi
+  if python3 "$SCRIPT_DIR/github_promotion_source_authority_guard.py" --repo "$REPO_ROOT" --source-ref "$SOURCE_REF" --governing-todo "$GOVERNING_TODO" --repo-key "$REPO_KEY"; then
+    :
+  else
+    exit $?
+  fi
+fi
 
 if [ -n "$ORCHESTRATION_PLAN" ]; then
   if python3 "$SCRIPT_DIR/orchestration_reconcile_replay_guard.py" --plan "$ORCHESTRATION_PLAN" --repo "$REPO_ROOT"; then
@@ -208,9 +266,13 @@ TOPOLOGY_ONLY_RECONCILIATION_REASON=""
 NORMALIZED_BASE_REF="$(normalize_lane_ref "$BASE_REF")"
 NORMALIZED_SOURCE_REF="$(normalize_lane_ref "$SOURCE_SHORT")"
 SOURCE_IS_RECONCILE_BRANCH=false
+SOURCE_IS_SEQUENCE_BRANCH=false
 case "$NORMALIZED_SOURCE_REF" in
   reconcile/*)
     SOURCE_IS_RECONCILE_BRANCH=true
+    ;;
+  sequence/*)
+    SOURCE_IS_SEQUENCE_BRANCH=true
     ;;
 esac
 if [ "$SOURCE_HAS_DIFF" = false ] && [ "$NORMALIZED_BASE_REF" = "dev" ]; then
@@ -247,12 +309,15 @@ if [ "$CURRENT_BRANCH" = "$SOURCE_SHORT" ] && [ "$WORKTREE_DIRTY" = true ]; then
 fi
 
 OVERALL_GO=true
-RECONCILE_POLICY_READY=true
+EXECUTION_ONLY_BRANCH_POLICY_READY=true
 if [ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
-  RECONCILE_POLICY_READY=false
+  EXECUTION_ONLY_BRANCH_POLICY_READY=false
+fi
+if [ "$SOURCE_IS_SEQUENCE_BRANCH" = true ]; then
+  EXECUTION_ONLY_BRANCH_POLICY_READY=false
 fi
 
-if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$RECONCILE_POLICY_READY" = false ]; then
+if [ "$WORKTREE_READY" = false ] || [ "$LINEAGE_READY" = false ] || { [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; } || [ "$DIFF_SHAPE_READY" = false ] || [ "$EXECUTION_ONLY_BRANCH_POLICY_READY" = false ] || [ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = false ]; then
   OVERALL_GO=false
 fi
 
@@ -278,6 +343,12 @@ if [ "$SOURCE_IS_RECONCILE_BRANCH" = true ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_
   RESOLUTION_PROMPTS+=("If this package came from orchestrated reconcile, record the replay in the orchestration plan and require python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan-path> --repo <authoritative-source-repo> to return Overall outcome: go before retrying promotion.")
 fi
 
+if [ "$SOURCE_IS_SEQUENCE_BRANCH" = true ]; then
+  VIOLATIONS+=("Source '$SOURCE_REF' is a sequencing branch. Promotion may not start from sequence/*.")
+  RESOLUTION_PROMPTS+=("Validate the accepted sequence state with the user, replay it onto the canonical version/source branch first, then rerun this preflight from that canonical branch.")
+  RESOLUTION_PROMPTS+=("If this package came from TODO sequencing, record the accepted checkpoint, final user validation, and replay evidence in the sequencing execution plan before retrying promotion.")
+fi
+
 if [ "$SOURCE_HAS_DIFF" = false ] && [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = false ]; then
   VIOLATIONS+=("Source '$SOURCE_REF' has no promotable diff beyond '$BASE_REF'.")
   RESOLUTION_PROMPTS+=("Do not open a promotion PR from '$SOURCE_REF' until it contains a real diff beyond '$BASE_REF'.")
@@ -286,6 +357,12 @@ fi
 if [ "$DIFF_SHAPE_READY" = false ]; then
   VIOLATIONS+=("Source '$SOURCE_REF' failed the diff-shape requirement '$REQUIRE_DIFF_SHAPE'.")
   RESOLUTION_PROMPTS+=("Recreate or repair the branch so the diff matches '$REQUIRE_DIFF_SHAPE' before promotion.")
+fi
+
+if [ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = false ]; then
+  VIOLATIONS+=("Release-package opening track '$RELEASE_PACKAGE_OPENING_TRACK' does not authorize repo key '$REPO_KEY' as the first promotion source.")
+  RESOLUTION_PROMPTS+=("Start the package lane from the rollup-authorized opening track instead of '$REPO_KEY'.")
+  RESOLUTION_PROMPTS+=("For app-first opening tracks, promote the authoritative app source branches into dev before resuming root/docker promotion.")
 fi
 
 printf 'GitHub Stage Promotion Preflight\n'
@@ -301,10 +378,13 @@ printf '\n'
 printf 'Preflight summary\n'
 printf '  - worktree clean for source branch: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 printf '  - source contains base tip: %s\n' "$([ "$LINEAGE_READY" = true ] && printf yes || printf no)"
-printf '  - source is not reconcile/* (or approved topology-only replay): %s\n' "$([ "$RECONCILE_POLICY_READY" = true ] && printf yes || printf no)"
+printf '  - source is not sequence/* or reconcile/* (or approved topology-only replay): %s\n' "$([ "$EXECUTION_ONLY_BRANCH_POLICY_READY" = true ] && printf yes || printf no)"
 printf '  - source has promotable diff beyond base: %s\n' "$([ "$SOURCE_HAS_DIFF" = true ] && printf yes || printf no)"
 printf '  - topology-only reconciliation accepted: %s\n' "$([ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ] && printf yes || printf no)"
 printf '  - diff shape requirement (%s): %s\n' "$REQUIRE_DIFF_SHAPE" "$([ "$DIFF_SHAPE_READY" = true ] && printf pass || printf fail)"
+if [ -n "$RELEASE_PACKAGE_OPENING_TRACK" ]; then
+  printf '  - release-package opening track authorizes repo key: %s\n' "$([ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = true ] && printf yes || printf no)"
+fi
 printf '  - base-only commits missing from source: %s\n' "$BASE_ONLY_COUNT"
 printf '  - source-only commits beyond base: %s\n' "$SOURCE_ONLY_COUNT"
 printf '\n'
@@ -314,6 +394,9 @@ if [ "$OVERALL_GO" = true ]; then
   NEXT_PROMPTS+=("Optional follow-up: bash delphi-ai/tools/github_stage_promotion_snapshot.sh --branch $SOURCE_SHORT")
   if [ -n "$ORCHESTRATION_PLAN" ]; then
     NEXT_PROMPTS+=("The supplied orchestration plan already proved post-reconcile replay back onto the canonical branch for this promotion handoff.")
+  fi
+  if [ -n "$GOVERNING_TODO" ]; then
+    NEXT_PROMPTS+=("The supplied governing TODO already proved source-branch authority for repo key '$REPO_KEY'.")
   fi
 
   printf 'TEACH runtime response\n'
@@ -340,6 +423,14 @@ if [ "$OVERALL_GO" = true ]; then
   if [ -n "$ORCHESTRATION_PLAN" ]; then
     printf '  orchestration_plan: %s\n' "$ORCHESTRATION_PLAN"
   fi
+  if [ -n "$GOVERNING_TODO" ]; then
+    printf '  governing_todo: %s\n' "$GOVERNING_TODO"
+    printf '  repo_key: %s\n' "$REPO_KEY"
+    if [ -n "$RELEASE_PACKAGE_OPENING_TRACK" ]; then
+      printf '  release_package_opening_track: %s\n' "$RELEASE_PACKAGE_OPENING_TRACK"
+      printf '  release_package_primary_surface: %s\n' "${RELEASE_PACKAGE_PRIMARY_SURFACE:-unknown}"
+    fi
+  fi
   if [ "$TOPOLOGY_ONLY_RECONCILIATION_READY" = true ]; then
     printf '  topology_only_reconciliation_reason: %s\n' "$TOPOLOGY_ONLY_RECONCILIATION_REASON"
   fi
@@ -350,6 +441,9 @@ fi
 RERUN_COMMAND="bash delphi-ai/tools/github_stage_promotion_preflight.sh --source $SOURCE_REF --base $BASE_REF --require-diff-shape $REQUIRE_DIFF_SHAPE"
 if [ -n "$ORCHESTRATION_PLAN" ]; then
   RERUN_COMMAND="$RERUN_COMMAND --orchestration-plan $ORCHESTRATION_PLAN"
+fi
+if [ -n "$GOVERNING_TODO" ]; then
+  RERUN_COMMAND="$RERUN_COMMAND --governing-todo $GOVERNING_TODO --repo-key $REPO_KEY"
 fi
 RESOLUTION_PROMPTS+=("Rerun the preflight and require 'Overall outcome: go' before the first promotion PR: $RERUN_COMMAND")
 
@@ -376,6 +470,15 @@ printf '  diff_shape_ready: %s\n' "$([ "$DIFF_SHAPE_READY" = true ] && printf ye
 printf '  worktree_clean_for_source: %s\n' "$([ "$WORKTREE_READY" = true ] && printf yes || printf no)"
 if [ -n "$ORCHESTRATION_PLAN" ]; then
   printf '  orchestration_plan: %s\n' "$ORCHESTRATION_PLAN"
+fi
+if [ -n "$GOVERNING_TODO" ]; then
+  printf '  governing_todo: %s\n' "$GOVERNING_TODO"
+  printf '  repo_key: %s\n' "$REPO_KEY"
+  if [ -n "$RELEASE_PACKAGE_OPENING_TRACK" ]; then
+    printf '  release_package_opening_track: %s\n' "$RELEASE_PACKAGE_OPENING_TRACK"
+    printf '  release_package_primary_surface: %s\n' "${RELEASE_PACKAGE_PRIMARY_SURFACE:-unknown}"
+    printf '  release_package_opening_track_authorizes_repo_key: %s\n' "$([ "$RELEASE_PACKAGE_OPENING_TRACK_READY" = true ] && printf yes || printf no)"
+  fi
 fi
 printf '  base_only_commits_missing_from_source_count: %s\n' "$BASE_ONLY_COUNT"
 printf '  source_only_commits_beyond_base_count: %s\n' "$SOURCE_ONLY_COUNT"

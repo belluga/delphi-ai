@@ -40,7 +40,8 @@ The core thesis is that **accumulated system complexity should accelerate correc
 - **Profile before task work:** declare the active profile and technical scope via `delphi-ai/workflows/docker/profile-selection-method.md`.
 - **TODO authority:** planning is advisory; implementation authority requires a tactical TODO, explicit `APROVADO`, and delivery-gate evidence.
 - **CI Equivalent:** local product proof on the current authoritative branch using the same product-facing suites/jobs the pipeline runs for that scope.
-- **Reconcile topology:** `reconcile/*` is reserved for real orchestrator-led multi-worktree reconciliation. It is not a generic prerequisite for CI Equivalent.
+- **Independent authorization dimensions:** approval for subagents, delegation, or parallelism never authorizes worktrees, auxiliary checkouts/copies, `worker/*`, `reconcile/*`, or other Git-isolation topology. Default to one product/runtime code writer at a time in the principal checkout across Laravel, Flutter, Docker/root tooling, and runtime configuration. Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths and must stage, commit, and promote only their own TODO; shared canonical docs/artifacts and the same TODO remain serialized.
+- **Reconcile topology:** `reconcile/*` is reserved for explicitly worktree-authorized orchestrator-led reconciliation. It is not a generic consequence of subagents or a prerequisite for CI Equivalent.
 - **Promotion boundary:** after a green reconcile, replay the accepted net effect onto the canonical version/source branch, then continue promotion from that canonical branch. Promotion may not start from `reconcile/*`.
 - **Post-reconcile proof:** for reconcile-origin packages, record replay evidence in the orchestration plan, require `python3 delphi-ai/tools/orchestration_reconcile_replay_guard.py --plan <plan> --repo <authoritative-source-repo>` to return `Overall outcome: go`, and then run `github_stage_promotion_preflight.sh --orchestration-plan <plan>` from the canonical source branch.
 
@@ -79,12 +80,26 @@ Progressive determinism is the operating model underneath PACED. It ensures:
 - The iteration cost is mostly **computational**, not human.
 - Every project leaves behind more **deterministic intelligence** than it consumed.
 
+## T.E.A.C.H. Runtime Envelope
+
+`T.E.A.C.H.` is not only a message format. In PACED it is the runtime enforcement envelope used by deterministic guards and promotion gates. Its communication-facing sublayer lives mainly in `Contextual` and `Hinting`, but the full acronym also includes trigger semantics, deterministic execution, and stop/go enforcement.
+
+- **Triggered**: the rule runs because an objective condition or an explicit gate requires it.
+- **Enforced**: the output can stop the lane (`Overall outcome: no-go` / exit `2`), not merely advise.
+- **Automated**: once wired into the correct workflow or invoked at the required gate, the evaluation runs deterministically instead of depending on memory or discipline.
+- **Contextual**: the response carries the exact local evidence that produced the decision.
+- **Hinting**: the response carries the next repair step, not just the failure label.
+
 ### Deterministic Guards (Phase 0)
 The following guards are now active in the `deterministic/core/` directory:
 - `todo_completion_guard.py`: Enforces criterion-specific evidence for every Definition of Done (DoD) and validation step before TODOs can be trusted as `Local-Implemented`, `promotion_lane`, `completed`, or `Production-Ready`.
 - `finding_impact_classifier.py`: Analyzes code diffs to classify findings (Logic vs. Cosmetic) and prevents risky promotions.
 - `session_lock_manager.py`: Manages session state and prevents concurrent agent conflicts.
 - `metrics_consolidation_trigger.py`: Automatically extracts formalizable findings and populates the rule-events ledger.
+- `script_usage_record.py`: Appends Delphi-local script-usage events into a dedicated metrics ledger without mixing them into PACED rule/gate streams.
+- `script_usage_summary.py`: Aggregates the Delphi-local script-usage ledger into derived JSON/Markdown summaries for counts, outcomes, scenarios, and recent runs.
+
+Delphi self-maintenance script-usage telemetry stays local under `delphi-ai/artifacts/local/metrics/`, is gitignored, and is intentionally separate from downstream PACED project metrics plus `rule-events.jsonl`.
 
 ---
 
@@ -131,6 +146,8 @@ PACED closes the feedback loop by collecting metrics at the end of every session
 - **Location:** `foundation_documentation/artifacts/metrics/rule-events.jsonl`
 - **Automation:** The `post-session-review` workflow automatically triggers metrics collection.
 - **Goal:** Identify which rules are effective (True Positives) and which are escaping, allowing the ecosystem to recalibrate its deterministic layer.
+
+For Delphi-only local script-usage telemetry, use the gitignored state under `delphi-ai/artifacts/local/metrics/`.
 
 ---
 
@@ -207,4 +224,4 @@ jobs:
 - **PACED**: The engineering method.
 - **Delphi**: The agent persona implementing the method.
 - **delphi-ai/**: The repository/install surface.
-- **T.E.A.C.H.**: The communication protocol (Title, Evidence, Action, Context, Hint).
+- **T.E.A.C.H.**: The deterministic runtime envelope for guards and lane gates; `Contextual` + `Hinting` are its communication-facing sublayer.

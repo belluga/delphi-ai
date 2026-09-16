@@ -12,7 +12,7 @@ Derive the minimum PACED audit floor from a tactical TODO with a deterministic t
 
 ## Triggers
 - A tactical TODO needs deterministic audit decisions instead of ad hoc judgment.
-- Planning or delivery gates are deciding critique, final review, test-quality audit, or triple-review requirements.
+- Planning or delivery gates are deciding critique, final review, test-quality audit, or dedicated multi-lane audit requirements.
 - The user asks for a deterministic audit policy.
 
 ## Inputs
@@ -31,10 +31,10 @@ Derive the minimum PACED audit floor from a tactical TODO with a deterministic t
    - verification debt
    - test-quality audit
    - final review
-   - triple-review protocol when applicable
+   - dedicated multi-lane audit protocol when applicable (compatibility decision key: `triple_review`)
 4. Run critique before `APROVADO`.
 5. Run delivery-side audits only after implementation plus primary validation/adherence evidence exist.
-6. Treat triple review as additive only; it does not silently replace critique.
+6. Treat the dedicated multi-lane audit as additive only; it does not silently replace critique.
 7. Rerun the guard whenever trigger fields change materially after implementation.
 
 ## Outputs

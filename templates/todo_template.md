@@ -32,6 +32,14 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 - If any assumption or plan step changes `Scope`, `Out of Scope`, `Definition of Done`, required validation semantics, public contract, or frozen decisions, update the TODO contract first and request renewed approval before execution continues.
 - If the intended path explicitly authorizes a compatibility shim, fallback bridge, dual-read/dual-write period, or another non-canonical temporary construct, record that authorization in the TODO with exact scope, rationale, and removal/closeout condition. Reviewers must be able to distinguish an approved temporary exception from accidental workaround drift.
 
+## Implementation Intent
+- **Current delivery:** <concrete current slice>
+- **Planned next steps:** `<none|concrete future steps; informational unless authorized below>`
+- **Anticipatory implementation authorized now:** `<none|concrete bounded future-facing implementation>`
+- **Rationale:** <why this is the simplest faithful implementation boundary>
+
+Planned next steps do not authorize implementation. Planning reviewers may challenge proposed intent; delivery reviewers must preserve approved intent or return for renewed approval.
+
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `<Pending|Local-Implemented|Lane-Promoted|Production-Ready>`
 - **Qualifiers:** `<none|Provisional|Blocked|Provisional+Blocked>`
@@ -85,6 +93,36 @@ cp delphi-ai/templates/todo_template.md foundation_documentation/todos/active/<l
 ## Out of Scope
 - [ ] <What will NOT be done>
 
+## Diff Expectation Contract (Required Before Delivery)
+The TODO must describe the implementation diff shape before delivery. The guard compares the recorded baseline with tracked and non-ignored untracked changes. Any path that is not classified as expected, or that matches a `Not Expected Changed Paths` row, is a deviation and blocks delivery for analysis. A `no-go` is not an automatic rollback: classify each item as an actual scope deviation, a necessary/justifiable need, or noise. The agent may defend a necessary change with evidence; unnecessary deviations must be reverted, noise must be cleaned or explained, and necessary scope expansion requires user validation plus renewed approval.
+
+- **Contract status:** `required`
+- **Policy:** `strict; unclassified or forbidden paths block delivery`
+- **User validation:** `required on deviation`
+- **Comparison mode:** `working_tree`
+
+### Repository Baselines
+| Repository | Path | Baseline ref | Comparison mode |
+| --- | --- | --- | --- |
+| `<root or submodule label>` | `<path relative to checkout root>` | `<branch@sha or commit>` | `working_tree` |
+
+### Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `<repository label>` | `<folder/**, file.ext, or file type glob>` | `<M|A|D|R|any>` | `<why this path/type is expected>` |
+
+### Not Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `<repository label>` | `<folder/**, file.ext, generated artifact, secret, or unrelated type>` | `<A|M|D|R|any>` | `<why this path/type must not appear>` |
+
+### Diff Deviation Analysis (Required Only When the Guard Returns `no-go`)
+| Diff item | Classification (`scope deviation|necessary need|noise`) | Evidence / agent defense | Decision (`revert|clean noise|retain with renewed approval`) | User validation / renewed approval |
+| --- | --- | --- | --- | --- |
+| `<repository:path and change type>` | `<classification>` | `<why the classification is justified>` | `<decision>` | `<evidence or pending>` |
+
+Do not regress implementation automatically merely because the contract is strict. The delivery stop exists to force this analysis and an explicit decision; rerun the guard after the decision is recorded and applied.
+
 ## Bounded But Elastic Guardrails
 - **May stay inside this TODO:** <local refinement, blocker resolution, or small concretization that stays within the same objective and approval conversation, even if secondary modules are touched in service of that slice>
 - **Must update or split the TODO:** <new primary objective, new independently testable story slice, or new approval/risk conversation>
@@ -101,11 +139,11 @@ Every `Definition of Done` item and every `Validation Steps` item must have a co
 
 Evidence must be real and criterion-specific. Aggregate summaries such as "tests passed" are supporting notes only; they do not replace a row proving the exact criterion. If a criterion names a UI control, route, endpoint, schema, browser/device journey, integration test, migration, or runtime behavior, the evidence must name that same artifact or record an approved waiver/deviation.
 
-For any user-visible, interactive, or user-flow-impacting criterion, the evidence row must name the integration/device test or navigation/browser test that exercises that exact item. This includes visible UI (screen, admin/public surface, map, list/detail, form, field, button/FAB, tab, filter, search, chip/tag, selection state, scroll/sticky behavior, loading/empty/error state), and also non-visual implementation criteria that can affect a user journey. CRUD/mutation is a strong signal, but not the boundary: field refactors, DTO/domain/payload shape changes, backend validation, request/response projections, query/filter semantics, settings/capabilities, and read models must be assessed case by case. When such a change feeds an admin/public screen, save/readback flow, list/detail surface, or persisted user state, default to requiring runtime flow evidence unless the TODO records why the touched surface cannot affect user-observable behavior. In Flutter scope, `integration test` means device execution via ADB; web browser coverage is `navigation test` and is Playwright against the final browser-facing domain. Implementation code locations, analyzer output, screenshots, unit tests, or widget tests are valid implementation/supporting evidence and should be recorded, but they do not replace final flow acceptance evidence. If the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation explaining why integration/device or navigation/browser coverage is not applicable.
+For any user-visible, interactive, or user-flow-impacting criterion, the evidence row must name the integration/device test or navigation/browser test that exercises that exact item. This includes visible UI (screen, admin/public surface, map, list/detail, form, field, button/FAB, tab, filter, search, chip/tag, selection state, scroll/sticky behavior, loading/empty/error state), and also non-visual implementation criteria that can affect a user journey. CRUD/mutation is a strong signal, but not the boundary: field refactors, DTO/domain/payload shape changes, backend validation, request/response projections, query/filter semantics, settings/capabilities, and read models must be assessed case by case. When such a change feeds an admin/public screen, save/readback flow, list/detail surface, or persisted user state, default to requiring runtime flow evidence unless the TODO records why the touched surface cannot affect user-observable behavior. In Flutter scope, `integration test` means device execution via ADB; web browser coverage is `navigation test` and is Playwright against the final browser-facing domain. Implementation code locations, Flutter Problems bridge snapshots, screenshots, unit tests, or widget tests are valid implementation/supporting evidence and should be recorded, but they do not replace final flow acceptance evidence. Flutter local static evidence must come from the stable full-workspace Problems bridge snapshot, not a CLI analyzer run. If the item is structure-only and has no visible/runtime/user-flow behavior, record an explicit approved waiver/deviation explaining why integration/device or navigation/browser coverage is not applicable.
 
 Platform parity rule: if Android and Web exercise the same visible behavior through the same contract, one final runtime lane is sufficient (`integration/device` via ADB or `navigation/browser` via Playwright). If Android and Web behavior differs materially for the criterion, record and pass both lanes before delivery. Subagent/worker-local evidence may stop at code, unit, widget, package, and targeted tests; the orchestrator may accept delivery only after the consolidated branch has the required final runtime lane(s).
 
-For browser/web-visible behavior, Playwright is the canonical browser navigation evidence whenever the downstream repository exposes a Playwright web suite. The evidence row must name the source-owned Playwright spec and the runner command, typically `tools/flutter/web_app_tests/**` executed through the project-owned navigation runner. Browser evidence must first publish the current checkout with the project-defined build/publish command and output target from `foundation_documentation` or dependency-readiness notes, confirm the browser-facing domain is serving that refreshed bundle, and then run Playwright against the real configured domain (for example `NAV_LANDLORD_URL` / `NAV_TENANT_URL` when that topology applies). For web CRUD/mutation, the Playwright `mutation` lane on an approved non-`main` target is required; a `readonly` web smoke is not enough.
+For browser/web-visible behavior, Playwright is the canonical browser navigation evidence whenever the downstream repository exposes a Playwright web suite. The evidence row must name the source-owned Playwright spec and the runner command, typically `tools/flutter/web_app_tests/**` executed through the project-owned navigation runner. Browser evidence must first publish the current checkout with the project-defined build/publish command and output target from `foundation_documentation` or dependency-readiness notes, record the authoritative `branch@sha` plus the local build artifact/fingerprint for that published state, prove that the browser-facing domain is serving that exact refreshed bundle through a concrete comparison/provenance check, and only then run Playwright against the real configured domain (for example `NAV_LANDLORD_URL` / `NAV_TENANT_URL` when that topology applies). If the served target cannot be proven fresh for the current build, mark the evidence row `blocked` instead of treating the observed behavior as product evidence. For web CRUD/mutation, the Playwright `mutation` lane on an approved non-`main` target is required; a `readonly` web smoke is not enough.
 
 For any criterion that includes user-flow CRUD or mutation behavior (create, edit, update, save, delete, reorder, submit, persist, or equivalent), the integration/device or navigation/browser evidence must exercise the local mutation path against the approved non-main validation target. A read-only navigation, mocked local filter, or backend-only assertion is not enough when the change can affect a user-facing save or readback flow. For non-CRUD refactors, the TODO must still assess whether changed fields/contracts/projections affect user flows; if yes, the same runtime evidence rule applies.
 
@@ -158,12 +196,78 @@ For any criterion that includes user-flow CRUD or mutation behavior (create, edi
 - [ ] `D-01` <Decision: chosen option + short rationale + module decision ref (or `No Prior Decision`)>
 
 ## Module Decision Baseline Snapshot (Required Before APROVADO)
-- | Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
-- | --- | --- | --- | --- |
-- | `<module#decision-id>` | <summary> | <handling> | <file:line/section> |
+| Module Decision Ref | Current Module Decision | Planned Handling (`Preserve|Supersede (Intentional)|Out of Scope`) | Evidence |
+| --- | --- | --- | --- |
+| `<module#decision-id>` | <summary> | <handling> | <file:line/section> |
 
 ## Decision Baseline (Frozen Before Implementation)
 - [ ] `D-01` <Expected outcome that implementation must adhere to>
+
+## Architecture Change Governance (Required When This TODO Establishes, Corrects, or Supersedes Architecture)
+- **Applicability (`required|not_needed`):** `<not_needed>`
+- **Why this applies:** `<why this TODO is or is not architecture-corrective>`
+- **Deviation / debt being retired:** `<n/a or exact wrong path being removed>`
+- **Target steady-state after closeout:** `<n/a or exact canonical architecture that must remain>`
+- **Temporary exceptions allowed:** `<none|bounded temporary exception + rationale>`
+- **Cutover / removal condition:** `<n/a or exact condition that retires the old path>`
+
+### Patterns To Enforce (Required when applicability = `required`)
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| `<pattern or canonical decision>` | `<module decision / PATTERN id / n/a>` | `<surface/family>` | `<why this becomes the required path>` |
+
+### Prohibited Anti-Patterns (Required when applicability = `required`)
+| Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
+| --- | --- | --- | --- |
+| `<retired wrong path>` | `<guard/lint/review/test signal>` | `<why this would reintroduce the deviation>` | `<none or exact bounded exception>` |
+
+### Architecture Protection Harness (Required when applicability = `required`)
+Plan the concrete protections that keep the corrected architecture from regressing. Rows marked `implement-in-this-todo` must also appear in `Definition of Done`, `Validation Steps`, and the relevant evidence/gate sections before approval.
+
+| Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| `<rule|linter|analyzer|pint|guard|test|audit>` | `<surface>` | `<real command/rule/artifact>` | `<what regression this blocks>` | `<timing>` | `<how this becomes real or exact follow-up reference>` |
+
+## Architecture Review Gates (Deterministically Derived From Architecture Change Governance)
+- **Architecture decision review:** `<required|not_needed>` (from `audit_escalation_guard.py`)
+- **Decision review lifecycle:** `<after diagnosis is closed and before APROVADO|n/a>`
+- **Decision review kind:** `<architecture_opinion|n/a>`
+- **Decision review package:** `<bounded-file-set|bounded-summary|n/a>`
+- **Decision review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived|n/a>`
+- **Decision review evidence / resolution:** `<dispatch/merge path or n/a>`
+- **Architecture adherence review:** `<required|not_needed>` (from `audit_escalation_guard.py`)
+- **Adherence review lifecycle:** `<after implementation and before Completed|n/a>`
+- **Adherence review kind:** `<architecture_adherence|n/a>`
+- **Adherence review package:** `<bounded-file-set|bounded-summary|n/a>`
+- **Adherence review status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived|n/a>`
+- **Adherence review evidence / resolution:** `<dispatch/merge path or n/a>`
+- **No-go handling:** `when either required review is absent, blocked, or exposes an unresolved approval-breaking divergence, return to the affected diagnosis/decision or delivery-evidence loop; do not claim APROVADO or Completed.`
+
+## Gate: Review Baseline Freeze
+- **Gate decision:** `required`
+- **Why this decision:** <why the first planning-side review/guard must start from a committed and pushed TODO baseline>
+- **Trigger stage:** `before the first planning-side review or guard run`
+- **Baseline branch:** `<branch>`
+- **Baseline commit:** `<sha>`
+- **Baseline push reference:** `<origin/<branch>>`
+- **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <what was frozen, or what blocked the freeze>
+- **Evidence / reference:** <commit/push evidence or artifact>
+- **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
+- **Pre-freeze packet-prep rule:** `if review-loop rows are drafted before this gate is satisfied or explicitly waived, keep them explicitly provisional (for example \`prepared-pre-freeze\` or \`pending-freeze\`) and do not mark them \`passed\` until the real freeze-backed review/guard run exists`
+
+## Gate: Review Scope Drift
+- **Gate decision:** `required`
+- **Why this decision:** <why post-review material drift must be checked before approval>
+- **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
+- **Baseline source:** `Review Baseline Freeze -> Baseline commit`
+- **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
+- **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo <todo-path>`
+- **No-go handling rule:** `return the TODO to the review loop, revalidate the evolved scope with the user, refresh the pushed baseline when needed, and rerun the affected review/guard lanes; this is not a hard rejection`
+- **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <whether material sections drifted and what happened next>
+- **Evidence / reference:** <guard output artifact or command reference>
+- **Waiver authority / reference (required if waived):** `<approver/reference or n/a>`
 
 ## Questions To Close
 - [ ] <Question that changes implementation>
@@ -204,6 +308,16 @@ Execution planning describes **HOW** Delphi intends to deliver the TODO contract
 - **Why:** <reasoning>
 - **Fail-first target(s) (when required):** <tests to fail first or rationale for non-applicability>
 
+### Pre-APROVADO RED Evidence Capture (Optional for bugfix/regression)
+- **Decision (`required|recommended|not_needed|waived`):** `<decision>`
+- **Why now:** <why reproducing the observed symptom before approval materially reduces ambiguity, or `n/a`>
+- **Target symptom:** <external failure to reproduce; route/surface/user-visible symptom>
+- **Allowed surfaces:** `<exact test files and strictly test-only support paths>`
+- **Forbidden surfaces reaffirmed:** `production code|runtime/config/deploy|canonical project docs outside TODO authoring`
+- **Planned command / target:** `<test command(s) or `n/a`>`
+- **Status (`not_run|running|red_reproduced|red_not_reproduced|blocked|waived`):** `<status>`
+- **Findings summary:** <what the RED established, disproved, or why it blocked>
+
 ### Flow Evidence Planning Matrix (Required Before `APROVADO`)
 Map every user-visible, interactive, or user-flow-impacting criterion to the final runtime evidence required before delivery. Do not limit this to obviously visual work or to CRUD/mutation: refactors that change fields, DTOs, domain models, payloads, validation, query/projection semantics, or persisted state must be assessed case by case. If the changed surface can affect an admin/public screen, save/readback flow, list/detail rendering, filter/search result, or persisted user-visible state, record the required runtime evidence or an explicit non-applicability rationale.
 
@@ -212,11 +326,13 @@ Map every user-visible, interactive, or user-flow-impacting criterion to the fin
 | `<criterion>` | `<visible UI|CRUD/mutation|field/DTO/domain refactor|save/readback|payload consumed by UI|filter/query|settings/capability|structure-only>` | `<classification>` | `<ADB integration|Playwright readonly|Playwright mutation|both|n/a>` | `<yes|no>` | `<yes|no>` | `<test/spec/runner planned>` | `<reason or n/a>` |
 
 ### Local CI-Equivalent Suite Matrix (Required Before `APROVADO` and Before Delivery Claim)
-A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. Reconcile-only wrappers are optional helpers when the current authoritative branch is a true reconciliation branch; they are not the definition of CI-Equivalent. Published `stage`/`main` probes are separate evidence and do not replace this matrix. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
+A TODO is not ready for `Local-Implemented`, movement to `promotion_lane/`, or any “promotable” claim until every in-scope row below has been executed locally and passed using the same repo-owned suite/job surface that CI will run for the touched repositories. CI-Equivalent is current-branch local product proof: run it from the authoritative branch currently under evaluation, using the project-owned local build/publish path and the same product-facing suites/jobs the pipeline uses for that scope. If the project exposes a named broad local stage profile such as `stage-full`, that profile must be the parity-complete local mirror of the stage pipeline for the touched scope on that branch rather than a hand-curated subset; narrower diagnostic bundles must use distinct names. Reconcile-only wrappers are optional helpers when the current authoritative branch is a true reconciliation branch; they are not the definition of CI-Equivalent. Published `stage`/`main` probes are separate evidence and do not replace this matrix. Targeted reruns are diagnostic evidence only; they do not replace this matrix.
 
-| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before (`APROVADO|Local-Implemented|promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| `<flutter-app / Validate and Build Web>` | `<why this CI surface will run for the touched scope>` | `<exact local command that mirrors the CI suite/job>` | `<milestone>` | `<planned>` | `<command output artifact / report / n/a>` | `<scope or waiver rationale>` |
+Each row must be behavior-targeted, not just suite-targeted. Record the exact behavior/scenario the row proves and the fixture/seed/runtime preconditions required for that behavior to be meaningfully exercised. If the intended behavior cannot be proven with ambient data, add deterministic bootstrap/seed/preparation as part of the matrix instead of accepting a generic suite pass. When the strongest available proof is navigation/browser or device runtime evidence, plan and execute that lane whenever it is realistically available. If there is real uncertainty about what exact scenario must be proven, stop and confirm it with the user before claiming the matrix is complete.
+
+| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before (`APROVADO|Local-Implemented|promotion`) | Status (`planned|passed|blocked|waived|n/a`) | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `<flutter-app / Validate and Build Web>` | `<why this CI surface will run for the touched scope>` | `<exact new/changed behavior this row proves>` | `<required fixture/seed/runtime publication/user-state preconditions>` | `<exact local command that mirrors the CI suite/job>` | `<milestone>` | `<planned>` | `<command output artifact / report / n/a>` | `<scope, stronger-lane requirement, or waiver rationale>` |
 
 ### Runtime / Rollout Notes
 - `<migrations, feature flags, infra/runtime concerns, or n/a>`
@@ -276,7 +392,7 @@ Treat brittle workarounds and structural shortcuts as explicit negative findings
 - **Why ambiguity remains:** <competing architectural paths, unresolved tradeoff, or `n/a`>
 - **Opinion count:** `<0|1|2>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent(s); if no, record constraint and proceed with bounded self-opinion)`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent(s) when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
 - **Required lenses:** `<correctness|performance|elegance|structural-soundness|operational-fit>`
 
 | Reviewer | Recommendation | Performance view | Elegance view | Structural soundness view | Resolution | Evidence |
@@ -303,7 +419,7 @@ Use exact trigger names and exact enum values only.
 | `critical_user_journey` | `<yes|no>` | `yes` when the TODO covers a launch-critical or business-critical user flow. |
 | `release_or_promotion_critical` | `<yes|no>` | `yes` when release/promotion confidence materially matters to this TODO. |
 | `high_severity_plan_review_issue` | `<yes|no>` | `yes` when any current Plan Review issue card is `high`. |
-| `explicit_three_lane_request` | `<yes|no>` | `yes` when the user or TODO explicitly requires the dedicated three-lane external audit. |
+| `explicit_three_lane_request` | `<yes|no>` | Compatibility field name; use `yes` when the user or TODO explicitly requires the dedicated delivery-side multi-lane internal audit protocol. |
 
 ## Independent No-Context Critique Gate (Deterministic Floor From Audit Escalation)
 - **Critique decision:** `<required|recommended|not_needed>` (minimum from `audit_escalation_guard.py`)
@@ -311,8 +427,8 @@ Use exact trigger names and exact enum values only.
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing waivers/blockers>`
-- **Critique isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Critique isolation mode:** `<fresh internal no-context reviewer>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Critique lenses:** `<correctness|performance|elegance|structural-soundness|risk>`
@@ -320,10 +436,21 @@ Use exact trigger names and exact enum values only.
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
+- **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
+
+## Gate: Assumption Code Coherence
+- **Gate decision:** `<required|recommended|not_needed>`
+- **Why this decision:** <why the still-live assumptions do or do not need a dedicated code-coherence pass>
+- **Trigger stage:** `after critique convergence and before APROVADO`
+- **Guard scope:** `<A-01,A-02 or none>`
+- **Guard command:** `python3 delphi-ai/tools/assumption_code_coherence_guard.py --todo <todo-path> [--json-output <artifact-path>]`
+- **Gate status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
+- **Findings summary:** <wrong-code-assumption findings, integrated adjustments, or `none`>
+- **Evidence / reference:** <artifact path, reviewer note, or rationale>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
 ## Approval
@@ -345,15 +472,38 @@ Complete this after the execution plan is approved and the touched surfaces are 
 | --- | --- | --- | --- | --- |
 | `<rule/workflow path>` | <why it applies> | <non-negotiable constraints> | <forbidden shortcuts/regressions> | <what changes in execution/validation> |
 
+## Agent Routing Preflight (Required Before Execution When Effort/Model Routing Applies)
+Use the canonical routing contract from `config/agent_role_routing.json` plus `python3 delphi-ai/tools/agent_role_routing_guard.py ...` whenever the active client exposes model selection, named agents/subagents, or declared routing policy that must stay visible in the TODO.
+
+- **Client surface:** `<codex|claude-code|cline-ide>`
+- **Current governed action:** `<implementation|implementation-validation|monitoring|formal-review|todo-approval|delivery-review|self-improvement>`
+- **Selected role:** `<primary-chat|routine-executor|formal-reviewer|process-monitor|deterministic-only>`
+- **Selected model:** `<exact model or canonical family alias; use n/a only for deterministic-only monitoring>`
+- **Selected effort:** `<medium|xhigh|max|ExtraRight-or-closest-equivalent|n/a when the client exposes no named effort control>`
+- **Proof mode:** `<artifact|declared|waiver>`
+- **Exception reason:** `<bootstrap-guard-implementation|reconciliation|merge-conflict|minimal-integration-glue|n/a>`
+- **Subagent / delegation authorization:** `<not-requested|explicit human reference>`
+- **Execution topology:** `<primary-checkout-single-writer|worktree-isolated>`
+- **Worktree / auxiliary-checkout authorization:** `<not-authorized|explicit>`
+- **Worktree authorization evidence:** `<n/a|exact human authorization explicitly naming worktrees or auxiliary checkouts>`
+- **Writer scheduling policy:** `<single-writer-serialized|isolated-parallel-writers>`
+- **Guard outcome:** `<go|delegate-required|review-required|waiver-required|blocked>`
+- **Waiver / exception reference:** `<approval / waiver / TODO decision reference or n/a>`
+
+- Record the section only after the selected lane is actually known for the next governed action.
+- If the guard does not resolve to `go`, stop execution and repair the routing or record approved waiver evidence first.
+- `waiver` is an explicit visible exception path, not silent fallback for a missing model/role declaration.
+- Subagent/delegation authority never implies Git-isolation authority. Default to `primary-checkout-single-writer`: one product/runtime code writer edits across code repositories and executable surfaces, and additional code writers are serialized. Distinct Foundation tactical-TODO owners may edit concurrently only on disjoint TODO paths and must stage, commit, and promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized. Worktrees, auxiliary checkouts/copies, `worker/*`, and `reconcile/*` require separate worktree-specific human authorization.
+
 ## Decision Adherence Validation (Mandatory Before Delivery)
-- | Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
-- | --- | --- | --- | --- |
-- | `D-01` | <status> | <file:line/test/doc> | <notes> |
+| Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
+| --- | --- | --- | --- |
+| `D-01` | <status> | <file:line/test/doc> | <notes> |
 
 ## Module Decision Consistency Validation (1-1 Mandatory Before Delivery)
-- | Module Decision Ref | Planned Handling | Delivery Status (`Preserved|Superseded (Approved)|Regression`) | Evidence | Notes |
-- | --- | --- | --- | --- | --- |
-- | `<module#decision-id>` | <handling> | <status> | <file:line/test/doc> | <notes> |
+| Module Decision Ref | Planned Handling | Delivery Status (`Preserved|Superseded (Approved)|Regression`) | Evidence | Notes |
+| --- | --- | --- | --- | --- |
+| `<module#decision-id>` | <handling> | <status> | <file:line/test/doc> | <notes> |
 
 ### Exception Handling
 - If any decision is `Exception`, delivery is blocked until:
@@ -376,13 +526,17 @@ Complete this after the execution plan is approved and the touched surfaces are 
 
 When the heuristic scanner is in scope, prefer JSON evidence for non-trivial diffs. Scanner allowlists must be temporary and include owner, expiration, and reason; expired entries count as active findings.
 
-## Promotion Finding Routing Ledger (Required When Promotion Finds Blockers)
-Use this only when promotion/CI/Copilot/check evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
+## Promotion Finding Routing Ledger (Required When Promotion/Review Finds Any Finding)
+Use this whenever promotion/CI/Copilot/check/no-context review evidence creates findings. Same-scope remediation may stay inside the governing TODO and promotion lane when it preserves the same approved objective, scenario, and risk conversation. Split or renewed approval is required when the finding changes approved scope, adds a new independently testable behavior, creates a new approval/risk conversation, or needs a waiver/exception for a blocking P1/P2.
 Carry prior recorded rows forward into every future no-context/Copilot review loop. A repeated finding is actionable only when the current bounded package materially changed the same locus/behavior or the prior adjudication is objectively insufficient.
+Every deduplicated finding must be classified as `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
+- Only `release-blocker` rows may block the current delivery/promotion claim.
+- `follow-up-fast-follow` and `follow-up-hardening` rows require an explicit TODO path/reference before the package can be called clean.
+- `by-design/no-action` rows require rationale that ties back to approved intent, pre-existing scope boundaries, or proven reviewer noise.
 
-| Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
+| Finding ID | Finding Source | Severity | Classification | Required Action | Status | Rationale / Follow-up Reference |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<PR/check/comment id>` | `<P1|P2|P3|P4|n/a>` | `<confirmed defect|by-design intent|upstream-lane drift|non-actionable>` | `<same-todo-remediation|same-todo-evidence-refresh|split-required|renewed-approval-required|defer-follow-up|non-actionable>` | `<why same TODO is still valid, or why split/renewal is required>` | `<open|fixed|re-evidenced|accepted|deferred|blocked>` | `<approval reference, split TODO, follow-up owner/path, or n/a>` |
+| `<PR/check/comment id>` | `<internal no-context audit|CI check|remote platform comment|manual review>` | `<P1|P2|P3|P4|high|medium|low|n/a>` | `<release-blocker|follow-up-fast-follow|follow-up-hardening|by-design/no-action>` | `<fix in current TODO|split fast-follow TODO|split hardening TODO|no action>` | `<open|fixed|routed|accepted|blocked>` | `<why this classification is correct, plus exact TODO path or approval rationale>` |
 
 ## TODO Closeout Disposition
 - **Disposition:** `<keep-active|move-promotion-lane|move-completed|blocked>`
@@ -470,18 +624,18 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded implementation diff|bounded test diff|validation evidence|expected behaviors/DoD|residual risks>`
 - **Canonical method:** `wf-docker-independent-test-quality-audit-method`
-- **Audit isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
-- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required external no-context audit for required gate|self-review is supporting-only when no subagent is available>`
+- **Audit isolation mode:** `<fresh internal no-context reviewer>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
+- **Gate-satisfying evidence expectation:** `<full applicable test-quality-audit outputs|required fresh internal no-context audit for required gate|live reviewers must be awaited without a rigid deadline and only terminal inactive reviewer lanes may be recycled; external providers do not satisfy the pass>`
 - **Audit focus:** `<product/test delta alignment|fail-first alignment|bypass detection|assertion efficacy|assertion efficiency|coverage sufficiency|brittle test-only shortcuts>`
 - **Required applicable evidence:** `<audit framing|fail-first/TDD alignment when relevant|bypass scan|real-backend/fallback/DI/CI/platform checks when applicable|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence when applicable|explicit answers to core audit questions>`
 - **Audit status:** `<not_run|running|no_material_findings|findings_integrated|blocked|waived>`
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -491,8 +645,8 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Impact signals in scope:** `<cross-module blast radius|public contract/schema/api|auth/payment|runtime/queue/realtime/ingress|intentional module supersede|high-severity issue card|none>`
 - **Package mode:** `<bounded-file-set|bounded-summary>`
 - **Package minimum contents:** `<frozen baseline|approved scope boundary|bounded touched-surface/diff summary|adherence status|validation evidence index|test-quality-audit evidence from wf-docker-independent-test-quality-audit-method|residual risks|existing waivers|verification debt>`
-- **Review isolation mode:** `<fresh no-context auxiliary reviewer>`
-- **Subagent mandate (when available):** `<yes|no> (if yes, name the no-context subagent; if no, record constraint and proceed with bounded self-review)`
+- **Review isolation mode:** `<fresh internal no-context reviewer>`
+- **Internal reviewer mandate:** `<required|recommended|not_needed> (name the fresh no-context internal reviewer/subagent when applicable; the reviewer cannot be the implementing agent; while a reviewer is pending_init|running, wait without a rigid deadline and never interrupt/recycle/replace/duplicate/repackage it; a polling timeout is not failure; recycle only terminal inactive reviewer lanes; external providers do not satisfy the pass)>`
 - **Canonical multi-lane audit protocol (when required):** `<audit-protocol-triple-review|n/a>`
 - **Audit session / round evidence (when protocol used):** `<session.json path + round summary path|n/a>`
 - **Review focus:** `<adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance residuals|structural regressions|verification debt>`
@@ -500,9 +654,9 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -518,9 +672,9 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - **Findings summary:** <material findings summary or `none`>
 - **Resolution ledger:** use the machine-checkable table below when findings exist
 - **Carry-forward rule:** future no-context review loops must ingest prior resolution artifacts and TODO historical dispositions before reopening a finding. Reopen only when the bounded package materially changed the same locus/behavior or the prior rationale is objectively insufficient.
-- | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
-- | --- | --- | --- | --- | --- | --- | --- |
-- | `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<finding-id>` | `<Integrated|Challenged|Deferred>` | `<useful|noise|mixed|unknown>` | `<yes|partial|no|unknown>` | `<paced|project|none|unknown>` | `<rule-id|n/a>` | <why this resolution is correct> |
 - **Evidence / reference:** <subagent output reference, artifact path, blocker note, or waiver note>
 - **Waiver authority / reference (required if waived):** `<human approver id + approval reference>`
 
@@ -545,11 +699,11 @@ Use `templates/performance_concurrency_lane_artifact_template.json` for machine-
 - [ ] TODO/module cross-links were updated (including active/completed path changes).
 
 ## Commands (Run Locally)
-- `fvm flutter analyze`
+- Query the project-declared stable full-workspace VS Code Problems snapshot
 - <Any manual steps>
 
-## Files Expected (Optional)
-- `<path>`
+## Files Expected (Compatibility Note)
+- Use `Diff Expectation Contract` above as the authoritative expected-file/folder/type inventory. This legacy note is only for human navigation and is not used by the delivery guard.
 
 ## COMENTÁRIO:
 - <Contextual question about the section below>

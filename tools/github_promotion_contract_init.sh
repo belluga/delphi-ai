@@ -17,8 +17,15 @@ Options:
   --docs-remote-promotion <forbidden|explicit-only>
                                                 Default: forbidden.
   --ci-behavior-change-authorized <true|false>  Default: false.
+  --ci-test-harness-change-authorized <true|false>
+                                                Default: false.
   --promotion-behavior-change-authorized <true|false>
                                                 Default: false.
+  --required-dev-track <docker-bot-next-version|docker-source>=<ref>
+                                                Optional, repeatable. Declares Docker `-> dev`
+                                                tracks that must already be absorbed into
+                                                `origin/dev` before any later `dev -> stage`
+                                                action is allowed under this contract.
   -h, --help                                    Show this help text.
 EOF
 }
@@ -34,7 +41,9 @@ GITLINK_POLICY="forbidden"
 BOT_NEXT_VERSION_POLICY=""
 DOCS_REMOTE_PROMOTION="forbidden"
 CI_BEHAVIOR_CHANGE_AUTHORIZED="false"
+CI_TEST_HARNESS_CHANGE_AUTHORIZED="false"
 PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED="false"
+declare -a REQUIRED_DEV_TRACKS=()
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -68,9 +77,19 @@ while [ $# -gt 0 ]; do
       CI_BEHAVIOR_CHANGE_AUTHORIZED="$2"
       shift 2
       ;;
+    --ci-test-harness-change-authorized)
+      [ $# -ge 2 ] || die "missing value for --ci-test-harness-change-authorized"
+      CI_TEST_HARNESS_CHANGE_AUTHORIZED="$2"
+      shift 2
+      ;;
     --promotion-behavior-change-authorized)
       [ $# -ge 2 ] || die "missing value for --promotion-behavior-change-authorized"
       PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED="$2"
+      shift 2
+      ;;
+    --required-dev-track)
+      [ $# -ge 2 ] || die "missing value for --required-dev-track"
+      REQUIRED_DEV_TRACKS+=("$2")
       shift 2
       ;;
     -h|--help)
@@ -124,14 +143,35 @@ case "$CI_BEHAVIOR_CHANGE_AUTHORIZED" in
   *) die "unsupported --ci-behavior-change-authorized value: $CI_BEHAVIOR_CHANGE_AUTHORIZED" ;;
 esac
 
+case "$CI_TEST_HARNESS_CHANGE_AUTHORIZED" in
+  true|false) ;;
+  *) die "unsupported --ci-test-harness-change-authorized value: $CI_TEST_HARNESS_CHANGE_AUTHORIZED" ;;
+esac
+
 case "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" in
   true|false) ;;
   *) die "unsupported --promotion-behavior-change-authorized value: $PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" ;;
 esac
 
+if [ "${#REQUIRED_DEV_TRACKS[@]}" -gt 0 ] && [ "$SCOPE" != "through-stage" ]; then
+  die "--required-dev-track is only valid when --scope through-stage"
+fi
+
+for track in "${REQUIRED_DEV_TRACKS[@]}"; do
+  case "$track" in
+    docker-bot-next-version=*|docker-source=*)
+      ref_part="${track#*=}"
+      [ -n "$ref_part" ] || die "--required-dev-track ref cannot be empty: $track"
+      ;;
+    *)
+      die "unsupported --required-dev-track value: $track"
+      ;;
+  esac
+done
+
 mkdir -p "$(dirname "$OUTPUT_PATH")"
 
-python3 - "$OUTPUT_PATH" "$SCOPE" "$MAX_LANE" "$GITLINK_POLICY" "$BOT_NEXT_VERSION_POLICY" "$DOCS_REMOTE_PROMOTION" "$CI_BEHAVIOR_CHANGE_AUTHORIZED" "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" <<'PY'
+python3 - "$OUTPUT_PATH" "$SCOPE" "$MAX_LANE" "$GITLINK_POLICY" "$BOT_NEXT_VERSION_POLICY" "$DOCS_REMOTE_PROMOTION" "$CI_BEHAVIOR_CHANGE_AUTHORIZED" "$CI_TEST_HARNESS_CHANGE_AUTHORIZED" "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED" "${REQUIRED_DEV_TRACKS[@]}" <<'PY'
 import json
 import os
 import sys
@@ -145,8 +185,20 @@ from datetime import datetime, timezone
     bot_next_version_policy,
     docs_remote_promotion,
     ci_behavior_change_authorized,
+    ci_test_harness_change_authorized,
     promotion_behavior_change_authorized,
+    *required_dev_tracks_raw,
 ) = sys.argv[1:]
+
+required_dev_tracks = []
+for raw in required_dev_tracks_raw:
+    kind, ref = raw.split("=", 1)
+    required_dev_tracks.append(
+        {
+            "kind": kind,
+            "ref": ref,
+        }
+    )
 
 payload = {
     "schema_version": 1,
@@ -158,7 +210,9 @@ payload = {
     "bot_next_version_policy": bot_next_version_policy,
     "docs_remote_promotion": docs_remote_promotion,
     "ci_behavior_change_authorized": ci_behavior_change_authorized == "true",
+    "ci_test_harness_change_authorized": ci_test_harness_change_authorized == "true",
     "promotion_behavior_change_authorized": promotion_behavior_change_authorized == "true",
+    "required_dev_tracks": required_dev_tracks,
 }
 
 with open(output_path, "w", encoding="utf-8") as fh:
@@ -174,5 +228,14 @@ printf '  gitlink_policy: %s\n' "$GITLINK_POLICY"
 printf '  bot_next_version_policy: %s\n' "$BOT_NEXT_VERSION_POLICY"
 printf '  docs_remote_promotion: %s\n' "$DOCS_REMOTE_PROMOTION"
 printf '  ci_behavior_change_authorized: %s\n' "$CI_BEHAVIOR_CHANGE_AUTHORIZED"
+printf '  ci_test_harness_change_authorized: %s\n' "$CI_TEST_HARNESS_CHANGE_AUTHORIZED"
 printf '  promotion_behavior_change_authorized: %s\n' "$PROMOTION_BEHAVIOR_CHANGE_AUTHORIZED"
+if [ "${#REQUIRED_DEV_TRACKS[@]}" -eq 0 ]; then
+  printf '  required_dev_tracks: none\n'
+else
+  printf '  required_dev_tracks:\n'
+  for track in "${REQUIRED_DEV_TRACKS[@]}"; do
+    printf '    - %s\n' "$track"
+  done
+fi
 printf '\nOverall outcome: ready\n'

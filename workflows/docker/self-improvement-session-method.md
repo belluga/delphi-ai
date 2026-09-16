@@ -13,6 +13,7 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
 
 ## Inputs
 - Current `delphi-ai` core files (main instructions, system principles, ecosystem config, templates).
+- `config/hook_governance.json` when the touched surfaces include `.claude/settings.json`, `.claude/hooks/**`, `.clinerules/hooks/**`, `scripts/setup_delphi.sh`, `initialization_checklist.md`, or other hook-governed integration files.
 - `templates/self_improvement_work_ledger_template.md` when the self-improvement scope is long enough to need a temporary tracked ledger.
 - Manual agnosticism review of the edited Delphi surfaces.
 - Applicable local checks for the changed file types (for example `bash self_check.sh` for governance surfaces or `bash -n` for edited shell scripts).
@@ -35,6 +36,7 @@ Run instruction-only sessions safely, ensuring `delphi-ai/` stays project-agnost
      - it does not replace canonical instructions;
      - it must be deleted or explicitly refreshed when the active self-improvement scope closes.
 5. **Plan updates** – list the instruction files to edit and the rationale. If the correction was not classified as `Delphi`, stop here and record the appropriate non-Delphi follow-up instead of editing `delphi-ai/`.
+   - If the touched surfaces are hook-governed integration files, include `config/hook_governance.json` in the plan and confirm the validation mix needed for those surfaces (`self_check`, `git diff --check`, and relevant tool tests).
 6. **Apply changes** – edit `delphi-ai/*.md` (and templates) as required.
 7. **Agnosticism & consistency verification**
    - Review the edited Delphi files and diffs to ensure no project-specific paths/data creep into `delphi-ai/`, `.clinerules/`, or `.cline/`.

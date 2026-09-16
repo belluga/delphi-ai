@@ -12,6 +12,7 @@ Turn the canonical tactical TODO markdown into a machine-checkable validation bu
 
 This method does **not** judge architectural quality or elegance. It exists to block missing structural obligations with explicit diagnostics.
 Those diagnostics should work as resolution instructions whenever possible: the operator should be able to see exactly what field or record must be added or corrected without guessing.
+The dedicated assumption-vs-code coherence guard remains the semantic/code-evidence layer for live assumptions; deterministic validation only checks that the guard is structurally recorded.
 It applies only to tactical TODOs from `templates/todo_template.md`, not to profile-scoped capped no-code ledgers from `templates/capped_todo_template.md`.
 
 ## Triggers
@@ -53,6 +54,7 @@ It applies only to tactical TODOs from `templates/todo_template.md`, not to prof
 - `Provisional Notes` when `Qualifiers` includes `Provisional`
 - `Blocked` qualifier coherence vs `Blocker Notes`
 - `Independent No-Context Critique Gate`
+- `Gate: Assumption Code Coherence`
 - `Independent Test Quality Audit Gate`
 - `Independent No-Context Final Review Gate`
 - required waiver references for waived gates

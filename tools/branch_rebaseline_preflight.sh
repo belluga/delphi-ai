@@ -87,6 +87,11 @@ has_live_remote_ref() {
   repo_git show-ref --verify --quiet "refs/remotes/$upstream"
 }
 
+has_matching_remote_branch() {
+  local branch="$1"
+  repo_git show-ref --verify --quiet "refs/remotes/origin/$branch"
+}
+
 ref_merged_into_origin_dev() {
   local ref="$1"
   repo_git merge-base --is-ancestor "$ref" origin/dev
@@ -152,6 +157,7 @@ repo_git show-ref --verify --quiet refs/remotes/origin/dev || die "missing autho
 
 declare -A LOCAL_UPSTREAM=()
 declare -A LOCAL_HAS_LIVE_UPSTREAM=()
+declare -A LOCAL_HAS_MATCHING_REMOTE=()
 declare -A LOCAL_IS_CURRENT=()
 declare -A SAFE_LOCAL_IS_CURRENT=()
 declare -A REMOTE_TRACKING_LOCALS=()
@@ -205,6 +211,12 @@ while IFS=$'\t' read -r branch upstream; do
     LOCAL_HAS_LIVE_UPSTREAM["$branch"]=false
   fi
 
+  if has_matching_remote_branch "$branch"; then
+    LOCAL_HAS_MATCHING_REMOTE["$branch"]=true
+  else
+    LOCAL_HAS_MATCHING_REMOTE["$branch"]=false
+  fi
+
   if [ "$branch" = "$CURRENT_BRANCH" ]; then
     LOCAL_IS_CURRENT["$branch"]=true
   else
@@ -217,13 +229,22 @@ while IFS=$'\t' read -r branch upstream; do
 
   local_detail="$branch"
   if [ -n "$upstream" ]; then
-    local_detail+=" (upstream: $upstream"
+    local_detail+=" (tracks: $upstream"
     if [ "${LOCAL_HAS_LIVE_UPSTREAM[$branch]}" = false ]; then
-      local_detail+=", remote missing"
+      local_detail+=", upstream ref missing"
+    fi
+    if [ "${LOCAL_HAS_MATCHING_REMOTE[$branch]}" = true ]; then
+      local_detail+=", matching remote: origin/$branch"
+    else
+      local_detail+=", matching remote missing"
     fi
     local_detail+=")"
   else
-    local_detail+=" (no upstream)"
+    if [ "${LOCAL_HAS_MATCHING_REMOTE[$branch]}" = true ]; then
+      local_detail+=" (no upstream, matching remote: origin/$branch)"
+    else
+      local_detail+=" (no upstream, matching remote missing)"
+    fi
   fi
   if [ "${LOCAL_IS_CURRENT[$branch]}" = true ]; then
     local_detail+=" [current]"
@@ -234,8 +255,8 @@ while IFS=$'\t' read -r branch upstream; do
   fi
 
   if ref_merged_into_origin_dev "$branch"; then
-    if [ "${LOCAL_HAS_LIVE_UPSTREAM[$branch]}" = true ]; then
-      append_assoc_list "$upstream" "$branch"
+    if [ "${LOCAL_HAS_MATCHING_REMOTE[$branch]}" = true ]; then
+      append_assoc_list "origin/$branch" "$branch"
     elif ! is_local_anomaly "$branch"; then
       SAFE_LOCAL_CLEANUP_CANDIDATES+=("$branch")
       SAFE_LOCAL_IS_CURRENT["$branch"]="${LOCAL_IS_CURRENT[$branch]}"
@@ -244,8 +265,8 @@ while IFS=$'\t' read -r branch upstream; do
     PATCH_EQUIVALENT_FALSE_POSITIVES+=(
       "local: $local_detail (ancestry mismatch; non-merge commits already present in origin/dev)"
     )
-    if [ "${LOCAL_HAS_LIVE_UPSTREAM[$branch]}" = true ]; then
-      append_assoc_list "$upstream" "$branch"
+    if [ "${LOCAL_HAS_MATCHING_REMOTE[$branch]}" = true ]; then
+      append_assoc_list "origin/$branch" "$branch"
     elif ! is_local_anomaly "$branch"; then
       SAFE_LOCAL_CLEANUP_CANDIDATES+=("$branch")
       SAFE_LOCAL_IS_CURRENT["$branch"]="${LOCAL_IS_CURRENT[$branch]}"

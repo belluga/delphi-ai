@@ -1,6 +1,6 @@
 ---
 name: wf-docker-todo-approval-gates-method
-description: "Workflow phase: run plan review, audit-floor decisions, critique/triple-review gates, and obtain explicit APROVADO."
+description: "Workflow phase: run plan review, audit-floor decisions, critique/dedicated-multi-lane-audit gates, and obtain explicit APROVADO."
 ---
 
 # Method: TODO Approval Gates
@@ -9,15 +9,35 @@ Use when the TODO contract is refined and ready for pre-execution review. Canoni
 
 ## Responsibilities
 - Freeze or refresh `Decision Baseline (Frozen)`.
-- Run module coherence, plan review, audit escalation, and required critique/triple-review lanes.
+- Freeze and push the review baseline before the first planning-side review or guard run.
+- If the review packet is being prepared before that freeze is satisfied or waived, keep those rows explicitly provisional (`prepared-pre-freeze` / `pending-freeze`) instead of marking them `passed`.
+- Run module coherence, plan review, audit escalation, and required critique/dedicated multi-lane audit lanes.
+- Run optional bounded pre-`APROVADO` RED evidence capture when the TODO explicitly authorizes it for bugfix/regression ambiguity reduction.
+- Load `workflows/docker/effort-selection-method.md` when the active client exposes named effort controls or persistent GOAL support. TODO approval/plan review and any gate-satisfying review subagents use the highest review-focused tier; keep review subagents stateless by default.
+- Run the assumption-vs-code coherence guard after critique convergence and before approval.
+- Run the post-review scope-drift guard before approval.
+- Prepare concrete rule/workflow paths and one machine-readable planned implementation routing tuple, then run `todo_authority_guard.py <todo-path> --pre-approval` and require `Overall outcome: preflight-go`.
 - Ask for explicit `APROVADO`.
 - Record compact `Approval` evidence in the TODO after approval: approver/reference, authorized scope, exclusions, and renewal trigger.
+- Record subagent/delegation authorization independently from Git-isolation authorization. Default to `primary-checkout-single-writer`; a `worktree-isolated` plan requires separate human evidence explicitly naming worktrees or auxiliary checkouts.
 
 ## Outputs
 - Approval-ready TODO with review/audit evidence.
+- Assumption-vs-code coherence evidence recorded in the TODO.
+- Review baseline freeze evidence and review-scope-drift evidence recorded in the TODO.
+- Execution-readiness authority preflight evidence; `preflight-go` is structural only and grants no implementation authority.
 - Explicit approval record.
 
 ## Non-Negotiables
 - No tactical implementation before `APROVADO`.
+- Pre-`APROVADO` RED evidence capture is not implementation and may touch only the TODO-listed test/support surfaces.
+- No planning-side review or guard run before the review baseline freeze is satisfied or explicitly waived.
+- Do not mark planning-side review/guard rows `passed` while the review baseline freeze is still pending; use explicit provisional wording until the real freeze-backed run exists.
+- No tactical implementation before the assumption-vs-code coherence guard is clean or explicitly waived.
+- No tactical implementation before the post-review scope-drift guard is clean or explicitly waived.
+- Do not request `APROVADO` before the authority preflight returns `preflight-go`; deterministic-validator PASS does not substitute for it.
+- Do not combine approval, review, and implementation surfaces in one `Agent Routing Preflight` field.
+- Never treat `preflight-go` as execution authority; the normal post-approval authority guard must still return `go`.
 - Do not rely on chat memory alone after approval; the TODO must carry the approval evidence.
-- Approval-material changes require renewed approval.
+- Approval-material changes require renewed user scope validation plus renewed approval.
+- Do not treat post-review scope-drift `no-go` as a hard rejection; it is a revalidation/reconvergence checkpoint that returns the TODO to the review loop.

@@ -1,23 +1,41 @@
 ---
-description: Package, dispatch, and merge no-context subagent reviews through derived packets so PACED can orchestrate bounded external opinions without creating hidden authority.
+description: Package, dispatch, and merge no-context internal subagent reviews through derived packets so PACED can orchestrate bounded independent opinions without creating hidden authority.
 ---
 
 # Method: No-Context Subagent Orchestration
 
 ## Purpose
-Provide a portable orchestration layer for PACED review subagents. This method packages bounded review work, standardizes what each subagent must assess, and merges reviewer output back into a derived summary packet.
+Provide a portable orchestration layer for PACED subagents. It supports bounded no-context reviews and executor delegation on the principal checkout without creating hidden authority or implicitly selecting Git-isolation topology.
+
+Required Delphi review gates use fresh internal no-context reviewers only. A dispatched reviewer must not be the implementing agent, and an external provider cannot satisfy the gate.
 
 The packets remain assistive only. Authority still lives in the tactical TODO, the gate decision, and human approval.
+
+## Git Topology Authorization Boundary
+- Subagent, delegation, and parallelism authorization is independent from worktree/auxiliary-checkout authorization.
+- Default executor topology is `primary-checkout-single-writer`: all edits occur in the principal checkout, only one agent mutates product/runtime code at a time across code repositories and executable surfaces, and additional code writers are serialized. Distinct Foundation tactical-TODO owners may write concurrently only when their exact TODO paths do not overlap and each owner stages, commits, and promotes only its own TODO; shared canonical docs/artifacts and the same TODO remain serialized. Parallel readers/reviewers may inspect without editing their reviewed source.
+- Do not create `git worktree`, auxiliary checkouts, `worker/*`, `reconcile/*`, or writable repository copies without separate human authorization that explicitly mentions worktrees or auxiliary checkouts.
+- If simultaneous code writers need isolation, stop and request that specific authorization. Only then load `subagent-worktree-reconciliation-method.md`.
+- Authoritative Docker, browser, device, and CI-Equivalent validation always targets the consolidated principal-checkout state.
 
 ## Triggers
 - Additional architectural opinions are required because no path is clearly dominant.
 - A required critique, test-quality audit, or final review must be delegated to a no-context subagent.
 - Multiple bounded reviewers need a consistent merge surface instead of ad hoc prose.
+- One or more executor subagents are authorized to work serially in the principal checkout.
 
 ## Inputs
 - Bounded review package (`bounded-summary` or `bounded-file-set`).
-- Review kind: `architecture_opinion|critique|test_quality_audit|final_review`.
+- Review kind: `architecture_opinion|architecture_adherence|critique|test_quality_audit|final_review`.
 - Expected reviewer count.
+
+## Reviewer Lifecycle Wait Invariant
+- Reviewer lifecycle status, not elapsed wall-clock time, is authoritative.
+- While a dispatched reviewer reports `pending_init` or `running`, keep waiting without a rigid time limit. A client-side `wait`/poll timeout means only that no terminal event arrived during that polling window; it is not reviewer failure, reviewer breakage, or permission to change the review plan.
+- Never interrupt, close, recycle, replace, or spawn a duplicate for a `pending_init` or `running` reviewer merely because it is slow. Never reduce, tighten, or otherwise alter the bounded package as a response to elapsed time.
+- A retry or replacement is allowed only after objective terminal evidence such as `errored`, unexpected `shutdown`/`interrupted`, a runner process that exited unsuccessfully, or a completed stream that fails the deterministic collection contract. Explicit human cancellation may also end a run.
+- After terminal failure, retry the same complete gate-satisfying package by default. Change the package only to correct a concrete package defect proven by the failure, and preserve every required rubric, file, evidence item, and scope boundary; package reduction is not a generic recovery strategy.
+- If no reviewer slot is available, recycle only a completed, errored, shutdown, or otherwise terminal inactive lane. A live reviewer is not a recyclable slot.
 
 ## Preferred Deterministic Helpers
 1. Build the dispatch packet:
@@ -30,7 +48,25 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
      --json-output foundation_documentation/artifacts/tmp/subagent-critique-dispatch.json \
      --markdown-output foundation_documentation/artifacts/tmp/subagent-critique-dispatch.md
    ```
-2. After reviewers return JSON compatible with `schemas/subagent_review_result.schema.json`, merge them:
+2. Run the fresh internal reviewer through the canonical runner. It embeds the bounded package in a closed stdin prompt, records JSONL/stderr, requires `turn.completed`, and falls back to the final streamed message only when `--output-last-message` is absent:
+   ```bash
+   python3 delphi-ai/tools/subagent_review_run.py \
+     --model gpt-5.6-sol \
+     --dispatch foundation_documentation/artifacts/tmp/subagent-critique-dispatch.md \
+     --package foundation_documentation/artifacts/tmp/critique-package.md \
+     --raw-output foundation_documentation/artifacts/tmp/reviewer-a.raw.json \
+     --events-output foundation_documentation/artifacts/tmp/reviewer-a.events.jsonl \
+     --stderr-output foundation_documentation/artifacts/tmp/reviewer-a.stderr.log \
+     --workdir "$PWD"
+   ```
+   - When an embedded bounded package is fully self-contained and the project context prevents a fresh reviewer from reaching `turn.completed` (for example, skill-context exhaustion), add `--isolate-project-context`. This starts the reviewer in `/tmp` with user config and project rules disabled, while retaining the closed stdin package. Do not use it for a reviewer that must inspect repository files beyond that package.
+3. When a reviewer uses a documented historical category alias, normalize it before validation; the normalizer is not a permissive parser and rejects every unlisted field/value:
+   ```bash
+   python3 delphi-ai/tools/subagent_review_normalize.py \
+     --input foundation_documentation/artifacts/tmp/reviewer-a.raw.json \
+     --output foundation_documentation/artifacts/tmp/reviewer-a.normalized.json
+   ```
+4. Merge the canonical or normalized reviewer JSON only after strict schema validation:
    ```bash
    python3 delphi-ai/tools/subagent_review_merge.py \
      --dispatch foundation_documentation/artifacts/tmp/subagent-critique-dispatch.json \
@@ -50,10 +86,16 @@ The packets remain assistive only. Authority still lives in the tactical TODO, t
    - Generate the dispatch packet and give the markdown form to the orchestration harness or operator.
 3. **Collect structured reviewer results**
    - Each reviewer must answer in JSON compatible with `schemas/subagent_review_result.schema.json`.
+   - The dispatch markdown must enumerate the canonical top-level field allowlist, position enum, and finding-category enum from that schema; do not rely on a vague compatibility instruction.
+   - Use `subagent_review_run.py` for internal Codex gates. It must receive the dispatch and bounded package as files, embed both in the initial closed stdin prompt, and record the raw result, JSONL stream, and stderr. Only after the runner/stream terminates may a missing `turn.completed`, or both a missing output-last-message and final streamed agent message, be classified as retryable collection failure. While the reviewer is still `pending_init` or `running`, continue waiting under the Reviewer Lifecycle Wait Invariant.
+   - If an otherwise structured result uses a documented historical alias, run `subagent_review_normalize.py` and merge only its schema-valid derived output. The normalizer must remain review-kind-specific and closed: it must never repair prose, unknown fields, unknown categories, or invalid position values.
+   - When the dispatch packet records `review_result_dispatch_path`, the reviewer result's `dispatch_path` must equal that exact JSON dispatch path. It must never point to the bounded package, governing TODO, or reviewer-output file; merge rejects those substitutions.
    - Reject prose-only feedback when deterministic merge is the chosen path.
 4. **Merge and interpret**
    - Merge reviewer outputs into a derived summary packet.
    - Record the actual authoritative resolution back in the TODO/gate as `Integrated|Challenged|Deferred` plus usefulness/formalizable classification using the machine-checkable resolution table from the tactical TODO template.
+   - When the review feeds delivery, promotion, or no-context release scrutiny, run `review-finding-classification` and then reconcile each deduplicated finding into the governing TODO's `Promotion Finding Routing Ledger` with one of: `release-blocker`, `follow-up-fast-follow`, `follow-up-hardening`, or `by-design/no-action`.
+   - Non-blocking real findings are not disposable. Before the delivery claim can be called clean, route them to an explicit follow-up TODO and record that path in the governing TODO.
    - If you want a ready-to-paste table, render it from the merge packet:
      ```bash
      python3 delphi-ai/tools/gate_finding_resolution_scaffold.py \

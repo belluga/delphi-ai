@@ -1,6 +1,6 @@
 ---
 name: "docker-subagent-worktree-reconciliation-method"
-description: "Coordinate parallel implementation subagents through isolated worktrees, an orchestrator-owned reconciliation branch, and consolidated validation before delivery."
+description: "Coordinate parallel implementation subagents through isolated worktrees, an orchestrator-owned reconciliation branch attached to the principal checkout, and consolidated validation before delivery."
 ---
 
 <!-- Generated from `workflows/docker/subagent-worktree-reconciliation-method.md` by `tools/sync_clinerules_mirrors.py`. Do not edit directly. -->
@@ -8,21 +8,30 @@ description: "Coordinate parallel implementation subagents through isolated work
 # Workflow: Subagent Worktree Reconciliation
 
 ## Purpose
-Coordinate parallel implementation subagents without surrendering integration ownership. This method keeps each delegated slice in its own worktree, requires checkpoint commits from workers, and makes the orchestrator responsible for merging those checkpoints into one reconciliation branch where delivery evidence is collected.
+Coordinate parallel implementation subagents without surrendering integration ownership. This method keeps each delegated slice in its own worktree, requires checkpoint commits from workers, and makes the orchestrator responsible for merging those checkpoints into one reconciliation branch where delivery evidence is collected. Worker and orchestrator checkpoints may be autonomous only when the orchestration plan or worker contract records the commit/push authority source allowed by the governed-commit rule.
 
-Worker-local success is necessary but insufficient. Workers/subagents may close their implementation slice only when their owned code is architecture-clean and compile/build-clean for every applicable local gate named in the plan. Code changes without the official analyzer/lint gate, applicable build/publish gate, and targeted tests are not a worker delivery; they are a blocker to checkpoint acceptance. Delivery only counts when the orchestrator validates the consolidated branch with the final runtime lane(s) required for the merged behavior, including any browser/device flows served from the principal local checkout. Final orchestrator acceptance also requires every in-scope repo-owned CI suite/job from the plan's `CI-Equivalent Local Suite Matrix` to have been executed locally and passed on the reconciliation state; targeted reruns do not substitute for that matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat that matrix as the minimum validation floor rather than the ceiling and run the broader local suites that are cheaper to fail here than later in CI or promotion.
+## Worktree-Specific Authorization Gate
+- This workflow is default-deny. Do not load it merely because subagents, delegation, or parallelism were approved.
+- Before planning or creating any topology, require separate human authorization that explicitly mentions `worktree`/`worktrees` or auxiliary checkouts. Record the exact authorization reference in the orchestration plan.
+- Generic approval such as “use subagents”, “delegate”, “parallelize”, or `APROVADO` without worktree-specific wording is not sufficient.
+- Without worktree-specific authorization, return to `subagent-orchestration-method.md` and use `primary-checkout-single-writer`: one active product/runtime code writer across code repositories and executable surfaces, serialized additional code writers, parallel readers/reviewers, no auxiliary checkout/branch/copy, and no `reconcile/*`. Distinct Foundation tactical-TODO owners may concurrently edit disjoint TODO paths and must promote only their own TODO; the same TODO and shared canonical docs/artifacts remain serialized.
+- If multiple concurrent writers genuinely require isolation and authorization is absent, stop and ask for worktree-specific authorization instead of inferring it.
+
+Worker-local success is necessary but insufficient. Workers/subagents may close their implementation slice only when their owned code is architecture-clean and compile/build-clean for every applicable local gate named in the plan. Flutter code changes require the stable full-workspace VS Code Problems bridge snapshot and static-rule review, never a locally launched CLI analyzer; other stacks use their named lint/static gates. Missing that static gate, an applicable build/publish gate, or targeted tests is a blocker to checkpoint acceptance. Delivery only counts when the orchestrator validates the consolidated branch with the final runtime lane(s) required for the merged behavior, including any browser/device flows served from the principal local checkout. Final orchestrator acceptance also requires every in-scope repo-owned CI suite/job from the plan's `CI-Equivalent Local Suite Matrix` to have been executed locally and passed on the reconciliation state; targeted reruns do not substitute for that matrix. For high-coupling surfaces such as auth, shared runtime wiring, navigation/browser behavior, publish bundles, or submodule-mounted apps, treat that matrix as the minimum validation floor rather than the ceiling and run the broader local suites that are cheaper to fail here than later in CI or promotion.
+Load `ci-equivalent-governance` whenever this workflow needs to interpret `CI-Equivalent`, reconcile-wrapper validity, or broad stage-gate parity.
 CI-Equivalent is a generic current-branch local product-proof concept, not a reconciliation-specific concept. This workflow uses reconciliation topology only when work is actually being reconciled from worker worktrees/branches.
 For Flutter visible behavior, ADB integration and Playwright navigation are interchangeable only when Android and Web behavior is the same. If the behavior differs materially across Android and Web, both lanes are required before the orchestrator may accept delivery.
 The closure bar is promotion-grade confidence for the full touched TODO/behavior set, even when the user only asked for local delivery or promotion to a lower lane.
-The reconciliation branch/worktree is execution topology only. It does not create a second tactical TODO, a second approval conversation, or a separate backlog authority from the governing TODO.
-Reconciliation topology is exclusive to real orchestrator-led worker/worktree integration. Do not manufacture a `reconcile/*` branch in an unrelated review, promotion, or single-branch execution flow merely to satisfy a reconcile-only wrapper; outside real orchestration, CI-Equivalent belongs on the current authoritative branch under evaluation.
+The reconciliation branch is execution topology only. It is hosted on the principal checkout for authoritative validation and does not create a second tactical TODO, a second approval conversation, or a separate backlog authority from the governing TODO.
+Reconciliation topology is exclusive to real orchestrator-led worker/worktree integration. Do not manufacture a `reconcile/*` branch in an unrelated review, promotion, or single-branch execution flow merely to satisfy a reconcile-only wrapper; outside real orchestration, `ci-equivalent-governance` still keeps `CI-Equivalent` on the current authoritative branch under evaluation.
+Authoritative local validation belongs to the principal checkout only. Linked git worktrees are worker/executor implementation surfaces and may never be used as the authoritative runtime surface for broad `CI-Equivalent` gates, promotion wrappers, browser proof, tunnel proof, or device proof.
 Branch authority is repo-local. In environments that mount multiple source repositories or submodules into one local runtime, the root checkout being on `reconcile/*` is not sufficient by itself; every runtime-facing source checkout must also be on `reconcile/*` (or on an explicitly recorded detached checkpoint) before authoritative local validation can begin.
 Derived publish/bundle repositories are runtime artifacts, not source-branch authority. Use them as generated outputs of the authoritative source checkout instead of treating their current branch as the orchestration truth.
 Implementation ownership belongs to workers/subagents. The orchestrator must not implement a TODO slice locally. The orchestrator may edit production/test/runtime code only when the edit is strictly necessary to reconcile worker checkpoints, resolve merge conflicts, or make integration glue that cannot be assigned back without blocking reconciliation; every such edit must be logged as orchestrator reconciliation scope, never as feature implementation.
 When consolidated CI-Equivalent or runtime validation fails on the reconciliation state, the default routing is back to the worker/subagent or TODO owner that owns the failing workstream or traceability row. The orchestrator only patches locally when the fix is strictly reconciliation/merge-conflict/integration-glue scope.
 
 ## Triggers
-- The user explicitly asks for subagents, delegation, or parallel implementation work.
+- The user explicitly authorizes worktrees or auxiliary checkouts for parallel implementation; subagent/delegation approval alone does not trigger this workflow.
 - The active tactical TODO can be partitioned into multiple bounded slices with mostly disjoint ownership.
 - Consolidated validation on a merged branch is materially safer than trusting isolated worker branches.
 
@@ -32,6 +41,9 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 - Stable base branch or base commit for the execution wave.
 - Named worker slices with explicit file/module ownership.
 - Required validation plan for worker-local and consolidated lanes.
+- Worker GOAL contract for each delegated executor when the active client supports persistent goals, including the bounded objective, owned workstream/traceability rows, minimum local validation before `complete`, and exact `blocked` condition.
+- Worker model/state contract for each delegated executor when the active client supports model selection or sticky/custom agents. Routine executor workers default to the contract-selected `routine_executor` model at `medium` with sticky-per-chat/TODO compact state; high-risk executor escalation must be explicit in the orchestration plan.
+- Worker routing contract / guard evidence for each governed execution or review lane when the active client exposes deterministic routing controls.
 - Execution ownership ledger that assigns every implementation workstream to a worker/subagent and limits orchestrator code edits to reconciliation/merge-conflict scope.
 - Acceptance Traceability Matrix that maps every governing TODO DoD item, validation step, and literal UI/API/runtime marker to a non-orchestrator owner and planned implementation/test/runtime evidence.
 - Spec Deviation Ledger for any intentional substitution of a governing TODO artifact, UI control, navigation path, endpoint, schema term, or validation lane.
@@ -52,11 +64,12 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 
 ## Procedure
 1. **Confirm authorization and bound the slice**
-   - Use this workflow only when the user has explicitly approved subagent/delegated implementation.
+   - Use this workflow only when the user has separately approved subagent/delegated implementation and explicitly authorized worktrees or auxiliary checkouts.
+   - Record `Worktree/auxiliary-checkout authorization: explicit` plus the concrete human authorization reference. If either is missing, stop before creating branches/checkouts and use principal-checkout single-writer orchestration instead.
    - Before implementation dispatch, create or update an orchestration execution plan from `delphi-ai/templates/orchestration_execution_plan_template.md` when the wave coordinates multiple TODOs, multiple workstreams, or a user-requested approval plan.
    - Save that plan in the downstream project at `foundation_documentation/artifacts/execution-plans/<short-slug>.md`.
    - Treat the plan as derived execution topology: governing TODOs retain `WHAT` and done-criteria authority, while the plan records `HOW` the orchestrator will sequence, parallelize, reconcile, and validate.
-   - When the package enters a Copilot-mimic / Claude / pre-promotion review loop, the same plan must also carry:
+   - When the package enters an internal no-context pre-promotion review loop, the same plan must also carry:
      - a package-level pre-promotion review-loop ledger;
      - a **Review Coverage Board** that classifies every governing TODO as `not-reviewed | in-review | reopened-fixed | clean-no-reopen | blocked` with the latest evidence round/commit;
      - anti-loop exit criteria that state when the loop may stop instead of reopening the same findings indefinitely.
@@ -65,28 +78,36 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - If the plan file is used as execution-ready evidence after approval, rerun the guard with `--require-approved`.
    - Do not dispatch workers or create worktrees until the plan has an explicit approval state or the governing TODO approval already covers the exact same orchestration topology.
    - The plan must include a `CI-Equivalent Local Suite Matrix` naming every repo-owned CI suite/job that will run for the touched repositories, the exact local command that mirrors it, and who must execute it on the authoritative branch state for that wave before delivery or promotion claims.
+   - Load `workflows/docker/effort-selection-method.md` when assigning model routing, effort tiers, sticky executor state, or GOAL policy for the orchestrator and workers.
+  - When the active client supports model selection or sticky/custom agents, the plan must record the executor model/state policy for each worker lane. Routine code workers default to the contract-selected `routine_executor` model at `medium` with sticky state scoped only to the current chat/TODO, compacted to owned files, implementation decisions, commands/tests, blockers, and last accepted patch state.
+   - The plan must also record one routing-contract row per governed workstream/review lane and each dispatch should satisfy `python3 delphi-ai/tools/agent_role_routing_guard.py ...` before code execution begins.
+   - When the active client supports persistent goals, the plan must also record one worker GOAL contract per executor workstream so no-context resume is bounded by the same ownership and validation contract the orchestrator approved.
    - If a derived remediation branch will be used for pre-promotion review history, the plan must make explicit that the full in-scope `CI-Equivalent Local Suite Matrix` passes on the remediation branch before replay/consolidation back onto the authoritative source branch.
    - Partition the work into bounded slices with clear ownership and minimal overlap.
    - Assign every implementation workstream to a worker/subagent in the execution ownership ledger. Do not list the orchestrator as implementation owner for a TODO slice.
-   - For each worker-owned slice, name the exact analyzer/lint, targeted test, and applicable build/publish gates that the worker must run before checkpoint acceptance. For Flutter slices, include the official analyzer command and any plan-required `flutter test`, web build, Android build, package build, or generated-code validation that applies to the touched files.
+   - For each worker-owned slice, name the exact static-analysis/lint, targeted test, and applicable build/publish gates that the worker must run before checkpoint acceptance. For Flutter slices, include the stable full-workspace VS Code Problems bridge snapshot plus static-rule review, not a CLI analyzer command, and any plan-required `flutter test`, web build, Android build, package build, or generated-code validation that applies to the touched files.
    - Derive worker slices from TODO acceptance criteria and validation steps, not broad themes. If a TODO names a concrete artifact such as `FAB`, tab, route, endpoint, schema projection, browser journey, or device lane, that exact marker must appear in the Acceptance Traceability Matrix.
    - Treat substitutions as blockers unless they have an approved Spec Deviation Ledger row. Example: delivering a generic button where the TODO requires a `FAB` is not acceptable without explicit approval.
    - Define the consolidated validation plan before dispatching workers.
 2. **Establish the branch/worktree topology**
    - Freeze one base branch or base commit for the execution wave.
-   - Create one orchestrator-owned reconciliation branch/worktree from that base.
+   - Create one orchestrator-owned reconciliation branch from that base and attach it to the principal checkout before authoritative validation begins.
    - Create one worker branch/worktree per delegated slice from that same base unless a later dependency requires an intentional rebase.
    - Prefer clear branch names that make roles obvious, such as `orchestrator/<slug>` and `worker/<slug>-<lane>`.
-   - Treat the reconciliation branch/worktree as an integration surface only, not as new TODO authority.
-   - When runtime validation depends on the main local checkout, browser-facing domain, tunnel, emulator, or attached device, keep that principal checkout on the orchestrator-owned reconciliation branch. Worker branches stay in auxiliary worktrees only.
+   - Treat the reconciliation branch as an integration surface only, not as new TODO authority.
+   - When runtime validation depends on the main local checkout, browser-facing domain, tunnel, emulator, or attached device, move the principal checkout onto the orchestrator-owned reconciliation branch and keep authoritative validation there. Worker branches stay in auxiliary worktrees only, and a linked worktree is never an acceptable substitute for the principal checkout during authoritative validation.
    - When the runtime is assembled from multiple source repositories/submodules, verify branch authority per mounted source checkout, not just at the root. Root + runtime-facing source repos must all be on `reconcile/*` (or on an explicitly recorded detached checkpoint) before authoritative validation. Do not treat derived publish/bundle repos as source-branch authority.
 3. **Dispatch workers with explicit contracts**
    - Give each worker explicit ownership of files/modules, required tests, and checkpoint expectations.
    - Give each worker explicit ownership of the Acceptance Traceability Matrix rows it must satisfy, including any exact UI/API/runtime markers from the TODO.
+  - Per `workflows/docker/effort-selection-method.md`, dispatch routine executor subagents on the contract-selected `routine_executor` model at the routine `medium` level by default when model selection is available.
+   - Use sticky executor state only within the current chat/TODO. The worker must not monitor background processes, retain raw logs/full diffs/transcripts/artifacts, or carry state across unrelated scopes; reset or recompact it at closeout, major scope/module change, high-volume context ingestion, stale/confused state, or material branch/worktree authority change.
+  - When the active client exposes persistent goals, open one GOAL per executor subagent. The GOAL must name the bounded objective, owned files/modules or traceability rows, minimum local validation required before `complete`, and the exact condition that forces `blocked`. Review-only/no-context subagents stay stateless by default and formal review subagents use the contract-selected strongest-review model plus the highest review-focused tier unless the tool/client requires a different resumable shape for the bounded package.
    - Tell each worker it is not alone in the codebase and must not revert edits from other lanes.
-   - Require workers to produce checkpoint commits whenever a coherent slice builds or passes its targeted tests.
-   - Checkpoint evidence must include the local tests, official analyzer/lint, applicable build/publish gates, and implementation notes for the slice. Missing or failed architecture/build evidence is a worker blocker, not a reconciliation TODO.
-   - Do not merge or mark a worker checkpoint as accepted while its owned code is known to be analyzer-dirty, compile-dirty, or missing a required build gate.
+   - Require workers to produce checkpoint commits whenever a coherent slice builds or passes its targeted tests, but only after the worker/orchestration contract records the authority source that makes that checkpoint write autonomous.
+   - Before any worker or orchestrator direct checkpoint commit/push, run `python3 delphi-ai/tools/git_write_authority_guard.py --repo <repo-path> --action <git-commit|git-push>` and require `Overall outcome: go`.
+   - Checkpoint evidence must include the local tests, required static gate, applicable build/publish gates, and implementation notes for the slice. Flutter static evidence is the stable full-workspace Problems bridge snapshot plus static-rule review. Missing or failed architecture/build evidence is a worker blocker, not a reconciliation TODO.
+   - Do not merge or mark a worker checkpoint as accepted while its owned code is known to have unresolved Flutter Problems errors/warnings, be compile-dirty, or be missing a required build gate.
 4. **Keep integration authority with the orchestrator**
    - The orchestrator owns the reconciliation branch and stays on the critical path.
    - Waiting for worker output is acceptable when coupled with active validation and follow-up.
@@ -114,7 +135,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - For browser/device runners that depend on URL or credential environment variables, prove the required values are populated in the current shell (or explicitly source the project-local env file) before invoking the runner. Missing env is a validation-surface blocker, not an application regression.
 7. **Drive iteration until green or explicitly blocked**
    - When consolidated validation fails, assign precise follow-up back to the responsible worker. Patch locally only when the patch is strictly reconciliation or merge-conflict scope; otherwise re-dispatch the slice.
-   - Analyzer/build failures in worker-owned files return to that worker by default; the orchestrator may fix them locally only when the fix is pure merge reconciliation or unavoidable integration glue.
+   - Flutter Problems/static-rule or build failures in worker-owned files return to that worker by default; the orchestrator may fix them locally only when the fix is pure merge reconciliation or unavoidable integration glue.
    - Repeat the reconcile-and-validate loop until the consolidated branch is green.
    - If a required validation lane cannot be run, record an explicit blocker with cause, owner, and next action instead of claiming completion.
    - Once the consolidated branch is green, replay the accepted net effect back onto the execution plan's authoritative return branch / canonical version branch before any promotion, closeout, or non-orchestration lane resumes. The reconciliation branch is validation topology and recovery history; it is not itself the promotable source lane.
@@ -135,7 +156,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
    - Open a new tactical TODO only when the promotion workflow/process itself is what is being designed, repaired, or otherwise changed.
 9. **Create recoverable checkpoints without branch accumulation**
    - Treat a checkpoint as a recoverable, pushed git state plus a manifest, not as permission to keep accumulating unrelated work on the same branch.
-   - Before committing an orchestrator checkpoint, classify it as `wip_checkpoint`, `validated_local_checkpoint`, `promotion_ready_checkpoint`, or `superseded_checkpoint`.
+   - Before committing an orchestrator checkpoint, classify it as `wip_checkpoint`, `validated_local_checkpoint`, `promotion_ready_checkpoint`, or `superseded_checkpoint`, and ensure the orchestration plan records the authority source that makes that checkpoint write autonomous.
    - Store the checkpoint manifest under `foundation_documentation/artifacts/checkpoints/<short-slug>-<YYYY-MM-DD>.md`, not under `artifacts/tmp/`, when it should survive the session. The manifest must record repository names, branch names, commit SHAs after commit, governing TODOs, validation/guard evidence, excluded dirty surfaces, and the next exact promotion/discard step.
    - Use `wip_checkpoint` only as a recovery point. It must not move TODOs to `Local-Implemented`, `promotion_lane/`, or completed states.
    - Use `validated_local_checkpoint` only after the consolidated branch has passed the required delivery guard and final runtime/device/browser lanes for the current local claim.
@@ -145,7 +166,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 
 ## Outputs
 - Orchestration execution plan under `foundation_documentation/artifacts/execution-plans/` for multi-TODO, multi-workstream, or user-requested approval waves.
-- One orchestrator reconciliation branch/worktree.
+- One orchestrator reconciliation branch attached to the principal checkout for authoritative local validation.
 - The principal local checkout attached to the orchestrator reconciliation branch whenever runtime validation depends on it, with every runtime-facing source checkout on `reconcile/*` or an explicitly recorded detached checkpoint.
 - One explicit authoritative return branch / canonical version branch that receives the accepted net effect after reconciliation passes and before promotion resumes.
 - One worker branch/worktree per delegated slice.
@@ -173,7 +194,7 @@ When consolidated CI-Equivalent or runtime validation fails on the reconciliatio
 - Every implementation workstream is owned by a worker/subagent; the orchestrator owns reconciliation, conflict resolution, validation orchestration, and evidence collection only.
 - Every acceptance traceability row is owned by a worker/subagent; the orchestrator is never listed as implementation owner.
 - Any orchestrator code edit is documented as reconciliation/merge-conflict/integration-glue scope and never as TODO-slice implementation.
-- Workers provided clean targeted validation, official analyzer/lint, and applicable build/publish evidence for their owned slices.
+- Workers provided clean targeted validation, the required static gate, and applicable build/publish evidence for their owned slices. Flutter static evidence is a stable full-workspace Problems bridge snapshot plus static-rule review.
 - Missing worker architecture/build evidence is recorded as a blocker instead of being deferred to final reconciliation.
 - The orchestrator ran the required consolidated tests/builds/navigation checks against the merged state.
 - The orchestrator verified the traceability matrix row-by-row against the merged state, including required web/browser/device/navigation evidence for UI-facing criteria.

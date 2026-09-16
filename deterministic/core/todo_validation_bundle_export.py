@@ -36,6 +36,13 @@ LEGACY_GATE_MAP: dict[str, dict] = {
     },
 }
 
+ASSUMPTION_CODE_COHERENCE_GATE = {
+    "gate_id": "assumption_code_coherence",
+    "heading": "## Gate: Assumption Code Coherence",
+    "decision_label": "Gate decision",
+    "status_label": "Gate status",
+}
+
 # Regex to detect dynamic gate sections: "## Gate: <gate_id>"
 DYNAMIC_GATE_RE = re.compile(r"^##\s+Gate:\s+(.+)$", re.IGNORECASE)
 
@@ -257,6 +264,15 @@ def build_bundle(todo_path: Path) -> dict:
 
     # 3. Merge: dynamic gates take priority over legacy if same ID
     merged_gates = {**legacy_gates, **dynamic_gates}
+    if section_present(lines, "## Assumptions Preview") and ASSUMPTION_CODE_COHERENCE_GATE["gate_id"] not in merged_gates:
+        gate_cfg = ASSUMPTION_CODE_COHERENCE_GATE
+        merged_gates[gate_cfg["gate_id"]] = export_gate(
+            lines,
+            gate_cfg["gate_id"],
+            gate_cfg["heading"],
+            gate_cfg["decision_label"],
+            gate_cfg["status_label"],
+        )
 
     return {
         "schema_version": "todo-validation-bundle-v3",

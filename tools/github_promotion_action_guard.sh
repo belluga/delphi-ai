@@ -137,6 +137,17 @@ branch_is_reconcile_branch() {
   esac
 }
 
+branch_is_sequence_branch() {
+  case "$1" in
+    sequence/*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 branch_is_topology_replay_branch() {
   case "$1" in
     reconcile/dev-contains-stage-*)
@@ -146,6 +157,100 @@ branch_is_topology_replay_branch() {
       return 1
       ;;
   esac
+}
+
+current_repo_root() {
+  git rev-parse --show-toplevel 2>/dev/null || true
+}
+
+required_dev_tracks_count() {
+  python3 - "${PROMOTION_CONTRACT_REQUIRED_DEV_TRACKS_JSON:-[]}" <<'PY'
+import json
+import sys
+
+print(len(json.loads(sys.argv[1] or "[]")))
+PY
+}
+
+iter_required_dev_tracks() {
+  python3 - "${PROMOTION_CONTRACT_REQUIRED_DEV_TRACKS_JSON:-[]}" <<'PY'
+import json
+import sys
+
+for item in json.loads(sys.argv[1] or "[]"):
+    print(f"{item['kind']}\t{item['ref']}")
+PY
+}
+
+stage_admission_check_required_dev_tracks() {
+  local repo_root="$1"
+  local dev_ref="origin/dev"
+  local dev_sha=""
+  local track_kind=""
+  local track_ref=""
+  local track_sha=""
+  local cherry_output=""
+  local pending_lines=""
+  local blocked=false
+  local first_pending_kind=""
+  local first_pending_ref=""
+
+  dev_sha="$(git -C "$repo_root" rev-parse --verify "$dev_ref^{commit}" 2>/dev/null || true)"
+  if [ -z "$dev_sha" ]; then
+    teach_add_violation "Cannot verify required Docker dev tracks before 'dev -> stage' because '$dev_ref' is unavailable in the current repo."
+    teach_add_resolution "Fetch the authoritative Docker repo so '$dev_ref' exists locally, then rerun the guarded stage action."
+    return
+  fi
+
+  while IFS=$'\t' read -r track_kind track_ref; do
+    [ -n "$track_kind" ] || continue
+    teach_add_context "required_dev_track: kind=$track_kind ref=$track_ref"
+
+    track_sha="$(git -C "$repo_root" rev-parse --verify "$track_ref^{commit}" 2>/dev/null || true)"
+    if [ -z "$track_sha" ]; then
+      blocked=true
+      teach_add_violation "Required Docker dev track '$track_kind=$track_ref' cannot be verified because ref '$track_ref' is unavailable in the current repo."
+      teach_add_context "required_dev_track_status: kind=$track_kind ref=$track_ref status=missing-ref"
+      if [ -z "$first_pending_kind" ]; then
+        first_pending_kind="$track_kind"
+        first_pending_ref="$track_ref"
+      fi
+      continue
+    fi
+
+    cherry_output="$(git -C "$repo_root" cherry "$dev_ref" "$track_ref" 2>/dev/null || true)"
+    pending_lines="$(printf '%s\n' "$cherry_output" | sed -n 's/^+ //p')"
+    if [ -n "$pending_lines" ]; then
+      blocked=true
+      teach_add_violation "Required Docker dev track '$track_kind=$track_ref' still has commits not absorbed into '$dev_ref'; 'dev -> stage' is not yet admissible."
+      teach_add_context "required_dev_track_status: kind=$track_kind ref=$track_ref status=pending"
+      while IFS= read -r pending_sha; do
+        [ -n "$pending_sha" ] || continue
+        teach_add_context "required_dev_track_pending_commit: kind=$track_kind ref=$track_ref sha=${pending_sha:0:12}"
+      done <<< "$pending_lines"
+      if [ -z "$first_pending_kind" ]; then
+        first_pending_kind="$track_kind"
+        first_pending_ref="$track_ref"
+      fi
+      continue
+    fi
+
+    teach_add_context "required_dev_track_status: kind=$track_kind ref=$track_ref status=clear"
+  done < <(iter_required_dev_tracks)
+
+  if [ "$blocked" = true ]; then
+    case "$first_pending_kind" in
+      docker-bot-next-version)
+        teach_add_resolution "First complete the lane-owned 'bot/next-version -> dev' movement, then rerun the guarded 'dev -> stage' action."
+        ;;
+      docker-source)
+        teach_add_resolution "Merge the authoritative Docker source branch '$first_pending_ref' into 'dev' first, then rerun the guarded 'dev -> stage' action."
+        ;;
+      *)
+        teach_add_resolution "Clear every required Docker '-> dev' track recorded in the promotion contract before attempting 'dev -> stage' again."
+        ;;
+    esac
+  fi
 }
 
 if [ -n "$BRANCH_NAME" ]; then
@@ -190,6 +295,7 @@ fi
 if [ -n "$PR_NUMBER" ]; then
   teach_add_context "pr: $PR_NUMBER"
 fi
+teach_add_context "required_dev_track_count: $(required_dev_tracks_count)"
 
 is_bot_branch=false
 case "${TARGET_BRANCH:-${BRANCH_NAME:-${HEAD_BRANCH:-}}}" in
@@ -208,9 +314,17 @@ if [ "$ACTION" = "pr-create" ] || [ "$ACTION" = "pr-merge" ]; then
     teach_add_violation "Promotion PR head '$HEAD_BRANCH' is a reconciliation branch. Promotion may not advance directly from reconcile/*."
     teach_add_resolution "Replay the accepted reconcile state onto the canonical version/source branch first, then open the promotion PR from that canonical branch."
   fi
+  if branch_is_sequence_branch "${HEAD_BRANCH:-}"; then
+    teach_add_violation "Promotion PR head '$HEAD_BRANCH' is a sequencing branch. Promotion may not advance directly from sequence/*."
+    teach_add_resolution "Validate the accepted sequence state with the user, replay it onto the canonical version/source branch first, then open the promotion PR from that canonical branch."
+  fi
   if branch_is_reconcile_branch "${BASE_BRANCH:-}"; then
     teach_add_violation "Promotion PR base '$BASE_BRANCH' is a reconciliation branch. reconcile/* is orchestration-only topology, not a promotable lane."
     teach_add_resolution "Use the canonical lane branch (dev, stage, or main) as the PR base after the accepted reconcile state has been replayed onto its authoritative source branch."
+  fi
+  if branch_is_sequence_branch "${BASE_BRANCH:-}"; then
+    teach_add_violation "Promotion PR base '$BASE_BRANCH' is a sequencing branch. sequence/* is checkpoint-only topology, not a promotable lane."
+    teach_add_resolution "Use the canonical lane branch (dev, stage, or main) as the PR base after the accepted sequence state has been user-validated and replayed onto its authoritative source branch."
   fi
 fi
 
@@ -251,6 +365,11 @@ if [ "$ACTION" = "git-commit" ] && branch_is_reconcile_branch "${BRANCH_NAME:-}"
   teach_add_resolution "Finish reconcile on reconcile/*, replay the accepted net effect onto the canonical source branch, and continue promotion work from that canonical branch instead."
 fi
 
+if [ "$ACTION" = "git-commit" ] && branch_is_sequence_branch "${BRANCH_NAME:-}"; then
+  teach_add_violation "Promotion-lane commits may not happen on sequencing branch '$BRANCH_NAME'."
+  teach_add_resolution "Finish the sequence lane with user validation, replay the accepted net effect onto the canonical source branch, and continue promotion work from that canonical branch instead."
+fi
+
 if [ "$ACTION" = "git-push" ] && branch_is_lane_branch "${BRANCH_NAME:-}"; then
   teach_add_violation "Direct pushes from lane branch '$BRANCH_NAME' are forbidden."
   teach_add_resolution "Do not push lane branches directly. Push the authoritative source branch and move '$BRANCH_NAME' only through the reviewed PR path."
@@ -259,6 +378,11 @@ fi
 if [ "$ACTION" = "git-push" ] && branch_is_reconcile_branch "${BRANCH_NAME:-}" && ! branch_is_topology_replay_branch "${BRANCH_NAME:-}"; then
   teach_add_violation "Promotion-lane pushes may not originate from reconciliation branch '$BRANCH_NAME'."
   teach_add_resolution "Replay the accepted reconcile state onto the canonical source branch and push that canonical branch instead of reconcile/*."
+fi
+
+if [ "$ACTION" = "git-push" ] && branch_is_sequence_branch "${BRANCH_NAME:-}"; then
+  teach_add_violation "Promotion-lane pushes may not originate from sequencing branch '$BRANCH_NAME'."
+  teach_add_resolution "Replay the accepted sequence state onto the canonical source branch after user validation and push that canonical branch instead of sequence/*."
 fi
 
 if [ "$ACTION" = "git-push" ] && branch_is_lane_branch "${TARGET_BRANCH:-}"; then
@@ -271,6 +395,11 @@ if [ "$ACTION" = "git-push" ] && branch_is_reconcile_branch "${TARGET_BRANCH:-}"
   teach_add_resolution "Keep reconcile branches inside orchestration only. Promotion push activity must target the canonical source or remediation branch after replay."
 fi
 
+if [ "$ACTION" = "git-push" ] && branch_is_sequence_branch "${TARGET_BRANCH:-}"; then
+  teach_add_violation "Promotion-lane pushes may not target sequencing branch '$TARGET_BRANCH'."
+  teach_add_resolution "Keep sequence branches inside TODO sequencing only. Promotion push activity must target the canonical source or remediation branch after replay."
+fi
+
 if [ -n "$BASE_BRANCH" ]; then
   case "$PROMOTION_CONTRACT_MAX_LANE:$BASE_BRANCH" in
     dev:stage|dev:main|stage:main)
@@ -278,6 +407,20 @@ if [ -n "$BASE_BRANCH" ]; then
       teach_add_resolution "Do not open or merge promotion PRs beyond the contract scope. Regenerate the contract with a broader scope only after explicit user approval."
       ;;
   esac
+fi
+
+if [ "$REPO_KIND" = "docker" ] \
+  && [ "${BASE_BRANCH:-}" = "stage" ] \
+  && { [ "$ACTION" = "pr-create" ] || [ "$ACTION" = "pr-merge" ]; } \
+  && [ "$(required_dev_tracks_count)" -gt 0 ]; then
+  REPO_ROOT_FOR_STAGE_ADMISSION="$(current_repo_root)"
+  if [ -z "$REPO_ROOT_FOR_STAGE_ADMISSION" ]; then
+    teach_add_violation "Cannot verify required Docker dev tracks before 'dev -> stage' because the guard is not running inside a git checkout."
+    teach_add_resolution "Run the guarded stage action from the authoritative Docker repository checkout after refreshing local refs."
+  else
+    teach_add_context "stage_admission_repo_root: $REPO_ROOT_FOR_STAGE_ADMISSION"
+    stage_admission_check_required_dev_tracks "$REPO_ROOT_FOR_STAGE_ADMISSION"
+  fi
 fi
 
 if [ "$REPO_KIND" = "docs" ] && [ -n "$BASE_BRANCH" ] && [ "$BASE_BRANCH" = "main" ] && [ "$PROMOTION_CONTRACT_DOCS_REMOTE_PROMOTION" = "forbidden" ]; then
