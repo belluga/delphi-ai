@@ -63,12 +63,14 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 
 ## Definition of Done
 - [ ] One typed loader is the sole registry parsing boundary used by validation and topology detection.
+- [ ] Topology discovery builds one repository inventory and parses every eligible manifest at most once per run, proven by deterministic counters/instrumentation rather than timing.
 - [ ] Every capability declared in the registry is structurally and semantically validated, not only the original hard-coded names.
 - [ ] Existing required Delphi capabilities remain required and unchanged in meaning.
 - [ ] NestJS requires exact `@nestjs/core`; React web requires exact `react-dom`; all predicates remain manifest-local and reject generic Node, type-only, CLI-only, and React Native-only evidence.
 - [ ] Prisma and Railway use precise file/package markers; PostgreSQL may remain detection-unknown when no reliable project-owned marker exists.
 - [ ] Topology output exposes lifecycle separately and never upgrades a detected candidate to active.
 - [ ] All five candidates are present as `experimental`, and no downstream activation is inferred from their presence.
+- [ ] A canonical-registry test asserts the exact five new keys and their `experimental` lifecycle so optional-key validation cannot hide an omitted descriptor.
 - [ ] Focused registry and topology tests pass together with `bash self_check.sh`.
 - [ ] The diff contains no LeadsHug-specific authority, paths, versions, or unconditional cross-stack coupling.
 
@@ -77,6 +79,7 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - [ ] Run `bash tools/tests/environment_topology_contract_scaffold_test.sh`.
 - [ ] Run `python3 tools/validate_stack_capabilities.py config/stack_capabilities.yaml`.
 - [ ] Run topology detection against positive NestJS, positive React, and generic Node-only fixtures.
+- [ ] Run deterministic scan instrumentation proving one inventory build and at-most-once parsing per eligible manifest.
 - [ ] Run `bash self_check.sh`.
 - [ ] Run `git diff --check`.
 - [ ] Run `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md --repo-root .`.
@@ -160,15 +163,16 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - [x] `D-10` Carry lifecycle into topology output; detection stays `candidate` and activation stays user/project validated.
 
 ## Decision Baseline (Frozen Before Implementation)
-- [x] `D-01` Five independent experimental capabilities enter through one generic registry/detection contract; no monolithic project stack or PostgreSQL/Prisma compound is introduced.
-- [x] `D-02` Registry validation covers every declared capability, while an explicit baseline set preserves existing compatibility requirements.
-- [x] `D-03` Node detection is dependency-discriminating and must prove a generic Node-only negative case.
-- [x] `D-04` Experimental descriptors provide discovery metadata only and cannot activate a stack or claim its operational package is available.
-- [x] `D-05` Stack-specific rules/workflows/skills and lifecycle promotion are separate approved stories.
-- [x] `D-06` Tenant/business-unit rules apply only when a downstream project declares that scope model; cross-stack handoffs apply only when both capabilities are project-active and the touched change crosses their boundary.
-- [x] `D-07` One fail-closed typed loader owns registry parsing for both validator and detector.
-- [x] `D-08` NestJS is evidenced by exact `@nestjs/core`; React web by exact `react-dom`; evidence never joins packages across manifests.
-- [x] `D-09` Topology reports registry lifecycle, candidate evidence, and activation validation separately.
+- [x] `D-01` NestJS, React, PostgreSQL, Prisma, and Railway remain five independent capabilities; no project bundle or PostgreSQL/Prisma compound is introduced.
+- [x] `D-02` All five candidates enter as `experimental`; promotion to `available` requires a later stack-specific minimum support package.
+- [x] `D-03` Registry presence and detection evidence never activate a downstream stack; project-owned evidence plus user validation remain authoritative.
+- [x] `D-04` `package.json` alone never identifies NestJS or React; detection requires exact discriminating package evidence.
+- [x] `D-05` Every declared capability is validated uniformly while Docker, Flutter, Laravel, and Go remain the explicit compatibility baseline.
+- [x] `D-06` Tenant/business-unit rules apply only when a project declares that scope model; cross-stack handoffs apply only when both capabilities are active and the change crosses their boundary.
+- [x] `D-07` One documented block-style, fail-closed typed loader owns registry parsing for both validator and detector.
+- [x] `D-08` Node evidence matches exact manifest-local keys in four explicit dependency sections: `@nestjs/core` for NestJS and `react-dom` for React web.
+- [x] `D-09` One bounded repository inventory and manifest cache is built per run; each eligible manifest is parsed at most once and unsafe inputs yield bounded diagnostics.
+- [x] `D-10` Topology renders capability lifecycle, candidate evidence state, and activation validation separately; detection never emits active state.
 
 ## Architecture Change Governance
 - **Applicability (`required|not_needed`):** `required`
@@ -182,9 +186,9 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 | Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
 | --- | --- | --- | --- |
 | Registry presence is not activation | `D-03` | all capabilities | Prevents global Delphi contents from becoming downstream topology claims. |
-| Validate all declared capabilities | `D-02` | registry parser | Prevents optional/new blocks from escaping schema and lifecycle validation. |
-| Discriminating ecosystem evidence | `D-04` | Node detection | Prevents generic `package.json` projects from being mislabeled NestJS or React. |
-| Lifecycle reflects delivered support | `D-02` | new capability descriptors | Prevents `available` from becoming a registry-only marketing claim. |
+| Validate all declared capabilities | `D-05` | registry parser | Prevents optional/new blocks from escaping schema and lifecycle validation. |
+| Discriminating ecosystem evidence | `D-04,D-08` | Node detection | Prevents generic `package.json` projects from being mislabeled NestJS or React. |
+| Lifecycle reflects delivered support | `D-02,D-10` | new capability descriptors and topology output | Prevents `available` from becoming a registry-only marketing claim. |
 | One typed registry boundary | `D-07` | validator and detector | Prevents accepted metadata from being silently ignored by a second parser. |
 | Manifest-local exact evidence | `D-08` | Node detection | Prevents substring, tooling-only, React Native, and cross-workspace false positives. |
 
@@ -204,6 +208,7 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 | `guard` | registry schema | `tools/validate_stack_capabilities.py` | malformed optional/new capability blocks | `implement-in-this-todo` | accepted/rejected fixtures in `validate_stack_capabilities_test.sh` |
 | `test` | topology detection | `tools/tests/environment_topology_contract_scaffold_test.sh` | Node false positives and missed dependency evidence | `implement-in-this-todo` | positive NestJS/React plus generic Node-only negative fixtures |
 | `test` | typed registry schema | `tools/tests/stack_capability_registry_test.py` | duplicate/unknown keys, wrong shapes, unsupported YAML, lifecycle loss | `implement-in-this-todo` | table-driven accepted/rejected fixtures |
+| `test` | repository inventory/cache | deterministic counters around inventory and manifest reader seams | per-capability repository walks or repeated manifest parsing | `implement-in-this-todo` | assert one inventory and one parse per eligible manifest independent of capability count |
 | `rule` | activation authority | `rules/core/environment-topology-contract-model-decision.md` | registry presence treated as project activation | `already-enforced` | preserve rule and test report wording |
 | `review` | project agnosticism | rejected-term scan and bounded review | LeadsHug naming, versions, paths, or mandatory cross-stack coupling | `implement-in-this-todo` | review changed Delphi surfaces before delivery |
 
@@ -252,16 +257,15 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 | --- | --- | --- | --- | --- | --- |
 | `A-01` | A strict dependency-free typed loader can replace both existing registry parsers safely. | `tools/validate_stack_capabilities.py` and `tools/environment_topology_contract_scaffold.py` consume a small block-style YAML subset; Node manifests are JSON. | Stop and adopt an explicitly approved parsing dependency or alternate canonical format. | `Medium` | `Keep as Assumption` |
 | `A-02` | `experimental` accurately represents discoverable but not fully supported capabilities. | It is an allowed lifecycle and avoids overstating `available`; current activation contract already separates presence from activation. | Add a distinct lifecycle only through a separately reviewed schema decision. | `High` | `Promote to Decision` |
-| `A-03` | The four reference capability descriptors can be generalized without importing project authority. | `/home/elton/Dev/repos/Clientes/Unifast/leadshug-engineering/config/stack_capabilities.yaml`, `rules/stacks/nestjs/nestjs-api-slice-model-decision.md`, `rules/stacks/react/react-web-slice-model-decision.md`, `rules/stacks/postgres-prisma/persistence-contract-model-decision.md`, and `rules/stacks/railway/railway-release-readiness-model-decision.md` expose short reusable cores; project-specific terms are separately identifiable. | Stop and split any capability whose semantics cannot be made project-agnostic. | `High` | `Keep as Assumption` |
 
 ## Gate: Assumption Code Coherence
 - **Gate decision:** `required`
 - **Why this decision:** ST-01 depends on the current parser/detector insertion points and on the reference descriptors remaining cleanly separable from project-specific policy.
 - **Trigger stage:** `after planning-side critique convergence and before APROVADO`
-- **Guard scope:** `A-01,A-03`
+- **Guard scope:** `A-01`
 - **Guard command:** `python3 tools/assumption_code_coherence_guard.py --todo foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md`
-- **Gate status:** `not_run`
-- **Findings summary:** `Awaiting the planning-side review baseline; no implementation claim is made.`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `A-01 is anchored in both current parser implementations; the shared-loader approach remains feasible and no implementation claim is made.`
 - **Evidence / reference:** `tools/environment_topology_contract_scaffold.py; tools/validate_stack_capabilities.py; /home/elton/Dev/repos/Clientes/Unifast/leadshug-engineering/config/stack_capabilities.yaml`
 - **Waiver authority / reference (required if waived):** `n/a`
 
@@ -307,12 +311,42 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - [x] Structural Soundness
 
 ### Issue Cards
-- **`GS-01` High:** split the reference `postgres-prisma` compound into independent `postgresql` and `prisma` capabilities. **Resolution:** integrated into brief, decisions, descriptors, and later story decomposition.
-- **`GS-02` High:** replace divergent permissive parsers with one strict typed loader. **Resolution:** integrated into scope, diff contract, harness, tests, and execution plan.
-- **`GS-03` Medium:** freeze exact manifest-local Node predicates and bounded-input behavior. **Resolution:** integrated as `D-08/D-09` and focused fixtures.
-- **`GS-04` Medium:** strengthen broad shell greps with table-driven parser coverage and exact stack-row evidence. **Resolution:** new Python test path plus exact topology fixtures added.
-- **`GS-05` Medium:** preserve lifecycle in generated topology. **Resolution:** lifecycle-aware evidence model/rendering added to scope and DoD.
-- **`GS-06` Medium:** complete derived planning/delivery gate records and explicit forbidden globs. **Resolution:** planning records expanded; delivery gates remain planned for post-implementation execution.
+- **Issue `GS-01` — split PostgreSQL and Prisma (`high`).**
+  - **Evidence / why now:** `schema.prisma` supports non-PostgreSQL providers and PostgreSQL does not require Prisma; freezing the compound would force later migration.
+  - **Option A (chosen):** five independent capabilities. Effort `medium`; risk `low`; blast `cross-module`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
+  - **Option B:** keep a provider-aware composite. Effort `medium`; risk/maintenance `medium`; blast `cross-module`; performance `neutral`; elegance/structure `neutral`.
+  - **Option C:** keep filename-only composite. Effort `low`; risk/maintenance `high`; performance `neutral`; elegance/structure `regresses`.
+  - **Resolution:** Option A integrated into brief, decisions, descriptors, tests, and later story decomposition.
+- **Issue `GS-02` — divergent permissive registry parsers (`high`).**
+  - **Evidence / why now:** validator and detector independently parse different YAML subsets, allowing accepted metadata to be silently ignored by its consumer.
+  - **Option A (chosen):** one strict typed loader. Effort `medium`; risk `low`; blast `cross-module`; maintenance `low`; performance/elegance/structure `improves`.
+  - **Option B:** extend both parsers with parity tests. Effort `medium`; risk/maintenance `high`; performance `neutral`; elegance/structure `regresses`.
+  - **Option C:** validate only top-level fields. Effort `low`; risk/maintenance `high`; elegance/structure `regresses`.
+  - **Resolution:** Option A integrated into scope, diff contract, harness, tests, and execution plan.
+- **Issue `GS-03` — underspecified Node/monorepo evidence (`medium`).**
+  - **Evidence / why now:** loose manifest/text matching can misclassify tooling-only, React Native, or unrelated workspace packages.
+  - **Option A (chosen):** exact keys in four sections, manifest-local predicates, bounded reads, one inventory/cache. Effort `medium`; risk `low`; blast `module`; maintenance `low`; performance/elegance/structure `improves`.
+  - **Option B:** runtime dependencies only. Effort `low`; risk `medium` false negatives; maintenance `medium`; performance `improves`; structure `neutral`.
+  - **Option C:** filename/text matching. Effort `low`; risk/maintenance `high`; performance/elegance/structure `regresses`.
+  - **Resolution:** Option A frozen in `D-08/D-09` and deterministic fixtures.
+- **Issue `GS-04` — broad grep tests can pass against the wrong row (`medium`).**
+  - **Evidence / why now:** current shell tests can find a stack name and `candidate` in unrelated output.
+  - **Option A (chosen):** table-driven typed-loader tests plus exact topology-row assertions. Effort `medium`; risk `low`; blast `module`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
+  - **Option B:** exact-row shell assertions only. Effort `low`; risk/maintenance `medium`; structure `neutral`.
+  - **Option C:** retain broad grep. Effort `low`; risk/maintenance `high`; structure `regresses`.
+  - **Resolution:** new Python test path, exact canonical-key/lifecycle assertions, and exact topology fixtures added.
+- **Issue `GS-05` — lifecycle lost from topology output (`medium`).**
+  - **Evidence / why now:** experimental and available candidates currently render indistinguishably.
+  - **Option A (chosen):** lifecycle column beside candidate and activation validation. Effort `low`; risk `low`; blast `module`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
+  - **Option B:** global warning note. Effort `low`; risk `medium`; structure `neutral`.
+  - **Option C:** prose only. Effort `low`; risk/maintenance `medium`; structure `regresses`.
+  - **Resolution:** Option A added to scope, DoD, baseline, and fixtures.
+- **Issue `GS-06` — incomplete derived governance/evidence (`medium`).**
+  - **Evidence / why now:** audit floor requires critique, architecture, test-quality, final review, triple review, verification debt, and performance classification.
+  - **Option A (chosen):** record every derived lane now and execute each at its gate deadline. Effort `medium`; risk `low`; blast `TODO`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
+  - **Option B:** defer documentation until delivery. Effort `low`; risk/maintenance `medium`; structure `regresses`.
+  - **Option C:** request approval without gates. Effort `low`; risk `high`; structure `invalid`.
+  - **Resolution:** exact audit decisions and deadlines are recorded below; post-implementation gates remain truthfully `not_run`.
 
 ### Failure Modes & Edge Cases
 - [ ] Scoped dependency names in `package.json` are parsed without substring false positives.
@@ -328,7 +362,7 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 ## Audit Trigger Matrix
 - **Canonical method:** `wf-docker-audit-escalation-method`
 - **Guard command:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md`
-- **Latest TEACH evidence / artifact:** `pending first post-freeze guard run`
+- **Latest TEACH evidence / artifact:** `artifacts/tmp/generic-stack-admission-audit-round2.json; overall go; triple review required after high-severity planning findings`
 
 | Trigger | Value | Notes |
 | --- | --- | --- |
@@ -382,12 +416,14 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Global sensitivity level:** `low`
 - **Why this level:** No runtime product path changes; the only performance concern is repeated repository traversal during a local scaffold command.
 - **Current delivery stage at review time:** `Pending`
+- **Evaluation timestamp / evaluator:** `2026-09-16 / root planning lane`
+- **Decision rationale:** Product-runtime performance lanes are absent, but the local repository batch-scan path requires a recommended RLS-style scalability check resolved through deterministic inventory/parse counters rather than load generation.
 | Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `no-endpoint-surface` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
 | `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `no-frontend-runtime` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
 | `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `no-backend-mutation` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
-| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `local-bounded-tooling-only` | `before_production_ready` | `n/a` | `not_applicable` | `single indexed walk and parse cache are contract requirements` | `none` |
+| `RLS` | `runtime-load-stress-validation` | `recommended` | `medium` | `RLS-BATCH-OR-BULK-PATH-CHANGED` | `before_local_implemented` | `deterministic counter proves one inventory and at-most-once manifest parsing as capability count grows` | `planned` | `repository scan could scale as capabilities × files if the cache is bypassed` | `implementation-not-started` |
 
 ## Verification Debt Assessment
 - **Audit outcome:** `not_run`
@@ -423,7 +459,7 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Package minimum contents:** `approved contract|implementation/test diff|architecture adherence|test-quality audit|verification debt|residual risks`
 - **Review isolation mode:** `fresh internal no-context reviewer`
 - **Internal reviewer mandate:** `required after implementation`
-- **Canonical multi-lane audit protocol (when required):** `audit-protocol-triple-review if confirmed by refreshed audit escalation`
+- **Canonical multi-lane audit protocol (when required):** `audit-protocol-triple-review; required before completion by refreshed audit escalation`
 - **Audit session / round evidence (when protocol used):** `pending`
 - **Review focus:** `adherence|regressions|validation evidence|security/performance residuals|elegance|structural soundness`
 - **Final review status:** `not_run`
