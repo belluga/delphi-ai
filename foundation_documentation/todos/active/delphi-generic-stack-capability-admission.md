@@ -241,11 +241,11 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Why this decision:** The medium cross-module admission contract needs a stable pushed package before planning review.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `93d2c5b7b9a0d3a3be212e7dc6d9e0cf2017aec8`
+- **Baseline commit:** `25ac7bf1a5c166cbc475e4bb1b79170db581d2d3`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `no_material_findings`
 - **Findings summary:** `The feature brief and ST-01 TODO were committed and pushed before planning review.`
-- **Evidence / reference:** `git merge-base --is-ancestor 93d2c5b origin/feat/add-stack-capabilities` exit 0
+- **Evidence / reference:** `git merge-base --is-ancestor 25ac7bf origin/feat/add-stack-capabilities` exit 0
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Gate: Review Scope Drift
