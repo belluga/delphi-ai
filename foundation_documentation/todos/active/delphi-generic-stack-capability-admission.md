@@ -12,7 +12,7 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Feature brief:** `foundation_documentation/artifacts/feature-briefs/delphi-multistack-capability-admission.md`
 - **Primary story ID:** `ST-01`
 - **Why this is the right current slice:** It removes the hard-coded admission bottleneck and prevents false-positive Node detection before any stack-specific authority is added.
-- **Direct-to-TODO rationale:** `n/a; feature brief required because the initiative contains six separable stories`
+- **Direct-to-TODO rationale:** `n/a; feature brief required because the initiative contains seven separable stories`
 
 ## Contract Boundary
 - This TODO changes only Delphi's shared typed capability-registry loader, registry validation, lifecycle-aware topology-detection model, focused tests, and the five experimental registry descriptors.
@@ -161,6 +161,15 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - [x] `D-08` Match Node packages exactly and manifest-locally across four explicit dependency sections; use `@nestjs/core` for NestJS and `react-dom` for React web.
 - [x] `D-09` Inventory files and parse each manifest once per run; bound reads to repository-root files and report malformed/oversized input without exposing content.
 - [x] `D-10` Carry lifecycle into topology output; detection stays `candidate` and activation stays user/project validated.
+
+## Detection Marker Schema (Frozen For ST-01)
+- Canonical YAML is limited to block mappings/sequences plus the exact scalar `[]` for an empty list; flow mappings such as `{ root_files: [...] }`, anchors, aliases, tags, duplicate keys, and unknown keys are rejected.
+- Capability fields are `lifecycle`, `purpose`, optional `default_surfaces`, `activation_markers`, `detection_markers`, and `execution_policy`; every list contains strings only and required scalars are nonblank.
+- Allowed detection-marker keys are `root_files`, `nested_files`, `composer_requires`, `companion_files`, and `package_json_requires_any`; unknown keys and wrong shapes fail validation.
+- `package_json_requires_any` is a list of exact package names. Each package is matched within one manifest against object-valued `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies`; evidence records manifest path, section, and exact package.
+- `nestjs` uses `package_json_requires_any: [@nestjs/core]`; `react` uses `[react-dom]`; `prisma` uses precise `prisma/schema.prisma`/`schema.prisma` file markers plus `@prisma/client`; `railway` uses exact `railway.toml`/`railway.json` markers.
+- `postgresql` intentionally has empty `root_files` and `nested_files` in ST-01 because no reliable universal automatic marker exists; it remains discoverable in the registry with detection state `unknown` until project-owned evidence activates it.
+- Marker categories are alternative evidence sources; predicates within one package manifest never combine with another manifest. File and manifest reads remain repository-root-confined and size-bounded.
 
 ## Decision Baseline (Frozen Before Implementation)
 - [x] `D-01` NestJS, React, PostgreSQL, Prisma, and Railway remain five independent capabilities; no project bundle or PostgreSQL/Prisma compound is introduced.
@@ -313,39 +322,39 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 ### Issue Cards
 - **Issue `GS-01` — split PostgreSQL and Prisma (`high`).**
   - **Evidence / why now:** `schema.prisma` supports non-PostgreSQL providers and PostgreSQL does not require Prisma; freezing the compound would force later migration.
-  - **Option A (chosen):** five independent capabilities. Effort `medium`; risk `low`; blast `cross-module`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
-  - **Option B:** keep a provider-aware composite. Effort `medium`; risk/maintenance `medium`; blast `cross-module`; performance `neutral`; elegance/structure `neutral`.
-  - **Option C:** keep filename-only composite. Effort `low`; risk/maintenance `high`; performance `neutral`; elegance/structure `regresses`.
+  - **Option A (chosen):** five independent capabilities. Effort `medium`; risk `low`; blast `cross-module`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** keep a provider-aware composite. Effort `medium`; risk `medium`; blast `cross-module`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `neutral`.
+  - **Option C:** keep filename-only composite. Effort `low`; risk `high`; blast `cross-module`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Resolution:** Option A integrated into brief, decisions, descriptors, tests, and later story decomposition.
 - **Issue `GS-02` — divergent permissive registry parsers (`high`).**
   - **Evidence / why now:** validator and detector independently parse different YAML subsets, allowing accepted metadata to be silently ignored by its consumer.
-  - **Option A (chosen):** one strict typed loader. Effort `medium`; risk `low`; blast `cross-module`; maintenance `low`; performance/elegance/structure `improves`.
-  - **Option B:** extend both parsers with parity tests. Effort `medium`; risk/maintenance `high`; performance `neutral`; elegance/structure `regresses`.
-  - **Option C:** validate only top-level fields. Effort `low`; risk/maintenance `high`; elegance/structure `regresses`.
+  - **Option A (chosen):** one strict typed loader. Effort `medium`; risk `low`; blast `cross-module`; maintenance `low`; performance `improves`; elegance `improves`; structure `improves`.
+  - **Option B:** extend both parsers with parity tests. Effort `medium`; risk `high`; blast `cross-module`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Option C:** validate only top-level fields. Effort `low`; risk `high`; blast `cross-module`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Resolution:** Option A integrated into scope, diff contract, harness, tests, and execution plan.
 - **Issue `GS-03` — underspecified Node/monorepo evidence (`medium`).**
   - **Evidence / why now:** loose manifest/text matching can misclassify tooling-only, React Native, or unrelated workspace packages.
-  - **Option A (chosen):** exact keys in four sections, manifest-local predicates, bounded reads, one inventory/cache. Effort `medium`; risk `low`; blast `module`; maintenance `low`; performance/elegance/structure `improves`.
-  - **Option B:** runtime dependencies only. Effort `low`; risk `medium` false negatives; maintenance `medium`; performance `improves`; structure `neutral`.
-  - **Option C:** filename/text matching. Effort `low`; risk/maintenance `high`; performance/elegance/structure `regresses`.
+  - **Option A (chosen):** exact keys in four sections, manifest-local predicates, bounded reads, one inventory/cache. Effort `medium`; risk `low`; blast `module`; maintenance `low`; performance `improves`; elegance `improves`; structure `improves`.
+  - **Option B:** runtime dependencies only. Effort `low`; risk `medium` false negatives; blast `module`; maintenance `medium`; performance `improves`; elegance `neutral`; structure `neutral`.
+  - **Option C:** filename/text matching. Effort `low`; risk `high`; blast `cross-module`; maintenance `high`; performance `regresses`; elegance `regresses`; structure `regresses`.
   - **Resolution:** Option A frozen in `D-08/D-09` and deterministic fixtures.
 - **Issue `GS-04` — broad grep tests can pass against the wrong row (`medium`).**
   - **Evidence / why now:** current shell tests can find a stack name and `candidate` in unrelated output.
-  - **Option A (chosen):** table-driven typed-loader tests plus exact topology-row assertions. Effort `medium`; risk `low`; blast `module`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
-  - **Option B:** exact-row shell assertions only. Effort `low`; risk/maintenance `medium`; structure `neutral`.
-  - **Option C:** retain broad grep. Effort `low`; risk/maintenance `high`; structure `regresses`.
+  - **Option A (chosen):** table-driven typed-loader tests plus exact topology-row assertions. Effort `medium`; risk `low`; blast `module`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** exact-row shell assertions only. Effort `low`; risk `medium`; blast `module`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `neutral`.
+  - **Option C:** retain broad grep. Effort `low`; risk `high`; blast `cross-module`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Resolution:** new Python test path, exact canonical-key/lifecycle assertions, and exact topology fixtures added.
 - **Issue `GS-05` — lifecycle lost from topology output (`medium`).**
   - **Evidence / why now:** experimental and available candidates currently render indistinguishably.
-  - **Option A (chosen):** lifecycle column beside candidate and activation validation. Effort `low`; risk `low`; blast `module`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
-  - **Option B:** global warning note. Effort `low`; risk `medium`; structure `neutral`.
-  - **Option C:** prose only. Effort `low`; risk/maintenance `medium`; structure `regresses`.
+  - **Option A (chosen):** lifecycle column beside candidate and activation validation. Effort `low`; risk `low`; blast `module`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** global warning note. Effort `low`; risk `medium`; blast `module`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `neutral`.
+  - **Option C:** prose only. Effort `low`; risk `medium`; blast `cross-module`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Resolution:** Option A added to scope, DoD, baseline, and fixtures.
 - **Issue `GS-06` — incomplete derived governance/evidence (`medium`).**
   - **Evidence / why now:** audit floor requires critique, architecture, test-quality, final review, triple review, verification debt, and performance classification.
-  - **Option A (chosen):** record every derived lane now and execute each at its gate deadline. Effort `medium`; risk `low`; blast `TODO`; maintenance `low`; performance `neutral`; elegance/structure `improves`.
-  - **Option B:** defer documentation until delivery. Effort `low`; risk/maintenance `medium`; structure `regresses`.
-  - **Option C:** request approval without gates. Effort `low`; risk `high`; structure `invalid`.
+  - **Option A (chosen):** record every derived lane now and execute each at its gate deadline. Effort `medium`; risk `low`; blast `TODO`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** defer documentation until delivery. Effort `low`; risk `medium`; blast `TODO`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Option C:** request approval without gates. Effort `low`; risk `high`; blast `cross-module`; maintenance `high`; performance `unknown`; elegance `regresses`; structure `invalid`.
   - **Resolution:** exact audit decisions and deadlines are recorded below; post-implementation gates remain truthfully `not_run`.
 
 ### Failure Modes & Edge Cases
@@ -418,12 +427,19 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Current delivery stage at review time:** `Pending`
 - **Evaluation timestamp / evaluator:** `2026-09-16 / root planning lane`
 - **Decision rationale:** Product-runtime performance lanes are absent, but the local repository batch-scan path requires a recommended RLS-style scalability check resolved through deterministic inventory/parse counters rather than load generation.
-| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `no-endpoint-surface` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
-| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `no-frontend-runtime` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
-| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `no-backend-mutation` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
-| `RLS` | `runtime-load-stress-validation` | `recommended` | `medium` | `RLS-BATCH-OR-BULK-PATH-CHANGED` | `before_local_implemented` | `deterministic counter proves one inventory and at-most-once manifest parsing as capability count grows` | `planned` | `repository scan could scale as capabilities × files if the cache is bypassed` | `implementation-not-started` |
+| Policy | Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Trigger Rationale | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code | Recorded At UTC | Executor ID |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `pcv-1` | `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `n/a` | No endpoint, query, or data-access path changes. | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` | `2026-09-16T18:00:00Z` | `root-planning-lane` |
+| `pcv-1` | `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `n/a` | No frontend runtime or retriggerable async UI changes. | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` | `2026-09-16T18:00:00Z` | `root-planning-lane` |
+| `pcv-1` | `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `n/a` | No backend write or overlapping mutation surface changes. | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` | `2026-09-16T18:00:00Z` | `root-planning-lane` |
+| `pcv-1` | `RLS` | `runtime-load-stress-validation` | `recommended` | `medium` | `RLS-BATCH-OR-BULK-PATH-CHANGED` | The local scaffold performs a bounded repository batch scan whose work must not multiply by capability count. | `before_local_implemented` | `RLS-E1` | `pending` | `repository scan could scale as capabilities × files if the cache is bypassed` | `none` | `2026-09-16T18:00:00Z` | `root-planning-lane` |
+
+### RLS Planned Evidence Contract
+- **Evidence type:** `deterministic batch-scan metrics`
+- **Environment / profile:** `local Delphi test fixture / RLS-SP-L`
+- **Thresholds:** exactly one repository inventory build; each eligible `package.json` parsed at most once; adding capability predicates does not increase inventory walks.
+- **Artifact:** `artifacts/tmp/generic-stack-admission-rls.json` using the `pcv-1` JSON schema, canonical serialization, and SHA-256 field contract.
+- **Acceptance rule:** `RLS-A1` with `RLS-E1`; the artifact records stage profile, thresholds, counters, metrics summary, executor, reviewer, and hash.
 
 ## Verification Debt Assessment
 - **Audit outcome:** `not_run`
