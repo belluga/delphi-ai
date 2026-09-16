@@ -111,8 +111,8 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 | `delphi-ai` | `.claude/skills/wf-flutter-create-controller-method/SKILL.md` | `M` | Generated Claude mirror for the changed controller workflow skill. |
 | `delphi-ai` | `.cline/skills/wf-flutter-create-screen-method/SKILL.md` | `M` | Generated Cline mirror for the corrected screen workflow skill. |
 | `delphi-ai` | `.claude/skills/wf-flutter-create-screen-method/SKILL.md` | `M` | Generated Claude mirror for the corrected screen workflow skill. |
-| `delphi-ai` | `.cline/skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `M, ??` | Generated Cline mirror for the corrected screen trigger. |
-| `delphi-ai` | `.claude/skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `M, ??` | Generated Claude mirror for the corrected screen trigger. |
+| `delphi-ai` | `.cline/skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `A, M, ??` | Generated Cline mirror for the corrected screen trigger. |
+| `delphi-ai` | `.claude/skills/rule-flutter-flutter-screen-workflow-glob/SKILL.md` | `A, M, ??` | Generated Claude mirror for the corrected screen trigger. |
 | `delphi-ai` | `.claude/rules/03-flutter-architecture.md` | `M` | Active Claude Flutter architecture mirror requires the same local-versus-canonical state contract. |
 | `delphi-ai` | `.claude/rules/08-flutter-glob-workflows.md` | `M` | Active Claude controller trigger must preserve the corrected ownership distinction. |
 | `delphi-ai` | `.clinerules/**` | `M` | Generated Cline rule/workflow mirrors when canonical sources require synchronization. |
@@ -312,24 +312,24 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Why this decision:** The review package spans cross-module Flutter authority and mirror surfaces, so the review evidence must be tied to a committed, pushed branch baseline.
 - **Trigger stage:** `before the first planning-side review or guard run`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `8caeb67f5d2977992b6700cd32674b3d59405159`
+- **Baseline commit:** `d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `The recorded commit resolves and is reachable from the recorded pushed branch; it was committed and pushed before the two fresh review rounds.`
-- **Evidence / reference:** `git rev-parse 8caeb67 -> 8caeb67f5d2977992b6700cd32674b3d59405159; git merge-base --is-ancestor 8caeb67f5d2977992b6700cd32674b3d59405159 origin/feat/add-stack-capabilities -> exit 0`
+- **Findings summary:** `The remediation checkpoint resolves and is reachable from the recorded pushed branch; it was committed and pushed before the next review/guard cycle.`
+- **Evidence / reference:** `git rev-parse d9ac4d1 -> d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9; git merge-base --is-ancestor d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9 origin/feat/add-stack-capabilities -> exit 0`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Gate: Review Scope Drift
 - **Gate decision:** `required`
 - **Why this decision:** The P2 remediations and routed future hardening record refine review-relevant material sections after the pushed baseline.
 - **Trigger stage:** `after the planning-side review/guard cycle converges and before APROVADO`
-- **Baseline source:** `Review Baseline Freeze -> 8caeb67f5d2977992b6700cd32674b3d59405159`
+- **Baseline source:** `Review Baseline Freeze -> d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9`
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Questions To Close|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix|Runtime / Rollout Notes|Security Risk Assessment|Performance & Concurrency Risk Assessment`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md`
 - **No-go handling rule:** `return to the review loop, revalidate evolved material scope with the user, refresh the pushed baseline when needed, and rerun affected review/guard lanes; this is not a hard rejection`
-- **Gate status:** `blocked`
-- **Findings summary:** `The guard found material drift in Decisions, Decision Baseline, Architecture Change Governance, Assumptions Preview, Execution Plan, Security Risk Assessment, and Performance & Concurrency Risk Assessment after the pushed baseline. Renewed user scope validation and a refreshed pushed baseline are required before approval resumes.`
-- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md -> no-go, 7 changed material sections, 2026-09-16`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `The guard found zero changed material sections against the pushed d9ac4d1 remediation checkpoint.`
+- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md -> go, 0 changed material sections, 2026-09-16`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Audit Trigger Matrix
@@ -428,15 +428,15 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Package minimum contents:** `frozen baseline|approved scope boundary|bounded implementation diff|validation evidence|expected behaviors/DoD|residual risks`
 - **Canonical method:** `wf-docker-independent-test-quality-audit-method`
 - **Audit isolation mode:** `fresh internal no-context reviewer`
-- **Internal reviewer mandate:** `required; root reviewer pending`
+- **Internal reviewer mandate:** `required; fresh internal no-context reviewer /root/flutter_coherence_test_quality_audit`
 - **Gate-satisfying evidence expectation:** `required fresh internal no-context audit`
 - **Audit focus:** `product/test delta alignment|bypass detection|coverage sufficiency|brittle test-only shortcuts`
 - **Required applicable evidence:** `audit framing|bypass scan|issue cards for material findings|failure modes/uncertainty|decision-adherence evidence`
-- **Audit status:** `not_run`
-- **Planning status:** `planned; awaiting root reviewer`
-- **Findings summary:** `Awaiting the root reviewer; no completion claim is made from this provisional row.`
-- **Resolution ledger:** `none pending review`
-- **Evidence / reference:** `root-owned review pending`
+- **Audit status:** `no_material_findings`
+- **Planning status:** `completed by fresh reviewer`
+- **Findings summary:** `NO P1/P2. No-risk/bypass review found no product, test, fixture, or runner diff; the instruction-only package does not require downstream runtime test evidence. The residual risk is P2-05 only, already routed to its real future hardening TODO.`
+- **Resolution ledger:** `none`
+- **Evidence / reference:** `fresh review packet foundation_documentation/artifacts/tmp/flutter-streamvalue-coherence-test-audit/review-packet.md; reconciliador bash self_check.sh; independent canonical/mirror parity cmp checks; python3 tools/todo_deterministic_validator.py --todo foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md; python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-flutter-streamvalue-cache-and-smell-coherence.md --repo-root .; git diff --check`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Independent No-Context Final Review Gate
@@ -451,8 +451,14 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 - **Audit session / round evidence (when protocol used):** `n/a`
 - **Review focus:** `adherence|regressions|validation evidence|security/performance residuals|elegance residuals|structural regressions|verification debt`
 - **Final review status:** `findings_integrated`
-- **Findings summary:** `The recently completed round found P2-01 through P2-05. P2-01 through P2-04 were integrated and P2-05 was routed; a new confirmation-clean review remains mandatory after this final remediation.`
-- **Resolution ledger:** `see Independent No-Context Critique Gate and Promotion Finding Routing Ledger P2-01..P2-05`
+- **Findings summary:** `The recently completed round found the four final-review P2 findings below. All were integrated into the bounded package or its routed hardening contract; a new confirmation-clean review remains mandatory after this remediation.`
+- **Resolution ledger:**
+| Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| `FR-P2-01` | `Integrated` | `useful` | `yes` | `project` | `n/a` | The screen example no longer downgrades the canonical repository `StreamValue` to `.stream`; it directly delegates `StreamValue<YourEntity?>` and uses `StreamValueBuilder<YourEntity?>`. |
+| `FR-P2-02` | `Integrated` | `useful` | `yes` | `paced` | `n/a` | Derived audit gates and the pushed review baseline are recorded and validated. The required test-quality audit remains separately `not_run`/planned for the root reviewer, and final confirmation remains pending. |
+| `FR-P2-03` | `Integrated` | `useful` | `partial` | `project` | `n/a` | The missing hardening contract is now the real Pending/unapproved TODO `foundation_documentation/todos/active/delphi-flutter-active-instruction-coherence-guard.md`; no guard implementation was smuggled into this session. |
+| `FR-P2-04` | `Integrated` | `useful` | `partial` | `paced` | `n/a` | Review-packet baseline evidence is frozen at pushed checkpoint `d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9`; packet regeneration for the next confirmation-clean review remains pending. |
 - **Evidence / reference:** `current remediation diff and routed real follow-up TODO`
 - **Waiver authority / reference (required if waived):** `n/a`
 
@@ -570,5 +576,5 @@ The intended architecture treats the persistent repository-owned `StreamValue` i
 ## TODO Closeout Disposition
 - **Disposition:** `keep-active`
 - **Disposition reason:** The implementation and local review are complete, but the feature branch has not been integrated or promoted and the user authorized only commit/push in this step.
-- **Post-commit/push status:** `complete - implementation commit d08390e pushed to origin/feat/add-stack-capabilities on 2026-09-16`
+- **Post-commit/push status:** `complete - implementation commit d08390e and remediation checkpoint d9ac4d1c589a1219f8f470b25e138ea9bf5fa1f9 pushed to origin/feat/add-stack-capabilities on 2026-09-16; delivery stage remains Pending`
 - **Next path/status action:** `remain in active/review after push until the branch integration or promotion path is explicitly selected`
