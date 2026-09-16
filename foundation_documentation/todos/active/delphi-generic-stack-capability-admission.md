@@ -264,8 +264,8 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
-- **Decision review status:** `findings_integrated`
-- **Decision review evidence / resolution:** `/root/generic_stack_architecture_opinion found shared-loader, lifecycle, compound-persistence, Node predicate, scan-scaling, and frozen-cross-stack gaps; all were integrated into the revised contract, which requires a fresh confirmation after baseline refresh.`
+- **Decision review status:** `no_material_findings`
+- **Decision review evidence / resolution:** `/root/generic_stack_architecture_opinion` findings were integrated; fresh `/root/generic_stack_architecture_final` confirmed the stable D-01..D-10 contract, five capabilities, one typed loader, exact predicates, lifecycle separation, scan invariant, and conditional cross-stack semantics with no remaining high/medium blocker.
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -294,9 +294,9 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Material sections compared:** `Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan|Local CI-Equivalent Suite Matrix`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md`
 - **No-go handling rule:** `refresh and push the reviewed baseline, then rerun affected planning gates before requesting approval`
-- **Gate status:** `not_run`
-- **Findings summary:** `Awaiting planning review convergence.`
-- **Evidence / reference:** `n/a before review`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `Fresh approval confirmation found zero material section drift from the pushed baseline.`
+- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-generic-stack-capability-admission.md -> go; 0 changed material sections`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Assumptions Preview
@@ -439,8 +439,8 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 - **Canonical multi-lane audit protocol (when required):** `audit-protocol-triple-review; rerun audit escalation after high-severity integration to confirm the floor`
 - **Audit session / round evidence (when protocol used):** `n/a`
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`
-- **Critique status:** `findings_integrated`
-- **Findings summary:** `GS-01 through GS-06 were integrated; approval remains blocked until refreshed-baseline confirmation and derived gates pass.`
+- **Critique status:** `no_material_findings`
+- **Findings summary:** `GS-01 through GS-06 and subsequent confirmation findings were integrated; fresh /root/generic_stack_approval_clean returned approval-ready with no high/medium blockers.`
 - **Resolution ledger:**
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -450,7 +450,7 @@ The reference repository `unifast-tech/leadshug-engineering` at `98b8284` suppli
 | `GS-04` | `Integrated` | `useful` | `yes` | `paced` | A table-driven typed-loader test plus exact topology fixtures replace broad-only evidence. |
 | `GS-05` | `Integrated` | `useful` | `yes` | `paced` | Lifecycle is carried into every topology row and remains distinct from activation. |
 | `GS-06` | `Integrated` | `useful` | `partial` | `paced` | Planning and delivery audit records are being completed before approval. |
-- **Evidence / reference:** `/root/generic_stack_plan_critique final findings; revised brief and TODO`
+- **Evidence / reference:** `/root/generic_stack_plan_critique findings; /root/generic_stack_critique_confirmation findings; /root/generic_stack_approval_confirmation findings; clean confirmation from /root/generic_stack_approval_clean`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Security Risk Assessment
