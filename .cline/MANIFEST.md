@@ -18,6 +18,10 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/model-decision/docker-runtime-ingress.md`
 - `.clinerules/model-decision/nestjs-architecture.md`
 - `.clinerules/model-decision/react-architecture.md`
+- `.clinerules/model-decision/vite-build-runtime.md`
+- `.clinerules/model-decision/postgresql-data-integrity.md`
+- `.clinerules/model-decision/prisma-schema-migration.md`
+- `.clinerules/model-decision/railway-deployment-contract.md`
 - `.clinerules/model-decision/laravel-ability-catalog-sync.md`
 - `.clinerules/model-decision/laravel-settings-kernel-patch-contract.md`
 
@@ -42,6 +46,10 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/workflows/docker-update-runtime-and-ingress.md`
 - `.clinerules/workflows/nestjs-change-application-boundary-method.md`
 - `.clinerules/workflows/react-change-ui-boundary-method.md`
+- `.clinerules/workflows/vite-change-build-runtime-boundary-method.md`
+- `.clinerules/workflows/postgresql-change-relational-contract-method.md`
+- `.clinerules/workflows/prisma-change-schema-migration-contract-method.md`
+- `.clinerules/workflows/railway-change-service-deployment-contract-method.md`
 - `.clinerules/workflows/laravel-create-package-method.md`
 - `.clinerules/workflows/create-repository-method.md`
 
@@ -78,6 +86,14 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.cline/skills/wf-nestjs-change-application-boundary-method/SKILL.md`
 - `.cline/skills/rule-react-react-architecture-always-on/SKILL.md`
 - `.cline/skills/wf-react-change-ui-boundary-method/SKILL.md`
+- `.cline/skills/rule-vite-vite-build-runtime-always-on/SKILL.md`
+- `.cline/skills/wf-vite-change-build-runtime-boundary-method/SKILL.md`
+- `.cline/skills/rule-postgresql-postgresql-data-integrity-always-on/SKILL.md`
+- `.cline/skills/wf-postgresql-change-relational-contract-method/SKILL.md`
+- `.cline/skills/rule-prisma-prisma-schema-migration-always-on/SKILL.md`
+- `.cline/skills/wf-prisma-change-schema-migration-contract-method/SKILL.md`
+- `.cline/skills/rule-railway-railway-deployment-contract-always-on/SKILL.md`
+- `.cline/skills/wf-railway-change-service-deployment-contract-method/SKILL.md`
 
 ### Hooks
 - `.clinerules/hooks/session_start`

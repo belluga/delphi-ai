@@ -294,6 +294,7 @@ def detect_stack_evidence(
                 if (
                     (Path(marker).name == marker and candidate.name == marker)
                     or rel(candidate, root) == marker
+                    or ("/" in marker and rel(candidate, root).endswith(f"/{marker}"))
                 )
                 and not (
                     candidate.name == "composer.json"

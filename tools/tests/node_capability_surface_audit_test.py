@@ -77,14 +77,14 @@ class NodeCapabilitySurfaceAuditTest(unittest.TestCase):
                 result["diagnostics"],
             )
 
-    def test_react_vite_and_all_dependency_sections_are_inventoried(self) -> None:
+    def test_react_vite_prisma_and_all_dependency_sections_are_inventoried(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             self.write_manifest(
                 repo / "package.json",
                 {
                     "dependencies": {"@nestjs/core": "^11"},
-                    "devDependencies": {"vite": "^7"},
+                    "devDependencies": {"vite": "^7", "@prisma/client": "^6"},
                     "peerDependencies": {"react-dom": ">=19"},
                     "optionalDependencies": {"react-dom": "^19"},
                 },
@@ -97,6 +97,8 @@ class NodeCapabilitySurfaceAuditTest(unittest.TestCase):
                 "--expect",
                 "react",
                 "--expect",
+                "prisma",
+                "--expect",
                 "vite",
             )
 
@@ -105,10 +107,25 @@ class NodeCapabilitySurfaceAuditTest(unittest.TestCase):
             evidence = result["manifests"][0]["dependency_evidence"]
             self.assertEqual(evidence["@nestjs/core"], ["dependencies"])
             self.assertEqual(evidence["vite"], ["devDependencies"])
+            self.assertEqual(evidence["@prisma/client"], ["devDependencies"])
             self.assertEqual(
                 evidence["react-dom"],
                 ["peerDependencies", "optionalDependencies"],
             )
+
+    def test_prisma_cli_is_valid_independent_prisma_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.write_manifest(
+                repo / "package.json",
+                {"devDependencies": {"prisma": "^6"}},
+            )
+
+            completed = self.run_audit(repo, "--expect", "prisma")
+
+            self.assertEqual(completed.returncode, 0)
+            result = json.loads(completed.stdout)
+            self.assertEqual(result["expected"]["prisma"]["manifests"], ["package.json"])
 
     def test_missing_required_script_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

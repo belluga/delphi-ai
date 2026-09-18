@@ -5,5 +5,9 @@
   "docker": [],
   "nestjs": ["logic", "architecture", "security"],
   "react": ["logic", "ui_fidelity", "performance"],
+  "vite": ["logic", "performance", "security"],
+  "postgresql": ["logic", "architecture", "security", "performance"],
+  "prisma": ["logic", "architecture", "security"],
+  "railway": ["logic", "architecture", "security"],
   "core": ["logic", "critique"]
 }

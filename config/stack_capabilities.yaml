@@ -163,8 +163,13 @@ capabilities:
 
   vite:
     lifecycle: experimental
-    purpose: Frontend build and development-server capability admission pending a later minimum support package.
-    default_surfaces: []
+    purpose: Technically complete minimum Vite build/runtime and Node-audit package awaiting separately authorized lifecycle admission.
+    default_surfaces:
+      - workflows/vite/
+      - rules/stacks/vite/
+      - skills/rule-vite-vite-build-runtime-always-on/
+      - skills/wf-vite-change-build-runtime-boundary-method/
+      - tools/node_capability_surface_audit.py
     activation_markers:
       - Project-owned Vite documentation or validated dependency evidence
     detection_markers:
@@ -172,45 +177,67 @@ capabilities:
       nested_files: []
       package_json_requires_any:
         - "vite"
-    execution_policy: Discoverable only; do not infer React usage, downstream activation, or operational support from this experimental descriptor.
+    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use owning manifest/config/scripts and the declared serving target without inferring React or a platform.
 
   postgresql:
     lifecycle: experimental
-    purpose: PostgreSQL capability admission pending a later minimum support package.
-    default_surfaces: []
+    purpose: Technically complete minimum PostgreSQL relational-integrity package awaiting separately authorized lifecycle admission.
+    default_surfaces:
+      - workflows/postgresql/
+      - rules/stacks/postgresql/
+      - skills/rule-postgresql-postgresql-data-integrity-always-on/
+      - skills/wf-postgresql-change-relational-contract-method/
+      - tools/environment_topology_contract_scaffold.py
     activation_markers:
       - Project-owned database documentation, configuration, or user validation
     detection_markers:
       root_files: []
       nested_files: []
-    execution_policy: Discoverable only; automatic detection remains unknown until project-owned evidence is validated.
+    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; activation and commands require project-owned database/topology evidence because generic automatic detection remains unknown.
 
   prisma:
     lifecycle: experimental
-    purpose: Prisma data-access capability admission pending a later minimum support package.
-    default_surfaces: []
+    purpose: Technically complete minimum Prisma schema/migration and Node-audit package awaiting separately authorized lifecycle admission.
+    default_surfaces:
+      - workflows/prisma/
+      - rules/stacks/prisma/
+      - skills/rule-prisma-prisma-schema-migration-always-on/
+      - skills/wf-prisma-change-schema-migration-contract-method/
+      - tools/node_capability_surface_audit.py
     activation_markers:
       - Project-owned Prisma documentation or validated schema/dependency evidence
     detection_markers:
       root_files:
         - prisma/schema.prisma
+        - prisma/contract.prisma
+        - prisma.config.ts
       nested_files:
         - schema.prisma
+        - contract.prisma
+        - prisma.config.ts
       package_json_requires_any:
         - "@prisma/client"
-    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+        - "prisma"
+    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use pinned-version project commands and an independently activated database/release contract.
 
   railway:
     lifecycle: experimental
-    purpose: Railway deployment capability admission pending a later minimum support package.
-    default_surfaces: []
+    purpose: Technically complete minimum Railway service/deployment contract package awaiting separately authorized lifecycle admission.
+    default_surfaces:
+      - workflows/railway/
+      - rules/stacks/railway/
+      - skills/rule-railway-railway-deployment-contract-always-on/
+      - skills/wf-railway-change-service-deployment-contract-method/
+      - tools/environment_topology_contract_scaffold.py
     activation_markers:
       - Project-owned Railway configuration or user validation
     detection_markers:
       root_files:
+        - .railway/railway.ts
         - railway.toml
         - railway.json
       nested_files:
+        - .railway/railway.ts
         - railway.toml
         - railway.json
-    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; prefer current project-owned IaC, treat railway.toml/json as legacy candidate evidence requiring current-support verification, and require explicit authority plus fresh target identity for remote mutation.

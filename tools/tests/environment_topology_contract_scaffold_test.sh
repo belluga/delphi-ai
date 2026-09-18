@@ -173,7 +173,7 @@ grep -q "vite.*candidate.*vite-app/package.json \[devDependencies:vite\]" "$OUTP
 grep -q "postgresql.*unknown" "$OUTPUT_NODE"
 
 MATRIX="$TMP_DIR/matrix"
-mkdir -p "$MATRIX/nest" "$MATRIX/react" "$MATRIX/vite" "$MATRIX/vite-plugin-only" "$MATRIX/generic" "$MATRIX/react-native" "$MATRIX/types-only" "$MATRIX/nest-cli" "$MATRIX/malformed" "$MATRIX/oversized" "$MATRIX/root-array" "$MATRIX/wrong-section" "$MATRIX/split-nest" "$MATRIX/split-react" "$MATRIX/symlink" "$MATRIX/prisma/schema" "$MATRIX/prisma-client" "$MATRIX/railway" "$MATRIX/railway-near"
+mkdir -p "$MATRIX/nest" "$MATRIX/react" "$MATRIX/vite" "$MATRIX/vite-plugin-only" "$MATRIX/generic" "$MATRIX/react-native" "$MATRIX/types-only" "$MATRIX/nest-cli" "$MATRIX/malformed" "$MATRIX/oversized" "$MATRIX/root-array" "$MATRIX/wrong-section" "$MATRIX/split-nest" "$MATRIX/split-react" "$MATRIX/symlink" "$MATRIX/prisma/schema" "$MATRIX/prisma-client" "$MATRIX/prisma-cli" "$MATRIX/prisma-contract/prisma" "$MATRIX/prisma-config" "$MATRIX/railway" "$MATRIX/railway-current/.railway" "$MATRIX/railway-near"
 printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$MATRIX/nest/package.json"
 printf '%s\n' '{"optionalDependencies":{"react-dom":"^19"}}' > "$MATRIX/react/package.json"
 printf '%s\n' '{"devDependencies":{"vite":"^7"}}' > "$MATRIX/vite/package.json"
@@ -190,7 +190,11 @@ printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$MATRIX/split-nest/pa
 printf '%s\n' '{"peerDependencies":{"react-dom":"^19"}}' > "$MATRIX/split-react/package.json"
 touch "$MATRIX/prisma/schema/schema.prisma"
 printf '%s\n' '{"dependencies":{"@prisma/client":"^6"}}' > "$MATRIX/prisma-client/package.json"
+printf '%s\n' '{"devDependencies":{"prisma":"^8"}}' > "$MATRIX/prisma-cli/package.json"
+touch "$MATRIX/prisma-contract/prisma/contract.prisma"
+touch "$MATRIX/prisma-config/prisma.config.ts"
 touch "$MATRIX/railway/railway.toml"
+touch "$MATRIX/railway-current/.railway/railway.ts"
 touch "$MATRIX/railway-near/railway.yaml"
 ln -s /etc/passwd "$MATRIX/symlink/package.json" || true
 
@@ -212,9 +216,9 @@ assert rows["vite"].evidence_state == "candidate"
 assert rows["vite"].evidence == "vite/package.json [devDependencies:vite]"
 assert rows["postgresql"].evidence_state == "unknown"
 assert rows["prisma"].evidence_state == "candidate"
-assert rows["prisma"].evidence == "prisma-client/package.json [dependencies:@prisma/client], prisma/schema/schema.prisma"
+assert rows["prisma"].evidence == "prisma-cli/package.json [devDependencies:prisma], prisma-client/package.json [dependencies:@prisma/client], prisma-config/prisma.config.ts, prisma-contract/prisma/contract.prisma, prisma/schema/schema.prisma", rows["prisma"].evidence
 assert rows["railway"].evidence_state == "candidate"
-assert rows["railway"].evidence == "railway/railway.toml"
+assert rows["railway"].evidence == "railway-current/.railway/railway.ts, railway/railway.toml", rows["railway"].evidence
 assert "railway-near/railway.yaml" not in rows["railway"].evidence
 assert all("generic/package.json" not in row.evidence for row in rows.values())
 assert all("react-native/package.json" not in row.evidence for row in rows.values())

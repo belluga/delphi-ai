@@ -13,9 +13,10 @@ from typing import Any
 
 
 CAPABILITY_DEPENDENCIES = {
-    "nestjs": "@nestjs/core",
-    "react": "react-dom",
-    "vite": "vite",
+    "nestjs": ("@nestjs/core",),
+    "prisma": ("@prisma/client", "prisma"),
+    "react": ("react-dom",),
+    "vite": ("vite",),
 }
 DEPENDENCY_SECTIONS = (
     "dependencies",
@@ -58,8 +59,8 @@ class Manifest:
     def capabilities(self) -> tuple[str, ...]:
         return tuple(
             capability
-            for capability, dependency in CAPABILITY_DEPENDENCIES.items()
-            if dependency in self.dependencies
+            for capability, dependencies in CAPABILITY_DEPENDENCIES.items()
+            if any(dependency in self.dependencies for dependency in dependencies)
         )
 
 
@@ -249,14 +250,17 @@ def audit(
         scoped_manifests = manifests
 
     for capability in expected:
-        dependency = CAPABILITY_DEPENDENCIES[capability]
+        dependencies = CAPABILITY_DEPENDENCIES[capability]
+        dependency_label = " or ".join(dependencies)
         matching = [
-            manifest for manifest in scoped_manifests if dependency in manifest.dependencies
+            manifest
+            for manifest in scoped_manifests
+            if any(dependency in manifest.dependencies for dependency in dependencies)
         ]
         script_failures: list[dict[str, Any]] = []
         if not matching:
             blocked.append(
-                f"missing exact dependency evidence for {capability}: {dependency}"
+                f"missing exact dependency evidence for {capability}: {dependency_label}"
             )
         elif required_scripts and len(matching) > 1 and not manifest_selectors:
             blocked.append(
@@ -276,7 +280,8 @@ def audit(
                         f"missing required script for {capability} in {manifest.relative_path}: {script}"
                     )
         capability_results[capability] = {
-            "dependency": dependency,
+            "dependency": dependency_label,
+            "accepted_dependencies": list(dependencies),
             "manifests": [manifest.relative_path for manifest in matching],
             "required_scripts": list(required_scripts),
             "script_failures": script_failures,
@@ -291,7 +296,10 @@ def audit(
                 "dependency_evidence": {
                     dependency: list(sections)
                     for dependency, sections in manifest.dependencies.items()
-                    if dependency in CAPABILITY_DEPENDENCIES.values()
+                    if any(
+                        dependency in accepted
+                        for accepted in CAPABILITY_DEPENDENCIES.values()
+                    )
                 },
                 "scripts": list(manifest.scripts),
                 "package_manager": manifest.package_manager,

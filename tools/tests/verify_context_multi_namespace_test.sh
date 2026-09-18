@@ -15,7 +15,7 @@ cat > "$PROJECT/foundation_documentation/project_constitution.md" <<'EOF'
 # Project Constitution
 
 - **Namespace:** laravel
-- **Namespaces:** docker, flutter, nestjs, react
+- **Namespaces:** docker, flutter, nestjs, react, vite, postgresql, prisma, railway
 EOF
 
 (
@@ -29,8 +29,16 @@ test -L "$PROJECT/.agents/rules/stack/docker"
 test -L "$PROJECT/.agents/rules/stack/flutter"
 test -L "$PROJECT/.agents/rules/stack/nestjs"
 test -L "$PROJECT/.agents/rules/stack/react"
+test -L "$PROJECT/.agents/rules/stack/vite"
+test -L "$PROJECT/.agents/rules/stack/postgresql"
+test -L "$PROJECT/.agents/rules/stack/prisma"
+test -L "$PROJECT/.agents/rules/stack/railway"
 test "$(readlink "$PROJECT/.agents/rules/stack/nestjs")" = "$ROOT_DIR/rules/stacks/nestjs"
 test "$(readlink "$PROJECT/.agents/rules/stack/react")" = "$ROOT_DIR/rules/stacks/react"
+test "$(readlink "$PROJECT/.agents/rules/stack/vite")" = "$ROOT_DIR/rules/stacks/vite"
+test "$(readlink "$PROJECT/.agents/rules/stack/postgresql")" = "$ROOT_DIR/rules/stacks/postgresql"
+test "$(readlink "$PROJECT/.agents/rules/stack/prisma")" = "$ROOT_DIR/rules/stacks/prisma"
+test "$(readlink "$PROJECT/.agents/rules/stack/railway")" = "$ROOT_DIR/rules/stacks/railway"
 test -f "$PROJECT/.agents/rules/stack/.delphi-managed-stack-links"
 test -d "$PROJECT/.agents/deterministic/stack"
 test -f "$PROJECT/.agents/deterministic/stack/.delphi-managed-stack-links"

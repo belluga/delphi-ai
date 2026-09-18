@@ -41,7 +41,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/laravel_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Laravel endpoint and domain workflows. |
 | `tools/list_public_codex_skill_mirrors.sh` | shell | Emit the canonical list of Delphi skills that must remain mirrored into `~/.codex/skills/public`. |
 | `tools/metrics_consolidation_trigger.py` | python | Extract formalizable gate findings from a completed TODO and append PACED rule events for the metrics pipeline. |
-| `tools/node_capability_surface_audit.py` | python | Audit exact NestJS/React/Vite dependency evidence, package-manager/lockfile hints, and project-declared package scripts without executing Node commands or inferring capability activation. |
+| `tools/node_capability_surface_audit.py` | python | Audit exact NestJS/React/Vite/Prisma dependency evidence, package-manager/lockfile hints, and project-declared package scripts without executing Node commands or inferring capability activation. |
 | `tools/paced_metrics_core.py` | python | Shared PACED metrics helpers used by CLI tools today and designed for future MCP tool exposure. |
 | `tools/paced_metrics_summary.py` | python | Aggregate rule events plus TODO-derived gate resolutions into derived Clean Rate and effectiveness summaries. |
 | `tools/orchestration_delivery_guard.py` | python | Validate approved orchestration execution evidence before local implementation or delivery claims, blocking missing validation rows, incomplete acceptance traceability evidence, stale runtime/browser/device provenance, unapproved spec-marker substitutions, and orchestrator-owned implementation slices while emitting a TEACH runtime response. |

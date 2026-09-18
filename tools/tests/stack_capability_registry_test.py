@@ -128,6 +128,27 @@ class StackCapabilityRegistryTest(unittest.TestCase):
         for unrelated in ("nestjs", "vite", "postgresql", "prisma", "docker", "railway"):
             self.assertNotIn(f"/{unrelated}/", joined_surfaces)
 
+    def test_remaining_candidate_capabilities_have_independent_packages(self) -> None:
+        registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
+        cases = {
+            "vite": (("vite",), "skills/rule-vite-vite-build-runtime-always-on/"),
+            "postgresql": ((), "skills/rule-postgresql-postgresql-data-integrity-always-on/"),
+            "prisma": (("@prisma/client", "prisma"), "skills/rule-prisma-prisma-schema-migration-always-on/"),
+            "railway": ((), "skills/rule-railway-railway-deployment-contract-always-on/"),
+        }
+        for name, (dependencies, rule_surface) in cases.items():
+            with self.subTest(name=name):
+                capability = registry.capabilities[name]
+                self.assertEqual(capability.lifecycle, "experimental")
+                self.assertEqual(
+                    capability.detection_markers.package_json_requires_any,
+                    dependencies,
+                )
+                self.assertIn(rule_surface, capability.default_surfaces)
+                joined = "\n".join(capability.default_surfaces)
+                for unrelated in (set(cases) | {"nestjs", "react", "docker"}) - {name}:
+                    self.assertNotIn(f"/{unrelated}/", joined)
+
     def test_rejects_unknown_capability_field(self) -> None:
         with self.assertRaisesRegex(RegistryValidationError, "unknown .* key"):
             self.load(VALID.replace("    purpose: Generic fixture capability.\n", "    purpose: Generic fixture capability.\n    active: true\n"))

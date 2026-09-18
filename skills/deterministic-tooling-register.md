@@ -197,3 +197,12 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 | Skill | Classification | Support / Preferred Shape |
 | --- | --- | --- |
 | `wf-react-change-ui-boundary-method` | `already-backed` | Use [`node_capability_surface_audit.py`](../tools/node_capability_surface_audit.py) to confirm exact `react-dom` evidence and required project-owned package scripts. State ownership, render purity, effect discipline, accessibility, async behavior, and test-layer decisions remain workflow-led. |
+
+## Vite, PostgreSQL, Prisma, and Railway Workflow Skills
+
+| Skill | Classification | Support / Preferred Shape |
+| --- | --- | --- |
+| `wf-vite-change-build-runtime-boundary-method` | `already-backed` | Use [`node_capability_surface_audit.py`](../tools/node_capability_surface_audit.py) for exact `vite` and project-script evidence. Mode/env, proxy/production, base/assets, and hosted-runtime judgment remains workflow-led. |
+| `wf-postgresql-change-relational-contract-method` | `partial-tool` | Use [`environment_topology_contract_scaffold.py`](../tools/environment_topology_contract_scaffold.py) for declared-target readiness. Generic PostgreSQL activation remains intentionally unknown without project-owned evidence; integrity, locking, migration, performance, privilege, and recovery decisions remain workflow-led. |
+| `wf-prisma-change-schema-migration-contract-method` | `already-backed` | Use [`node_capability_surface_audit.py`](../tools/node_capability_surface_audit.py) for exact `@prisma/client` and project-script evidence; schema files remain independent candidate evidence. Version-specific migration, drift, generation, and rollout decisions remain workflow-led. |
+| `wf-railway-change-service-deployment-contract-method` | `partial-tool` | Use [`environment_topology_contract_scaffold.py`](../tools/environment_topology_contract_scaffold.py) to classify Railway files as candidate evidence. Fresh remote identity, mutation authority, deployed revision, health, and recovery proof remain workflow-led. |

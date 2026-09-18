@@ -20,10 +20,10 @@ The current Belluga baseline keeps these capabilities available:
 | `go` | future | Reserved backend/service capability for future migration or new services. |
 | `nestjs` | experimental | Technically complete minimum module/boundary and Node-audit package awaiting separately authorized lifecycle admission. |
 | `react` | experimental | Technically complete minimum React UI-boundary and Node-audit package awaiting separately authorized lifecycle admission. |
-| `vite` | experimental | Candidate frontend build, development-server, asset, and environment-mode capability. |
-| `postgresql` | experimental | Candidate relational persistence and database-operations capability. |
-| `prisma` | experimental | Candidate ORM, generated-client, schema, and migration capability. |
-| `railway` | experimental | Candidate service deployment and release-readiness capability. |
+| `vite` | experimental | Technically complete minimum build/runtime package awaiting separately authorized lifecycle admission. |
+| `postgresql` | experimental | Technically complete minimum relational-integrity package awaiting separately authorized lifecycle admission. |
+| `prisma` | experimental | Technically complete minimum schema/migration package awaiting separately authorized lifecycle admission. |
+| `railway` | experimental | Technically complete minimum service/deployment-contract package awaiting separately authorized lifecycle admission. |
 
 Availability means Delphi can provide reusable support. It does not mean every downstream project has the stack active.
 
