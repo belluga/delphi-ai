@@ -1,127 +1,114 @@
 ---
 name: test-quality-audit
-description: "Audit test quality and test-first/TDD alignment for Flutter/Laravel/Web so bypasses, weak assertions, and retrofit-risk are blocked."
+description: "Audit stack-aware test quality and test-first alignment so bypasses, weak assertions, false parity, and retrofit risk are blocked."
 ---
 
 # Test Quality Audit
 
 ## Purpose
-Detect and eliminate bypasses, weak assertions, and retrofit-risk that let regressions pass unnoticed, especially on Flutter ↔ Laravel compatibility paths and behavior-defining changes.
+
+Detect bypasses, weak assertions, false environment parity, and retrofit risk across project-declared stacks. Judge evidence against the behavior and boundary claimed, without imposing an unrelated framework, runner, database, transport, browser, or device.
 
 ## Scope Controls
-- This skill never bypasses TODO governance. If project artifacts will change, follow TODO + `APROVADO` gates first.
-- Treat tests as executable specifications, not just post-hoc validation. When behavior is verifiable, prefer fail-first/test-first evidence over retrofitted coverage.
-- Classify audit complexity as `small|medium|big`:
-  - `small`: focused audit, consolidated findings.
-  - `medium|big`: include full Plan Review framing for test quality risks (Architecture, Code Quality, Tests, Performance, Security).
-- Pair with `bug-fix-evidence-loop` for bugfix/regression root-cause loops.
-- Pair with `test-creation-standard` when the audit concludes tests must be created or rewritten.
-- Pair with `verification-debt-audit` when closure risk extends beyond tests into evidence drift, waivers, or inline code TODO debt.
-- Pair with `frontend-race-condition-validation` when async UI/button/search/filter flows are in scope.
 
-## Preferred Deterministic Helper
-- Default static scan for common test-quality signals:
-  - `bash delphi-ai/tools/test_quality_audit.sh`
-- Scan only the currently changed/untracked test paths:
-  - `bash delphi-ai/tools/test_quality_audit.sh --scan-git-modified`
-- Restrict the audit to explicit files or folders:
-  - `bash delphi-ai/tools/test_quality_audit.sh --path <test-path> [--path <test-path> ...]`
-- Exit code `2` means the audit completed and found `medium|high` quality-risk signals. Treat that as evidence to review, not as permission to weaken the test scope.
+- This skill never bypasses TODO governance. If project artifacts change, follow TODO and `APROVADO` gates first.
+- Treat tests as executable specifications. Prefer fail-first evidence for verifiable bugfixes, regressions, and behavior-defining changes.
+- Classify audit complexity as `small|medium|big`; medium/big audits include Architecture, Code Quality, Tests, Performance, and Security framing.
+- Resolve active capabilities, owning manifests, project-owned commands, and affected boundaries before applying stack-specific checks.
+- Pair with `bug-fix-evidence-loop`, `test-creation-standard`, `verification-debt-audit`, or `frontend-race-condition-validation` when their scopes apply.
 
-## Generic Flow Guardrails (Reusable)
-- `GF-01` Preflight/harness/environment failures are `blocked` evidence, not product failures by default.
-- `GF-02` Shared-lane validation must use canonical product APIs/surfaces; test-only endpoints are forbidden.
-- `GF-03` Parse/contract failures in reference assertions are hard-fail conditions.
-- `GF-04` Required promotion gates cannot pass with flaky outcomes (including retry-only success).
-- `GF-05` Artifact fallback directories that mask permission/ownership faults are forbidden.
+## Preferred Deterministic Helpers
+
+- Run `bash delphi-ai/tools/test_quality_audit.sh`, optionally with `--scan-git-modified` or repeatable `--path <test-path>`.
+- For Node/TypeScript capability ownership, run `python3 delphi-ai/tools/node_capability_surface_audit.py --repo <project-root> --expect <capability> [--manifest <relative/package.json>] [--require-script <script>]` before judging runner or script coverage.
+- Exit code `2` from the static audit means medium/high signals were found. Review them; do not weaken the scope to clear the signal.
+
+## Generic Guardrails
+
+- `GF-01` Preflight, harness, and environment failures are blocked evidence, not product failures by default.
+- `GF-02` Shared-lane validation uses canonical product surfaces; test-only product endpoints are forbidden.
+- `GF-03` Parse and contract failures in reference assertions hard-fail.
+- `GF-04` Required promotion gates cannot pass with flaky or retry-only outcomes.
+- `GF-05` Artifact fallback paths that mask ownership or permission faults are forbidden.
+- `GF-06` A narrow test or mocked boundary cannot substantiate a broader compatibility or end-to-end claim.
 
 ## Audit Workflow
-1. **Audit framing**
-   - Confirm target stacks and compatibility intent (`compatibility` vs `unit-only`).
-   - If an active tactical TODO exists, capture relevant decision IDs to validate (`Decision Baseline` reference).
-   - Identify critical user journeys that must be proven (for example Home event listing, search, create/edit flows).
-   - If the change is large or architectural, require explicit evidence that unit + widget + integration coverage exists for the affected critical paths.
-2. **Check fail-first / TDD alignment**
-   - Identify the recorded or implied test strategy: `test-first|test-after|unknown`.
-   - For bugfix/regression or behavior-defining work, identify the concrete failing assertion(s) that should exist before implementation.
-   - If current tests only validate the final implementation and would not fail on buggy behavior, classify the finding as `retrofit-risk`.
-   - If test-first was intentionally not applicable, require explicit rationale and verify it is coherent with task scope.
+
+1. **Frame the audit**
+   - Record active capabilities, compatibility intent, changed behaviors, affected boundaries, topology, and relevant baseline decisions.
+   - For large or architectural changes, require unit/provider/component plus integration/module/adapter evidence for each affected critical path.
+2. **Check fail-first alignment**
+   - Identify `test-first`, `test-after`, `not-applicable`, or `unknown` and the concrete assertion that demonstrates the pre-change failure.
+   - Classify final-state-only tests that would not expose the bug as `retrofit-risk` unless a coherent non-applicability rationale exists.
 3. **Scan for bypass flags**
-   - Block: `skip`, `test.only`, `describe.only`, and CI-level golden update bypasses.
-   - Block: test-only route usage in shared lanes (for example `/test-support`).
-4. **Verify real-backend coverage where required**
-   - If compatibility is in scope, confirm integration tests hit a real local backend.
-   - Confirm both API reachability and authenticated/identity path are exercised where required.
-   - If the change is large or architectural, missing integration evidence is a material finding even when unit/widget coverage exists.
+   - Block committed skips, focused-test markers such as `test.only`/`describe.only`, CI golden-update bypasses, and shared-lane test-only routes.
+4. **Match evidence to the claim**
+   - Require real infrastructure only when compatibility or the contract crosses that boundary.
+   - Verify both reachability and identity/authentication paths when those are part of the claim.
+   - Do not accept unit-only evidence for a changed wiring, serialization, persistence, transport, or runtime boundary.
 5. **Check fallback logic**
-   - Ensure tests do not silently switch to mocks when real calls fail.
-   - Ensure runners do not silently switch output/artifact paths when canonical directories are not writable.
-6. **Verify DI parity**
-   - If tests override DI/service-locator bindings, lifecycle must match production (`registerFactory` vs `registerSingleton`) unless explicitly asserted and documented.
+   - Block silent fallback from required real calls to mocks, from an owned fixture to ambient live data, or from canonical artifact paths to fallback directories.
+6. **Verify dependency-injection parity**
+   - Test replacements must preserve the relevant production token, scope/lifecycle, and failure semantics unless an explicit documented exception is itself asserted.
 7. **Validate failure behavior**
-   - Ensure tests fail loudly on error payloads, empty responses, and contract mismatches.
-   - Block tests that only assert “no exception” or only assert HTTP status without payload semantics when behavior depends on payload.
+   - Require loud failures for error payloads, empty required responses, parse errors, contract mismatches, and rejected dependencies.
+   - Block no-exception-only and transport-status-only assertions when business semantics matter.
 8. **Validate assertion quality**
-   - Ensure assertions check business outcomes, not only transport outcomes.
-   - Ensure positive path tests verify expected data presence when the scenario requires data presence.
-   - Ensure negative path tests verify explicit failure/error states.
-   - Ensure async UI coverage includes race-sensitive scenarios when the product flow can be retriggered or reordered in flight.
-   - Ensure release-gating tests do not choose proof subjects via ambient `rows[0]`, `hostCandidates[0]`, or similar registry/list fallbacks when a deterministic owned target is practical.
-   - Ensure exact-subject assertions do not depend on first-page/first-candidate assumptions from live list endpoints.
-9. **Confirm CI environment parity**
-   - Laravel tests use local MongoDB with replica set (not Atlas).
-   - Local/manual Laravel test execution uses `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh` (or equivalent local-safe env override) and never raw `php artisan test` with inherited environment.
-   - Flutter integration tests use domain/scheme overrides (not hardcoded production domains).
-10. **Web bundle integrity**
-   - Confirm bundle metadata matches pinned Flutter commit.
-   - Browser test source-of-truth belongs in `tools/flutter/web_app_tests`.
-   - Browser execution must go through `tools/flutter/run_web_navigation_smoke.sh` / `tools/flutter/web_app_smoke_runner`, not via authored tests inside `web-app`.
-   - `web-app` must remain a compiled bundle output, not the source location for browser-test authoring.
-11. **Platform matrix audit**
-   - If compatibility claim includes mobile and web, verify evidence exists for both.
-   - Mark missing required platform execution as `blocked`, not `passed`.
-12. **Issue cards (mandatory for material findings)**
-   - For each issue provide: `Issue ID`, severity, evidence (`file:line`), why-now, options `A/B/C` (include do-nothing when reasonable), and recommended option.
-13. **Failure Modes and Uncertainty**
-   - Record likely failure modes/edge cases plus assumptions/unknowns/confidence.
-14. **Decision Adherence Validation**
-   - If baseline decisions exist in active TODO, map each to `Adherent`/`Exception` with evidence.
-   - Any unresolved `Exception` means audit outcome is not delivery-ready.
+   - Assert externally meaningful outcomes and explicit negative states.
+   - Cover retriggerable asynchronous races when applicable.
+   - Use deterministic owned proof subjects; do not rely on first-row, first-page, or first-candidate ambient data.
+9. **Confirm environment and command parity**
+   - Verify the exact project-owned runner/package-manager scripts and the topology prerequisites for the active capability.
+   - Treat live hosted services, hardcoded production targets, or undeclared local substitutions as findings unless the approved baseline explicitly requires them.
+10. **Audit build and runtime integrity when applicable**
+    - Confirm authored tests are not stored in compiled output.
+    - Match bundle/artifact metadata to the source revision and prove that manual/browser/device targets serve that build.
+11. **Audit the claimed platform matrix**
+    - Require evidence only for platforms in the claim, but mark any missing required platform `blocked`, never `passed`.
+12. **Write issue cards for material findings**
+    - Include issue ID, severity, `file:line` evidence, why-now, options A/B/C including do-nothing when reasonable, and recommendation.
+13. **Record failure modes and uncertainty**
+    - State likely edge cases, assumptions, unknowns, and confidence.
+14. **Validate decision adherence**
+    - Map each active baseline decision to `Adherent` or `Exception` with evidence. An unresolved exception is not delivery-ready.
+
+## Conditional Stack Checks
+
+- **NestJS:** test provider/use-case behavior, testing-module wiring, provider tokens/scopes/exports, and externally visible contracts at the chosen transport. Use the owning manifest's runner; do not assume Jest, Vitest, HTTP, Express, Fastify, Prisma, or PostgreSQL.
+- **Laravel:** use the project-owned safe runner. Require a local MongoDB replica set and prohibit Atlas only when MongoDB is the declared test datastore.
+- **Flutter:** require unit, widget, integration, web, or mobile lanes only where the change and platform claim demand them; use project-owned domain/scheme overrides.
+- **Browser/Web:** keep test sources outside compiled bundles, use the project-owned browser runner, and require runtime freshness before accepting observations.
 
 ## Common Bypass Patterns (Block)
-- Catching exceptions and continuing without failing the test.
-- Tests that merely codify current buggy behavior instead of intended behavior.
-- Mock fallbacks that hide real backend failures.
-- DI lifecycle changes in tests without explicit validation.
-- Environment flags that disable real API calls in CI.
-- Overly broad network stubs that always return success.
-- Assertions that pass on empty data where non-empty behavior is expected.
-- Assertions that ignore required UI state transitions (loading -> success/error).
-- Assertions coupled only to implementation details while missing user-visible or contract-visible outcomes.
-- Test harnesses that bypass navigation/entry flow while claiming end-to-end coverage.
-- Release-gating tests that choose proof subjects from ambient live data (`rows[0]`, `hostCandidates[0]`, ambient `candidates.slice(0, minimum)`) instead of deterministic self-owned fixtures or managed proof targets.
-- Exact-subject proofs that rely on first-page or first-candidate list assumptions instead of canonical pagination/ownership strategy.
-- Architectural changes claimed safe from unit/widget-only evidence.
-- Flaky-required gates accepted as pass in CI/promotion flow.
-- Runner fallback output dirs that hide ownership/permission defects.
-- Behavior-defining changes with no clear fail-first target and no rationale for skipping test-first work.
+
+- Catching exceptions and continuing without failing.
+- Tests that codify current buggy behavior instead of intended behavior.
+- Mock or live-service fallbacks that hide required-boundary failures.
+- Dependency-injection scope/token changes without explicit validation.
+- Environment flags that disable required integration behavior in CI.
+- Overly broad stubs that always succeed.
+- Assertions that pass on empty data or ignore required state transitions.
+- Ambient live-data selection for release-gating proof subjects.
+- End-to-end or architectural safety claimed from unit-only evidence.
+- Flaky required gates accepted as pass.
+- Behavior-defining changes with no fail-first target and no rationale.
 
 ## Required Evidence
-- Explicit assertion that real backend was used when required.
-- Explicit evidence that large or architectural changes received unit + widget + integration coverage for the affected critical paths.
-- For bugfix/regression or behavior-defining work, evidence of a fail-first target (or explicit rationale for non-applicability).
-- Logs/output proving the correct domain + scheme were used.
-- Evidence DI wiring matches production, or documented/validated exception.
-- CI evidence showing local Mongo + replica set startup.
-- Evidence that required platform matrix was executed (`web`, `mobile`) or explicitly marked `blocked`.
-- Decision-adherence table when TODO decisions are in scope.
+
+- Capability and owning-command inventory.
+- Coverage/evidence matrix with deliberate exclusions.
+- Proof of the real declared boundary where compatibility requires it.
+- Fail-first target or explicit non-applicability rationale.
+- Dependency-injection parity evidence or documented/asserted exception.
+- Required platform status as `passed|blocked|failed|flaky`.
+- Decision-adherence table when baseline decisions are in scope.
 
 ## Done Criteria
-- No bypass patterns in changed tests.
-- No unresolved `retrofit-risk` for bugfix/regression or behavior-defining work.
-- Large or architectural changes are not closed on unit/widget-only evidence.
-- Compatibility tests are real-backend and fail loudly on mismatch.
-- CI steps align with local Mongo usage and domain overrides.
-- Material findings include issue cards with tradeoffs.
-- Required platform execution evidence is complete for claimed compatibility scope.
-- Decision-adherence evidence is complete (or explicit approved exception path exists).
+
+- No bypass remains in changed tests.
+- No unresolved retrofit risk remains for behavior-defining work.
+- Evidence layers substantiate, and do not overstate, the compatibility or architecture claim.
+- Required real-boundary tests fail loudly on mismatch.
+- Exact commands and topology match the declared project surface.
+- Material findings have actionable issue cards.
+- Required platform and decision evidence is complete or explicitly dispositioned.

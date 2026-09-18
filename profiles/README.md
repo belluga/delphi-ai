@@ -53,8 +53,13 @@ Profiles are not the same as technical scope.
 Typical scope overlays:
 - `flutter`
 - `laravel`
-- `web`
+- `nestjs`
+- `react`
+- `vite`
+- `postgresql`
+- `prisma`
 - `docker`
+- `railway`
 - `cross-stack`
 - `delphi-self-maintenance`
 
@@ -62,7 +67,10 @@ Example:
 - `Genesis / Product-Bootstrap` + `Cross-stack`
 - `Operational / Coder` + `Flutter`
 - `Operational / Coder` + `Laravel`
+- `Operational / Coder` + `NestJS, PostgreSQL, Prisma`
+- `Operational / Coder` + `React, Vite`
 - `Operational / DevOps` + `Docker`
+- `Operational / DevOps` + `Railway`
 - `Strategic / CTO` + `Cross-stack`
 
 ## Handoffs

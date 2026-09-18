@@ -3,5 +3,7 @@
   "laravel": ["logic", "architecture", "security"],
   "flutter": ["logic", "ui_fidelity", "performance"],
   "docker": [],
+  "nestjs": ["logic", "architecture", "security"],
+  "react": ["logic", "ui_fidelity", "performance"],
   "core": ["logic", "critique"]
 }

@@ -89,12 +89,44 @@ class StackCapabilityRegistryTest(unittest.TestCase):
 
     def test_canonical_registry_contains_exact_experimental_candidates(self) -> None:
         registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
-        expected = {"nestjs", "react", "postgresql", "prisma", "railway"}
+        expected = {"nestjs", "react", "vite", "postgresql", "prisma", "railway"}
         experimental = {
             name for name, capability in registry.capabilities.items()
             if capability.lifecycle == "experimental"
         }
         self.assertEqual(experimental, expected)
+
+    def test_canonical_nestjs_capability_has_an_independent_package_pending_admission(self) -> None:
+        registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
+        nestjs = registry.capabilities["nestjs"]
+        self.assertEqual(nestjs.lifecycle, "experimental")
+        self.assertEqual(
+            nestjs.detection_markers.package_json_requires_any,
+            ("@nestjs/core",),
+        )
+        joined_surfaces = "\n".join(nestjs.default_surfaces)
+        self.assertIn(
+            "skills/rule-nestjs-nestjs-architecture-always-on/",
+            nestjs.default_surfaces,
+        )
+        for unrelated in ("react", "vite", "postgresql", "prisma", "docker", "railway"):
+            self.assertNotIn(f"/{unrelated}/", joined_surfaces)
+
+    def test_canonical_react_capability_has_an_independent_package_pending_admission(self) -> None:
+        registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
+        react = registry.capabilities["react"]
+        self.assertEqual(react.lifecycle, "experimental")
+        self.assertEqual(
+            react.detection_markers.package_json_requires_any,
+            ("react-dom",),
+        )
+        self.assertIn(
+            "skills/rule-react-react-architecture-always-on/",
+            react.default_surfaces,
+        )
+        joined_surfaces = "\n".join(react.default_surfaces)
+        for unrelated in ("nestjs", "vite", "postgresql", "prisma", "docker", "railway"):
+            self.assertNotIn(f"/{unrelated}/", joined_surfaces)
 
     def test_rejects_unknown_capability_field(self) -> None:
         with self.assertRaisesRegex(RegistryValidationError, "unknown .* key"):

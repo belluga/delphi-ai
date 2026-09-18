@@ -1,134 +1,126 @@
 ---
 name: test-creation-standard
-description: "Create and update Flutter/Laravel/Web tests with test-first/TDD bias, compatibility gates, and decision-adherence proof."
+description: "Create or update tests for project-declared stacks with test-first bias, risk-based evidence layers, compatibility gates, and decision-adherence proof."
 ---
 
 # Test Creation Standard
 
 ## Purpose
-Establish a high-confidence testing standard for Flutter + Laravel + Web that treats tests as executable specifications, catches real incompatibilities before deploy, and blocks false positives.
+
+Establish a stack-aware testing standard that treats tests as executable specifications, selects evidence from changed behavior and contracts, and blocks false confidence without imposing an unrelated framework, runner, database, transport, browser, or device.
 
 ## Scope Controls
-- This skill does not override TODO governance. If project artifacts change, use tactical TODO (or eligible ephemeral TODO) and obtain `APROVADO` first.
-- For medium/big test initiatives, include Plan Review framing before implementation:
-  - Architecture, Code Quality, Tests, Performance, Security.
-- This skill is for automated test quality and coverage. It does not authorize fallback behavior in production code paths.
-- This skill must prevent false negatives caused by harness/environment readiness defects from being misclassified as product regressions.
-- Prefer test-first sequencing when behavior is verifiable, especially for bugfixes, regressions, user-visible behavior, and contract-level changes.
-- When a new or changed test also changes a stage-facing suite family, wrapper, lifecycle step, or broad local stage gate such as `stage-full`, load `ci-equivalent-test-surface-admission`.
 
-## Preferred Deterministic Helper
-- Use `bash delphi-ai/tools/test_coverage_matrix_scaffold.sh --intent <compatibility|unit-regression|critical-user-journey> --strategy <test-first|test-after|not-applicable> --platform-matrix <value> --behavior "<critical path>" [--behavior "..."] [--decision "D-T01:..."] [--output <path>]` to scaffold the repeatable coverage matrix before filling in the real decisions.
-- Treat the helper as the planning skeleton only; actual test design, exclusions, and approval-sensitive tradeoffs remain in this workflow.
+- This skill does not override TODO governance. If project artifacts change, use tactical TODO (or eligible ephemeral TODO) and obtain `APROVADO` first.
+- For medium/big test initiatives, include Plan Review framing for Architecture, Code Quality, Tests, Performance, and Security.
+- Resolve active capabilities and owning manifests before selecting commands or evidence lanes.
+- Use exact project-owned package-manager, runner, build, and CI-equivalent commands. Never infer a runner from a framework name alone.
+- Prefer test-first sequencing when behavior is verifiable, especially for bugfixes, regressions, user-visible behavior, and contract changes.
+- A test may replace an external dependency only at an intentional boundary. Compatibility evidence must not silently fall back from required real infrastructure to a mock.
+- When a test changes a stage-facing suite family, wrapper, lifecycle step, or broad local gate such as `stage-full`, load `ci-equivalent-test-surface-admission`.
+
+## Preferred Deterministic Helpers
+
+- Use `bash delphi-ai/tools/test_coverage_matrix_scaffold.sh --intent <compatibility|unit-regression|critical-user-journey> --strategy <test-first|test-after|not-applicable> --platform-matrix <value> --behavior "<critical path>" [--behavior "..."] [--layer "<project layer>"] [--prerequisite "<requirement>"] [--stage "<project stage>"] [--decision "D-T01:..."] [--output <path>]` to scaffold the coverage matrix. Its defaults are stack-neutral; pass the optional rows when the project contract is more specific.
+- For a Node/TypeScript capability, use `python3 delphi-ai/tools/node_capability_surface_audit.py --repo <project-root> --expect <capability> [--manifest <relative/package.json>] [--require-script <script>]` to resolve the owning manifest and declared script surface without executing package scripts.
+- Helpers provide repeatable facts and structure. Test design, exclusions, runner choice, and approval-sensitive tradeoffs remain judgment-led.
 
 ## Workflow
-1. **Define target and intent**
-   - Target stack: Flutter / Laravel / Web.
-   - Intent: `compatibility` vs `unit-regression` vs `critical-user-journey`.
-   - Any large or architectural change automatically requires integration coverage in addition to unit/widget coverage for the affected critical paths.
-2. **Choose minimum test types that prove intent**
-   - Compatibility and critical-user-journey require integration tests against real backend.
-   - Large or architectural changes cannot claim safety from unit/widget evidence alone.
-   - Unit-regression cannot be used to claim end-to-end safety.
+
+1. **Resolve the target and intent**
+   - Record the active stack capabilities, owning package/workspace, changed behavior, and intent: `compatibility`, `unit-regression`, or `critical-user-journey`.
+   - Resolve topology before requiring runtime, browser, device, container, or hosted-service evidence.
+2. **Choose the minimum evidence layers that prove the claim**
+   - Unit/provider/component: isolated decisions, transformations, state, and failure behavior.
+   - Integration/module/adapter: framework wiring and collaboration across an intentional boundary.
+   - Contract/application/end-to-end: externally visible behavior through the real boundary claimed by the change.
+   - Browser/device: only when that surface is active and materially affected.
+   - Large or architectural changes require integration evidence for affected critical paths; unit evidence alone cannot prove boundary compatibility.
 3. **Freeze test decisions**
-   - Record decision IDs (e.g., `D-T01`, `D-T02`) for scope, environments, and gate criteria.
+   - Record decision IDs such as `D-T01` for scope, environment, evidence lanes, deliberate exclusions, and gate criteria.
    - Freeze expected outcomes before implementation.
 4. **Define fail-first targets**
-   - Record the test strategy as `test-first|test-after|not-applicable`.
-   - If behavior is verifiable, define the concrete failing assertion(s) or failing scenario(s) that should go red before implementation.
-   - If test-first is not applicable, record why.
-5. **Build a coverage matrix for each critical path**
-   - Required layers:
-     - Backend contract/feature tests.
-     - Repository/controller state tests.
-     - Screen integration test.
-     - Navigation test from shell/entry route.
-   - For large or architectural changes, make the unit + widget + integration lanes explicit in the matrix for every affected critical path.
-   - If behavior depends on legacy data shape, add fixture/backfill compatibility tests.
-   - If the changed flow includes async UI/buttons/search/filter/pagination/retry behavior, add explicit race-condition scenarios (duplicate trigger, stale response, dispose/navigation mid-flight) or record why they are not applicable.
-   - If the test must locate one exact subject from a live list or registry, define a deterministic ownership strategy up front: self-seeded entity, managed fixture, or other canonically owned proof target. Do not rely on ambient `rows[0]`, `candidates[0]`, or registry-first fallbacks for release-gating evidence.
-6. **Define CI prerequisites**
-   - Flutter: backend reachable by domain/scheme overrides.
-   - Laravel: local MongoDB with replica set.
-   - Web: tests run against built bundle produced after Flutter tests pass.
-   - Mobile: emulator/device availability must be explicit (`available` or `blocked`).
-   - Harness/runtime readiness must be explicit where relevant: writable artifact dirs, required secrets/vars, host/domain reachability, and any lane-specific prerequisites such as local+tunnel topology.
+   - Record `test-first`, `test-after`, or `not-applicable`.
+   - For verifiable behavior, identify the assertion or scenario that should fail before the implementation changes.
+   - Record a concrete rationale when test-first is not applicable.
+5. **Build a coverage matrix per critical path**
+   - Map each behavior to the smallest sufficient evidence layers and exact project-owned command.
+   - Add fixture, migration, or backward-compatibility cases when legacy data or payload shapes are involved.
+   - For retriggerable asynchronous flows, cover duplicate triggers, stale responses, cancellation/disposal, retry, or explain non-applicability.
+   - Own exact proof subjects deterministically through a self-seeded entity, managed fixture, or canonical equivalent. Never depend on ambient first-row or first-candidate data.
+6. **Define prerequisites and topology**
+   - Record required services, hosts, environment variables, secrets, writable artifact paths, tenant/domain, and runtime owner.
+   - Require real database, broker, backend, container, browser, or device infrastructure only when the claimed contract crosses that boundary.
+   - Mark unavailable required infrastructure as `blocked`; do not substitute a weaker lane and call it equivalent.
 7. **Define artifacts and gates**
-   - Flutter tests gate web bundle build.
-   - Compatibility gate requires web + mobile execution (or explicit blocked status).
-   - Docker validation gates deploy on bundle metadata matching pinned Flutter commit.
-8. **Admit stage-facing test-surface changes**
-   - If the test changes `CI Equivalent` or broad stage-gate composition, route it through `ci-equivalent-test-surface-admission`.
-   - Keep local broad-stage parity and stage pipeline on the same owner wrapper/leaf-command family.
-   - Preserve readonly vs mutation separation; mutation remains non-`main`.
-9. **Implement tests with anti-bypass rules**
-   - No silent mock fallback for compatibility/critical-user-journey scope.
-   - No committed `skip`, `only`, or committed golden update bypass.
-   - No ambient live-data fallback for exact subject selection in release-gating tests. If a proof target matters, bootstrap or manage it deterministically.
-   - No first-page or first-candidate assumptions when the assertion depends on locating one exact registry/list subject.
-   - No assertions that pass only on “no exception thrown” without business-state verification.
-   - No success criteria based solely on HTTP status when payload semantics matter.
-   - No retrofitted tests that only validate the post-fix implementation when a fail-first path was practical.
-   - Centralize reusable release-gating selector helpers instead of copying local dropdown/picker/actionability fallbacks across specs.
+   - Order build, test, publish, metadata, and deploy gates according to the active project topology.
+   - Treat browser/device evidence as valid only after runtime freshness proves the intended build is being served.
+8. **Admit stage-facing changes**
+   - Route changes to `CI Equivalent` or broad gate composition through `ci-equivalent-test-surface-admission`.
+   - Keep local broad-stage parity and the stage pipeline on the same owner wrapper/leaf-command family.
+   - Preserve readonly versus mutation separation; mutation remains non-`main` unless the approved baseline says otherwise.
+9. **Implement with anti-bypass rules**
+   - No silent mock or live-service fallback.
+   - No committed `skip`, `only`, focused-test marker, or golden-update bypass.
+   - No assertion that passes only because no exception was thrown or an HTTP status matched when business semantics matter.
+   - No retrofit-only coverage when a practical fail-first path existed.
+   - Centralize reusable release-gating selectors and fixtures.
 10. **Run validation**
-   - Execute required suites and CI-equivalent commands.
-   - Capture evidence for each frozen decision.
-   - Run preflight checks before the suite so environment/harness defects are caught as readiness issues, not test failures.
-11. **Classify execution status honestly**
-   - `passed`: all required gates executed and green.
-   - `blocked`: required gate could not run (for example no mobile device/emulator).
-   - `failed`: gate executed and failed.
-   - `blocked` is never equivalent to `passed`.
-   - If the suite cannot produce valid evidence because of local/transient infra, harness readiness, permission ownership, missing secrets, or target unreachability, classify it as `blocked`/invalid evidence rather than `failed`.
-   - Do not justify product-code changes from `blocked` local evidence alone.
-12. **Decision Adherence Validation**
-   - Build a `Decision Adherence Validation` table for `D-T*` decisions.
-   - Any unresolved `Exception` blocks completion until decisions are updated and approved.
+    - Run narrow affected-area checks first, then every applicable broad project-owned CI-equivalent row at package closeout.
+    - Capture evidence for each frozen decision and run readiness preflights before runtime-dependent suites.
+11. **Classify execution honestly**
+    - `passed`: the required gate executed and is green.
+    - `blocked`: the gate could not produce valid evidence.
+    - `failed`: the gate executed and demonstrated a product or assertion failure.
+    - `flaky`: any retry-dependent result; it is not promotion-grade evidence without an approved waiver.
+    - Do not justify product changes from blocked harness, environment, permission, secret, or reachability evidence alone.
+12. **Validate decision adherence**
+    - Map each `D-T*` decision to `Adherent` or `Exception` with evidence.
+    - An unresolved exception blocks completion.
 
-## Flutter Guidelines
-- Use `integration_test` for compatibility flows.
-- For large or architectural Flutter changes, the minimum evidence matrix is unit + widget + integration for the affected critical paths.
-- Use `--dart-define` for local backend targeting:
-  - `LANDLORD_DOMAIN` (e.g., `local.test`)
-  - `API_SCHEME` (e.g., `http`)
-- Keep production defaults untouched (`https` + production domains).
-- For critical-user-journey claims, run at least:
-  - one web integration flow,
-  - one mobile integration flow.
-- When async UI actions or rapid user re-entry are in scope, pair the test design with `frontend-race-condition-validation`.
+## NestJS Overlay (Only When Active)
 
-## Laravel Guidelines
-- CI must run against local MongoDB service container with replica set enabled.
-- Never use Atlas in CI.
-- Local/manual Docker runs must use the canonical safe runner:
-  - `./laravel-app/scripts/delphi/run_laravel_tests_safe.sh <test-args>`
-  - The runner must fail fast when APP/Mongo hosts are not local-safe.
-- Include migrations/seed steps required for integration scenarios.
-- Add explicit assertions for canonical response semantics (not only status codes).
-- Include regression tests for legacy payload/data migration cases when applicable.
+- Unit-test providers, guards, pipes, interceptors, and use cases at their declared boundaries.
+- Use the Nest testing module for module integration and replace external ports deliberately; verify provider tokens, scopes, exports, and failure paths.
+- Add application-level contract tests for externally visible behavior, using the project's chosen transport and adapter rather than assuming HTTP, Express, or Fastify.
+- Use the runner and scripts declared by the owning `package.json`; Jest and Vitest are both valid when project-owned.
+- Require PostgreSQL, Prisma, Docker, Railway, or any other external capability only when it is active and the tested contract crosses it.
 
-## Web Guidelines
-- Browser test source-of-truth belongs in `tools/flutter/web_app_tests`.
-- Execute web navigation tests through `tools/flutter/run_web_navigation_smoke.sh`, which runs Playwright from `tools/flutter/web_app_smoke_runner/`.
-- `web-app` is the compiled bundle output and must not become the authored source location for browser tests.
-- Run web navigation tests only after Flutter tests pass and bundle is built.
-- Prefer explicit preflight in web runners for artifact directory ownership, reachable target host, and required environment variables. A preflight failure is a harness/readiness outcome, not a product failure.
-- Validate: home load, primary navigation, and one critical CTA flow.
+## Flutter Overlay (Only When Active)
+
+- Use `integration_test` for compatibility flows; large or architectural changes need unit, widget, and integration evidence for affected critical paths.
+- Use project-owned `--dart-define` domain/scheme overrides and leave production defaults unchanged.
+- Require web and mobile evidence only when the compatibility claim includes both platforms; otherwise record the excluded platform explicitly.
+- Pair retriggerable asynchronous UI changes with `frontend-race-condition-validation`.
+
+## Laravel Overlay (Only When Active)
+
+- Use the project-owned safe runner and local service topology; never inherit credentials for a live hosted database.
+- When the approved topology uses MongoDB, CI must use the declared local replica-set service rather than Atlas.
+- Include required migrations/seeds and assert response semantics, not only status codes.
+- Cover legacy payload or data migration behavior when applicable.
+
+## Browser/Web Overlay (Only When Active)
+
+- Keep browser tests in the project-owned authored source, never in compiled output.
+- Run the project-owned build/publish path before browser evidence and attest runtime freshness.
+- Preflight artifact ownership, target reachability, and required environment variables.
+- Validate only the navigation and user journeys materially included in the claim.
 
 ## Required Outputs
-- Test plan notes (coverage + deliberate exclusions).
-- Recorded test strategy plus fail-first targets or explicit non-applicability rationale.
-- CI steps and gating rationale by stack.
-- Bundle metadata evidence (`flutter_git_sha`, `build_time_utc`, `source_branch`).
-- Coverage matrix evidence for each critical path.
-- Explicit stage status map (`passed|blocked|failed`) for required gates.
+
+- Coverage matrix with deliberate exclusions and exact commands.
+- Test strategy plus fail-first targets or non-applicability rationale.
+- Prerequisite/topology map and explicit `passed|blocked|failed|flaky` status per required gate.
+- Evidence for each claimed layer and platform.
 - Decision-adherence table for frozen `D-T*` decisions.
+- Stack-specific build or bundle metadata only when that artifact is part of the active delivery contract.
 
 ## Done Criteria
-- Large or architectural changes have unit + widget + integration evidence for the affected critical paths.
-- Compatibility-critical flows covered by real-backend integration tests across required platforms.
-- When TDD/test-first is applicable, at least one fail-first target exists for each behavior-defining path under change.
-- Flutter tests gate bundle build.
-- Deploy gate enforces metadata pin alignment.
-- No unresolved `blocked` gate for required compatibility claims.
-- Decision-adherence table is fully resolved (`Adherent` or approved baseline update).
+
+- Evidence layers match the behavior and boundary claims.
+- Large or architectural changes include integration evidence for every affected critical path.
+- Applicable behavior-defining paths have a fail-first target or accepted rationale.
+- Required compatibility tests use the real declared boundary and fail loudly on mismatch.
+- No unresolved blocked, failed, or flaky gate supports a passing claim.
+- Decision adherence is resolved.

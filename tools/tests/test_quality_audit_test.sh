@@ -47,4 +47,18 @@ grep -q "3:  const host = hostCandidates\\[0\\];" "$OUTPUT"
 grep -q "7:    candidates: candidates.slice(0, minimum)," "$OUTPUT"
 grep -q "ambient_subject_fallback=3" "$OUTPUT"
 
+NODE_REPO="$TMP_DIR/node-repo"
+mkdir -p "$NODE_REPO/src"
+cat > "$NODE_REPO/src/service.spec.ts" <<'EOF'
+describe('service', () => {
+  it('returns an owned result', () => {
+    expect({ id: 'owned' }).toEqual({ id: 'owned' });
+  });
+});
+EOF
+
+bash "$TOOL" --repo "$NODE_REPO" >"$OUTPUT"
+grep -q "Outcome heuristic: none" "$OUTPUT"
+grep -q "service.spec.ts" "$OUTPUT"
+
 printf 'test_quality_audit_test: OK\n'

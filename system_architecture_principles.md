@@ -1,11 +1,11 @@
 # Documentation: System Architecture Principles
-**Version:** 1.0
+**Version:** 1.1
 
 ## 1. Introduction
 
 This document defines the architectural constitution for **our digital ecosystems**. These principles are the foundational source of truth for all design and engineering decisions. They are established to ensure any system we build is scalable, resilient, maintainable, and aligned with our core business objectives from its inception.
 
-All modules, services, and schemas designed for this platform **must** adhere to these principles. Stack-specific expectations live in the appendices (Flutter and Laravel/API) and refine—without replacing—the core mandates below.
+All modules, services, and schemas designed for a governed project **must** adhere to the stack-neutral principles below. Capability-specific appendices apply only when the project activates the corresponding namespace in its own constitution. A stack appendix may refine a core principle, but it must not silently activate itself or impose its technology on unrelated projects.
 
 ## 2. Architectural Modes
 
@@ -21,81 +21,81 @@ Use the Architecture Mode Transition Workflow (`workflows/docker/architecture-mo
 ## 3. Core Architectural Philosophy
 
 ### P-1: Domain-First, Schema-Second
-Our architecture is designed around the **Core Business Entities** defined in the `domain_entities.md` document. All system design decisions must originate from the needs of these domains. The technology (MongoDB, Laravel) is chosen to serve the domain, not the other way around. We will design our data structures to reflect real-world entities and their relationships, not to satisfy a specific storage mechanism.
+Our architecture is designed around the **Core Business Entities** defined in the project's `domain_entities.md` document. All system design decisions must originate from the needs of these domains. Frameworks, databases, build tools, and deployment platforms are chosen to serve the domain, not the other way around. Data structures must reflect real-world entities, invariants, relationships, and access patterns rather than accidental framework conventions.
 
-### P-2: Document-Oriented by Default
-We select MongoDB as our primary database. This choice mandates a document-oriented mindset. We will prioritize embedding related data within a single document over normalization (splitting data into multiple collections) wherever it aligns with a clear access pattern. This principle supports performance and data co-location.
+### P-2: Persistence Strategy Is Explicit and Project-Owned
+The project constitution and module contracts declare each active persistence technology and its ownership boundary. Relational, document, key-value, search, and event stores require different modeling rules; Delphi must never infer one from an ORM or application framework. Schema and query design must follow the activated database capability, documented access patterns, integrity requirements, and operational evidence.
 
-### P-3: API-Centric Ecosystem
-The system is defined as a set of services exposed via a secure, stable, and versioned API. The Laravel backend serves as the headless API provider. The Flutter application and any future clients (web, partner integrations) are pure consumers of this API. There will be no business logic within the client applications that is not also enforced by the API.
+### P-3: Explicit Boundary Contracts
+Every boundary the project actually exposes—library API, command, event, job, service protocol, or user interface—has a secure, stable, and explicitly owned contract. Providers own authoritative business rules; consumers may improve user experience but must not replace validation, authorization, or domain enforcement at the authoritative boundary. The project declares its provider and consumer surfaces instead of Delphi assuming an HTTP API or client/server topology.
 
 ### P-4: Foundational, Not Minimalist
 In Foundational Mode, this architecture is the definitive blueprint, not a minimal viable product (MVP). It may specify long-term capabilities (analytics, AI, future integrations), but future-aware documentation never by itself authorizes their implementation in a current tactical slice. For TODO-governed work, current implementation authority comes from the approved TODO and its frozen decisions; future-facing implementation explicitly authorized there remains valid. In Operational Mode, new capabilities still target the ideal state but must include migration and compatibility plans before release.
 
 **Simplification First:** Choose the simplest faithful Clean Code/SOLID design that satisfies approved intent and the target architecture. Simplicity is not minimum diff or minimum abstraction count: subtraction, consolidation, or redesign may be necessary. Avoiding an abstraction through scattered conditionals, duplication, or hidden coupling is not simplicity. Foundation planning defines future architecture; for TODO-governed work, the approved TODO governs current implementation.
 
-### P-4A: Explicit Scope/Subscope Governance
-Route, screen, and module ownership must be declared against the canonical scope policy (`foundation_documentation/policies/scope_subscope_governance.md`). Every navigation surface must identify `EnvironmentType`, main scope, and subscope (when applicable), and cross-scope transitions must be explicit about guard/identity expectations. New subscopes are not allowed without prior explicit decision and policy update.
+### P-4A: Explicit Scope and Ownership Governance
+Route, screen, endpoint, worker, service, and module ownership must be declared against the project's canonical scope policy when that policy exists. Every externally reachable surface must identify its owning context and relevant identity, authorization, and transition boundaries. Project-specific scope vocabularies such as tenant, account, business unit, or environment apply only when declared by that project. New scopes must not emerge implicitly from folder placement or implementation convenience.
 
-## 3. Data & Schema Design Principles (MongoDB)
+## 4. Data & Schema Design Principles
 
-### P-5: Unified Data Modeling (UDM)
-We will employ a Unified Data Modeling approach. Each primary collection will be designed to support the needs of its primary entity *and* the anticipated aggregation and query patterns from other services. We will embed data when the relationship is 1:few and the data is queried together. We will reference data (using `$lookup`) when the relationship is 1:many or when the referenced data is frequently updated independently.
+### P-5: Access-Pattern and Integrity-Aware Modeling
+Each persistent model must serve its domain invariants, expected access patterns, cardinality, consistency needs, and growth profile. Embedding, normalization, references, indexes, constraints, partitioning, and denormalized projections are deliberate decisions governed by the active database capability. No technique is a universal default across databases.
 
 ### P-6: Single Source of Truth (SSoT)
-Each piece of data must have a single, unambiguous source of truth. For example, a **Partner's** business information resides *only* in the `partners` collection. An **Offering** document may cache a Partner's name for display, but the `partners` collection remains the SSoT. Caching is a deliberate performance optimization, not a data model.
+Each piece of authoritative data must have one unambiguous owner. Replicas, caches, read models, search documents, and client state are derived projections with explicit freshness and invalidation contracts; they must never become accidental competing authorities.
 
 ### P-7: Immutability of Records
-Transactions and historical records are immutable. A `Transaction` or `Payment`, once created, must never be altered. Corrections will be handled by issuing corresponding compensatory transactions (e.g., a `Refund` transaction). This guarantees a perfect, auditable financial and activity ledger.
+Records whose business meaning is historical, financial, audit-sensitive, or event-like are immutable unless the project contract explicitly defines a safe correction model. Corrections should use compensating records or a versioned history where auditability is required.
 
 ### P-8: Explicit Schemas
-While MongoDB is schema-flexible, our application layer (Laravel) is not. All models will have a strictly defined schema. All fields, data types, and "enum" values must be explicitly defined in the architectural documentation *before* implementation. This ensures data integrity, consistency, and provides a clear contract for all services.
+All persisted and externally exchanged models have explicit schemas. Fields, types, nullability, enums, constraints, compatibility expectations, and ownership must be defined in canonical contracts before implementation. Database constraints and application validation complement rather than silently replace each other.
 
 ### P-9: Consistent ID Naming
-All primary keys for documents will be named `_id` and will use MongoDB's native `ObjectId`. All foreign keys (references to other documents) will be named using the singular entity name followed by `_id` (e.g., `user_id`, `partner_id`, `offering_id`). This provides predictable and self-documenting schemas.
+Identifier type and naming are declared per project and persistence capability, then used consistently across schema, application, API, events, and clients. Do not impose a database-native identifier such as `ObjectId`, UUID, sequence, or composite key on a project that has not activated that contract.
 
-### P-10: Native BSON Preservation
-When persisting embedded documents or arrays, we will favor the database driver's native BSON serialization (e.g., MongoDB's `DocumentModel`) and only introduce custom attribute casts when explicit normalization is required. This prevents double-encoding, preserves `ObjectId` fidelity, and keeps multi-snapshot histories (such as device fingerprints) consistent across client contexts.
+### P-9A: Native Type and Boundary Preservation
+Persistence adapters should preserve the active database driver's native types and semantics until a documented boundary requires normalization. Avoid double encoding, lossy identifier conversion, timezone drift, precision loss, and framework casts that obscure the stored representation.
 
-## 4. API & Service Design Principles (Laravel)
+## 5. Boundary & Service Design Principles
 
 ### P-10: Service-Oriented Logic
-The Laravel application will be structured around Domain Services. Logic pertaining to a specific domain (e.g., "Booking," "Payments") will be encapsulated within its own service class. Controllers will be lightweight, responsible only for request/response handling and invoking these services. This ensures business logic is reusable, testable, and isolated.
+Applications are structured around bounded domain or use-case behavior. When transport adapters exist, controllers, resolvers, handlers, commands, and consumers remain thin: they validate and map protocol input, invoke application behavior, and map results. Business decisions remain reusable, testable, and independent from a transport framework.
 
 ### P-11: Stateless Authentication
-All API endpoints will be stateless. Authentication will be managed via secure tokens (e.g., JWT or a similar standard). The server will not maintain session state, enabling horizontal scalability and simplifying client/server interaction.
+When a boundary requires authentication, its identity and session semantics must be explicit. Stateless request authentication is preferred for horizontally scaled service APIs unless the project documents a stateful session requirement and its storage, revocation, CSRF, and scaling behavior. Libraries, local commands, internal jobs, and public resources do not acquire authentication requirements merely from this principle.
 
 ### P-12: Resource-Oriented Naming
-API endpoints will adhere to RESTful principles and resource-oriented naming. Endpoints will be structured as `/{version}/{resource}/{identifier}` (e.g., `/v1/offerings/`, `/v1/users/{user_id}`). We will use HTTP verbs (GET, POST, PUT, DELETE) to represent actions on those resources.
+When HTTP APIs are active, use resource-oriented naming and standard method semantics unless the project documents another protocol or an action contract that cannot be represented faithfully as a resource. For HTTP, events, RPC, commands, and libraries alike, applicable versioning, identifiers, errors, idempotency, and compatibility behavior are explicit parts of the public contract.
 
 ### P-13: Comprehensive Data Validation
-All data entering the API (from any client) must be rigorously validated by the API layer. This includes type-checking, range validation, "enum" value checking, and business rule validation. The client-side (Flutter) validation is for user experience (UX) only; the API is the ultimate gatekeeper of data integrity.
+All data entering a service boundary must be rigorously validated. This includes type, range, enum, size, shape, authorization context, and applicable business rules. Client-side validation is for user experience only; the authoritative service boundary remains the gatekeeper of data integrity.
 
 ### P-14: Defended Input Surfaces
 Every externally supplied string or array is constrained to a documented, finite size that aligns with business intent (e.g., passwords 8–32 characters, display strings ≤255, email lists ≤10, permission lists ≤64, metadata payloads ≤8 KB). These bounds protect API surfaces from resource-exhaustion attacks, simplify capacity planning, and provide a repeatable contract for client implementers.
 
 ### P-15: Deterministic Pagination + Delta Streams
-List endpoints are page-based by default to ensure predictable load and client caching. Real-time updates are delivered through delta streams (e.g., SSE) that emit only change events and never replace paginated listing contracts. Cursor pagination is reserved for narrowly scoped feeds where page-based ordering is insufficient.
+When a project exposes large collection reads, it must choose and document a deterministic bounded-access strategy such as page, cursor, window, stream, or domain-specific batching based on ordering, consistency, caching, and scale needs. When real-time delivery is active, the project declares the transport and recovery semantics; SSE is one option, not a core default, and delta streams do not silently replace authoritative snapshot/listing contracts.
 
-## 5. Security & Identity Principles
+## 6. Security & Identity Principles
 
-### P-15: Principle of Least Privilege
-All actors in the system (Users, Partners, AI agents) will operate under the principle of least privilege. An actor's access rights must be limited to the absolute minimum required to perform their function. We will utilize a robust Role-Based Access Control (RBAC) system.
+### P-15A: Principle of Least Privilege
+All actors in the system—human users, service identities, organizations, integrations, and AI agents—operate under least privilege. Access rights are limited to what the declared role, attributes, scope, or capability requires. The project documents its authorization model rather than assuming RBAC is the only valid mechanism.
 
 ### P-16: Segregation of Identity
-A `User` (consumer) and a `Partner` (provider) are distinct domain entities. While a single person *may* be both, their identity, credentials, and data contexts will be managed separately within the system to ensure clear separation of concerns, permissions, and data.
+Authentication identity, domain actors, credentials, organizations, and authorization contexts are separate concepts unless a project contract deliberately unifies them. A person may act in multiple roles or scopes, but credentials and permissions must not be conflated with the domain entities they represent.
 
 ### P-17: Data Privacy by Design
 All personally identifiable information (PII) will be treated as sensitive. PII will be encrypted at rest, and access will be strictly logged and audited. API responses will be designed to *exclude* sensitive data by default, requiring explicit permissions to request it.
 
-## 6. Deployment & Operations Principles
+## 7. Deployment & Operations Principles
 
 ### P-18: Ingress Configuration Parity
-Every time an API route, prefix, or host pattern is established or revised, we must synchronize those updates across all ingress layers (NGINX, load balancers, API gateways) and infrastructure manifests in the ecosystem. Documentation, local Docker templates, and production ingress definitions must stay in lockstep to avoid routing drift between environments.
+When a project has ingress, every established or revised externally reachable route, protocol, prefix, host, or port must be synchronized across the ingress layers and infrastructure manifests that the project actually uses. Documentation and active local/production runtime definitions must stay in lockstep. This principle does not require NGINX, Docker, HTTP, or ingress for projects whose topology has none.
 
 ## Appendix A: Flutter Application Tenets
 
-These guidelines complement the core principles for any Flutter client implementation. Reference `foundation_documentation/flutter_architecture.md` for the full details.
+These guidelines apply only when the project activates the `flutter` capability. They complement the core principles for Flutter client implementations. Reference project-owned Flutter architecture documentation for the live details.
 
 1. **Feature-First Structure & Module Scopes** – Presentation folders follow `tenant/<feature>/screens/...` with controllers registered via `ModuleScope`. Controllers own local `StreamValue` state and UI controllers, expose repository-owned canonical streams by delegation, and keep widgets pure UI.
 2. **DTO → Domain → Projection Flow** – DTOs never reach widgets. Infrastructure mappers convert DTOs into ValueObjects; repositories expose domain entities/projections; controllers translate only when necessary. Projection diligence rules apply (ValueObjects expose UI-ready primitives).
@@ -107,7 +107,9 @@ These guidelines complement the core principles for any Flutter client implement
 
 ## Appendix B: Laravel / API Tenets
 
-These guidelines refine the core principles for the Laravel control plane and APIs. Reference the relevant canonical module docs under `foundation_documentation/modules/` for the live implementation snapshot.
+These guidelines apply only when the project activates the `laravel` capability. They refine the core principles for Laravel control planes and APIs. References to MongoDB, tenancy, Sanctum, route groups, or Flutter coordination apply only when those contracts are also declared by the project.
+
+0. **Conditional MongoDB Modeling** – When MongoDB is active, document embedding versus referencing from access patterns and cardinality; preserve native BSON/ObjectId semantics through the driver; use `_id` and reference naming consistently with the project contract; do not transfer these rules to relational schemas.
 
 1. **Multi-Tenant Routing Contracts** – Maintain the documented route groups: `/api/v1/initialize` (guest), `/admin/api/v1` (landlord middleware), `/api/v1` (tenant middleware), `/api/v1/accounts/{account_slug}` (tenant + account). Any change requires synchronized ingress updates (P‑18) and roadmap notes for Flutter clients.
 2. **Tenant Resolution Chain** – Preserve the `DomainTenantFinder` → `SwitchMongoTenantDatabaseTask` sequence; new entry points must invoke the same resolver before touching tenant data.

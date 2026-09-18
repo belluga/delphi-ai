@@ -18,12 +18,20 @@ The current Belluga baseline keeps these capabilities available:
 | `flutter` | available | Client app, Flutter web publication, device/browser validation, and reusable Flutter packages. |
 | `laravel` | available | Backend/API/domain workflows, package extraction, tenant access, and domain-resolution guardrails. |
 | `go` | future | Reserved backend/service capability for future migration or new services. |
+| `nestjs` | experimental | Technically complete minimum module/boundary and Node-audit package awaiting separately authorized lifecycle admission. |
+| `react` | experimental | Technically complete minimum React UI-boundary and Node-audit package awaiting separately authorized lifecycle admission. |
+| `vite` | experimental | Candidate frontend build, development-server, asset, and environment-mode capability. |
+| `postgresql` | experimental | Candidate relational persistence and database-operations capability. |
+| `prisma` | experimental | Candidate ORM, generated-client, schema, and migration capability. |
+| `railway` | experimental | Candidate service deployment and release-readiness capability. |
 
 Availability means Delphi can provide reusable support. It does not mean every downstream project has the stack active.
 
+`experimental` means Delphi may discover and reason about the candidate while its minimum operating package is still being established. It is neither a support claim nor project activation.
+
 ## 3. Project Activation Contract
 
-Active project topology is project-owned. Before running stack-specific commands, validations, builds, migrations, browser checks, or tenant/domain probes, resolve the active surface from:
+Active project topology is project-owned and may compose multiple independent capability namespaces. Before running stack-specific commands, validations, builds, migrations, browser checks, or tenant/domain probes, resolve the active surfaces from:
 
 1. the active TODO and its validation notes;
 2. `foundation_documentation/project_constitution.md`, module docs, and policies;
@@ -32,6 +40,8 @@ Active project topology is project-owned. Before running stack-specific commands
 5. direct user clarification when multiple plausible targets remain.
 
 Do not infer active stack usage from the mere presence of Delphi files under `delphi-ai/`.
+
+Do not collapse independent technologies into a compound namespace merely because one project uses them together. For example, React does not imply Vite, Prisma does not imply PostgreSQL, and NestJS does not imply either persistence capability. Cross-capability workflows apply only when all referenced capabilities are project-declared.
 
 ## 4. Runtime and Environment Contracts
 

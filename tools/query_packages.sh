@@ -12,7 +12,7 @@
 #   --all                 List all proprietary packages (default if no mode is set)
 #   --search <term>       Search packages by name or description (case-insensitive)
 #   --tier <tier>         Filter by tier: local | ecosystem | all (default: all)
-#   --stack <stack>       Filter by stack: flutter | laravel | all (default: all)
+#   --stack <stack>       Filter by registry stack key (for example node, flutter, laravel)
 #   --unused              Show only local packages that exist but are not in use
 #   --detail <name>       Show full detail for an exact package name match
 #   --project-root <path> Project root directory
@@ -33,7 +33,7 @@ Options:
   --all                 List all proprietary packages (default if no mode is set)
   --search <term>       Search packages by name or description (case-insensitive)
   --tier <tier>         Filter by tier: local | ecosystem | all (default: all)
-  --stack <stack>       Filter by stack: flutter | laravel | all (default: all)
+  --stack <stack>       Filter by registry stack key (default: all)
   --unused              Show only local packages that exist but are not in use
   --detail <name>       Show full detail for an exact package name match
   --project-root <path> Project root directory
@@ -108,10 +108,9 @@ validate_filters() {
     *) die "Invalid --tier '$TIER_FILTER'. Expected one of: all, local, ecosystem." ;;
   esac
 
-  case "$STACK_FILTER" in
-    all|flutter|laravel) ;;
-    *) die "Invalid --stack '$STACK_FILTER'. Expected one of: all, flutter, laravel." ;;
-  esac
+  if [[ "$STACK_FILTER" != "all" ]] && [[ ! "$STACK_FILTER" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
+    die "Invalid --stack '$STACK_FILTER'. Use 'all' or a lowercase registry stack key."
+  fi
 
   if [[ "$MODE" == "search" ]]; then
     [[ -n "$SEARCH_TERM" ]] || die "--search requires a non-empty term."
@@ -234,20 +233,11 @@ parse_ecosystem() {
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     [[ -z "${line// }" ]] && continue
 
-    if [[ "$line" =~ ^flutter:[[:space:]]*$ ]]; then
+    if [[ "$line" =~ ^([a-z][a-z0-9_-]*):[[:space:]]*$ ]]; then
       if [[ -n "$name" ]]; then
         echo "ECOSYSTEM|$current_stack|$name|$description|$pub_url"
       fi
-      current_stack="flutter"
-      name=""
-      description=""
-      pub_url=""
-      continue
-    elif [[ "$line" =~ ^laravel:[[:space:]]*$ ]]; then
-      if [[ -n "$name" ]]; then
-        echo "ECOSYSTEM|$current_stack|$name|$description|$pub_url"
-      fi
-      current_stack="laravel"
+      current_stack="${BASH_REMATCH[1]}"
       name=""
       description=""
       pub_url=""
@@ -272,6 +262,8 @@ parse_ecosystem() {
         pub_url="$(yaml_unquote "${BASH_REMATCH[1]}")"
       elif [[ "$line" =~ ^[[:space:]]*packagist:[[:space:]]*(.+) ]]; then
         pub_url="$(yaml_unquote "${BASH_REMATCH[1]}")"
+      elif [[ "$line" =~ ^[[:space:]]*npm:[[:space:]]*(.+) ]]; then
+        pub_url="$(yaml_unquote "${BASH_REMATCH[1]}")"
       fi
     fi
   done < "$ECOSYSTEM_YAML"
@@ -290,18 +282,11 @@ parse_local() {
   while IFS= read -r line; do
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
 
-    if [[ "$line" =~ ^laravel: ]]; then
+    if [[ "$line" =~ ^([a-z][a-z0-9_-]*):[[:space:]]*$ ]] && [[ "${BASH_REMATCH[1]}" != "anti_patterns" ]]; then
       if [[ -n "$name" ]]; then
         echo "LOCAL|$current_stack|$name|$path|$in_use|$has_readme|$description"
       fi
-      current_stack="laravel"
-      name=""
-      continue
-    elif [[ "$line" =~ ^flutter: ]]; then
-      if [[ -n "$name" ]]; then
-        echo "LOCAL|$current_stack|$name|$path|$in_use|$has_readme|$description"
-      fi
-      current_stack="flutter"
+      current_stack="${BASH_REMATCH[1]}"
       name=""
       continue
     elif [[ "$line" =~ ^anti_patterns: ]]; then

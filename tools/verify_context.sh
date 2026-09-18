@@ -52,18 +52,133 @@ ensure_safe_link() {
   fi
 }
 
-# Detect Namespace
-get_project_namespace() {
+# Detect project-owned capability namespaces. `Namespaces` is the canonical
+# composed form; singular `Namespace` remains a backwards-compatible input.
+get_project_namespaces() {
   local constitution="$REPO_ROOT/foundation_documentation/project_constitution.md"
   if [ -f "$constitution" ]; then
-    local ns
-    ns=$(grep -i "Namespace:" "$constitution" | awk -F'[:[]' '{print $2}' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
-    if [ -n "$ns" ]; then
-      echo "$ns"
-      return 0
+    local line raw normalized ns
+    local -A seen=()
+
+    line="$(grep -iEm1 '^[[:space:]-]*(\*\*)?Namespaces:' "$constitution" || true)"
+    if [ -z "$line" ]; then
+      line="$(grep -iEm1 '^[[:space:]-]*(\*\*)?Namespace:' "$constitution" || true)"
+    fi
+
+    if [ -n "$line" ]; then
+      raw="${line#*:}"
+      normalized="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]`*[]<>')"
+      IFS=',' read -r -a declared_namespaces <<< "$normalized"
+      for ns in "${declared_namespaces[@]}"; do
+        [ -z "$ns" ] && continue
+        if [[ ! "$ns" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
+          echo "ERROR: Invalid namespace [$ns] in $constitution. Use comma-separated registry keys." >&2
+          return 2
+        fi
+        if [ -z "${seen[$ns]+x}" ]; then
+          printf '%s\n' "$ns"
+          seen[$ns]=1
+        fi
+      done
+      if [ "${#seen[@]}" -gt 0 ]; then
+        return 0
+      fi
     fi
   fi
   echo "core"
+}
+
+clear_managed_stack_surface() {
+  local link_path="$1"
+  local source_root="$2"
+
+  if [ -L "$link_path" ]; then
+    # This reserved direct link is Delphi-managed in the legacy single-stack
+    # layout. Remove it regardless of target so relocation cannot preserve an
+    # obsolete capability when the project changes or clears its declaration.
+    rm -f "$link_path"
+    return
+  fi
+
+  if [ -d "$link_path" ] && [ -f "$link_path/.delphi-managed-stack-links" ]; then
+    local entry
+    while IFS= read -r -d '' entry; do
+      # The marker establishes ownership of direct symlinks in this group.
+      # Remove them regardless of their target so an installation relocation
+      # cannot leave links to a previous Delphi root behind.
+      rm -f "$entry"
+    done < <(find "$link_path" -mindepth 1 -maxdepth 1 -type l -print0)
+    rm -f "$link_path/.delphi-managed-stack-links"
+    rmdir "$link_path" 2>/dev/null || true
+  fi
+}
+
+ensure_stack_link_group() {
+  local link_path="$1"
+  local source_root="$2"
+  local label="$3"
+  shift 3
+  local namespaces=("$@")
+
+  if [ -L "$link_path" ]; then
+    rm -f "$link_path"
+  elif [ -e "$link_path" ] && [ ! -d "$link_path" ]; then
+    echo "SAFE-CLOBBER: Moving real file $link_path to backup..."
+    mv "$link_path" "${link_path}.bak_$(date +%s)"
+  elif [ -d "$link_path" ] && [ ! -f "$link_path/.delphi-managed-stack-links" ]; then
+    if find "$link_path" -mindepth 1 -maxdepth 1 -print -quit | grep -q .; then
+      echo "SAFE-CLOBBER: Moving unmanaged directory $link_path to backup..."
+      mv "$link_path" "${link_path}.bak_$(date +%s)"
+    fi
+  fi
+
+  mkdir -p "$link_path"
+  touch "$link_path/.delphi-managed-stack-links"
+
+  local entry ns
+  while IFS= read -r -d '' entry; do
+    # Direct symlinks in a marker-owned group are Delphi-managed. Clearing all
+    # of them repairs stale targets after Delphi itself moves on disk.
+    rm -f "$entry"
+  done < <(find "$link_path" -mindepth 1 -maxdepth 1 -type l -print0)
+
+  for ns in "${namespaces[@]}"; do
+    [ "$ns" = "core" ] && continue
+    if [ -d "$source_root/$ns" ]; then
+      ln -s "$source_root/$ns" "$link_path/$ns"
+      echo "CREATED: $label [$ns] -> $source_root/$ns"
+    else
+      echo "INFO: $label package [$ns] is not installed; capability activation remains project-owned."
+    fi
+  done
+}
+
+ensure_stack_surface() {
+  local link_path="$1"
+  local source_root="$2"
+  local label="$3"
+  shift 3
+  local namespaces=("$@")
+  local active_namespaces=()
+  local ns
+
+  for ns in "${namespaces[@]}"; do
+    [ "$ns" = "core" ] || active_namespaces+=("$ns")
+  done
+
+  if [ "${#active_namespaces[@]}" -eq 0 ]; then
+    clear_managed_stack_surface "$link_path" "$source_root"
+  elif [ "${#active_namespaces[@]}" -eq 1 ]; then
+    ns="${active_namespaces[0]}"
+    clear_managed_stack_surface "$link_path" "$source_root"
+    if [ -d "$source_root/$ns" ]; then
+      ensure_safe_link "$link_path" "$source_root/$ns" "$label [$ns]"
+    else
+      echo "INFO: $label package [$ns] is not installed; capability activation remains project-owned."
+    fi
+  else
+    ensure_stack_link_group "$link_path" "$source_root" "$label" "${active_namespaces[@]}"
+  fi
 }
 
 # Repair Logic
@@ -73,21 +188,19 @@ for arg in "$@"; do
 done
 
 if [ "$REPAIR_MODE" = true ]; then
-  NAMESPACE=$(get_project_namespace)
-  echo "PACED Authority: Applying rules for namespace [$NAMESPACE]"
+  NAMESPACE_OUTPUT="$(get_project_namespaces)"
+  mapfile -t NAMESPACES <<< "$NAMESPACE_OUTPUT"
+  NAMESPACE_LABEL="$(IFS=', '; echo "${NAMESPACES[*]}")"
+  echo "PACED Authority: Applying rules for namespaces [$NAMESPACE_LABEL]"
 
   # Instruction Layer
   ensure_safe_link "$REPO_ROOT/.agents/rules/core" "$SCRIPT_ROOT/rules/core" "Core Rules"
-  if [ -d "$SCRIPT_ROOT/rules/stacks/$NAMESPACE" ]; then
-    ensure_safe_link "$REPO_ROOT/.agents/rules/stack" "$SCRIPT_ROOT/rules/stacks/$NAMESPACE" "Stack Rules"
-  fi
+  ensure_stack_surface "$REPO_ROOT/.agents/rules/stack" "$SCRIPT_ROOT/rules/stacks" "Stack Rules" "${NAMESPACES[@]}"
   ensure_safe_link "$REPO_ROOT/.agents/rules/local" "$REPO_ROOT/foundation_documentation" "Local Rules"
 
   # Deterministic Layer
   ensure_safe_link "$REPO_ROOT/.agents/deterministic/core" "$SCRIPT_ROOT/deterministic/core" "Core Deterministic"
-  if [ -d "$SCRIPT_ROOT/deterministic/stacks/$NAMESPACE" ]; then
-    ensure_safe_link "$REPO_ROOT/.agents/deterministic/stack" "$SCRIPT_ROOT/deterministic/stacks/$NAMESPACE" "Stack Deterministic"
-  fi
+  ensure_stack_surface "$REPO_ROOT/.agents/deterministic/stack" "$SCRIPT_ROOT/deterministic/stacks" "Stack Deterministic" "${NAMESPACES[@]}"
   ensure_safe_link "$REPO_ROOT/.agents/deterministic/local" "$REPO_ROOT/foundation_documentation/deterministic" "Local Deterministic"
 
   # Claude Code Layer

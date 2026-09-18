@@ -14,19 +14,23 @@ This document is not a roadmap and not a module replacement. Its purpose is to c
 
 ### 2.1 Rule Subscriptions (Cascading Rules)
 
-This project follows the PACED **Cascading Rules** hierarchy. The `verify_context.sh --repair` tool uses the `Namespace` below to establish deterministic symlinks for the active stack.
+This project follows the PACED **Cascading Rules** hierarchy. The `verify_context.sh --repair` tool uses the `Namespaces` declaration below to establish deterministic symlinks for every active stack capability.
 
-- **Namespace:** `<docker-infra | flutter-app | laravel-app | custom_stack>`
+- **Namespaces:**
+  - Declare only capabilities that are active in this project.
+  - Example for a composed application: `nestjs, react, vite, postgresql, prisma, docker, railway`.
+  - Use comma-separated registry keys from `delphi-ai/config/stack_capabilities.yaml`.
+  - The legacy singular field `Namespace` remains accepted for existing projects, but new or composed projects use `Namespaces`.
 - **Rule Subscriptions:**
   - [x] **Core Rules:** Universal Delphi patterns (T.E.A.C.H., TODOs, session workflows).
-  - [x] **Stack Rules:** Specialized patterns for the `<namespace>` stack.
+  - [x] **Stack Rules:** Specialized patterns for each declared namespace.
   - [x] **Local Rules:** Project-specific constitution, modules, and decisions.
 
 ### 2.2 Authority Hierarchy
 
 When rules conflict, the following order of precedence applies:
 1.  **Local Rules (`.agents/rules/local/`):** This file, module docs, and local decisions. **Local rules always override.**
-2.  **Stack Rules (`.agents/rules/stack/`):** Inherited from `delphi-ai/rules/stacks/<namespace>/`.
+2.  **Stack Rules (`.agents/rules/stack/`):** Inherited from every declared `delphi-ai/rules/stacks/<namespace>/` capability package. A single legacy namespace may remain a direct symlink; composed projects use namespace-keyed links below this directory.
 3.  **Core Rules (`.agents/rules/core/`):** Inherited from `delphi-ai/rules/core/`.
 
 ## 3. Ecosystem Alignment & Reuse Doctrine

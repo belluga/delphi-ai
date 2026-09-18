@@ -1,71 +1,84 @@
 ---
 name: test-orchestration-suite
-description: "Orchestrate Laravel/Flutter/Web test execution with explicit suite decisions, gate sequencing, and adherence validation before delivery."
+description: "Orchestrate stack-aware test execution with topology preflight, risk-ordered evidence layers, project-owned commands, and adherence validation."
 ---
 
 # Test Orchestration Suite
 
-Use this skill whenever delivery confidence depends on Laravel, Flutter, browser, device, or CI-equivalent test execution. It coordinates testing; it does not replace TODO governance, topology validation, or stack-specific test-quality skills.
+Use this skill whenever delivery confidence depends on coordinated test lanes. It coordinates testing; it does not replace TODO governance, topology validation, stack-specific quality rules, or the project's own CI authority.
 
 ## Purpose
-Produce promotion-grade evidence for the behaviors touched by the active TODO slice. A targeted rerun or one representative flow is diagnostic evidence only unless the approved baseline explicitly says it covers every materially distinct touched behavior.
+
+Produce promotion-grade evidence for every materially distinct behavior touched by the active TODO slice. A targeted rerun is diagnostic evidence unless the approved baseline explicitly makes it sufficient.
 
 ## Canonical Inputs
-- Active TODO, frozen decisions, validation matrix, and local CI-equivalent suite matrix.
-- Project-owned topology contract or dependency-readiness artifact for runtime owners, domains, tenants, devices, and build/publish wrappers.
-- Stack workflows and skills for Laravel, Flutter, browser, integration/device, and test-quality audit.
+
+- Active TODO, frozen decisions, validation matrix, declared stack capabilities, and local CI-equivalent matrix.
+- Owning package/workspace manifests and their exact project-owned scripts.
+- Topology/readiness contract for runtime owners, dependencies, targets, and build/publish wrappers.
+- Applicable stack workflows and `test-quality-audit`.
 - `tools/test_orchestration_status_report.sh` for deterministic stage accounting.
 
 ## Required Preflight
-Before launching tests, resolve and record:
-- orchestration scope: `small|medium|big`;
-- required stages and their exact local commands;
-- canonical execution owner per stage (`host`, safe runner, compose service, CI, device, browser runner);
-- public/browser validation targets and tenant/subdomain if relevant;
-- runtime freshness attestation plan for every manual/browser/device target: authoritative `branch@sha`, local build/publish command plus artifact/fingerprint, served URL/device/tunnel target, and the probe or comparison that will prove the served target matches that build;
-- whether each touched behavior requires unit, widget, integration/device, browser/navigation, real-backend, or mutation evidence.
 
-If topology is ambiguous, run the Environment Topology Contract flow and stop at `blocked` until the user validates the target. Do not guess runtime owners, domains, tenants, or publish commands.
-If runtime freshness cannot be proven for a target, stop at `blocked` before launching the corresponding manual/browser/device lane. Do not debug product behavior against an unproven runtime.
+Before launching tests, resolve and record:
+
+- orchestration scope: `small|medium|big`;
+- active stack capabilities and affected boundaries;
+- required stages and exact local commands;
+- execution owner per stage: host, package script, safe runner, compose service, CI, browser, or device;
+- service/database/broker/browser/device prerequisites only where the claim crosses those boundaries;
+- runtime freshness for every manual, browser, or device target: authoritative `branch@sha`, build/publish command, artifact/fingerprint, served target, and matching probe;
+- evidence layer for each touched behavior: static/contract, unit/provider/component, integration/module/adapter, application/contract/e2e, browser, or device.
+
+If topology or ownership is ambiguous, run the Environment Topology Contract flow and stop the affected lane at `blocked`. Do not guess owners, domains, transports, databases, tenants, or publish commands. Do not debug behavior against an unproven runtime.
 
 ## Stage Policy
-- Load `ci-equivalent-governance` before deciding whether any local suite, profile, or runner qualifies as `CI Equivalent` or as a broad stage-parity gate such as `stage-full`.
-- If the touched change adds or rewires any stage-facing test row, wrapper, lifecycle step, or readonly/mutation coverage row, load `ci-equivalent-test-surface-admission` before claiming the matrix or gate is current.
-- Required stages are `passed`, `failed`, `blocked`, `flaky`, `skipped`, or `not-applicable`.
-- `blocked` is not `passed`; it can only close with an approved waiver or explicit scope exclusion.
-- `flaky`, including pass-after-retry, is not promotion-grade evidence unless waived with owner/rationale.
-- Targeted reruns after a fix do not replace rerunning the in-scope CI-equivalent rows.
-- Browser/device evidence must prove the current reconciliation/build state is being served, not a stale bundle.
-- Manual/browser/device observations are invalid until the runtime freshness attestation passes. A stale or mismatched served target is an environment blocker, not product evidence.
-- Browser CRUD/mutation validation must use the approved non-`main` mutation lane.
-- Respect wrapper branch-family contracts. CI-Equivalent remains current-branch local product proof. If a project-owned wrapper explicitly requires `reconcile/*`, do not cite it as the executor for a non-reconciliation gate unless you intentionally use a same-commit reconcile alias and record that equivalence. In real subagent orchestration, the authoritative branch under test is the consolidated reconciliation branch until that run is green; after that, replay the accepted net effect onto the plan's authoritative return branch before promotion or non-orchestration closeout resumes. Otherwise run the project-owned local build/publish path and the same product-facing suites directly on the active branch and record them with `test_orchestration_status_report.sh`.
-- Use `ci-equivalent-governance` as the authority for broad stage-gate naming, stage-pipeline parity, lifecycle-step inclusion, and stale-precondition invalidation.
-- In an approved sequential/orchestration plan, each unit checkpoint runs only its recorded affected-area test/build/runtime bundle. It must not run or claim `stage-full` by default.
-- The narrow checkpoint test bundle does not waive static architecture enforcement: Flutter-changing units still require the stable full-workspace live Problems snapshot under `flutter-architecture-adherence` before the next unit starts. This static-analysis gate is not a broad test/runtime gate and must not start a concurrent CLI analyzer.
 
-## Default Sequence
-1. Environment/topology preflight.
-2. Laravel contract/feature tests through the project-owned safe runner.
-3. Flutter unit and widget tests.
-4. Flutter integration tests on required platforms with real backend when compatibility or backend coupling matters.
-5. Project-owned web build/publish wrapper when Flutter web or browser-visible surfaces changed.
-6. Runtime freshness attestation against the real manual/browser/device target.
-7. Browser navigation/mutation tests through the project-owned Playwright runner, including any pipeline-owned fixture/bootstrap/cleanup lifecycle that brackets those suites.
-8. Compatibility metadata check.
-9. Final stage report and decision-adherence check.
+- Load `ci-equivalent-governance` before calling any local suite, profile, or runner `CI Equivalent` or a broad parity gate.
+- Load `ci-equivalent-test-surface-admission` when adding or rewiring a stage-facing row, wrapper, lifecycle step, or readonly/mutation lane.
+- Statuses are `passed`, `failed`, `blocked`, `flaky`, `skipped`, or `not-applicable`.
+- `blocked` and `flaky` are not passing evidence; close them only through successful evidence, explicit scope exclusion, or approved waiver.
+- Targeted reruns do not replace applicable broad project-owned closeout rows.
+- Browser/device evidence requires a current-build freshness attestation.
+- Mutation evidence must use the approved non-`main` lane unless the baseline explicitly authorizes otherwise.
+- Respect wrapper branch-family contracts; never cite a reconciliation-only wrapper as proof for another branch without recorded same-commit equivalence.
+- At an approved narrow checkpoint, run only the affected-area bundle plus independently required static architecture enforcement. Reserve broad CI-equivalent parity for package closeout.
 
-Adjust the sequence only when the TODO baseline documents why the risk surface is different.
+## Risk-Ordered Default Sequence
+
+1. Resolve capabilities, owning manifests, environment, topology, and readiness.
+2. Run static checks and contract/schema validation for touched scopes.
+3. Run narrow unit/provider/component tests.
+4. Run integration/module/adapter tests for crossed internal or external boundaries.
+5. Run application/contract/end-to-end evidence required by the behavior claim.
+6. Build/publish and run browser/device lanes only when those surfaces are active and affected.
+7. Attest runtime freshness before accepting manual/browser/device observations.
+8. Run applicable broad project-owned CI-equivalent rows at package closeout.
+9. Produce the final stage report and decision-adherence result.
+
+Adjust this order only when the frozen baseline documents a safer dependency order. Do not insert Laravel, Flutter, NestJS, a database, a transport, a browser, or a device merely because this skill supports it.
+
+## Conditional Stack Routing
+
+- **NestJS:** resolve the owning `package.json`; use its runner/scripts for provider/unit, testing-module integration, and externally visible application contract evidence. Require database/container/platform lanes only when active.
+- **Laravel:** use the project-owned safe runner and approved local services; apply MongoDB replica-set rules only when MongoDB is the declared datastore.
+- **Flutter:** run affected unit/widget/integration lanes, then project-owned web build/browser or device lanes only for claimed platforms.
+- **Browser/Web:** use authored browser tests and project-owned build/publish runners; compiled outputs are not test source.
 
 ## Failure Classification
+
 Classify every failure before changing product code:
+
 - `product regression`;
 - `test/assertion defect`;
 - `CI/harness defect`;
-- `environment/transient infra defect`.
+- `environment/transient infrastructure defect`.
 
-Only product regressions and test/assertion defects authorize code/test changes by themselves. Harness and environment failures invalidate that run as product evidence until the preflight issue is cleared or a valid equivalent reproduces the failure.
+Only product regressions and test/assertion defects authorize product/test changes by themselves. Harness and environment failures invalidate the run as product evidence until readiness is restored or a valid equivalent reproduces the failure.
 
 ## Deterministic Helper
+
 Use:
 
 ```bash
@@ -76,11 +89,12 @@ bash delphi-ai/tools/test_orchestration_status_report.sh \
   --decision <ID>=<adherent|exception>
 ```
 
-The helper records status coherence. Suite selection, failure classification, waiver validity, and fix-loop judgment remain human-led.
+The helper records status coherence. Capability selection, command ownership, failure classification, waiver validity, and fix-loop judgment remain human-led.
 
 ## Done Criteria
-- Every in-scope CI-equivalent row has a local passed row or approved waiver.
-- Every touched user-visible or user-flow behavior has item-specific runtime evidence, or a recorded structure-only rationale.
-- No required stage remains `blocked`, `failed`, or `flaky` without approved waiver.
-- Decision adherence is resolved.
-- Residual risk and follow-up actions are explicit.
+
+- Every affected behavior has sufficient item-specific evidence or a recorded structure-only rationale.
+- Every applicable CI-equivalent row has a local passed row or approved waiver.
+- No required stage remains blocked, failed, or flaky without approved disposition.
+- Runtime-dependent evidence proves the intended build and topology.
+- Decision adherence, residual risk, and follow-up actions are explicit.

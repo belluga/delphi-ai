@@ -19,7 +19,7 @@ bash delphi-ai/tools/query_packages.sh --project-root <path> [options]
 | `--all` | List all proprietary packages (ecosystem + local) |
 | `--search <term>` | Search by name or description (case-insensitive) |
 | `--tier local\|ecosystem` | Filter by tier |
-| `--stack flutter\|laravel` | Filter by stack |
+| `--stack <registry-key>` | Filter by a lowercase package-registry stack such as `flutter`, `laravel`, or `node` |
 | `--unused` | Show local packages that exist but are not in use |
 | `--detail <name>` | Full detail including README content |
 
@@ -35,7 +35,7 @@ bash delphi-ai/tools/query_packages.sh --project-root <path> [options]
 - Before planning implementation of any new feature.
 - Before creating a new controller, service, repository, utility, or helper.
 - Before adding a third-party dependency.
-- When a TODO involves creating new files in `app/Services/`, `app/Helpers/`, `lib/utils/`, or similar host-level utility paths.
+- When a TODO introduces host-level services, helpers, libraries, utilities, hooks, or adapters that may duplicate reusable package behavior in any active stack.
 
 ## Procedure
 
@@ -87,7 +87,7 @@ Add to the TODO:
 ```
 
 ### 5. Post-Implementation
-If a new proprietary package was created:
+If a new proprietary package was created in a registry-supported package surface:
 - [ ] Package has `README.md` following canonical format (`delphi-ai/templates/package_readme_template.md`)
 - [ ] Run `bash delphi-ai/tools/verify_package_registry.sh` to update `local_packages.yaml`
 - [ ] If ecosystem-level, add entry to `delphi-ai/config/ecosystem_packages.yaml`

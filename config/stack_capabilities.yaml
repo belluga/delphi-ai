@@ -127,8 +127,13 @@ capabilities:
 
   nestjs:
     lifecycle: experimental
-    purpose: Node.js API capability admission pending a later minimum support package.
-    default_surfaces: []
+    purpose: Technically complete minimum NestJS instruction and audit package awaiting separately authorized lifecycle admission.
+    default_surfaces:
+      - workflows/nestjs/
+      - rules/stacks/nestjs/
+      - skills/rule-nestjs-nestjs-architecture-always-on/
+      - skills/wf-nestjs-change-application-boundary-method/
+      - tools/node_capability_surface_audit.py
     activation_markers:
       - Project-owned Node API documentation or validated dependency evidence
     detection_markers:
@@ -136,12 +141,17 @@ capabilities:
       nested_files: []
       package_json_requires_any:
         - "@nestjs/core"
-    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use the owning manifest, package manager, scripts, Node/module-system contract, and independently activated integration capabilities.
 
   react:
     lifecycle: experimental
-    purpose: React web capability admission pending a later minimum support package.
-    default_surfaces: []
+    purpose: Technically complete minimum React instruction and Node-audit package awaiting separately authorized lifecycle admission.
+    default_surfaces:
+      - workflows/react/
+      - rules/stacks/react/
+      - skills/rule-react-react-architecture-always-on/
+      - skills/wf-react-change-ui-boundary-method/
+      - tools/node_capability_surface_audit.py
     activation_markers:
       - Project-owned web documentation or validated dependency evidence
     detection_markers:
@@ -149,7 +159,20 @@ capabilities:
       nested_files: []
       package_json_requires_any:
         - "react-dom"
-    execution_policy: Discoverable only; do not infer downstream activation or operational support from this experimental descriptor.
+    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use the owning manifest, project scripts, rendering target, and independently activated integration capabilities without inferring Vite or another stack.
+
+  vite:
+    lifecycle: experimental
+    purpose: Frontend build and development-server capability admission pending a later minimum support package.
+    default_surfaces: []
+    activation_markers:
+      - Project-owned Vite documentation or validated dependency evidence
+    detection_markers:
+      root_files: []
+      nested_files: []
+      package_json_requires_any:
+        - "vite"
+    execution_policy: Discoverable only; do not infer React usage, downstream activation, or operational support from this experimental descriptor.
 
   postgresql:
     lifecycle: experimental

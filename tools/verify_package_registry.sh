@@ -103,6 +103,89 @@ laravel_package_in_use() {
   grep -qE "\"${package_name}\"[[:space:]]*:" "$manifest"
 }
 
+node_package_name() {
+  local manifest="$1"
+  python3 - "$manifest" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+except (OSError, UnicodeError, json.JSONDecodeError):
+    raise SystemExit(1)
+name = data.get("name") if isinstance(data, dict) else None
+if not isinstance(name, str) or not name.strip():
+    raise SystemExit(1)
+print(name.strip())
+PY
+}
+
+node_package_in_use() {
+  local owner_manifest="$1"
+  local package_name="$2"
+  python3 - "$PROJECT_ROOT" "$owner_manifest" "$package_name" <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+owner = Path(sys.argv[2]).resolve()
+package_name = sys.argv[3]
+ignored = {".git", ".hg", ".svn", "build", "coverage", "dist", "node_modules", "vendor"}
+sections = ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies")
+
+for current, directories, files in os.walk(root, followlinks=False):
+    directories[:] = [
+        name for name in directories
+        if name not in ignored and not (Path(current) / name).is_symlink()
+    ]
+    if "package.json" not in files:
+        continue
+    manifest = Path(current) / "package.json"
+    if manifest.is_symlink() or manifest.resolve() == owner:
+        continue
+    try:
+        if manifest.stat().st_size > 1024 * 1024:
+            continue
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        continue
+    if not isinstance(data, dict):
+        continue
+    for section in sections:
+        dependencies = data.get(section)
+        if isinstance(dependencies, dict) and package_name in dependencies:
+            raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+node_local_manifests() {
+  python3 - "$PROJECT_ROOT" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+ignored = {".git", ".hg", ".svn", "build", "coverage", "dist", "node_modules", "vendor"}
+paths = []
+for current, directories, files in os.walk(root, followlinks=False):
+    directories[:] = sorted(
+        name for name in directories
+        if name not in ignored and not (Path(current) / name).is_symlink()
+    )
+    directory = Path(current)
+    if directory.parent.name == "packages" and "package.json" in files:
+        manifest = directory / "package.json"
+        if not manifest.is_symlink():
+            paths.append(manifest)
+for path in sorted(paths):
+    sys.stdout.buffer.write(os.fsencode(path) + b"\0")
+PY
+}
+
 write_package_entry() {
   local name="$1"
   local path="$2"
@@ -290,6 +373,43 @@ EOF
     fi
   else
     echo "  []  # No Flutter packages/ directory detected" >> "$LOCAL_YAML"
+  fi
+
+  echo "" >> "$LOCAL_YAML"
+
+  echo "node:" >> "$LOCAL_YAML"
+  local node_found=false
+  local manifest pkg_dir package_name rel_path readme desc has_readme in_use
+
+  while IFS= read -r -d '' manifest; do
+    pkg_dir="$(dirname "$manifest")"
+    if ! package_name="$(node_package_name "$manifest")"; then
+      WARNINGS=$((WARNINGS + 1))
+      echo "  WARNING: ${manifest#$PROJECT_ROOT/} has no valid package name"
+      continue
+    fi
+    rel_path="${pkg_dir#$PROJECT_ROOT/}"
+    readme="$pkg_dir/README.md"
+    desc="$(trim "$(readme_oneliner "$readme")")"
+    has_readme=true
+    in_use=false
+
+    if [[ ! -f "$readme" ]]; then
+      has_readme=false
+      WARNINGS=$((WARNINGS + 1))
+      echo "  WARNING: $rel_path missing README.md"
+    fi
+
+    if node_package_in_use "$manifest" "$package_name"; then
+      in_use=true
+    fi
+
+    write_package_entry "$package_name" "$rel_path" "$in_use" "$has_readme" "$desc"
+    node_found=true
+  done < <(node_local_manifests)
+
+  if ! $node_found; then
+    echo "  []  # No local Node packages found" >> "$LOCAL_YAML"
   fi
 
   echo "" >> "$LOCAL_YAML"

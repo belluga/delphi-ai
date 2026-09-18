@@ -9,7 +9,8 @@
 # stack in a downstream project.
 #
 # The verify_package_registry.sh script reads this file to identify
-# ecosystem packages in project manifests (pubspec.yaml / composer.json).
+# ecosystem packages in project manifests (currently pubspec.yaml, composer.json,
+# and package.json package/workspace surfaces).
 #
 # Local (project-bound) packages are NOT listed here — they are
 # auto-detected from packages/ directories and tracked in
@@ -57,6 +58,11 @@ laravel:
   #   description: Core utilities for Belluga Laravel apps
   #   packagist: null
   #   repository: https://github.com/belluga/belluga-core
+
+node:
+  # Add framework-neutral Node/TypeScript ecosystem packages here as they are published.
+  # A Node package may support NestJS, React, Vite, or none of them; registry placement
+  # does not activate those independent project capabilities.
 
 docker:
   # Add Docker/runtime ecosystem packages or reusable images here as they are published

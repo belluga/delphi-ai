@@ -13,7 +13,7 @@ Implement product behavior, tests, and tactical documentation for the approved c
 - active tactical TODO
 - `foundation_documentation/project_constitution.md`
 - relevant `foundation_documentation/modules/*.md`
-- stack workflows for the active scope (`flutter`, `laravel`, `web`, or `cross-stack`)
+- stack workflows for every project-declared active scope (for example `flutter`, `laravel`, `nestjs`, `react`, `vite`, `postgresql`, `prisma`, or `cross-stack`)
 
 ## Primary Surfaces
 - product code

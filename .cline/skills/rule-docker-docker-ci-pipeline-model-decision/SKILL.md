@@ -6,7 +6,7 @@ description: "Rule: MUST use whenever the scope matches this purpose: When updat
 ## Rule
 For CI/CD changes (pipelines, build images, caching, test stages):
 - Run the CI Pipeline Workflow (`delphi-ai/workflows/docker/update-ci-pipeline-method.md`).
-- Ensure UID/GID and cache strategies mirror local expectations; keep image reuse consistent (e.g., Flutter FVM image).
+- Preserve the project-declared validation commands for every active capability and keep runner images, UID/GID behavior, lockfiles, caches, and build artifacts consistent with local CI-equivalent contracts.
 - Update documentation/README for any pipeline contract changes.
 
 ## Rationale

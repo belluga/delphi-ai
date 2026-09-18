@@ -49,9 +49,10 @@ cat > "$REPO/laravel-app/composer.json" <<'EOF'
 {"name":"fixture/app","require":{"laravel/framework":"^11.0"}}
 EOF
 
-mkdir -p "$REPO/nest-app" "$REPO/react-app" "$REPO/generic-node"
+mkdir -p "$REPO/nest-app" "$REPO/react-app" "$REPO/vite-app" "$REPO/generic-node"
 printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$REPO/nest-app/package.json"
 printf '%s\n' '{"devDependencies":{"react-dom":"^19"}}' > "$REPO/react-app/package.json"
+printf '%s\n' '{"devDependencies":{"vite":"^7"}}' > "$REPO/vite-app/package.json"
 printf '%s\n' '{"dependencies":{"typescript":"^5"}}' > "$REPO/generic-node/package.json"
 
 touch "$REPO/laravel-app/artisan"
@@ -168,12 +169,15 @@ OUTPUT_NODE="$REPO/foundation_documentation/artifacts/environment-topology-node.
 python3 "$TOOL" --repo "$REPO" --output "$OUTPUT_NODE"
 grep -q "nestjs.*candidate.*nest-app/package.json \[dependencies:@nestjs/core\]" "$OUTPUT_NODE"
 grep -q "react.*candidate.*react-app/package.json \[devDependencies:react-dom\]" "$OUTPUT_NODE"
+grep -q "vite.*candidate.*vite-app/package.json \[devDependencies:vite\]" "$OUTPUT_NODE"
 grep -q "postgresql.*unknown" "$OUTPUT_NODE"
 
 MATRIX="$TMP_DIR/matrix"
-mkdir -p "$MATRIX/nest" "$MATRIX/react" "$MATRIX/generic" "$MATRIX/react-native" "$MATRIX/types-only" "$MATRIX/nest-cli" "$MATRIX/malformed" "$MATRIX/oversized" "$MATRIX/root-array" "$MATRIX/wrong-section" "$MATRIX/split-nest" "$MATRIX/split-react" "$MATRIX/symlink" "$MATRIX/prisma/schema" "$MATRIX/prisma-client" "$MATRIX/railway" "$MATRIX/railway-near"
+mkdir -p "$MATRIX/nest" "$MATRIX/react" "$MATRIX/vite" "$MATRIX/vite-plugin-only" "$MATRIX/generic" "$MATRIX/react-native" "$MATRIX/types-only" "$MATRIX/nest-cli" "$MATRIX/malformed" "$MATRIX/oversized" "$MATRIX/root-array" "$MATRIX/wrong-section" "$MATRIX/split-nest" "$MATRIX/split-react" "$MATRIX/symlink" "$MATRIX/prisma/schema" "$MATRIX/prisma-client" "$MATRIX/railway" "$MATRIX/railway-near"
 printf '%s\n' '{"dependencies":{"@nestjs/core":"^11"}}' > "$MATRIX/nest/package.json"
 printf '%s\n' '{"optionalDependencies":{"react-dom":"^19"}}' > "$MATRIX/react/package.json"
+printf '%s\n' '{"devDependencies":{"vite":"^7"}}' > "$MATRIX/vite/package.json"
+printf '%s\n' '{"devDependencies":{"@vitejs/plugin-react":"^5"}}' > "$MATRIX/vite-plugin-only/package.json"
 printf '%s\n' '{"dependencies":{"typescript":"^5"}}' > "$MATRIX/generic/package.json"
 printf '%s\n' '{"dependencies":{"react-native":"^1"}}' > "$MATRIX/react-native/package.json"
 printf '%s\n' '{"devDependencies":{"@types/react":"^1"}}' > "$MATRIX/types-only/package.json"
@@ -204,6 +208,8 @@ assert rows["nestjs"].evidence_state == "candidate"
 assert rows["nestjs"].evidence == "nest/package.json [dependencies:@nestjs/core], split-nest/package.json [dependencies:@nestjs/core]"
 assert rows["react"].evidence_state == "candidate"
 assert rows["react"].evidence == "react/package.json [optionalDependencies:react-dom], split-react/package.json [peerDependencies:react-dom]"
+assert rows["vite"].evidence_state == "candidate"
+assert rows["vite"].evidence == "vite/package.json [devDependencies:vite]"
 assert rows["postgresql"].evidence_state == "unknown"
 assert rows["prisma"].evidence_state == "candidate"
 assert rows["prisma"].evidence == "prisma-client/package.json [dependencies:@prisma/client], prisma/schema/schema.prisma"
@@ -214,6 +220,7 @@ assert all("generic/package.json" not in row.evidence for row in rows.values())
 assert all("react-native/package.json" not in row.evidence for row in rows.values())
 assert all("types-only/package.json" not in row.evidence for row in rows.values())
 assert all("nest-cli/package.json" not in row.evidence for row in rows.values())
+assert all("vite-plugin-only/package.json" not in row.evidence for row in rows.values())
 assert "manifest ignored: malformed/package.json" in inventory.diagnostics
 assert "manifest ignored: oversized/package.json" in inventory.diagnostics
 assert "manifest ignored: root-array/package.json (root must be an object)" in inventory.diagnostics

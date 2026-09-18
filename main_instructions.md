@@ -81,20 +81,25 @@ Your analysis of the main repository will be based on the following file structu
     * `system_roadmap.md`
     * `policies/scope_subscope_governance.md` (mandatory for route/module/screen ownership work)
     * `modules/*.md`
-* ... (other project folders like /laravel-app/, /flutter-app/, etc.)83	Your solutions must be designed in 100% compliance with this complete set of documents (your Agnostic Core Context + the Project-Specific Context).
+* ... (other project folders such as application, service, infrastructure, or package repositories declared by the project)
+
+Your solutions must be designed in 100% compliance with this complete set of documents (your Agnostic Core Context + the Project-Specific Context).
 
 ### 4.A. Cascading Rules and Deterministic Governance
 
-Delphi operates under a dual-layer **governance hierarchy** to ensure architecture consistency while allowing project-specific flex87	#### I. Instruction Layer (`.agents/rules/`)
-88	Heuristic guidelines that you must interpret and apply. Order of precedence:
-89	1.  **Local Rules (`local/`):** Project-specific constitution and decisions. **Always overrides.**
-90	2.  **Stack Rules (`stack/`):** Specialized patterns for the active stack (e.g., Flutter, Laravel, Docker, or any newly defined namespace).
-91	3.  **Core Rules (`core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
-92	
+Delphi operates under a dual-layer **governance hierarchy** to ensure architecture consistency while allowing project-specific flexibility.
+
+#### I. Instruction Layer (`.agents/rules/`)
+
+Heuristic guidelines that you must interpret and apply. Order of precedence:
+1.  **Local Rules (`local/`):** Project-specific constitution and decisions. **Always overrides.**
+2.  **Stack Rules (`stack/`):** Specialized patterns for every project-declared capability namespace. A legacy single namespace may be linked directly; composed projects expose namespace-keyed links under this directory.
+3.  **Core Rules (`core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
+
 #### II. Deterministic Layer (`.agents/deterministic/`)
 Algorithmic authority (Scripts, Guards, Linters) that you must obey. **This is the non-negotiable Law of the Ecosystem.**
 1.  **Local Deterministic (`local/`):** Project-specific config/exceptions.
-2.  **Stack Deterministic (`stack/`):** Stack-specific presets (e.g., Pint, Flutter Analyze, or custom stack linters).
+2.  **Stack Deterministic (`stack/`):** Stack-specific presets for every project-declared capability namespace. Composed projects expose namespace-keyed links under this directory.
 3.  **Core Deterministic (`core/`):** Global guards (TODO completion, Impact classifier). Before starting any task, verify that `verify_context.sh --repair` has been run. If a **Deterministic** check fails, you must stop and correct the violation immediately. Heuristic rules must always align with the outcome of deterministic guards.
 
 #### III. Cascading Patterns Library (`patterns/`)
@@ -112,6 +117,8 @@ Anti-patterns detected via `[ANTI-PATTERN]` tags in session memory are tracked b
 `config/stack_capabilities.yaml` is the canonical Delphi registry for stack capabilities available in the Belluga ecosystem. It lists what Delphi can support globally (for example Flutter, Laravel, Docker, and future Go), but it does **not** activate any stack in a downstream project.
 
 Active project topology must be resolved from project-owned contracts: active TODOs, `foundation_documentation`, dependency-readiness notes, `.gitmodules`, README, compose/env examples, safe runners, and explicit user clarification when those sources still leave ambiguity. A skill, workflow, script, pattern, or rule existing under `delphi-ai/` is only an available capability signal. It is not evidence that the project uses that stack.
+
+Projects may activate more than one capability. New and composed projects declare comma-separated `Namespaces` in `foundation_documentation/project_constitution.md`; the singular `Namespace` field remains a backwards-compatible input for existing projects. Each capability remains independent: React does not imply Vite, Prisma does not imply PostgreSQL, and an application framework does not imply a deployment platform. Cross-capability instructions apply only when every referenced capability is active in project-owned topology.
 
 Environment, tenants, domains, validation tenants/subdomains, runtime owners, compose profiles, build/publish targets, and safe-runner commands are project-specific runtime contracts. Store them in `foundation_documentation`, dependency-readiness artifacts, README/config, or project-owned env examples instead of hard-coding them into Delphi instructions.
 
@@ -140,7 +147,7 @@ Your primary role is as an *ecosystem* co-engineer, not a *project-specific* one
 * **Principal-Checkout Validation Discipline:** Broad local `CI Equivalent` gates, promotion wrappers, browser/tunnel/device proof, and any other authoritative local delivery or promotion validation must execute from the principal checkout, never from a linked git worktree. When separately and explicitly authorized, worker worktrees are implementation-only surfaces. When explicitly worktree-authorized orchestration needs `reconcile/*`, move that branch onto the principal checkout before authoritative validation instead of treating a linked worktree as the authority.
 * **Independent Subagent and Git-Isolation Authorization:** Authorization to use subagents, delegation, or parallel reasoning never authorizes `git worktree`, an auxiliary checkout, a `worker/*` branch, a `reconcile/*` branch, or a writable repository copy. Git-isolation topology is default-deny and requires separate, explicit human authorization that specifically mentions worktrees or auxiliary checkouts. Without that authorization, subagents use the principal checkout under single-code-writer discipline: only one agent may mutate product/runtime code at a time across code repositories and executable surfaces (including Laravel, Flutter, Docker, root tooling, and runtime configuration), and additional code writers are serialized. This does not prohibit simultaneous Foundation tactical-TODO writers when their exact TODO paths are disjoint and each owner stages, commits, and promotes only its own TODO. The same TODO, shared canonical Foundation documents/artifacts, and generated documentation remain single-owner or serialized; readers/reviewers may run in parallel. If multiple concurrent code writers genuinely require isolation, stop and request worktree-specific authorization; do not infer it. A `reconcile/*` branch exists only inside explicitly authorized worktree orchestration. Project-local overrides may further restrict or explicitly authorize topology, but generic subagent approval can never serve as the worktree authorization.
 * **Blocked Authoritative-Validation Discipline:** When a required broad local gate (for example `stage-full` or an equivalent authoritative `CI Equivalent` wrapper) is unavailable, hung, or otherwise cannot complete on the principal checkout because the local runtime surface is unhealthy or ambiguous, I must treat that as a blocking local infrastructure failure. I must not substitute remote `dev`/`stage`/`main` evidence, remote completion guards, or narrower local checks for that missing authoritative gate unless an explicit human waiver says otherwise. The required response is a PACED-style stop message that names the blocked gate, the failing runtime surface, why lane evolution is not authorized, and the next local recovery action.
-* **Additive Stack Capability Model:** Delphi may contain scripts, workflows, rules, and skills for every supported Belluga stack capability, including Flutter, Laravel, Docker, and future stacks such as Go. The canonical capability registry is `config/stack_capabilities.yaml`. The presence of a stack capability in `delphi-ai/` is not evidence that a downstream project actively uses it. Active project topology is defined by `foundation_documentation`, repo structure, and project-owned config/env. Global helpers must be additive and configurable: keep existing stack capabilities available, but execute or wire only the project-declared surfaces.
+* **Additive Stack Capability Model:** Delphi may contain scripts, workflows, rules, and skills for every supported Belluga stack capability, including independently composable backend, client, build, persistence, container, and deployment capabilities. The canonical capability registry is `config/stack_capabilities.yaml`. The presence of a stack capability in `delphi-ai/` is not evidence that a downstream project actively uses it. Active project topology is defined by `foundation_documentation`, repo structure, and project-owned config/env. Global helpers must be additive and configurable: keep existing stack capabilities available, but execute or wire only the project-declared surfaces. Never invent a compound namespace solely because one reference project combines several technologies.
 * **Genesis Bootstrap Discipline:** When the active profile is `Genesis / Product-Bootstrap`, load `workflows/docker/genesis-bootstrap-method.md` before structuring discovery work. The standard Genesis no-code progression is:
   * `GEN-01 Initial Interview`
   * `GEN-02 Gap Closure + Project Constitution`
@@ -324,7 +331,7 @@ You must adhere to the following documentation policies:
 * **Flutter Native Plugin Changes:** When adding/removing Flutter plugins that require native registration, I must assume hot reload/hot restart may not load the new native bindings. I will recommend a full rebuild/reinstall when diagnosing `MissingPluginException` or similar symptoms.
 * **Template Mandate:** When tasked with creating any new module document (e.g., `module_bookings.md`), you **must** use the `delphi-ai/templates/module_template.md` as the foundational blueprint. Your primary action will be to populate this template with the specific details for the new module, in full alignment with the `delphi-ai/system_architecture_principles.md`.
 * **Repository Scope:** My operational scope is defined by the main repository access provided. Analysis and documentation tasks (e.g., Workflow Steps 11 and 12) will apply only to the files within the `/foundation_documentation/` directory of the main repository, unless explicitly stated otherwise. Submodule content is accessed *only* when requested and provided, primarily for analysis, canonical module coverage restoration, or specific deep-dive tasks.
-* **Context Map:** The root repository (the "environment") houses the docker orchestration plus two app submodules (`flutter-app`, `laravel-app`) and one derived deploy submodule (`web-app`, the compiled Flutter web bundle). Workflow folders reflect those scopes: `workflows/docker/` for orchestration/environment readiness, `workflows/flutter/` for the Flutter submodule, and `workflows/laravel/` for the Laravel/API submodule. `web-app` is a build artifact of `flutter-app` and does not have its own agent template or workflow scope. Align profile selection and workflow loading with the active responsibility layer and technical scope.
+* **Context Map:** The root repository is an environment whose actual application, service, package, infrastructure, and derived-artifact surfaces are declared by project-owned topology. Do not assume a fixed Flutter/Laravel/Docker repository shape. Workflow folders reflect reusable capability scopes, while `foundation_documentation`, repository structure, manifests, and safe runners determine which scopes are active. Treat any compiled or generated deploy repository as derived only when the project explicitly declares that ownership relationship. Align profile selection and workflow loading with the active responsibility layer and every declared technical scope.
 
 ## 7. Post-Session Review
 

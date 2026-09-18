@@ -1,12 +1,12 @@
 ---
 name: wf-docker-update-ci-pipeline-method
-description: "Workflow: MUST use whenever the scope matches this purpose: Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer/test steps for Flutter, Laravel, and Docker stay intact and cost-effective."
+description: "Workflow: MUST use for CI changes that must preserve validation and delivery contracts across every project-declared capability."
 ---
 
 # Method: Update CI / Pipeline (Operational / DevOps)
 
 ## Purpose
-Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer/test steps for Flutter, Laravel, and Docker stay intact and cost-effective.
+Modify CI workflows safely while preserving validation, build, migration, container, browser, and deployment gates for every active capability.
 
 ## Triggers
 - Need to add or change CI jobs (e.g., new analyzer, Docker publish, deployment gate).
@@ -15,18 +15,18 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 
 ## Inputs
 - Existing workflow files (`.github/workflows/*.yaml`, etc.).
-- Analyzer/test requirements from the delivery scopes (`flutter`, `laravel`, Docker build).
+- Project-owned validation and delivery requirements for every active capability scope.
 - Secrets management notes and DevOps roadmap.
 
 ## Preferred Deterministic Helper
-- Use `bash delphi-ai/tools/ci_pipeline_surface_audit.sh [--repo <repo-root>] [--expect flutter] [--expect laravel] [--expect docker]` to inventory workflow files and verify that expected stack coverage appears to exist before or after pipeline edits.
+- Use `bash delphi-ai/tools/ci_pipeline_surface_audit.sh [--repo <repo-root>] [--expect flutter] [--expect laravel] [--expect docker]` for the capability families it currently supports. An unsupported `--expect` value never means a newer capability is inactive; supplement the audit with project-owned validation until the helper is extended.
 - Treat the helper as an audit only; job topology, caching tradeoffs, secret strategy, and final pipeline design remain in this workflow.
 
 ## Procedure
-1. **Profile alignment** – select `Operational / DevOps` with `docker` scope and review roadmap context only when strategic sequencing is affected.
+1. **Profile alignment** – select `Operational / DevOps` with every affected active capability overlay. Include `docker` only when the pipeline builds, publishes, or operates containers; this skill's historical `wf-docker` name does not activate Docker by itself. Review roadmap context only when strategic sequencing is affected.
 2. **Plan changes** – list affected workflows/jobs, required secrets, and target environments.
 3. **Edit workflow**
-   - Add/update remote CI jobs to run required commands (e.g., `fvm flutter analyze`, `composer test`, Docker build/push).
+   - Add or update remote CI jobs to run exact project-declared commands; framework examples are not universal defaults.
    - A remote pipeline analyzer is separate from local agent diagnostics. Flutter agents must read the stable VS Code Problems bridge snapshot locally and must not start `dart analyze` or `flutter analyze` themselves.
    - Ensure caching and matrix strategies keep runtimes lean.
    - Load `ci-equivalent-governance` before changing any stage-facing suite/job family or broad local stage contract/profile such as `stage-full`.
@@ -45,7 +45,7 @@ Modify CI workflows (GitHub Actions, GitLab CI, etc.) safely—ensuring analyzer
 
 ## Outputs
 - Updated workflow files.
-- Roadmap entry describing the pipeline change and expected benefits.
+- Roadmap entry describing the pipeline change and expected benefits only when strategic sequencing or material follow-up changed.
 - Notes to other profiles/scopes if required steps changed.
 
 ## Validation

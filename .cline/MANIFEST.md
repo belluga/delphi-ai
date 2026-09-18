@@ -13,6 +13,11 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/model-decision/shared-session-lifecycle.md`
 - `.clinerules/model-decision/shared-workflow-definition.md`
 - `.clinerules/model-decision/shared-delphi-project-setup.md`
+- `.clinerules/model-decision/shared-package-first.md`
+- `.clinerules/model-decision/docker-ci-pipeline.md`
+- `.clinerules/model-decision/docker-runtime-ingress.md`
+- `.clinerules/model-decision/nestjs-architecture.md`
+- `.clinerules/model-decision/react-architecture.md`
 - `.clinerules/model-decision/laravel-ability-catalog-sync.md`
 - `.clinerules/model-decision/laravel-settings-kernel-patch-contract.md`
 
@@ -33,6 +38,10 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.clinerules/workflows/docker-runtime-index-method.md`
 - `.clinerules/workflows/docker-self-improvement-session.md`
 - `.clinerules/workflows/docker-update-skill-method.md`
+- `.clinerules/workflows/docker-update-ci-pipeline.md`
+- `.clinerules/workflows/docker-update-runtime-and-ingress.md`
+- `.clinerules/workflows/nestjs-change-application-boundary-method.md`
+- `.clinerules/workflows/react-change-ui-boundary-method.md`
 - `.clinerules/workflows/laravel-create-package-method.md`
 - `.clinerules/workflows/create-repository-method.md`
 
@@ -65,6 +74,10 @@ This file tracks the Cline-specific governance artifacts that must stay aligned 
 - `.cline/skills/rule-flutter-flutter-repository-workflow-glob/SKILL.md`
 - `.cline/skills/rule-flutter-flutter-contract-alignment-always-on/SKILL.md`
 - `.cline/skills/wf-flutter-create-repository-method/SKILL.md`
+- `.cline/skills/rule-nestjs-nestjs-architecture-always-on/SKILL.md`
+- `.cline/skills/wf-nestjs-change-application-boundary-method/SKILL.md`
+- `.cline/skills/rule-react-react-architecture-always-on/SKILL.md`
+- `.cline/skills/wf-react-change-ui-boundary-method/SKILL.md`
 
 ### Hooks
 - `.clinerules/hooks/session_start`

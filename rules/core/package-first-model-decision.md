@@ -1,7 +1,7 @@
 # Package-First Verification Gate
 
 ## Context
-This project follows a **package-first architecture**. Reusable capabilities are extracted into proprietary Laravel packages (`packages/<vendor>/<package>`) and Flutter libraries (`packages/<lib>/`).
+This project follows a **package-first architecture**. Reusable capabilities are extracted into stack-appropriate proprietary packages rather than duplicated in host applications. Current registry support includes Composer/Laravel packages, Dart/Flutter libraries, and Node/TypeScript packages under a `packages/<package>/` workspace shape; a project's own package layout remains authoritative.
 
 The agent queries proprietary packages via a **deterministic CLI tool**:
 
@@ -68,7 +68,7 @@ The script auto-generates `local_packages.yaml` if missing. No manual file readi
 | `--all` | List all proprietary packages |
 | `--search <term>` | Search by name or description |
 | `--tier local\|ecosystem` | Filter by tier |
-| `--stack flutter\|laravel` | Filter by stack |
+| `--stack <registry-key>` | Filter by a lowercase package-registry stack such as `flutter`, `laravel`, or `node` |
 | `--unused` | Show local packages not yet adopted |
 | `--detail <name>` | Full detail including README content |
 
@@ -108,7 +108,7 @@ The agent must include a **Package-First Assessment** in the TODO:
 ```
 
 ### Step 5 — Post-Implementation
-If a new proprietary package was created:
+If a new proprietary package was created in a registry-supported package surface:
 1. Ensure it has a `README.md` following the canonical format (`delphi-ai/templates/package_readme_template.md`).
 2. Run `bash delphi-ai/tools/verify_package_registry.sh` to regenerate `local_packages.yaml`.
 3. If the package is ecosystem-level, add it to `delphi-ai/config/ecosystem_packages.yaml`.
@@ -123,8 +123,8 @@ When a local package matures and becomes domain-agnostic, it can be promoted to 
 3. **Test independence:** Tests run without the host app.
 
 Promotion procedure:
-1. Create independent repository under the org.
-2. Move package content; update manifests to use VCS/registry instead of path.
+1. Create an independent repository or approved organization package-registry home.
+2. Move package content; update the owning ecosystem's manifests to use its VCS/registry dependency contract instead of a local path/workspace reference.
 3. Tag first semantic version.
 4. Add entry to `delphi-ai/config/ecosystem_packages.yaml`.
 5. Run `verify_package_registry.sh` — package moves from local YAML to ecosystem YAML.
@@ -133,7 +133,7 @@ Promotion procedure:
 
 - **Duplicating proprietary package logic in host app code.** If a package handles tracking, do not create a parallel tracking service in the host app.
 - **Importing a third-party library when a proprietary package already wraps that capability.**
-- **Creating "utils" or "helpers" in the host app** for logic that belongs in an existing proprietary package.
+- **Creating host-level "utils" or "helpers"** for logic that belongs in an existing proprietary package, regardless of stack or folder convention.
 - **Skipping the package query** because "it's a small change." Small changes compound into architectural drift.
 - **Reading YAML files directly** instead of using the CLI tool.
 - **Forking an external package** without explicit user approval and documented justification.

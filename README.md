@@ -23,7 +23,7 @@ To attach PACED authority to any repository:
     ```
 5.  **Automate CI:** Call the shared workflow your project subscribes to from GitHub Actions.
 
-*Note: Ensure your project has a `foundation_documentation/project_constitution.md` with a declared `Namespace` (e.g., `flutter`, `laravel`) to enable stack-specific rules.*
+*Note: Ensure your project has a `foundation_documentation/project_constitution.md` with declared `Namespaces` (for example `nestjs, react, vite, postgresql, prisma, docker, railway`) to enable its stack-specific rules. The legacy singular `Namespace` field remains supported.*
 
 ---
 
@@ -55,7 +55,7 @@ PACED operates under a layered **governance hierarchy** to ensure architecture c
 Heuristic guidelines that the agent (Delphi) must interpret and apply.
 Canonical source: `delphi-ai/rules/`. Runtime surface: `.agents/rules/`.
 1.  **Local Rules (`.agents/rules/local/`):** Project-specific constitution and decisions. **Always overrides.**
-2.  **Stack Rules (`.agents/rules/stack/`):** Specialized patterns for the active stack (Flutter, Laravel, Docker, etc.).
+2.  **Stack Rules (`.agents/rules/stack/`):** Specialized patterns for every project-declared capability. Composed projects use namespace-keyed links below this directory.
 3.  **Core Rules (`.agents/rules/core/`):** Universal Delphi instructions and T.E.A.C.H. patterns.
 
 ### II. Deterministic Layer
@@ -109,8 +109,8 @@ PACED uses a "Linker" strategy to inject the correct rules and deterministic gua
 
 ### The PACED Linker (`verify_context.sh --repair`)
 The `verify_context.sh` script is the orchestrator of the environment. When run with `--repair`, it:
-1.  **Detects the Namespace:** Reads the `project_constitution.md` to identify the stack (e.g., `flutter`, `laravel`).
-2.  **Establishes Symlinks:** Creates the `.agents/rules/` and `.agents/deterministic/` structures pointing to the correct global and stack-specific resources in `delphi-ai/`.
+1.  **Detects Namespaces:** Reads `project_constitution.md` to identify every active capability while remaining compatible with the legacy singular declaration.
+2.  **Establishes Symlinks:** Creates the `.agents/rules/` and `.agents/deterministic/` structures pointing to core, local, and all declared stack-specific resources in `delphi-ai/`.
 3.  **Validates Adherence:** Ensures that the local environment is 100% compliant with the PACED contract.
 
 ### Quick Install
@@ -157,17 +157,19 @@ For Delphi-only local script-usage telemetry, use the gitignored state under `de
 To introduce a new stack (e.g., `python`, `go`, `react`) into the PACED ecosystem:
 1.  **Create the Deterministic Layer:** Create `deterministic/stacks/<new_stack>/` and add presets like `lint_config.yaml` or architecture scripts.
 2.  **Create the Instruction Layer:** Create `rules/stacks/<new_stack>/` and add Markdown files explaining the patterns and standards for that stack.
-3.  **Update the Linker (Optional):** If you want auto-detection, update the `get_project_namespace` function in `tools/verify_context.sh`. Otherwise, manual declaration in the project is sufficient.
+3.  **Register Detection Evidence:** Add safe detection markers to `config/stack_capabilities.yaml` when reliable evidence exists. The linker consumes project declarations; detection never activates a capability by itself.
 
-### 2. How to "Subscribe" a Project to a Stack
+### 2. How to Subscribe a Project to Capabilities
 In the project's `foundation_documentation/project_constitution.md`, add the following metadata:
 ```markdown
 ## PACED Context
-- **Namespace:** <new_stack>
+- **Namespaces:** nestjs, react, vite, postgresql, prisma, docker, railway
 - **Rule Subscriptions:**
   - [x] **Core Rules:** (Always enabled)
-  - [x] **Stack Rules:** (Enabled for <new_stack>)
+  - [x] **Stack Rules:** (Enabled for every declared capability)
 ```
+
+Declare only capabilities the project actually uses. Keep them independent even when one project composes them.
 
 ### 3. How to Apply Changes (The Linker)
 After updating the constitution or the `delphi-ai` core, always run:

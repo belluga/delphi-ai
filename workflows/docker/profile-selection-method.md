@@ -38,10 +38,17 @@ Ensure every session explicitly selects the correct operational profile and tech
 Profiles are paired with an active technical scope:
 - `flutter`
 - `laravel`
-- `web`
+- `nestjs`
+- `react`
+- `vite`
+- `postgresql`
+- `prisma`
 - `docker`
+- `railway`
 - `cross-stack`
 - `delphi-self-maintenance`
+
+More than one scope overlay may be active when project-owned topology composes independent capabilities. Declare each active overlay instead of inventing a compound stack name.
 
 ## Gate 0 — Genesis Eligibility
 Evaluate this gate before selecting any profile.
@@ -83,7 +90,7 @@ If the gate is inconclusive for other reasons, start from the most conservative 
 1. **Scan the request** – identify whether the user is asking for zero-state project inception, strategic guidance, tactical delivery, operational platform work, quality review, or security/adversarial review.
    - If the request mixes zero-state bootstrap language with explicit runtime/submodule setup priorities, ask the user to choose the starting path instead of silently deciding.
 2. **Select profile** – choose the profile that owns the requested responsibility. If the session is mixed, declare the starting profile and note the expected handoff(s).
-3. **Select technical scope** – declare the active scope overlay (`flutter`, `laravel`, `docker`, etc.).
+3. **Select technical scope** – declare every active capability overlay (`flutter`, `laravel`, `docker`, `nestjs`, `react`, `vite`, `postgresql`, `prisma`, `railway`, etc.). Do not let a legacy singular `Namespace` declaration hide a composed `Namespaces` declaration.
 4. **Load profile context**
    - `Genesis / Product-Bootstrap`:
      - load any existing `project_mandate.md`, `domain_entities.md`, `project_constitution.md`, `system_roadmap.md`, and module docs if they already exist

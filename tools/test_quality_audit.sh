@@ -19,8 +19,8 @@ Options:
   --scan-git-modified    Include modified/untracked paths from `git status --porcelain`.
   -h, --help             Show this help text.
 
-If no explicit scan path is provided, the tool scans common test roots when they exist:
-  tests/, test/, integration_test/, tools/flutter/web_app_tests/
+If no explicit scan path is provided, the tool scans common test roots plus
+co-located files matching *.test.*, *.spec.*, or *_test.* outside ignored trees.
 
 Exit codes:
   0  Audit completed with outcome `none` or `low`.
@@ -78,6 +78,7 @@ declare -a SCAN_PATHS=()
 add_scan_path() {
   local candidate="$1"
   local resolved=""
+  local existing=""
 
   if [[ "$candidate" = /* ]]; then
     resolved="$candidate"
@@ -89,6 +90,11 @@ add_scan_path() {
   if [ -n "${SCAN_PATH_SET[$resolved]:-}" ]; then
     return 0
   fi
+  for existing in "${SCAN_PATHS[@]}"; do
+    if [ -d "$existing" ] && [[ "$resolved" == "$existing/"* ]]; then
+      return 0
+    fi
+  done
   SCAN_PATH_SET["$resolved"]=1
   SCAN_PATHS+=("$resolved")
 }
@@ -115,6 +121,19 @@ if [ "${#SCAN_PATHS[@]}" -eq 0 ]; then
   add_scan_path "test"
   add_scan_path "integration_test"
   add_scan_path "tools/flutter/web_app_tests"
+  while IFS= read -r -d '' test_file; do
+    add_scan_path "$test_file"
+  done < <(
+    rg --files -0 "$REPO_ROOT" \
+      -g '*.test.*' \
+      -g '*.spec.*' \
+      -g '*_test.*' \
+      -g '!**/node_modules/**' \
+      -g '!**/vendor/**' \
+      -g '!**/build/**' \
+      -g '!**/dist/**' \
+      -g '!**/coverage/**'
+  )
 fi
 
 [ "${#SCAN_PATHS[@]}" -gt 0 ] || die "no scan targets found"

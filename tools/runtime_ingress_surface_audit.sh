@@ -3,11 +3,15 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: runtime_ingress_surface_audit.sh [--repo <path>]
+Usage: runtime_ingress_surface_audit.sh [--repo <path>] [--platform-owned]
 
 Audit Docker/runtime/ingress surfaces in a repository and perform non-mutating checks
 that are relevant before runtime or ingress changes. This is a deterministic surface
-inventory helper only; runtime design and parity decisions remain human.
+inventory helper only; runtime design and parity decisions remain human. Laravel-specific
+route and storage checks activate only when a laravel-app surface exists.
+
+--platform-owned may be used only after a project contract confirms that the
+runtime/ingress surface is owned by an external platform rather than this repo.
 EOF
 }
 
@@ -17,6 +21,7 @@ die() {
 }
 
 REPO_INPUT="."
+PLATFORM_OWNED=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -28,6 +33,10 @@ while [ $# -gt 0 ]; do
     -h|--help)
       usage
       exit 0
+      ;;
+    --platform-owned)
+      PLATFORM_OWNED=true
+      shift
       ;;
     *)
       die "unknown argument: $1"
@@ -88,17 +97,23 @@ if [ "${#COMPOSE_FILES[@]}" -gt 0 ]; then
 fi
 
 storage_alias_issue=false
-for file in "${INGRESS_FILES[@]}"; do
-  if rg -n '/storage|alias\s+.+storage' "$file" >/dev/null 2>&1 && ! rg -n 'try_files \$request_filename =404;' "$file" >/dev/null 2>&1; then
-    storage_alias_issue=true
-    FINDINGS+=("${file#$REPO_ROOT/} references storage without the try_files alias invariant")
-  fi
-done
+if [ -d "$REPO_ROOT/laravel-app" ]; then
+  for file in "${INGRESS_FILES[@]}"; do
+    if rg -n '/storage|alias\s+.+storage' "$file" >/dev/null 2>&1 && ! rg -n 'try_files \$request_filename =404;' "$file" >/dev/null 2>&1; then
+      storage_alias_issue=true
+      FINDINGS+=("${file#$REPO_ROOT/} references Laravel storage without the try_files alias invariant")
+    fi
+  done
+fi
 
 overall_status="ready"
 if [ "${#DOCKERFILES[@]}" -eq 0 ] && [ "${#COMPOSE_FILES[@]}" -eq 0 ] && [ "${#INGRESS_FILES[@]}" -eq 0 ]; then
-  overall_status="blocked"
-  FINDINGS+=("no Dockerfile, compose, or ingress surfaces were found")
+  if [ "$PLATFORM_OWNED" = true ]; then
+    FINDINGS+=("no local Dockerfile, compose, or ingress surfaces were found; platform ownership was explicitly declared and still requires project-owned remote validation")
+  else
+    overall_status="blocked"
+    FINDINGS+=("no local Dockerfile, compose, or ingress surfaces were found; pass --platform-owned only when a project contract assigns runtime ownership externally")
+  fi
 fi
 if [ "$compose_status" = "fail" ] || [ "$compose_status" = "blocked" ] || [ "$storage_alias_issue" = true ]; then
   overall_status="blocked"

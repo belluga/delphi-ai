@@ -41,6 +41,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/laravel_workflow_scaffold.sh` | shell | Generate repeatable doc/file/validation checklists for Delphi Laravel endpoint and domain workflows. |
 | `tools/list_public_codex_skill_mirrors.sh` | shell | Emit the canonical list of Delphi skills that must remain mirrored into `~/.codex/skills/public`. |
 | `tools/metrics_consolidation_trigger.py` | python | Extract formalizable gate findings from a completed TODO and append PACED rule events for the metrics pipeline. |
+| `tools/node_capability_surface_audit.py` | python | Audit exact NestJS/React/Vite dependency evidence, package-manager/lockfile hints, and project-declared package scripts without executing Node commands or inferring capability activation. |
 | `tools/paced_metrics_core.py` | python | Shared PACED metrics helpers used by CLI tools today and designed for future MCP tool exposure. |
 | `tools/paced_metrics_summary.py` | python | Aggregate rule events plus TODO-derived gate resolutions into derived Clean Rate and effectiveness summaries. |
 | `tools/orchestration_delivery_guard.py` | python | Validate approved orchestration execution evidence before local implementation or delivery claims, blocking missing validation rows, incomplete acceptance traceability evidence, stale runtime/browser/device provenance, unapproved spec-marker substitutions, and orchestrator-owned implementation slices while emitting a TEACH runtime response. |
@@ -66,6 +67,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/install_pipeline_only_gitlink_commit_guard.sh` | shell | Install a local pre-commit hook that blocks manual gitlink commits so submodule pointer movement stays pipeline-owned only. |
 | `tools/install_protected_path_commit_guard.sh` | shell | Install a local pre-commit hook that blocks ordinary local commits whenever selected tracked paths (for example `.gitmodules`) are protected by project-authorized workflow or policy. |
 | `tools/project_setup_normalization_packet.py` | python | Turn a derived project setup report into non-authoritative manual-remediation and normalization-TODO tracks for brownfield recalibration. |
+| `tools/query_packages.sh` | shell | Query ecosystem and project-local proprietary package registries across supported stack keys, including Node/TypeScript, without requiring agents to parse registry YAML directly. |
 | `tools/project_recalibration_doctor.sh` | shell | Run downstream recalibration automation end-to-end by generating the setup report plus normalization packet and printing the exact next step. |
 | `tools/laravel_domain_resolution_test_audit.sh` | shell | Classify Laravel tenant-resolution test files as web-context, mobile-context, mixed-context, or unclassified. |
 | `tools/laravel_tenant_access_guardrails_audit.sh` | shell | Scan tenant Laravel route files for `auth:sanctum` without `CheckTenantAccess` and flag guardrail review hints. |
@@ -101,7 +103,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/submodule_workspace_pin.sh` | shell | Pin all configured downstream submodules to the exact gitlink SHAs recorded by the superproject without overriding dirty worktrees. |
 | `tools/submodule_workspace_status.sh` | shell | Print a generic multi-repo submodule workspace status report derived from `.gitmodules`. |
 | `tools/submodule_workspace_track_lanes.sh` | shell | Switch configured downstream submodules to requested lane branches while keeping `foundation_documentation` on `main`. |
-| `tools/test_coverage_matrix_scaffold.sh` | shell | Generate a markdown coverage matrix scaffold for the Test Creation Standard workflow. |
+| `tools/test_coverage_matrix_scaffold.sh` | shell | Generate a stack-neutral, project-configurable coverage matrix for evidence layers, prerequisites, stages, and decision-adherence proof. |
 | `tools/test_orchestration_status_report.sh` | shell | Generate a required-stage status report and fail closure when any required gate is missing, blocked, failed, flaky, or exception-marked. |
 | `tools/test_quality_audit.sh` | shell | Scan selected test paths for bypass markers, ambient-subject fallback hints, weak assertion hints, test-only routes, auth shortcuts, and DI/mock patterns that need review. |
 | `tools/lib/git_hook_stack.sh` | shell-lib | Shared installer helpers for Delphi-managed Git hook stacks so multiple PACED hook guards can coexist under one `core.hooksPath`. |
@@ -113,5 +115,6 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/verification_debt_audit.sh` | shell | Audit a target TODO for waiver/blocker/unchecked-item signals and scan selected paths for inline verification debt markers. |
 | `tools/verify_adherence_sync.sh` | shell | Verify downstream adherence-sync surfaces after Delphi-managed setup. |
 | `tools/verify_stage_full_promotable_state.sh` | shell | Validate whether the current principal checkout is an authorized promotable `stage-full` source before delegating to the direct-promotion wrapper, including TEACH blocking for non-authoritative replay branches. |
-| `tools/verify_context.sh` | shell | Verify Delphi installation/readiness surfaces and optionally repair Delphi-managed links/artifacts. |
+| `tools/verify_context.sh` | shell | Verify Delphi installation/readiness surfaces and optionally repair Delphi-managed core/local links plus one or more project-declared capability namespaces. |
+| `tools/verify_package_registry.sh` | shell | Regenerate the project-local proprietary package registry from supported Laravel, Flutter, and Node package surfaces while excluding dependency/vendor trees. |
 | `tools/vscode_diagnostics_bridge/` | VS Code extension | Read-only loopback bridge for the active VS Code diagnostic collection, used as agent-readable local static-analysis evidence without starting a CLI analyzer. It requires a stable full-workspace snapshot and explicit classification of informational diagnostics; it remains snapshot-only and does not claim Dart Analysis Server completion. |
