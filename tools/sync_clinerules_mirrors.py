@@ -52,6 +52,13 @@ MIRRORS: tuple[Mirror, ...] = (
         title="Workflow Definition (Model Decision)",
     ),
     Mirror(
+        key="laravel-mongodb-transaction-simplification",
+        kind="model_decision",
+        source="rules/stacks/laravel/shared/mongodb-transaction-simplification-model-decision.md",
+        destination=".clinerules/model-decision/laravel-mongodb-transaction-simplification.md",
+        title="Laravel MongoDB Transaction Simplification (Model Decision)",
+    ),
+    Mirror(
         key="shared-session-lifecycle",
         kind="model_decision",
         source="rules/core/session-lifecycle-model-decision.md",
