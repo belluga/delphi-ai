@@ -26,7 +26,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Contract Boundary
 
-- This TODO changes only the deterministic closeout guard, its regression fixtures, the bounded derived audit package, and this governing TODO.
+- This TODO changes only the deterministic closeout guard, its regression fixtures, its canonical `tools/manifest.md` inventory entry, the bounded derived audit package, and this governing TODO.
 - The guard remains read-only except for the already-supported optional JSON evidence output.
 - CLI arguments and valid nested-layout behavior remain backward compatible; previously unchecked invalid/ambiguous inputs intentionally become typed no-go results.
 - No downstream project identity, path, TODO content, or business term may be embedded in Delphi code/tests/docs.
@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** integrate R2 findings, publish the refreshed material baseline, and run fresh R3 architecture and plan critique before coherence, drift, and authority preflight.
+- **Next exact step:** integrate R3 findings, publish the refreshed material baseline, and run fresh R4 architecture and plan critique before coherence, drift, and authority preflight.
 
 ## Active Work State
 
@@ -64,6 +64,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [ ] Add RED/GREEN regression fixtures for nested, standalone, relative-path, root-symlink, equivalent-root/path deduplication, escaping leaf symlink, unrecognized-path, invalid explicit input, missing/ambiguous root, exact exit codes, JSON shape, and real active-count behavior.
 - [ ] Preserve existing disposition parsing, git-state handling, JSON output, advisory exit behavior, and non-mutating semantics.
 - [ ] Update the guard docstring/help text inside the same source file so both supported layouts and boundary outcomes are accurately advertised.
+- [ ] Update `tools/manifest.md` in the same change so the canonical inventory describes dual-layout authority resolution and fail-closed boundary validation.
 
 ## Out of Scope
 
@@ -91,7 +92,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@ebf1f22` | `origin/feat/add-stack-capabilities@ebf1f22` | n/a | release-package-owned | finding-integrated R3 review baseline published |
+| standalone closeout guard support | `feat/add-stack-capabilities@f55475b` | `origin/feat/add-stack-capabilities@f55475b` | n/a | release-package-owned | R3 reviewed; finding-integrated R4 baseline publication pending |
 
 ## Diff Expectation Contract
 
@@ -112,6 +113,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | --- | --- | --- | --- |
 | `delphi-ai` | `tools/todo_closeout_guard.py` | `M` | generic topology resolution and fail-closed behavior |
 | `delphi-ai` | `tools/tests/todo_closeout_guard_test.sh` | `M` | RED/GREEN nested and standalone fixtures |
+| `delphi-ai` | `tools/manifest.md` | `M` | mandatory canonical inventory synchronization for the materially changed guard |
 | `delphi-ai` | `artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md` | `A, M` | bounded derived audit package |
 | `delphi-ai` | `foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md` | `any` | tactical authority, evidence, and closeout origin |
 | `delphi-ai` | `foundation_documentation/todos/completed/TODO-delphi-standalone-foundation-closeout-guard.md` | `A, R` | exact closeout destination after all gates |
@@ -135,7 +137,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 ## Bounded But Elastic Guardrails
 
 - **May stay inside this TODO:** local helper extraction inside the guard and fixture refactors required for the same topology contract.
-- **Must update or split the TODO:** CLI redesign, new policy semantics, automatic mutations, changes outside the five expected paths, or support for an additional unrelated repository layout.
+- **Must update or split the TODO:** CLI redesign, new policy semantics, automatic mutations, changes outside the six expected paths, or support for an additional unrelated repository layout.
 
 ## Definition of Done
 
@@ -144,7 +146,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [ ] `DOD-03` Existing nested `<repo>/foundation_documentation/todos/**` behavior remains green.
 - [ ] `DOD-04` A symlink used as `--repo` resolves to the standalone repository, and two candidate roots or file aliases resolving to the same authority/TODO produce exactly one scan and one `todo_result`.
 - [ ] `DOD-05` Explicit outside paths, misleading suffixes, and escaping leaf symlinks emit `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`, exit `2`, and no TODO result.
-- [ ] `DOD-06` Root-state semantics emit the exact schema codes: missing root, incomplete root, ambiguous distinct roots in both explicit/all-active modes, active-directory escape, and valid empty active behavior.
+- [ ] `DOD-06` Root-state semantics emit the exact schema codes: missing root, incomplete root, ambiguous distinct roots in both explicit/all-active modes, and valid empty active behavior.
 - [ ] `DOD-07` Explicit missing paths, directories, and non-Markdown files emit their exact catalog codes at exit `2` without traceback; argparse misuse remains exit `2`.
 - [ ] `DOD-08` Relative explicit TODO arguments remain anchored to the process current working directory and work from both nested and standalone repository roots.
 - [ ] `DOD-09` Explicit in-authority lifecycle classification uses only the first relative component; unknown/direct-root/deeper-lure cases emit `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED` in nested and standalone fixtures.
@@ -158,6 +160,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [ ] `DOD-17` The shell harness is normalized to LF and executes directly in the declared Linux/WSL lane.
 - [ ] `DOD-18` The guard docstring/help advertises both authority layouts without a nested-only claim.
 - [ ] `DOD-19` No downstream project name/path/business concept is persisted in Delphi surfaces.
+- [ ] `DOD-20` Explicit mode under an `active/` directory that resolves outside authority emits `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE` (not the leaf outside code), with the candidate active path, count `0`, results `[]`, and exit `2`.
+- [ ] `DOD-21` `tools/manifest.md` describes the guard's dual-layout resolution and fail-closed authority/input behavior in the same change.
 
 ## Validation Steps
 
@@ -178,7 +182,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `DOD-03` | Definition of Done | nested compatibility | regression | existing nested fixture matrix | local CLI | planned | no regression |
 | `DOD-04` | Definition of Done | repo symlink + equivalent authority/TODO deduplication | test | `symlinked-repo`; `equivalent-root-aliases`; `equivalent-file-aliases` | local CLI | planned | assert count `1` and exactly one `todo_result` |
 | `DOD-05` | Definition of Done | explicit outside authority | negative test | `misleading-outside-authority`; explicit `leaf-symlink-escape` | local CLI | planned | exact `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`, count `0`, exit `2` |
-| `DOD-06` | Definition of Done | root-state catalog | negative+positive tests | `missing-authority-root`; `missing-active-directory`; `empty-active-authority`; explicit/all-active `distinct-authorities`; `active-directory-escape` | local CLI | planned | exact catalog codes, nullable paths, counts, and exits |
+| `DOD-06` | Definition of Done | root-state catalog | negative+positive tests | `missing-authority-root`; `missing-active-directory`; `empty-active-authority`; explicit/all-active `distinct-authorities` | local CLI | planned | exact catalog codes, nullable paths, counts, and exits |
 | `DOD-07` | Definition of Done | explicit input catalog + argparse | negative test | `missing-explicit`; `directory-explicit`; `non-markdown-explicit`; argparse misuse | local CLI | planned | exact three codes, governance `2`, argparse `2`, no governed traceback |
 | `DOD-08` | Definition of Done | relative path compatibility | regression | nested and standalone invocation from each repository root | local CLI | planned | path remains CWD-relative |
 | `DOD-09` | Definition of Done | exact lifecycle component | negative test | nested/standalone `archive`; direct-root Markdown; `archive/active` lure | local CLI | planned | exact unrecognized-lifecycle code and exit `2` |
@@ -192,6 +196,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `DOD-17` | Definition of Done | Linux/WSL harness execution | test | `file` + direct shell execution | local CLI | planned | LF terminators and suite reaches final OK marker |
 | `DOD-18` | Definition of Done | accurate CLI documentation | test+review | `--help` and source docstring assertion | local CLI | planned | both layouts represented; no nested-only all-active help |
 | `DOD-19` | Definition of Done | Delphi agnosticism | review | bounded diff | n/a | planned | generic fixture names only |
+| `DOD-20` | Definition of Done | explicit active-directory escape precedence | negative contract test | explicit TODO below escaped `active/` | local CLI | planned | exact active-escape code/path/count/results/exit; no leaf-code substitution |
+| `DOD-21` | Definition of Done | canonical tool inventory synchronization | review+assertion | `tools/manifest.md` row for `todo_closeout_guard.py` | local docs | planned | dual-layout + fail-closed semantics present |
 | `VAL-01` | Validation Steps | Python syntax | test | py_compile command | local | planned | exit 0 |
 | `VAL-02` | Validation Steps | fixture suite | test | shell test command | local | planned | exact assertions |
 | `VAL-03` | Validation Steps | Delphi coherence | test | self_check command | local | planned | no failures |
@@ -212,7 +218,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Primary execution profile:** `strategic-cto`
 - **Active technical scope:** `delphi-tooling`
 - **Expected supporting profiles:** `operational-coder; assurance-tester-quality`
-- **Scope-check command:** `python3 tools/profile_scope_check.py --profile strategic-cto tools/todo_closeout_guard.py tools/tests/todo_closeout_guard_test.sh artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
+- **Scope-check command:** `python3 tools/profile_scope_check.py --profile strategic-cto tools/todo_closeout_guard.py tools/tests/todo_closeout_guard_test.sh tools/manifest.md artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Scope-check outcome:** `review required`; the TODO is allowed and the tool/test/derived-artifact paths are explicitly routed through the handoffs below.
 
 ### Handoff Log
@@ -221,7 +227,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | --- | --- | --- | --- | --- |
 | strategic-cto | operational-coder | minimal deterministic Python implementation | `tools/todo_closeout_guard.py` | planned; scope-check unknown is expected and routed |
 | operational-coder | assurance-tester-quality | false-green regression and negative cases | `tools/tests/todo_closeout_guard_test.sh` | planned; scope-check unknown is expected and routed |
-| assurance-tester-quality | strategic-cto | final agnosticism/contract review and derived packet | bounded diff + `artifacts/analysis/**` | planned; scope-check unknown is expected and routed |
+| assurance-tester-quality | strategic-cto | final agnosticism/contract review, canonical tool-inventory synchronization, and derived packet | bounded diff + `tools/manifest.md` + `artifacts/analysis/**` | planned; scope-check unknown is expected and routed |
 
 ## Complexity
 
@@ -232,7 +238,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 ## Canonical Module Anchors
 
 - **Primary module doc:** `tools/todo_closeout_guard.py`
-- **Secondary module docs:** `tools/tests/todo_closeout_guard_test.sh`, `workflows/docker/todo-closeout-promotion-method.md`
+- **Secondary module docs:** `tools/tests/todo_closeout_guard_test.sh`, `tools/manifest.md`, `workflows/docker/todo-closeout-promotion-method.md`
 - **Planned decision promotion targets:** `none — current workflow already declares the intended generic behavior`.
 - **Module decision consolidation targets:** `none`.
 
@@ -251,7 +257,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [x] `D-07` Explicit governed inputs must be existing regular `.md` files. Missing, directory, and non-Markdown inputs are governance no-go results (exit `2`), while argparse misuse stays exit `2`, unexpected runtime/tool failures stay exit `1`, and advisory mode returns `0` after reporting any governed findings.
 - [x] `D-08` Discovery-level violations are first-class result violations with an always-present but nullable `todo_path`; text/JSON renderers must not require a synthetic per-TODO result.
 - [x] `D-09` The shell fixture is normalized to LF as part of this fix so its direct Linux/WSL command is authoritative.
-- [x] `D-10` No instruction/workflow/template change is needed because the existing CLI contract is already generic; the implementation was narrower than its contract.
+- [x] `D-10` No instruction/workflow/template change is needed because the existing CLI contract is already generic; mandatory `tools/manifest.md` inventory synchronization is still required for the material tool change.
 - [x] `D-11` Lifecycle classification uses exactly `relative.parts[0]`; recognized values are `active`, `promotion_lane`, and `completed`. Any other first component is `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED`, even when a later component is named `active`.
 - [x] `D-12` `active/` and every discovered Markdown path are resolved and checked against the resolved authority before loading. Directory or leaf escape is never a TODO result.
 
@@ -266,13 +272,13 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Decision Baseline (Frozen Before Implementation)
 
-- [x] `D-01` Preserve nested layout behavior.
-- [x] `D-02` Add standalone layout behavior without project-specific aliases.
-- [x] `D-03` Eliminate false `go` for unrecognized explicit paths and missing roots.
-- [x] `D-04` Keep the guard non-mutating.
-- [x] `D-05` Treat root ambiguity, invalid governed input, and authority escape as typed governance violations rather than successful empty work or traceback.
-- [x] `D-06` Preserve CWD-relative explicit paths, direct Linux/WSL fixture execution, and the documented/advisory exit behavior.
-- [x] `D-07` Preserve the result envelope while making boundary failures explicit: only authorized loaded TODOs contribute to `todo_count` and `todo_results`; every violation has a stable nullable `todo_path` field.
+- [x] `BASE-D-01` Preserve nested layout behavior.
+- [x] `BASE-D-02` Add standalone layout behavior without project-specific aliases.
+- [x] `BASE-D-03` Eliminate false `go` for unrecognized explicit paths and missing roots.
+- [x] `BASE-D-04` Keep the guard non-mutating.
+- [x] `BASE-D-05` Treat root ambiguity, invalid governed input, and authority escape as typed governance violations rather than successful empty work or traceback.
+- [x] `BASE-D-06` Preserve CWD-relative explicit paths, direct Linux/WSL fixture execution, and the documented/advisory exit behavior.
+- [x] `BASE-D-07` Preserve the result envelope while making boundary failures explicit: only authorized loaded TODOs contribute to `todo_count` and `todo_results`; every violation has a stable nullable `todo_path` field.
 
 ### Boundary Violation and Result Schema
 
@@ -281,7 +287,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | neither candidate authority exists | `CLOSEOUT-AUTHORITY-MISSING` | `null` | `0` / `[]` |
 | candidate `todos/` exists but no candidate has an `active/` directory | `CLOSEOUT-AUTHORITY-INCOMPLETE` | `null` | `0` / `[]` |
 | two candidate roots resolve to distinct supported authorities | `CLOSEOUT-AUTHORITY-AMBIGUOUS` | `null` | `0` / `[]` in explicit and all-active modes |
-| a candidate `active/` directory resolves outside its resolved authority | `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE` | string path of the candidate `active/` alias | `0` / `[]` for that rejected authority; any boundary violation makes the envelope no-go |
+| a candidate `active/` directory resolves outside its resolved authority (explicit or all-active mode) | `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE` | string path of the candidate `active/` alias | `0` / `[]`; resolver rejects the authority before explicit leaf classification or discovery |
 | explicit or discovered TODO resolves outside the selected authority | `CLOSEOUT-TODO-OUTSIDE-AUTHORITY` | string path as supplied/discovered | path is excluded from count/results |
 | explicit path does not exist | `CLOSEOUT-TODO-MISSING` | supplied path string | `0` / `[]` |
 | explicit path exists but is not a regular file | `CLOSEOUT-TODO-NOT-FILE` | supplied path string | `0` / `[]` |
@@ -343,7 +349,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
 - **Decision review status:** `findings_integrated`
-- **Decision review evidence / resolution:** `R1 and R2 architecture opinions returned NO-GO; their findings are integrated in PR-01..PR-11, the literal schema, and atomic matrix; a fresh R3 reviewer must confirm no material findings before APROVADO.`
+- **Decision review evidence / resolution:** `R1 through R3 architecture opinions returned NO-GO; their findings are integrated in PR-01..PR-14, the literal schema, atomic matrix, manifest boundary, and full D-01..D-12 adherence table; a fresh R4 reviewer must confirm no material findings before APROVADO.`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -361,8 +367,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline commit:** `ebf1f2278c3c67e058e81c5516c0ecf96646a567`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1/R2 material findings integrated: authority/lifecycle state model, explicit and discovery symlink containment, literal boundary/result schema, atomic compatibility evidence, LF harness, and canonical finding ledger; refreshed R3 baseline published.
-- **Evidence / reference:** `origin/feat/add-stack-capabilities@ebf1f2278c3c67e058e81c5516c0ecf96646a567`; R1/R2 architecture and critique ledgers integrated.
+- **Findings summary:** R1-R3 material findings integrated: authority/lifecycle model, symlink containment, literal result schema, atomic compatibility evidence, RED/GREEN separation, manifest synchronization, complete decision adherence, and explicit active-directory escape precedence; refreshed R4 baseline pending publication.
+- **Evidence / reference:** `R1-R3 architecture and critique ledgers integrated; the next material commit will replace ebf1f2278c3c67e058e81c5516c0ecf96646a567 before R4.`
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -374,7 +380,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending refreshed baseline and R3 convergence`
+- **Findings summary:** `pending refreshed baseline and R4 convergence`
 - **Evidence / reference:** `R1 changes are material by design; drift will run only after the refreshed baseline is published and reviewed.`
 - **Waiver authority / reference:** `n/a`
 
@@ -394,8 +400,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 1. **Existing coverage:** partial/false-green. The suite covers only nested `foundation_documentation/todos`.
 2. **Real payload/database inspection:** not applicable; the real boundary is local filesystem topology plus markdown and Git CLI metadata.
-3. **Existing failing test:** none. The existing suite passes because it never constructs a standalone authority.
-4. **Required RED tests:** desired standalone explicit/all-active behavior, CWD-relative paths, root/file alias deduplication, explicit and discovered leaf escape, active-directory escape, unknown/direct/deeper-lure lifecycle rejection, invalid explicit inputs, zero/incomplete/ambiguous roots, valid empty-active, literal violation/result schema, exact exit codes, JSON/text rendering, Git root, non-mutation, help text, and direct LF harness execution. Each RED asserts the desired contract and must fail against current guard behavior; reproducing the current false-green is diagnosis, not RED.
+3. **Existing failing test:** the tracked harness fails before fixtures under Linux/WSL because it is CRLF; when normalized only in a read-only stream, the existing logical suite passes because it never constructs a standalone authority.
+4. **Required behavior-changing RED tests:** standalone explicit/all-active (including standalone CWD-relative), root/file alias deduplication, explicit/discovered leaf escape, explicit/all-active active-directory escape, unknown/direct/deeper-lure lifecycle, missing/directory/non-Markdown explicit input, missing/incomplete/ambiguous roots, new boundary/result schema and rendering, LF direct execution, dual-layout help, and manifest description. Each asserts desired behavior and must fail against current source.
+   **Required baseline characterization/preservation GREEN tests:** nested explicit/all-active and nested CWD-relative behavior, existing disposition parsing, ordinary advisory/normal exits, deterministic JSON-output failure exit `1`, existing normal JSON envelope fields, resolved Git metadata, non-mutation, and valid empty-active outcome. These must pass before and after the fix; they must never be distorted merely to manufacture RED.
 5. **Analyzer prevention:** `no-rule-needed`; this is runtime path-resolution behavior, best prevented by deterministic fixtures rather than a static analyzer rule.
 
 | Stage | Coverage Before Fix | Required Evidence |
@@ -416,16 +423,17 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - `tools/todo_closeout_guard.py`
 - `tools/tests/todo_closeout_guard_test.sh`
+- `tools/manifest.md`
 - `artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md`
 - this tactical TODO
 
 ### Ordered Steps
 
-1. Normalize the existing shell harness to LF, then add tests that assert every desired behavior in `DOD-01` through `DOD-18`; capture failure against current source as RED, including internal unknown lifecycle and all-active leaf/directory escape.
+1. Normalize the existing shell harness to LF, capture the named baseline characterization cases as pre-fix GREEN, then add desired behavior-changing tests and capture their failure against current source as RED; include internal unknown lifecycle and explicit/all-active leaf/directory escape.
 2. Extract one generic supported-root resolver used by explicit classification and all-active discovery. Accept only contained candidates with an `active/` directory, deduplicate resolved aliases, and reject distinct simultaneous authorities.
 3. Classify explicit lifecycle by the first component relative to authority and containment-check/deduplicate each all-active discovery result before loading.
 4. Add the exact cataloged result-level violations and envelope invariants for invalid inputs, unrecognized lifecycle, escaping paths/directories, missing/incomplete roots, and ambiguity; render text/JSON without synthetic TODO results.
-5. Preserve nested behavior, CWD-relative explicit paths, empty-active success, exact process/advisory behavior, disposition parsing, resolved-repo Git metadata, JSON, non-mutation, and CLI documentation with individual assertions.
+5. Preserve nested behavior, CWD-relative explicit paths, empty-active success, exact process/advisory behavior, disposition parsing, resolved-repo Git metadata, JSON, and non-mutation with individual assertions; update help/docstring and `tools/manifest.md` to the new dual-layout contract.
 6. Produce the bounded derived audit package; run targeted suite, compile, self-check, diff/authority/completion gates, independent reviews/audits, and closeout.
 
 ### Test Strategy
@@ -433,7 +441,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Strategy:** `test-first`.
 - **Evidence layers:** unit-like CLI fixtures plus integration/contract execution of the real Python entry point against real temporary directories and symlinks.
 - **No external substitution:** no database, network, container, or project-specific fixture is needed.
-- **Fail-first targets:** every changed behavior named in `DOD-01` through `DOD-18`; a RED must assert desired behavior and fail against the current source, never assert the known false-green as success.
+- **Fail-first targets:** only the behavior-changing cases enumerated in Bug-Fix Evidence Gate item 4. Preservation/characterization cases remain GREEN before and after the fix; a RED must assert desired changed behavior and fail against current source, never assert the known false-green as success.
 
 ### Pre-APROVADO RED Evidence Capture
 
@@ -499,13 +507,13 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Option A (chosen):** normalize the tracked harness to LF before RED additions and require direct execution to reach its final marker. Effort `low`; risk `low`; blast `test-only`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
   - **Option B:** pipe through `tr -d '\r'` in validation. Effort `low`; risk `medium`; blast `test-only`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Option C:** ignore the Linux/WSL lane. Effort `none`; risk `high`; blast `release-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
-  - **Resolution:** Option A is frozen in `D-09`, `DOD-10`, and `VAL-02`.
+  - **Resolution:** Option A is frozen in `D-09`, `DOD-17`, and `VAL-02`.
 - **Issue `PR-06` — test-first and compatibility evidence were grouped too loosely (`medium`).**
   - **Evidence / why now:** the former plan said to assert the current false-green as RED and grouped disposition, advisory, JSON, Git, and non-mutation into one undifferentiated criterion.
   - **Option A (chosen):** RED asserts desired behavior and fails current code; every compatibility dimension gets a direct assertion and completion-matrix mapping. Effort `medium`; risk `low`; blast `test`; maintenance `medium`; performance `neutral`; elegance `improves`; structure `improves`.
   - **Option B:** retain grouped smoke coverage. Effort `low`; risk `medium`; blast `shared-tool`; maintenance `low`; performance `neutral`; elegance `neutral`; structure `neutral`.
   - **Option C:** rely on status/exit only. Effort `low`; risk `high`; blast `cross-project`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
-  - **Resolution:** Option A is frozen in the Bug-Fix Evidence Gate, ordered steps, `DOD-09`, and completion matrix.
+  - **Resolution:** Option A is frozen in the Bug-Fix Evidence Gate, ordered steps, atomic `DOD-11` through `DOD-16`, and completion matrix.
 - **Issue `PR-07` — planning package and schema were internally inconsistent (`medium`).**
   - **Evidence / why now:** Contract Boundary/Touched Surfaces omitted the derived package allowed by the diff contract; architecture schema lacked temporary exceptions/patterns/anti-patterns; headings were invisible to scope-drift comparison.
   - **Option A (chosen):** include the derived artifact in every boundary, adopt canonical headings/schema, and record R1 finding resolutions before publishing a new baseline. Effort `low`; risk `low`; blast `governance`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
@@ -536,6 +544,24 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Option B:** keep one grouped row and prose ledger. Effort `low`; risk `medium`; blast `audit`; maintenance `high`; performance `neutral`; elegance `neutral`; structure `regresses`.
   - **Option C:** waive machine extraction. Effort `none`; risk `high`; blast `approval-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
   - **Resolution:** Option A is integrated in `DOD-11` through `DOD-18`, the completion matrix, and the canonical critique Resolution ledger.
+- **Issue `PR-12` — canonical tool manifest was omitted from the material-change boundary (`high`).**
+  - **Evidence / why now:** R3 architecture review matched this material guard change to `main_instructions.md` Tool Inventory Discipline, which mandates a same-change `tools/manifest.md` update.
+  - **Option A (chosen):** add `tools/manifest.md` to scope, boundary, diff, touched surfaces, handoff, DOD, and validation evidence. Effort `low`; risk `low`; blast `tooling-doc`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** claim the existing one-line description remains sufficient. Effort `none`; risk `high`; blast `governance`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `invalid`.
+  - **Option C:** change the manifest in implementation without declaring it. Effort `low`; risk `high`; blast `diff-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Resolution:** Option A is frozen in Contract Boundary, Scope, Expected Changed Paths, Touched Surfaces, `DOD-21`, and handoff routing.
+- **Issue `PR-13` — active-directory escape precedence lacked explicit-mode proof (`high`).**
+  - **Evidence / why now:** R3 found only all-active coverage; explicit mode could emit the leaf escape code instead of the authority active-directory code even with a shared resolver claim.
+  - **Option A (chosen):** separate explicit and all-active active-directory escape fixtures; both require `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE`, candidate active path, count `0`, results `[]`, and exit `2`. Effort `low`; risk `low`; blast `shared-tool`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** accept either authority or leaf code. Effort `low`; risk `medium`; blast `machine-contract`; maintenance `high`; performance `neutral`; elegance `neutral`; structure `regresses`.
+  - **Option C:** cover only all-active. Effort `none`; risk `high`; blast `explicit-mode`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Resolution:** Option A is frozen in the schema plus distinct `DOD-10` and `DOD-20` rows.
+- **Issue `PR-14` — RED and decision traceability were internally contradictory (`high`).**
+  - **Evidence / why now:** R3 showed preservation cases were incorrectly required to fail, baseline IDs duplicated resolved decision IDs, D-11/D-12 lacked adherence rows, and PR-05/PR-06 referenced stale DOD numbers.
+  - **Option A (chosen):** split behavior-changing RED from baseline GREEN characterization; namespace baseline decisions `BASE-D-*`; validate D-01..D-12; repair every stale DOD reference. Effort `low`; risk `low`; blast `test/governance`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** keep all scenarios as RED and interpret failures loosely. Effort `none`; risk `high`; blast `test-evidence`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Option C:** drop decision adherence rows. Effort `low`; risk `high`; blast `closeout`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Resolution:** Option A is integrated in Bug-Fix Evidence Gate, Test Strategy, namespaced Decision Baseline, complete Decision Adherence Validation, and corrected PR-05/PR-06 references.
 
 ### Failure Modes & Edge Cases
 
@@ -569,8 +595,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `ARQ-03` | architecture R1 | CWD-relative behavior and misleading outside-suffix exact code frozen | integrated |
 | `ARQ-04` | architecture R1 | derived audit package added consistently to boundary and touched surfaces | integrated |
 | `PR-R1-01..07` | plan critique R1 | freeze/schema, semantic, CRLF, RED, exit/JSON, and diff inconsistencies resolved by `PR-01` through `PR-07` | integrated; R2 completed |
-| `ARQ-R2-01..03` | architecture R2 | lifecycle false-go, atomic evidence, and literal machine schema resolved by `PR-08`, `PR-10`, `PR-11` | integrated; fresh R3 required |
-| `PR-R2-01..05` | plan critique R2 | literal schema, internal lifecycle, discovery escape, canonical ledger, and operational state resolved in schema/DOD/ledger/status | integrated; fresh R3 required |
+| `ARQ-R2-01..03` | architecture R2 | lifecycle false-go, atomic evidence, and literal machine schema resolved by `PR-08`, `PR-10`, `PR-11` | integrated; R3 completed |
+| `PR-R2-01..05` | plan critique R2 | literal schema, internal lifecycle, discovery escape, canonical ledger, and operational state resolved in schema/DOD/ledger/status | integrated; R3 completed |
+| `ARQ-R3-01..03` | architecture R3 | manifest discipline, explicit active escape, and D-11/D-12 adherence resolved by `PR-12` through `PR-14` | integrated; fresh R4 required |
+| `CRIT-R3-01..03` | plan critique R3 | RED/GREEN split, decision namespaces/adherence/stale refs, and operational state resolved by `PR-14` and status refresh | integrated; fresh R4 required |
 
 ## Audit Trigger Matrix
 
@@ -600,10 +628,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Package minimum contents:** `frozen TODO|guard source|fixture suite|read-only reproduction`.
 - **Critique isolation mode:** `fresh internal no-context reviewer`.
-- **Internal reviewer mandate:** `required after each material baseline refresh; R1 and R2 findings were integrated, so a fresh R3 reviewer is required before APROVADO`.
+- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R3 findings were integrated, so a fresh R4 reviewer is required before APROVADO`.
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`.
 - **Critique status:** `findings_integrated`
-- **Findings summary:** `R1 and R2 returned NO-GO; all material issue families are integrated as PR-01..PR-11; fresh R3 is mandatory before APROVADO`.
+- **Findings summary:** `R1 through R3 returned NO-GO; all material issue families are integrated as PR-01..PR-14; fresh R4 is mandatory before APROVADO`.
 - **Resolution ledger:**
 
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
@@ -623,7 +651,13 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `CRIT-R2-03` | `Integrated` | `useful` | `yes` | `none` | `n/a` | All-active leaf and active-directory escape receive separate containment fixtures and exact codes. |
 | `CRIT-R2-04` | `Integrated` | `useful` | `yes` | `none` | `n/a` | This canonical ledger is machine-extractable under the critique gate. |
 | `CRIT-R2-05` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Operational next-step/freeze text now points to R3 baseline and convergence. |
-- **Evidence / reference:** `R1/R2 no-context architecture and critique outputs; PR-01..PR-11; canonical ledger extraction must pass before R3`.
+| `ARQ-R3-01` | `Integrated` | `useful` | `yes` | `paced` | `main_instructions.md#tool-inventory-discipline` | Material canonical tool changes now include same-change `tools/manifest.md` synchronization. |
+| `ARQ-R3-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Explicit and all-active active-directory escape fixtures independently prove authority-code precedence. |
+| `ARQ-R3-03` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Decision Adherence Validation now covers D-01 through D-12. |
+| `CRIT-R3-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Behavior-changing RED is separated from pre/post GREEN characterization and preservation. |
+| `CRIT-R3-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Baseline decisions use `BASE-D-*`; stale DOD references and missing adherence rows are corrected. |
+| `CRIT-R3-03` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Operational status points to the required R4 refresh/convergence. |
+- **Evidence / reference:** `R1-R3 no-context architecture and critique outputs; PR-01..PR-14; canonical ledger extraction must pass before R4`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Gate: Assumption Code Coherence
@@ -685,7 +719,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `D-07` | pending | pending implementation | explicit-input and exit contract |
 | `D-08` | pending | pending implementation | discovery-level result rendering |
 | `D-09` | pending | pending implementation | LF harness |
-| `D-10` | pending | pending implementation | no docs change |
+| `D-10` | pending | pending implementation | no instruction/workflow/template change; manifest sync only |
+| `D-11` | pending | pending implementation | exact first-component lifecycle classification |
+| `D-12` | pending | pending implementation | active-directory and discovered-item containment |
 
 ## Module Decision Consistency Validation
 
@@ -781,7 +817,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** publish the R3 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** publish the R4 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
