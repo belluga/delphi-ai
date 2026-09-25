@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** conclude and adjudicate the two fresh R8 reviews, then run assumption coherence, scope drift, and authority preflight; request `APROVADO` only if every pre-approval gate is green.
+- **Next exact step:** correct the canonical self-maintenance scope, publish the refreshed material baseline, and run explicitly routed R9 architecture and critique reviews before coherence, drift, and authority preflight.
 
 ## Active Work State
 
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@4b9af28` | `origin/feat/add-stack-capabilities@4b9af28` | n/a | release-package-owned | R8 material baseline published; reviews running |
+| standalone closeout guard support | `feat/add-stack-capabilities@9f6ba6c` | `origin/feat/add-stack-capabilities@9f6ba6c` | n/a | release-package-owned | R8 reviewed; finding-integrated R9 baseline publication pending |
 
 ## Diff Expectation Contract
 
@@ -221,7 +221,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 ## Profile Scope & Handoffs
 
 - **Primary execution profile:** `strategic-cto`
-- **Active technical scope:** `delphi-tooling`
+- **Active technical scope:** `delphi-self-maintenance`
 - **Expected supporting profiles:** `operational-coder; assurance-tester-quality`
 - **Scope-check command:** `python3 tools/profile_scope_check.py --profile strategic-cto tools/todo_closeout_guard.py tools/tests/todo_closeout_guard_test.sh tools/manifest.md artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Scope-check outcome:** `review required`; the TODO is allowed and the tool/test/derived-artifact paths are explicitly routed through the handoffs below.
@@ -352,7 +352,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
 - **Decision review status:** `running`
-- **Decision review evidence / resolution:** `R1 through R7 architecture/critique rounds are adjudicated; the R7 symmetric-lifecycle finding is integrated as PR-21. Fresh R8 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
+- **Decision review evidence / resolution:** `R1 through R8 architecture/critique rounds are adjudicated; canonical scope and explicit review routing are integrated as PR-22. Fresh explicitly routed R9 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -370,8 +370,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline commit:** `4b9af284357d67fc217063f98817c8d12968ab37`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R7 material findings integrated, including symmetric lifecycle-local containment for all recognized directories and both file-alias directions; refreshed R8 baseline published with review statuses intentionally running.
-- **Evidence / reference:** `origin/feat/add-stack-capabilities@4b9af284357d67fc217063f98817c8d12968ab37`; R1-R7 architecture and critique ledgers integrated.
+- **Findings summary:** R1-R8 material findings integrated, including canonical `delphi-self-maintenance` scope and deterministic R9 routing proof; refreshed R9 baseline pending publication.
+- **Evidence / reference:** `R1-R8 architecture and critique ledgers integrated; the next material commit will replace 4b9af284357d67fc217063f98817c8d12968ab37 before R9.`
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -383,8 +383,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `R8 material baseline 4b9af284357d67fc217063f98817c8d12968ab37 is published; scope-drift rerun awaits R8 review convergence.`
-- **Evidence / reference:** `review_scope_drift_guard will run after both R8 reviewers finish; no redundant baseline publication remains.`
+- **Findings summary:** `pending refreshed baseline and explicitly routed R9 convergence`
+- **Evidence / reference:** `R8 scope/routing correction is material; drift reruns after the R9 baseline is published and reviewed.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -608,6 +608,12 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Option B:** special-case only active-origin aliases. Effort `low`; risk `high`; blast `release-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Option C:** maintain a directory-alias ownership map. Effort `high`; risk `medium`; blast `shared-tool`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `neutral`.
   - **Resolution:** Option A generalizes `D-12`, the literal schema, `DOD-20/DOD-22/DOD-23`, and RED fixtures to every recognized lifecycle and both directions.
+- **Issue `PR-22` — technical scope and review routing proof were non-canonical (`medium`).**
+  - **Evidence / why now:** R8 architecture found `delphi-tooling` outside the canonical scope enum, while the R8 critique reported its subagent envelope could not prove the required review model.
+  - **Option A (chosen):** use canonical scope `delphi-self-maintenance`, run deterministic routing preflights for both review kinds, and dispatch R9 with explicit `gpt-5.6-sol/xhigh` no-context read-only settings. Effort `low`; risk `low`; blast `review-governance`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** retain implicit inherited model/scope. Effort `none`; risk `medium`; blast `review-gate`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `regresses`.
+  - **Option C:** waive model proof. Effort `low`; risk `high`; blast `formal-review`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid without human waiver`.
+  - **Resolution:** Option A is applied in Profile Scope & Handoffs and R9 Formal Review Routing Evidence; no waiver is used.
 
 ### Failure Modes & Edge Cases
 
@@ -654,7 +660,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `ARQ-R6` | architecture R6 | no material findings | clean; critique R6 still required correction |
 | `CRIT-R6-01` | plan critique R6 | lifecycle-local containment and alias policy resolved by `PR-20` | integrated; R7 completed |
 | `ARQ-R7` | architecture R7 | no material findings | clean; critique R7 still required correction |
-| `CRIT-R7-01` | plan critique R7 | lifecycle directory/file containment generalized symmetrically by `PR-21` | integrated; fresh R8 required |
+| `CRIT-R7-01` | plan critique R7 | lifecycle directory/file containment generalized symmetrically by `PR-21` | integrated; R8 completed |
+| `ARQ-R8-01` | architecture R8 | canonical technical scope corrected by `PR-22` | integrated; fresh R9 required |
+| `CRIT-R8` | plan critique R8 | no technical material findings; routing proof caveat resolved by explicit R9 preflight/model | integrated; fresh R9 required |
 
 ## Audit Trigger Matrix
 
@@ -684,10 +692,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Package minimum contents:** `frozen TODO|guard source|fixture suite|read-only reproduction`.
 - **Critique isolation mode:** `fresh internal no-context reviewer`.
-- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R7 findings were adjudicated, so a fresh R8 reviewer is required before APROVADO`.
+- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R8 findings were adjudicated, so an explicitly routed fresh R9 reviewer is required before APROVADO`.
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`.
 - **Critique status:** `running`
-- **Findings summary:** `R1 through R7 were adjudicated; all material issue families are integrated as PR-01..PR-21; fresh R8 is pending and the canonical status intentionally remains non-satisfying`.
+- **Findings summary:** `R1 through R8 were adjudicated; all material issue families are integrated as PR-01..PR-22; explicitly routed fresh R9 is pending and the canonical status intentionally remains non-satisfying`.
 - **Resolution ledger:**
 
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
@@ -725,7 +733,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `CRIT-R6-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Lifecycle-local containment now rejects cross-lifecycle file aliases and active-directory aliases with exact codes. |
 | `ARQ-R7` | `Integrated` | `useful` | `no` | `none` | `n/a` | Architecture R7 returned GO; no corrective finding required. |
 | `CRIT-R7-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Directory symlink rejection and cross-lifecycle file containment now apply symmetrically to active, promotion_lane, and completed. |
-- **Evidence / reference:** `R1-R7 no-context architecture and critique outputs; PR-01..PR-21; canonical ledger extraction must pass before R8`.
+| `ARQ-R8-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Active technical scope now uses canonical `delphi-self-maintenance`. |
+| `CRIT-R8` | `Integrated` | `useful` | `partial` | `none` | `n/a` | R8 critique returned technical GO; its routing-proof caveat is resolved by deterministic R9 preflights and explicit model/effort dispatch. |
+- **Evidence / reference:** `R1-R8 no-context architecture and critique outputs; PR-01..PR-22; canonical ledger extraction must pass before R9`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Gate: Assumption Code Coherence
@@ -773,6 +783,16 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Writer scheduling policy:** `single-writer-serialized`
 - **Guard outcome:** `go`
 - **Waiver / exception reference:** `n/a`
+
+### R9 Formal Review Routing Evidence
+
+| Review Kind | Surface / Role | Declared Model / Effort | Proof | Guard Outcome | Isolation |
+| --- | --- | --- | --- | --- | --- |
+| `architecture_opinion` | `formal-review / formal-reviewer` | `gpt-5.6-sol / xhigh` | `declared` | `go` | fresh no-context, read-only |
+| `critique` | `formal-review / formal-reviewer` | `gpt-5.6-sol / xhigh` | `declared` | `go` | fresh no-context, read-only |
+
+- **Guard command pattern:** `python3 tools/agent_role_routing_guard.py --client codex --surface formal-review --role formal-reviewer --model gpt-5.6-sol --review-kind <architecture_opinion|critique> --effort xhigh --proof-mode declared`
+- **Execution rule:** R9 reviewers must be spawned with the declared model/effort; the rows above are routing proof, not review completion evidence.
 
 ## Decision Adherence Validation
 
@@ -886,7 +906,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** converge the running R8 reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** publish the R9 review baseline, converge explicitly routed fresh reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
