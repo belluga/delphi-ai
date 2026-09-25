@@ -91,7 +91,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@aaa4f4c` | `origin/feat/add-stack-capabilities@aaa4f4c` | n/a | release-package-owned | R2 reviewed; finding-integrated R3 baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@ebf1f22` | `origin/feat/add-stack-capabilities@ebf1f22` | n/a | release-package-owned | finding-integrated R3 review baseline published |
 
 ## Diff Expectation Contract
 
@@ -358,11 +358,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `00392eef2460232337da01333af6d76fdc25b051`
+- **Baseline commit:** `ebf1f2278c3c67e058e81c5516c0ecf96646a567`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1/R2 material findings integrated: authority/lifecycle state model, explicit and discovery symlink containment, literal boundary/result schema, atomic compatibility evidence, LF harness, and canonical finding ledger; refreshed R3 baseline pending publication.
-- **Evidence / reference:** `R1/R2 architecture and critique ledgers integrated; the next material commit will replace 00392eef2460232337da01333af6d76fdc25b051 before R3.`
+- **Findings summary:** R1/R2 material findings integrated: authority/lifecycle state model, explicit and discovery symlink containment, literal boundary/result schema, atomic compatibility evidence, LF harness, and canonical finding ledger; refreshed R3 baseline published.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@ebf1f2278c3c67e058e81c5516c0ecf96646a567`; R1/R2 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
