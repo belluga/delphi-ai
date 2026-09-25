@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** correct the canonical self-maintenance scope, publish the refreshed material baseline, and run explicitly routed R9 architecture and critique reviews before coherence, drift, and authority preflight.
+- **Next exact step:** conclude and adjudicate the explicitly routed fresh R9 reviews, then run assumption coherence, scope drift, and authority preflight; request `APROVADO` only if every pre-approval gate is green.
 
 ## Active Work State
 
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@9f6ba6c` | `origin/feat/add-stack-capabilities@9f6ba6c` | n/a | release-package-owned | R8 reviewed; finding-integrated R9 baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@92257fa` | `origin/feat/add-stack-capabilities@92257fa` | n/a | release-package-owned | R9 material baseline published; explicitly routed reviews running |
 
 ## Diff Expectation Contract
 
@@ -367,11 +367,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `4b9af284357d67fc217063f98817c8d12968ab37`
+- **Baseline commit:** `92257fa8dd8bf8e490a60b96966e43151c43e7c9`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R8 material findings integrated, including canonical `delphi-self-maintenance` scope and deterministic R9 routing proof; refreshed R9 baseline pending publication.
-- **Evidence / reference:** `R1-R8 architecture and critique ledgers integrated; the next material commit will replace 4b9af284357d67fc217063f98817c8d12968ab37 before R9.`
+- **Findings summary:** R1-R8 material findings integrated, including canonical `delphi-self-maintenance` scope and deterministic R9 routing proof; refreshed R9 baseline published with review statuses intentionally running.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@92257fa8dd8bf8e490a60b96966e43151c43e7c9`; R1-R8 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -383,8 +383,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending refreshed baseline and explicitly routed R9 convergence`
-- **Evidence / reference:** `R8 scope/routing correction is material; drift reruns after the R9 baseline is published and reviewed.`
+- **Findings summary:** `R9 material baseline 92257fa8dd8bf8e490a60b96966e43151c43e7c9 is published; scope-drift rerun awaits explicitly routed R9 convergence.`
+- **Evidence / reference:** `review_scope_drift_guard will run after both R9 reviewers finish; no redundant baseline publication remains.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -906,7 +906,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** publish the R9 review baseline, converge explicitly routed fresh reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** converge the running explicitly routed R9 reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
