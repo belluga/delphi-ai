@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** conclude and adjudicate the two fresh R7 reviews, then run assumption coherence, scope drift, and authority preflight; request `APROVADO` only if every pre-approval gate is green.
+- **Next exact step:** integrate the R7 symmetric-lifecycle finding, publish the refreshed material baseline, and run fresh R8 architecture and plan critique before coherence, drift, and authority preflight.
 
 ## Active Work State
 
@@ -59,8 +59,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [ ] Fail closed when an explicit TODO is outside every supported authority root.
 - [ ] Fail closed when `--all-active` cannot find exactly one supported TODO authority root; distinguish no root, a candidate `todos/` without `active/`, an ambiguous pair of distinct roots, and a valid empty `active/` directory.
 - [ ] Validate explicit inputs before reading: an existing regular Markdown file is required; missing paths, directories, and non-Markdown files fail closed without traceback.
-- [ ] Canonicalize and containment-check `active/` plus every discovered TODO; reject an `active/` directory symlink or discovered leaf symlink that escapes the resolved authority, and deduplicate equivalent discovered aliases.
-- [ ] Treat each recognized lifecycle directory as its own containment boundary: reject an `active/` symlink even when its target remains in authority, and reject explicit/discovered file aliases whose resolved target crosses from their lexical lifecycle into another lifecycle.
+- [ ] Canonicalize and containment-check every selected lifecycle directory plus every explicit/discovered TODO; reject lifecycle-directory symlinks and leaf symlinks that escape the resolved authority, and deduplicate equivalent discovered aliases.
+- [ ] Treat each recognized lifecycle directory as its own containment boundary: reject symlink directories for `active`, `promotion_lane`, and `completed` even when their targets remain in authority, and reject explicit/discovered file aliases whose resolved target crosses from their lexical lifecycle into another lifecycle.
 - [ ] Preserve relative explicit-path semantics anchored to the process current working directory and define `--repo` as the repository/container whose two immediate authority candidates and Git context are inspected.
 - [ ] Add RED/GREEN regression fixtures for nested, standalone, relative-path, root-symlink, equivalent-root/path deduplication, escaping leaf symlink, unrecognized-path, invalid explicit input, missing/ambiguous root, exact exit codes, JSON shape, and real active-count behavior.
 - [ ] Preserve existing disposition parsing, git-state handling, JSON output, advisory exit behavior, and non-mutating semantics.
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@dc46f9d` | `origin/feat/add-stack-capabilities@dc46f9d` | n/a | release-package-owned | R7 material baseline published; reviews running |
+| standalone closeout guard support | `feat/add-stack-capabilities@217ac56` | `origin/feat/add-stack-capabilities@217ac56` | n/a | release-package-owned | R7 reviewed; finding-integrated R8 baseline publication pending |
 
 ## Diff Expectation Contract
 
@@ -151,7 +151,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [ ] `DOD-07` Explicit missing paths, directories, and non-Markdown files emit their exact catalog codes at exit `2` without traceback; argparse misuse remains exit `2`.
 - [ ] `DOD-08` Relative explicit TODO arguments remain anchored to the process current working directory and work from both nested and standalone repository roots.
 - [ ] `DOD-09` Explicit in-authority lifecycle classification uses only the first relative component; unknown/direct-root/deeper-lure cases emit `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED` in nested and standalone fixtures.
-- [ ] `DOD-10` All-active discovery containment is enforced separately: a leaf symlink escape is excluded with `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`; an `active/` directory escape emits `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE`; equivalent discovered aliases deduplicate.
+- [ ] `DOD-10` All-active discovery containment is enforced separately: a leaf symlink escape is excluded with `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`; an `active/` directory escape emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE`; equivalent discovered aliases deduplicate.
 - [ ] `DOD-11` Existing disposition parsing scenarios retain direct assertions.
 - [ ] `DOD-12` Advisory mode preserves the no-go envelope and returns exit `0`; normal governance no-go returns `2`; deterministic JSON-output write failure returns runtime/tool exit `1`.
 - [ ] `DOD-13` JSON output satisfies every Boundary Violation and Result Schema invariant, including `todo_count == len(todo_results)`, stable nullable `todo_path`, and mixed discovery results.
@@ -161,10 +161,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [ ] `DOD-17` The shell harness is normalized to LF and executes directly in the declared Linux/WSL lane.
 - [ ] `DOD-18` The guard docstring/help advertises both authority layouts without a nested-only claim.
 - [ ] `DOD-19` No downstream project name/path/business concept is persisted in Delphi surfaces.
-- [ ] `DOD-20` Explicit mode under an `active/` directory that resolves outside authority emits `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE` (not the leaf outside code), with the candidate active path, count `0`, results `[]`, and exit `2`.
+- [ ] `DOD-20` Explicit mode under any recognized lifecycle directory that resolves outside authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE` (not the leaf outside code), with the candidate lifecycle path, count `0`, results `[]`, and exit `2`.
 - [ ] `DOD-21` `tools/manifest.md` describes the guard's dual-layout resolution and fail-closed authority/input behavior in the same change.
-- [ ] `DOD-22` Explicit and all-active file aliases from lexical `active/` into `completed/` or `promotion_lane/` emit `CLOSEOUT-TODO-LIFECYCLE-ESCAPE`, are excluded from results, and return exit `2`; same-lifecycle aliases remain eligible and deduplicated.
-- [ ] `DOD-23` An `active/` directory symlink targeting another lifecycle inside the same authority emits `CLOSEOUT-AUTHORITY-ACTIVE-SYMLINK` in explicit and all-active modes, with the candidate path, count `0`, results `[]`, and exit `2`.
+- [ ] `DOD-22` Explicit file aliases crossing in every direction among lexical `active/`, `promotion_lane/`, and `completed/` emit `CLOSEOUT-TODO-LIFECYCLE-ESCAPE`; all-active covers active-origin aliases; same-lifecycle aliases remain eligible and deduplicated.
+- [ ] `DOD-23` A directory symlink for any recognized lifecycle targeting another lifecycle inside the same authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK` in explicit mode; all-active separately covers `active/`; every case reports the candidate path, count `0`, results `[]`, and exit `2`.
 
 ## Validation Steps
 
@@ -199,10 +199,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `DOD-17` | Definition of Done | Linux/WSL harness execution | test | `file` + direct shell execution | local CLI | planned | LF terminators and suite reaches final OK marker |
 | `DOD-18` | Definition of Done | accurate CLI documentation | test+review | `--help` and source docstring assertion | local CLI | planned | both layouts represented; no nested-only all-active help |
 | `DOD-19` | Definition of Done | Delphi agnosticism | review | bounded diff | n/a | planned | generic fixture names only |
-| `DOD-20` | Definition of Done | explicit active-directory escape precedence | negative contract test | explicit TODO below escaped `active/` | local CLI | planned | exact active-escape code/path/count/results/exit; no leaf-code substitution |
+| `DOD-20` | Definition of Done | explicit lifecycle-directory escape precedence | negative contract test | explicit TODO below externally escaped `active/`, `promotion_lane/`, and `completed/` | local CLI | planned | exact lifecycle-directory-escape code/path/count/results/exit; no leaf-code substitution |
 | `DOD-21` | Definition of Done | canonical tool inventory synchronization | review+assertion | `tools/manifest.md` row for `todo_closeout_guard.py` | local docs | planned | dual-layout + fail-closed semantics present |
-| `DOD-22` | Definition of Done | lifecycle-contained file aliases | negative+positive contract tests | explicit/all-active `active/link.md -> completed/done.md`; same-active aliases | local CLI | planned | exact lifecycle-escape code for cross-lifecycle; same-lifecycle dedup stays allowed |
-| `DOD-23` | Definition of Done | lifecycle-directory alias rejection | negative contract tests | explicit/all-active `active -> completed` | local CLI | planned | exact active-symlink code/path/count/results/exit |
+| `DOD-22` | Definition of Done | lifecycle-contained file aliases | negative+positive contract tests | explicit aliases in both directions among all three lifecycles; all-active active-origin; same-lifecycle aliases | local CLI | planned | exact lifecycle-escape code for cross-lifecycle; same-lifecycle dedup stays allowed |
+| `DOD-23` | Definition of Done | lifecycle-directory alias rejection | negative contract tests | explicit `active -> completed`, `promotion_lane -> active`, `completed -> active`; all-active `active -> completed` | local CLI | planned | exact generic lifecycle-directory-symlink code/path/count/results/exit |
 | `VAL-01` | Validation Steps | Python syntax | test | py_compile command | local | planned | exit 0 |
 | `VAL-02` | Validation Steps | fixture suite | test | shell test command | local | planned | exact assertions |
 | `VAL-03` | Validation Steps | Delphi coherence | test | self_check command | local | planned | no failures |
@@ -277,7 +277,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [x] `D-09` The shell fixture is normalized to LF as a harness precondition in this fix so its direct Linux/WSL command is authoritative; normalization is not represented as a guard-behavior RED.
 - [x] `D-10` No instruction/workflow/template change is needed because the existing CLI contract is already generic; mandatory `tools/manifest.md` inventory synchronization is still required for the material tool change.
 - [x] `D-11` Lifecycle classification uses exactly `relative.parts[0]`; recognized values are `active`, `promotion_lane`, and `completed`. Any other first component is `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED`, even when a later component is named `active`.
-- [x] `D-12` `active/` and every explicit/discovered Markdown path are resolved before loading and must remain inside both the resolved authority and the lifecycle selected by the first lexical relative component. An `active/` directory symlink is rejected even when its target remains inside authority; same-lifecycle file aliases remain allowed and deduplicated.
+- [x] `D-12` Every selected recognized lifecycle directory and every explicit/discovered Markdown path are resolved before loading and must remain inside both the resolved authority and the lifecycle selected by the first lexical relative component. Lifecycle directories may never be symlinks; same-lifecycle file aliases remain allowed and deduplicated.
 
 ### Boundary Violation and Result Schema
 
@@ -286,8 +286,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | neither candidate authority exists | `CLOSEOUT-AUTHORITY-MISSING` | `null` | `0` / `[]` |
 | candidate `todos/` exists but no candidate has an `active/` directory | `CLOSEOUT-AUTHORITY-INCOMPLETE` | `null` | `0` / `[]` |
 | two candidate roots resolve to distinct supported authorities | `CLOSEOUT-AUTHORITY-AMBIGUOUS` | `null` | `0` / `[]` in explicit and all-active modes |
-| a candidate `active/` directory resolves outside its resolved authority (explicit or all-active mode) | `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE` | string path of the candidate `active/` alias | `0` / `[]`; resolver rejects the authority before explicit leaf classification or discovery |
-| a candidate `active/` directory is a symlink whose resolved target remains inside authority | `CLOSEOUT-AUTHORITY-ACTIVE-SYMLINK` | string path of the candidate `active/` alias | `0` / `[]`; directory aliases are rejected before explicit/discovery work |
+| a selected recognized lifecycle directory resolves outside its resolved authority | `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE` | string path of the lexical lifecycle directory | `0` / `[]`; resolver rejects it before explicit leaf classification or discovery |
+| a selected recognized lifecycle directory is a symlink whose resolved target remains inside authority | `CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK` | string path of the lexical lifecycle directory | `0` / `[]`; directory aliases are rejected before explicit/discovery work |
 | explicit or discovered TODO resolves outside the selected authority | `CLOSEOUT-TODO-OUTSIDE-AUTHORITY` | string path as supplied/discovered | path is excluded from count/results |
 | explicit or discovered TODO alias resolves inside authority but outside the lifecycle selected by its first lexical relative component | `CLOSEOUT-TODO-LIFECYCLE-ESCAPE` | string path as supplied/discovered | path is excluded from count/results |
 | explicit path does not exist | `CLOSEOUT-TODO-MISSING` | supplied path string | `0` / `[]` |
@@ -341,7 +341,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | test | all-active discovery | `todo_closeout_guard_test.sh` | zero-count false go | implement-in-this-todo | exact count assertions |
 | test | fail closed | `todo_closeout_guard_test.sh` | missing root/outside path returns go | implement-in-this-todo | negative assertions |
 | test | lifecycle boundary | `todo_closeout_guard_test.sh` | unknown/direct/deeper-lure in-authority path returns go | implement-in-this-todo | exact first-component fixtures |
-| test | discovery containment | `todo_closeout_guard_test.sh` | escaped or cross-lifecycle `active/`/leaf is loaded or classified under the wrong lifecycle | implement-in-this-todo | separate authority-escape, active-symlink, leaf-escape, and lifecycle-escape fixtures |
+| test | discovery containment | `todo_closeout_guard_test.sh` | escaped or cross-lifecycle directory/leaf is loaded or classified under the wrong lifecycle | implement-in-this-todo | separate authority-escape, lifecycle-directory-symlink, leaf-escape, and lifecycle-escape fixtures |
 | contract | machine-readable envelope | `Boundary Violation and Result Schema` + JSON fixtures | codes/nullable path/count/results drift or renderer crash | implement-in-this-todo | literal schema assertions |
 | test | direct Linux/WSL execution | `bash tools/tests/todo_closeout_guard_test.sh` | CRLF prevents the harness from reaching fixtures | implement-in-this-todo | LF normalization + final OK assertion |
 
@@ -352,7 +352,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
 - **Decision review status:** `running`
-- **Decision review evidence / resolution:** `R1 through R6 architecture/critique rounds are adjudicated; the R6 lifecycle-containment finding is integrated as PR-20. Fresh R7 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
+- **Decision review evidence / resolution:** `R1 through R7 architecture/critique rounds are adjudicated; the R7 symmetric-lifecycle finding is integrated as PR-21. Fresh R8 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -370,8 +370,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline commit:** `dc46f9d0c29d59f1a072c328cfb060c2210ba95a`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R6 material findings integrated, including lifecycle-local containment for directory/file aliases; refreshed R7 baseline published with review statuses intentionally running.
-- **Evidence / reference:** `origin/feat/add-stack-capabilities@dc46f9d0c29d59f1a072c328cfb060c2210ba95a`; R1-R6 architecture and critique ledgers integrated.
+- **Findings summary:** R1-R7 material findings integrated, including symmetric lifecycle-local containment for all recognized directories and both file-alias directions; refreshed R8 baseline pending publication.
+- **Evidence / reference:** `R1-R7 architecture and critique ledgers integrated; the next material commit will replace dc46f9d0c29d59f1a072c328cfb060c2210ba95a before R8.`
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -383,8 +383,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `R7 material baseline dc46f9d0c29d59f1a072c328cfb060c2210ba95a is published; scope-drift rerun awaits R7 review convergence.`
-- **Evidence / reference:** `review_scope_drift_guard will run after both R7 reviewers finish; no redundant baseline publication remains.`
+- **Findings summary:** `pending refreshed baseline and R8 convergence`
+- **Evidence / reference:** `R7 symmetric-lifecycle correction is material; drift reruns after the R8 baseline is published and reviewed.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -405,7 +405,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 2. **Real payload/database inspection:** not applicable; the real boundary is local filesystem topology plus markdown and Git CLI metadata.
 3. **Existing failing test:** the tracked harness fails before fixtures under Linux/WSL because it is CRLF; when normalized only in a read-only stream, the existing logical suite passes because it never constructs a standalone authority.
 4. **Required harness precondition evidence:** normalize the tracked script from CRLF to LF and prove direct Linux/WSL execution reaches logical fixtures; this migration is neither guard-behavior RED nor compatibility GREEN.
-5. **Required behavior-changing RED tests:** standalone explicit/all-active (including standalone CWD-relative), equivalent same-lifecycle file-alias deduplication, explicit/discovered authority escape, explicit/all-active active-directory escape, cross-lifecycle file aliases, in-authority `active/` directory symlinks, unknown/direct/deeper-lure lifecycle, missing/directory/non-Markdown explicit input, missing/incomplete/distinct-ambiguous roots, new boundary/result schema and rendering, dual-layout help, and manifest description. Each asserts desired behavior and must fail against current source.
+5. **Required behavior-changing RED tests:** standalone explicit/all-active (including standalone CWD-relative), equivalent same-lifecycle file-alias deduplication, explicit/discovered authority escape, recognized lifecycle-directory escape/symlink in both lexical directions, cross-lifecycle file aliases in both directions, unknown/direct/deeper-lure lifecycle, missing/directory/non-Markdown explicit input, missing/incomplete/distinct-ambiguous roots, new boundary/result schema and rendering, dual-layout help, and manifest description. Each asserts desired behavior and must fail against current source.
 6. **Required baseline characterization/preservation GREEN tests:** nested explicit/all-active and nested CWD-relative behavior, symlinked `--repo`, equivalent root aliases that are already observationally count-one, existing disposition parsing, ordinary advisory/normal exits, deterministic JSON-output failure exit `1`, existing normal JSON envelope fields, resolved Git metadata, non-mutation, and valid empty-active outcome. These must pass before and after the fix; they must never be distorted merely to manufacture RED.
 7. **Analyzer prevention:** `no-rule-needed`; this is runtime path-resolution behavior, best prevented by deterministic fixtures rather than a static analyzer rule.
 
@@ -433,9 +433,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ### Ordered Steps
 
-1. Record CRLF→LF as a harness precondition migration, capture the named baseline characterization cases as pre-fix GREEN (including repo/root aliases), then add desired behavior-changing tests and capture their failure against current source as RED (including same-lifecycle file dedup, unknown lifecycle, authority escape, cross-lifecycle aliases, and explicit/all-active active-directory symlinks).
+1. Record CRLF→LF as a harness precondition migration, capture the named baseline characterization cases as pre-fix GREEN (including repo/root aliases), then add desired behavior-changing tests and capture their failure against current source as RED (including same-lifecycle file dedup, unknown lifecycle, authority escape, cross-lifecycle aliases in both directions, and every recognized lifecycle-directory symlink).
 2. Extract one generic supported-root resolver used by explicit classification and all-active discovery. Accept only contained candidates with an `active/` directory, deduplicate resolved aliases, and reject distinct simultaneous authorities.
-3. Classify explicit lifecycle by the first lexical component relative to authority; reject active-directory aliases; require every resolved file to remain under that lifecycle's resolved directory; containment-check and deduplicate each all-active discovery result before loading.
+3. Classify explicit lifecycle by the first lexical component relative to authority; reject directory aliases for every recognized lifecycle; require every resolved file to remain under that lifecycle's resolved directory; containment-check and deduplicate each all-active discovery result before loading.
 4. Add the exact cataloged result-level violations and envelope invariants for invalid inputs, unrecognized lifecycle, escaping paths/directories, missing/incomplete roots, and ambiguity; render text/JSON without synthetic TODO results.
 5. Preserve nested behavior, CWD-relative explicit paths, empty-active success, exact process/advisory behavior, disposition parsing, resolved-repo Git metadata, JSON, and non-mutation with individual assertions; update help/docstring and `tools/manifest.md` to the new dual-layout contract.
 6. Produce the bounded derived audit package; run targeted suite, compile, self-check, diff/authority/completion gates, independent reviews/audits, and closeout.
@@ -556,7 +556,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Resolution:** Option A is frozen in Contract Boundary, Scope, Expected Changed Paths, Touched Surfaces, `DOD-21`, and handoff routing.
 - **Issue `PR-13` — active-directory escape precedence lacked explicit-mode proof (`high`).**
   - **Evidence / why now:** R3 found only all-active coverage; explicit mode could emit the leaf escape code instead of the authority active-directory code even with a shared resolver claim.
-  - **Option A (chosen):** separate explicit and all-active active-directory escape fixtures; both require `CLOSEOUT-AUTHORITY-ACTIVE-ESCAPE`, candidate active path, count `0`, results `[]`, and exit `2`. Effort `low`; risk `low`; blast `shared-tool`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option A (chosen):** separate explicit and all-active directory-escape fixtures; both require the generic `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE`, candidate lifecycle path, count `0`, results `[]`, and exit `2`. Effort `low`; risk `low`; blast `shared-tool`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
   - **Option B:** accept either authority or leaf code. Effort `low`; risk `medium`; blast `machine-contract`; maintenance `high`; performance `neutral`; elegance `neutral`; structure `regresses`.
   - **Option C:** cover only all-active. Effort `none`; risk `high`; blast `explicit-mode`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Resolution:** Option A is frozen in the schema plus distinct `DOD-10` and `DOD-20` rows.
@@ -598,10 +598,16 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Resolution:** Option A governs the R6 freeze evidence update; the published state will point to R6 convergence, never to redundant publication.
 - **Issue `PR-20` — authority containment did not preserve lifecycle containment (`high`).**
   - **Evidence / why now:** R6 critique showed `active/link.md -> ../completed/done.md` and `active -> completed` stay inside authority but can make lexical and resolved lifecycle disagree, reopening explicit/all-active false-go behavior.
-  - **Option A (chosen):** make lifecycle directories containment boundaries; reject any `active/` directory symlink, reject cross-lifecycle file aliases with a typed code, and continue allowing/deduplicating same-lifecycle file aliases. Effort `medium`; risk `low`; blast `shared-tool`; maintenance `medium`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option A (chosen):** make lifecycle directories containment boundaries; reject directory symlinks for every recognized lifecycle, reject cross-lifecycle file aliases with a typed code, and continue allowing/deduplicating same-lifecycle file aliases. Effort `medium`; risk `low`; blast `shared-tool`; maintenance `medium`; performance `neutral`; elegance `improves`; structure `improves`.
   - **Option B:** reject every symlink below authority. Effort `low`; risk `medium`; blast `cross-project`; maintenance `low`; performance `neutral`; elegance `regresses`; structure `neutral`.
   - **Option C:** contain only to authority. Effort `none`; risk `high`; blast `release-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
   - **Resolution:** Option A is frozen in `D-12`, the literal violation schema, `DOD-22/DOD-23`, the protection harness, and explicit/all-active RED fixtures.
+- **Issue `PR-21` — lifecycle containment was asymmetric outside active (`high`).**
+  - **Evidence / why now:** R7 critique showed `promotion_lane -> active`, `completed -> active`, and reverse-direction file aliases could still present active content under a lexical non-active lifecycle and false-go.
+  - **Option A (chosen):** reject directory symlinks for all three recognized lifecycles with generic escape/symlink codes; test cross-lifecycle file aliases in both directions while preserving same-lifecycle file aliases. Effort `low`; risk `low`; blast `shared-tool`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** special-case only active-origin aliases. Effort `low`; risk `high`; blast `release-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Option C:** maintain a directory-alias ownership map. Effort `high`; risk `medium`; blast `shared-tool`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `neutral`.
+  - **Resolution:** Option A generalizes `D-12`, the literal schema, `DOD-20/DOD-22/DOD-23`, and RED fixtures to every recognized lifecycle and both directions.
 
 ### Failure Modes & Edge Cases
 
@@ -613,9 +619,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - [x] Explicit TODO is outside supported roots despite a misleading suffix: exact outside-authority no-go.
 - [x] Explicit leaf symlink escapes authority: exact outside-authority no-go.
 - [x] Discovered leaf symlink escapes authority: exclude from results and emit exact outside-authority no-go.
-- [x] `active/` directory symlink escapes authority: reject authority with exact active-escape no-go.
-- [x] `active/` directory symlink targets another lifecycle inside authority: reject authority with exact active-symlink no-go in both modes.
-- [x] File alias crosses from lexical `active/` into another lifecycle inside authority: exclude it with exact lifecycle-escape no-go; same-lifecycle file aliases remain allowed/deduplicated.
+- [x] Any recognized lifecycle directory symlink escapes authority: reject with exact generic lifecycle-directory-escape no-go.
+- [x] Any recognized lifecycle directory symlink targets another lifecycle inside authority: reject with exact generic lifecycle-directory-symlink no-go; all-active exercises the active-origin case.
+- [x] File alias crosses between any two recognized lifecycles: exclude it with exact lifecycle-escape no-go; same-lifecycle file aliases remain allowed/deduplicated.
 - [x] Explicit TODO path is missing, a directory, or not Markdown: typed no-go, no traceback.
 - [x] Explicit path is under unknown/direct/deeper-lure lifecycle: exact unrecognized-lifecycle no-go.
 - [x] Relative explicit paths from nested and standalone roots: preserve CWD anchoring.
@@ -646,7 +652,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `ARQ-R5-01` | architecture R5 | operational next-step/drift/closeout update made part of the post-publish evidence procedure | integrated; R6 completed |
 | `CRIT-R5-01..02` | plan critique R5 | exact 4/4 module identity/handling and operational state resolved by `PR-18/PR-19` | integrated; R6 completed |
 | `ARQ-R6` | architecture R6 | no material findings | clean; critique R6 still required correction |
-| `CRIT-R6-01` | plan critique R6 | lifecycle-local containment and alias policy resolved by `PR-20` | integrated; fresh R7 required |
+| `CRIT-R6-01` | plan critique R6 | lifecycle-local containment and alias policy resolved by `PR-20` | integrated; R7 completed |
+| `ARQ-R7` | architecture R7 | no material findings | clean; critique R7 still required correction |
+| `CRIT-R7-01` | plan critique R7 | lifecycle directory/file containment generalized symmetrically by `PR-21` | integrated; fresh R8 required |
 
 ## Audit Trigger Matrix
 
@@ -676,10 +684,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Package minimum contents:** `frozen TODO|guard source|fixture suite|read-only reproduction`.
 - **Critique isolation mode:** `fresh internal no-context reviewer`.
-- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R6 findings were adjudicated, so a fresh R7 reviewer is required before APROVADO`.
+- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R7 findings were adjudicated, so a fresh R8 reviewer is required before APROVADO`.
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`.
 - **Critique status:** `running`
-- **Findings summary:** `R1 through R6 were adjudicated; all material issue families are integrated as PR-01..PR-20; fresh R7 is pending and the canonical status intentionally remains non-satisfying`.
+- **Findings summary:** `R1 through R7 were adjudicated; all material issue families are integrated as PR-01..PR-21; fresh R8 is pending and the canonical status intentionally remains non-satisfying`.
 - **Resolution ledger:**
 
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
@@ -715,7 +723,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `CRIT-R5-02` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Next-step, drift, and closeout status are updated together after publication. |
 | `ARQ-R6` | `Integrated` | `useful` | `no` | `none` | `n/a` | Architecture R6 returned GO; no corrective finding required. |
 | `CRIT-R6-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Lifecycle-local containment now rejects cross-lifecycle file aliases and active-directory aliases with exact codes. |
-- **Evidence / reference:** `R1-R6 no-context architecture and critique outputs; PR-01..PR-20; canonical ledger extraction must pass before R7`.
+| `ARQ-R7` | `Integrated` | `useful` | `no` | `none` | `n/a` | Architecture R7 returned GO; no corrective finding required. |
+| `CRIT-R7-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Directory symlink rejection and cross-lifecycle file containment now apply symmetrically to active, promotion_lane, and completed. |
+- **Evidence / reference:** `R1-R7 no-context architecture and critique outputs; PR-01..PR-21; canonical ledger extraction must pass before R8`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Gate: Assumption Code Coherence
@@ -779,7 +789,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `D-09` | pending | pending implementation | LF harness |
 | `D-10` | pending | pending implementation | no instruction/workflow/template change; manifest sync only |
 | `D-11` | pending | pending implementation | exact first-component lifecycle classification |
-| `D-12` | pending | pending implementation | active-directory and discovered-item containment |
+| `D-12` | pending | pending implementation | all lifecycle-directory and explicit/discovered-item containment |
 
 ## Module Decision Consistency Validation
 
@@ -876,7 +886,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** converge the running R7 reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** publish the R8 review baseline, converge fresh reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
