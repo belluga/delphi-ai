@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** integrate R4 findings, publish the refreshed material baseline, and run fresh R5 architecture and plan critique before coherence, drift, and authority preflight.
+- **Next exact step:** integrate R5 findings, publish the refreshed material baseline, and run fresh R6 architecture and plan critique before coherence, drift, and authority preflight.
 
 ## Active Work State
 
@@ -92,7 +92,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@43cabfc` | `origin/feat/add-stack-capabilities@43cabfc` | n/a | release-package-owned | R5 review baseline published; reviews running |
+| standalone closeout guard support | `feat/add-stack-capabilities@0fa3b59` | `origin/feat/add-stack-capabilities@0fa3b59` | n/a | release-package-owned | R5 reviewed; finding-integrated R6 baseline publication pending |
 
 ## Diff Expectation Contract
 
@@ -257,7 +257,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `todo-closeout-promotion-method#active-todo-scan` | Closeout validation applies to active TODOs under the governing Foundation authority, independent of whether that authority is nested or standalone. | `Preserve` | `workflows/docker/todo-closeout-promotion-method.md` |
 | `todo_closeout_guard.py#path-state` | Classification currently matches hard-coded nested path segments and can return false `go` for standalone authorities. | `Supersede (Intentional)` | observed explicit standalone reproduction |
 | `todo_closeout_guard.py#all-active` | Discovery currently scans only `foundation_documentation/todos/active` and treats an absent root as an empty successful scan. | `Supersede (Intentional)` | observed standalone `todo_count=0`, outcome `go` |
-| `todo_closeout_guard.py#exit-contract` | Documented exits are `0` go, `2` governed no-go, and `1` runtime/tool misuse; argparse independently uses `2`. | `Preserve + Clarify` | module docstring + `argparse` behavior |
+| `todo_closeout_guard.py#exit-contract` | Documented exits are `0` go, `2` governed no-go, and `1` runtime/tool misuse; argparse independently uses `2`. | `Preserve` | module docstring + `argparse` behavior; clarification is recorded in notes/schema without inventing a handling enum |
 
 ## Decision Baseline (Frozen Before Implementation)
 
@@ -343,7 +343,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
 - **Decision review status:** `running`
-- **Decision review evidence / resolution:** `R1 through R4 architecture opinions returned NO-GO; their findings are integrated in PR-01..PR-17, the single D-01..D-12 baseline/adherence model, manifest boundary, and explicit mode matrices; fresh R5 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
+- **Decision review evidence / resolution:** `R1 through R5 architecture opinions returned NO-GO; their findings are integrated in PR-01..PR-19, including exact module-table identity and operational status handling; fresh R6 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -361,8 +361,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline commit:** `43cabfcf8172823f17e0a3744921b9c38c3a4c05`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R4 material findings integrated: technical authority/schema contract plus current-round status safety, single decision baseline, three-class test evidence, correct active work state, and module exit-contract adherence; refreshed R5 baseline published with review statuses intentionally running.
-- **Evidence / reference:** `origin/feat/add-stack-capabilities@43cabfcf8172823f17e0a3744921b9c38c3a4c05`; R1-R4 architecture and critique ledgers integrated.
+- **Findings summary:** R1-R5 material findings integrated: technical contract, status safety, single decision baseline, three-class test evidence, correct work state, and exact 4/4 module snapshot/adherence identity; refreshed R6 baseline pending publication.
+- **Evidence / reference:** `R1-R5 architecture and critique ledgers integrated; the next material commit will replace 43cabfcf8172823f17e0a3744921b9c38c3a4c05 before R6.`
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -374,7 +374,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending refreshed baseline and R5 convergence`
+- **Findings summary:** `pending refreshed baseline and R6 convergence`
 - **Evidence / reference:** `R1 changes are material by design; drift will run only after the refreshed baseline is published and reviewed.`
 - **Waiver authority / reference:** `n/a`
 
@@ -575,6 +575,18 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Option B:** add a new planning state. Effort `high`; risk `high`; blast `workflow`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `out-of-scope`.
   - **Option C:** keep `review`. Effort `none`; risk `medium`; blast `status`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
   - **Resolution:** Option A is applied in Active Work State with an exact transition condition.
+- **Issue `PR-18` — module snapshot and adherence tables used divergent identities/enums (`high`).**
+  - **Evidence / why now:** R5 critique found the snapshot's four exact references were not reproduced by Module Decision Consistency Validation, and `Preserve + Clarify` was outside the declared handling enum.
+  - **Option A (chosen):** use the exact same four references and canonical handling values in both tables; keep clarifications in evidence/notes. Effort `low`; risk `low`; blast `governance`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** add a mapping between two naming systems. Effort `medium`; risk `medium`; blast `governance`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Option C:** leave approximate semantic correspondence. Effort `none`; risk `high`; blast `closeout`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Resolution:** Option A is integrated; snapshot and validation now match 4/4 by exact reference and handling value.
+- **Issue `PR-19` — evidence-only freeze update left operational actions stale (`medium`).**
+  - **Evidence / why now:** both R5 reviewers found next-step, drift, and closeout text still instructed publication of the already-published R5 baseline.
+  - **Option A (chosen):** after each material baseline is actually published, use the evidence-only commit to point all three fields to current review convergence followed by coherence, drift, and authority preflight. Effort `minimal`; risk `low`; blast `status`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** keep publication language until review ends. Effort `none`; risk `medium`; blast `operator`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Option C:** remove exact next actions. Effort `low`; risk `high`; blast `workflow`; maintenance `low`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Resolution:** Option A governs the R6 freeze evidence update; the published state will point to R6 convergence, never to redundant publication.
 
 ### Failure Modes & Edge Cases
 
@@ -612,8 +624,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `PR-R2-01..05` | plan critique R2 | literal schema, internal lifecycle, discovery escape, canonical ledger, and operational state resolved in schema/DOD/ledger/status | integrated; R3 completed |
 | `ARQ-R3-01..03` | architecture R3 | manifest discipline, explicit active escape, and D-11/D-12 adherence resolved by `PR-12` through `PR-14` | integrated; R4 completed |
 | `CRIT-R3-01..03` | plan critique R3 | RED/GREEN split, decision namespaces/adherence/stale refs, and operational state resolved by `PR-14` and status refresh | integrated; R4 completed |
-| `ARQ-R4-01` | architecture R4 | operational freeze/drift/next-step state refreshed toward R5 convergence | integrated; fresh R5 required |
-| `CRIT-R4-01..04` | plan critique R4 | current-round gate safety, single decision baseline/module row, three-class tests, and work state resolved by `PR-15` through `PR-17` | integrated; fresh R5 required |
+| `ARQ-R4-01` | architecture R4 | operational freeze/drift/next-step state refreshed toward R5 convergence | integrated; R5 completed |
+| `CRIT-R4-01..04` | plan critique R4 | current-round gate safety, single decision baseline/module row, three-class tests, and work state resolved by `PR-15` through `PR-17` | integrated; R5 completed |
+| `ARQ-R5-01` | architecture R5 | operational next-step/drift/closeout update made part of the post-publish evidence procedure | integrated; fresh R6 required |
+| `CRIT-R5-01..02` | plan critique R5 | exact 4/4 module identity/handling and operational state resolved by `PR-18/PR-19` | integrated; fresh R6 required |
 
 ## Audit Trigger Matrix
 
@@ -643,10 +657,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Package minimum contents:** `frozen TODO|guard source|fixture suite|read-only reproduction`.
 - **Critique isolation mode:** `fresh internal no-context reviewer`.
-- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R4 findings were integrated, so a fresh R5 reviewer is required before APROVADO`.
+- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R5 findings were integrated, so a fresh R6 reviewer is required before APROVADO`.
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`.
 - **Critique status:** `running`
-- **Findings summary:** `R1 through R4 returned NO-GO; all material issue families are integrated as PR-01..PR-17; fresh R5 is running and the canonical status intentionally remains non-satisfying`.
+- **Findings summary:** `R1 through R5 returned NO-GO; all material issue families are integrated as PR-01..PR-19; fresh R6 is pending and the canonical status intentionally remains non-satisfying`.
 - **Resolution ledger:**
 
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
@@ -677,7 +691,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `CRIT-R4-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | D-01..D-12 is the only decision baseline and the module exit contract has a consistency row. |
 | `CRIT-R4-03` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Harness precondition, behavior RED, and characterization GREEN are distinct evidence classes. |
 | `CRIT-R4-04` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Active Work State is implementation until local implementation is materially complete. |
-- **Evidence / reference:** `R1-R4 no-context architecture and critique outputs; PR-01..PR-17; canonical ledger extraction must pass before R5`.
+| `ARQ-R5-01` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Post-publish evidence updates now point to current review convergence and subsequent guards. |
+| `CRIT-R5-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Module snapshot and consistency validation use the same four exact references and canonical handling values. |
+| `CRIT-R5-02` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Next-step, drift, and closeout status are updated together after publication. |
+- **Evidence / reference:** `R1-R5 no-context architecture and critique outputs; PR-01..PR-19; canonical ledger extraction must pass before R6`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Gate: Assumption Code Coherence
@@ -747,10 +764,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Module Decision Ref | Planned Handling | Delivery Status | Evidence | Notes |
 | --- | --- | --- | --- | --- |
-| `closeout#non-mutating` | Preserve | pending | pending | no auto-move |
-| `closeout#all-active` | Preserve + Fix | pending | pending | discover real authority |
-| `closeout#same-governing-todo` | Preserve | pending | pending | no new promotion TODO |
-| `todo_closeout_guard.py#exit-contract` | Preserve + Clarify | pending | pending | exact go/governance/runtime/advisory exits and structured boundary codes |
+| `todo-closeout-promotion-method#active-todo-scan` | Preserve | pending | pending | workflow contract remains generic across nested and standalone authority layouts |
+| `todo_closeout_guard.py#path-state` | Supersede (Intentional) | pending | pending | replace absolute segment matching with resolved-root-relative lifecycle classification |
+| `todo_closeout_guard.py#all-active` | Supersede (Intentional) | pending | pending | replace nested-only empty-success discovery with the frozen fail-closed resolver |
+| `todo_closeout_guard.py#exit-contract` | Preserve | pending | pending | preserve process exits while clarifying structured boundary codes and advisory behavior |
 
 ## Pipeline/Copilot P1/P2 Preflight
 
@@ -838,7 +855,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** publish the R5 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** publish the R6 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
