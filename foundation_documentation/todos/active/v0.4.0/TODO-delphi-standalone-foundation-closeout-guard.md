@@ -42,13 +42,13 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** integrate R3 findings, publish the refreshed material baseline, and run fresh R4 architecture and plan critique before coherence, drift, and authority preflight.
+- **Next exact step:** integrate R4 findings, publish the refreshed material baseline, and run fresh R5 architecture and plan critique before coherence, drift, and authority preflight.
 
 ## Active Work State
 
-- **Work state:** `review`
-- **Why this state now:** planning and approval gates remain open; implementation has not started.
-- **Exit condition:** explicit `APROVADO`, normal authority guard `go`, implementation, and all delivery gates.
+- **Work state:** `implementation`
+- **Why this state now:** the active TODO is still gaining/changing planning and pre-implementation evidence; product implementation has not started.
+- **Exit condition:** implementation and local validation become materially complete, then the state transitions to `review` for delivery gates.
 
 ## Scope
 
@@ -92,7 +92,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@7379f33` | `origin/feat/add-stack-capabilities@7379f33` | n/a | release-package-owned | finding-integrated R4 review baseline published |
+| standalone closeout guard support | `feat/add-stack-capabilities@df10037` | `origin/feat/add-stack-capabilities@df10037` | n/a | release-package-owned | R4 reviewed; finding-integrated R5 baseline publication pending |
 
 ## Diff Expectation Contract
 
@@ -248,18 +248,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Decisions (Resolved Before Freeze)
 
-- [x] `D-01` Supported authority roots are `<repo>/foundation_documentation/todos` and `<repo>/todos`; names below `todos/` retain the existing active/promotion/completed semantics.
-- [x] `D-02` Path classification is relative to resolved authority roots, not hard-coded absolute path segments.
-- [x] `D-03` A candidate authority is supported only when its `active/` child exists as a directory; equivalent roots/paths produced by symlinks are deduplicated after canonical resolution, while two distinct supported roots are rejected as ambiguous.
-- [x] `D-04` Explicit paths outside supported roots—including escaping leaf symlinks—and all-active scans without exactly one supported root fail closed.
-- [x] `D-05` A supported root with an existing but empty `active/` directory is valid; an existing `todos/` candidate without `active/` is unsupported and returns a typed no-go.
-- [x] `D-06` A relative explicit TODO path remains relative to the process current working directory. `--repo` identifies the repository/container whose immediate root candidates and resolved Git worktree provide discovery and Git metadata.
-- [x] `D-07` Explicit governed inputs must be existing regular `.md` files. Missing, directory, and non-Markdown inputs are governance no-go results (exit `2`), while argparse misuse stays exit `2`, unexpected runtime/tool failures stay exit `1`, and advisory mode returns `0` after reporting any governed findings.
-- [x] `D-08` Discovery-level violations are first-class result violations with an always-present but nullable `todo_path`; text/JSON renderers must not require a synthetic per-TODO result.
-- [x] `D-09` The shell fixture is normalized to LF as part of this fix so its direct Linux/WSL command is authoritative.
-- [x] `D-10` No instruction/workflow/template change is needed because the existing CLI contract is already generic; mandatory `tools/manifest.md` inventory synchronization is still required for the material tool change.
-- [x] `D-11` Lifecycle classification uses exactly `relative.parts[0]`; recognized values are `active`, `promotion_lane`, and `completed`. Any other first component is `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED`, even when a later component is named `active`.
-- [x] `D-12` `active/` and every discovered Markdown path are resolved and checked against the resolved authority before loading. Directory or leaf escape is never a TODO result.
+- [x] All resolved implementation decisions are recorded exactly once in `Decision Baseline (Frozen Before Implementation)` below; no parallel decision-ID namespace or additional unresolved decision exists.
 
 ## Module Decision Baseline Snapshot
 
@@ -272,13 +261,18 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Decision Baseline (Frozen Before Implementation)
 
-- [x] `BASE-D-01` Preserve nested layout behavior.
-- [x] `BASE-D-02` Add standalone layout behavior without project-specific aliases.
-- [x] `BASE-D-03` Eliminate false `go` for unrecognized explicit paths and missing roots.
-- [x] `BASE-D-04` Keep the guard non-mutating.
-- [x] `BASE-D-05` Treat root ambiguity, invalid governed input, and authority escape as typed governance violations rather than successful empty work or traceback.
-- [x] `BASE-D-06` Preserve CWD-relative explicit paths, direct Linux/WSL fixture execution, and the documented/advisory exit behavior.
-- [x] `BASE-D-07` Preserve the result envelope while making boundary failures explicit: only authorized loaded TODOs contribute to `todo_count` and `todo_results`; every violation has a stable nullable `todo_path` field.
+- [x] `D-01` Supported authority roots are `<repo>/foundation_documentation/todos` and `<repo>/todos`; names below `todos/` retain the existing active/promotion/completed semantics.
+- [x] `D-02` Path classification is relative to resolved authority roots, not hard-coded absolute path segments.
+- [x] `D-03` A candidate authority is supported only when its `active/` child exists as a directory; equivalent roots/paths produced by symlinks are deduplicated after canonical resolution, while two distinct supported roots are rejected as ambiguous.
+- [x] `D-04` Explicit paths outside supported roots—including escaping leaf symlinks—and all-active scans without exactly one supported root fail closed.
+- [x] `D-05` A supported root with an existing but empty `active/` directory is valid; an existing `todos/` candidate without `active/` is unsupported and returns a typed no-go.
+- [x] `D-06` A relative explicit TODO path remains relative to the process current working directory. `--repo` identifies the repository/container whose immediate root candidates and resolved Git worktree provide discovery and Git metadata.
+- [x] `D-07` Explicit governed inputs must be existing regular `.md` files. Missing, directory, and non-Markdown inputs are governance no-go results (exit `2`), while argparse misuse stays exit `2`, unexpected runtime/tool failures stay exit `1`, and advisory mode returns `0` after reporting any governed findings.
+- [x] `D-08` Discovery-level violations are first-class result violations with an always-present but nullable `todo_path`; text/JSON renderers must not require a synthetic per-TODO result.
+- [x] `D-09` The shell fixture is normalized to LF as a harness precondition in this fix so its direct Linux/WSL command is authoritative; normalization is not represented as a guard-behavior RED.
+- [x] `D-10` No instruction/workflow/template change is needed because the existing CLI contract is already generic; mandatory `tools/manifest.md` inventory synchronization is still required for the material tool change.
+- [x] `D-11` Lifecycle classification uses exactly `relative.parts[0]`; recognized values are `active`, `promotion_lane`, and `completed`. Any other first component is `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED`, even when a later component is named `active`.
+- [x] `D-12` `active/` and every discovered Markdown path are resolved and checked against the resolved authority before loading. Directory or leaf escape is never a TODO result.
 
 ### Boundary Violation and Result Schema
 
@@ -348,8 +342,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
-- **Decision review status:** `findings_integrated`
-- **Decision review evidence / resolution:** `R1 through R3 architecture opinions returned NO-GO; their findings are integrated in PR-01..PR-14, the literal schema, atomic matrix, manifest boundary, and full D-01..D-12 adherence table; a fresh R4 reviewer must confirm no material findings before APROVADO.`
+- **Decision review status:** `running`
+- **Decision review evidence / resolution:** `R1 through R4 architecture opinions returned NO-GO; their findings are integrated in PR-01..PR-17, the single D-01..D-12 baseline/adherence model, manifest boundary, and explicit mode matrices; fresh R5 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -367,8 +361,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline commit:** `7379f337e653b28401f7c9888d643f6f9b33b670`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R3 material findings integrated: authority/lifecycle model, symlink containment, literal result schema, atomic compatibility evidence, RED/GREEN separation, manifest synchronization, complete decision adherence, and explicit active-directory escape precedence; refreshed R4 baseline published.
-- **Evidence / reference:** `origin/feat/add-stack-capabilities@7379f337e653b28401f7c9888d643f6f9b33b670`; R1-R3 architecture and critique ledgers integrated.
+- **Findings summary:** R1-R4 material findings integrated: technical authority/schema contract plus current-round status safety, single decision baseline, three-class test evidence, correct active work state, and module exit-contract adherence; refreshed R5 baseline pending publication.
+- **Evidence / reference:** `R1-R4 architecture and critique ledgers integrated; the next material commit will replace 7379f337e653b28401f7c9888d643f6f9b33b670 before R5.`
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -380,7 +374,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending refreshed baseline and R4 convergence`
+- **Findings summary:** `pending refreshed baseline and R5 convergence`
 - **Evidence / reference:** `R1 changes are material by design; drift will run only after the refreshed baseline is published and reviewed.`
 - **Waiver authority / reference:** `n/a`
 
@@ -401,9 +395,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 1. **Existing coverage:** partial/false-green. The suite covers only nested `foundation_documentation/todos`.
 2. **Real payload/database inspection:** not applicable; the real boundary is local filesystem topology plus markdown and Git CLI metadata.
 3. **Existing failing test:** the tracked harness fails before fixtures under Linux/WSL because it is CRLF; when normalized only in a read-only stream, the existing logical suite passes because it never constructs a standalone authority.
-4. **Required behavior-changing RED tests:** standalone explicit/all-active (including standalone CWD-relative), root/file alias deduplication, explicit/discovered leaf escape, explicit/all-active active-directory escape, unknown/direct/deeper-lure lifecycle, missing/directory/non-Markdown explicit input, missing/incomplete/ambiguous roots, new boundary/result schema and rendering, LF direct execution, dual-layout help, and manifest description. Each asserts desired behavior and must fail against current source.
-   **Required baseline characterization/preservation GREEN tests:** nested explicit/all-active and nested CWD-relative behavior, existing disposition parsing, ordinary advisory/normal exits, deterministic JSON-output failure exit `1`, existing normal JSON envelope fields, resolved Git metadata, non-mutation, and valid empty-active outcome. These must pass before and after the fix; they must never be distorted merely to manufacture RED.
-5. **Analyzer prevention:** `no-rule-needed`; this is runtime path-resolution behavior, best prevented by deterministic fixtures rather than a static analyzer rule.
+4. **Required harness precondition evidence:** normalize the tracked script from CRLF to LF and prove direct Linux/WSL execution reaches logical fixtures; this migration is neither guard-behavior RED nor compatibility GREEN.
+5. **Required behavior-changing RED tests:** standalone explicit/all-active (including standalone CWD-relative), equivalent file-alias deduplication, explicit/discovered leaf escape, explicit/all-active active-directory escape, unknown/direct/deeper-lure lifecycle, missing/directory/non-Markdown explicit input, missing/incomplete/distinct-ambiguous roots, new boundary/result schema and rendering, dual-layout help, and manifest description. Each asserts desired behavior and must fail against current source.
+6. **Required baseline characterization/preservation GREEN tests:** nested explicit/all-active and nested CWD-relative behavior, symlinked `--repo`, equivalent root aliases that are already observationally count-one, existing disposition parsing, ordinary advisory/normal exits, deterministic JSON-output failure exit `1`, existing normal JSON envelope fields, resolved Git metadata, non-mutation, and valid empty-active outcome. These must pass before and after the fix; they must never be distorted merely to manufacture RED.
+7. **Analyzer prevention:** `no-rule-needed`; this is runtime path-resolution behavior, best prevented by deterministic fixtures rather than a static analyzer rule.
 
 | Stage | Coverage Before Fix | Required Evidence |
 | --- | --- | --- |
@@ -429,7 +424,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ### Ordered Steps
 
-1. Normalize the existing shell harness to LF, capture the named baseline characterization cases as pre-fix GREEN, then add desired behavior-changing tests and capture their failure against current source as RED; include internal unknown lifecycle and explicit/all-active leaf/directory escape.
+1. Record CRLF→LF as a harness precondition migration, capture the named baseline characterization cases as pre-fix GREEN (including repo/root aliases), then add desired behavior-changing tests and capture their failure against current source as RED (including equivalent file aliases, unknown lifecycle, and explicit/all-active leaf/directory escape).
 2. Extract one generic supported-root resolver used by explicit classification and all-active discovery. Accept only contained candidates with an `active/` directory, deduplicate resolved aliases, and reject distinct simultaneous authorities.
 3. Classify explicit lifecycle by the first component relative to authority and containment-check/deduplicate each all-active discovery result before loading.
 4. Add the exact cataloged result-level violations and envelope invariants for invalid inputs, unrecognized lifecycle, escaping paths/directories, missing/incomplete roots, and ambiguity; render text/JSON without synthetic TODO results.
@@ -441,7 +436,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Strategy:** `test-first`.
 - **Evidence layers:** unit-like CLI fixtures plus integration/contract execution of the real Python entry point against real temporary directories and symlinks.
 - **No external substitution:** no database, network, container, or project-specific fixture is needed.
-- **Fail-first targets:** only the behavior-changing cases enumerated in Bug-Fix Evidence Gate item 4. Preservation/characterization cases remain GREEN before and after the fix; a RED must assert desired changed behavior and fail against current source, never assert the known false-green as success.
+- **Fail-first targets:** only the behavior-changing cases enumerated in Bug-Fix Evidence Gate item 5. Harness normalization is precondition evidence; preservation/characterization cases remain GREEN before and after the fix. A RED must assert desired changed behavior and fail against current source, never assert the known false-green as success.
 
 ### Pre-APROVADO RED Evidence Capture
 
@@ -558,10 +553,28 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
   - **Resolution:** Option A is frozen in the schema plus distinct `DOD-10` and `DOD-20` rows.
 - **Issue `PR-14` — RED and decision traceability were internally contradictory (`high`).**
   - **Evidence / why now:** R3 showed preservation cases were incorrectly required to fail, baseline IDs duplicated resolved decision IDs, D-11/D-12 lacked adherence rows, and PR-05/PR-06 referenced stale DOD numbers.
-  - **Option A (chosen):** split behavior-changing RED from baseline GREEN characterization; namespace baseline decisions `BASE-D-*`; validate D-01..D-12; repair every stale DOD reference. Effort `low`; risk `low`; blast `test/governance`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option A (chosen):** split behavior-changing RED from baseline GREEN characterization; keep D-01..D-12 as the only decision-ID baseline with full adherence; repair every stale DOD reference. Effort `low`; risk `low`; blast `test/governance`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
   - **Option B:** keep all scenarios as RED and interpret failures loosely. Effort `none`; risk `high`; blast `test-evidence`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
   - **Option C:** drop decision adherence rows. Effort `low`; risk `high`; blast `closeout`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `invalid`.
-  - **Resolution:** Option A is integrated in Bug-Fix Evidence Gate, Test Strategy, namespaced Decision Baseline, complete Decision Adherence Validation, and corrected PR-05/PR-06 references.
+  - **Resolution:** Option A is integrated in Bug-Fix Evidence Gate, Test Strategy, the single D-01..D-12 Decision Baseline, complete Decision Adherence Validation, and corrected PR-05/PR-06 references.
+- **Issue `PR-15` — current-round review status could false-pass before the reviewer completed (`high`).**
+  - **Evidence / why now:** R4 critique observed `findings_integrated` is a satisfying authority-guard state even while a newer mandatory round was still pending.
+  - **Option A (chosen):** retain historical ledgers but set the canonical architecture-decision and critique statuses to `running` during a dispatched fresh round; use `findings_integrated` or `no_material_findings` only after that exact round converges. Effort `low`; risk `low`; blast `approval-gate`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** add a separate prose pending field. Effort `low`; risk `high`; blast `approval-gate`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `regresses`.
+  - **Option C:** leave a satisfying status during review. Effort `none`; risk `high`; blast `approval-gate`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Resolution:** Option A governs the R5 dispatch; canonical statuses remain `running` until both R5 reviewers finish and their findings are adjudicated.
+- **Issue `PR-16` — test-first evidence still mixed harness migration and observationally-green aliases into RED (`high`).**
+  - **Evidence / why now:** CRLF must be normalized before logical fixtures execute, and current nested-only discovery can accidentally return count one for equivalent root aliases without proving deduplication.
+  - **Option A (chosen):** use three evidence classes: harness precondition (CRLF→LF), pre/post characterization GREEN (including repo/root aliases and compatibility), and behavior-changing RED (including equivalent file aliases and all actually changing outcomes). Effort `low`; risk `low`; blast `tests`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** keep mixed batches with per-case notes. Effort `low`; risk `medium`; blast `tests`; maintenance `medium`; performance `neutral`; elegance `neutral`; structure `neutral`.
+  - **Option C:** require accidental-green cases to fail. Effort `medium`; risk `high`; blast `test-evidence`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `invalid`.
+  - **Resolution:** Option A is frozen in Bug-Fix Evidence Gate, ordered steps, Test Strategy, and `D-09`.
+- **Issue `PR-17` — active work state claimed review before local implementation (`medium`).**
+  - **Evidence / why now:** the canonical template reserves `review` for materially complete local implementation; this TODO remains Pending and implementation has not started.
+  - **Option A (chosen):** use `implementation` while planning/implementation/test evidence is still changing; transition to `review` only after local implementation and validation are materially complete. Effort `minimal`; risk `low`; blast `status`; maintenance `low`; performance `neutral`; elegance `improves`; structure `improves`.
+  - **Option B:** add a new planning state. Effort `high`; risk `high`; blast `workflow`; maintenance `high`; performance `neutral`; elegance `regresses`; structure `out-of-scope`.
+  - **Option C:** keep `review`. Effort `none`; risk `medium`; blast `status`; maintenance `medium`; performance `neutral`; elegance `regresses`; structure `regresses`.
+  - **Resolution:** Option A is applied in Active Work State with an exact transition condition.
 
 ### Failure Modes & Edge Cases
 
@@ -597,8 +610,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `PR-R1-01..07` | plan critique R1 | freeze/schema, semantic, CRLF, RED, exit/JSON, and diff inconsistencies resolved by `PR-01` through `PR-07` | integrated; R2 completed |
 | `ARQ-R2-01..03` | architecture R2 | lifecycle false-go, atomic evidence, and literal machine schema resolved by `PR-08`, `PR-10`, `PR-11` | integrated; R3 completed |
 | `PR-R2-01..05` | plan critique R2 | literal schema, internal lifecycle, discovery escape, canonical ledger, and operational state resolved in schema/DOD/ledger/status | integrated; R3 completed |
-| `ARQ-R3-01..03` | architecture R3 | manifest discipline, explicit active escape, and D-11/D-12 adherence resolved by `PR-12` through `PR-14` | integrated; fresh R4 required |
-| `CRIT-R3-01..03` | plan critique R3 | RED/GREEN split, decision namespaces/adherence/stale refs, and operational state resolved by `PR-14` and status refresh | integrated; fresh R4 required |
+| `ARQ-R3-01..03` | architecture R3 | manifest discipline, explicit active escape, and D-11/D-12 adherence resolved by `PR-12` through `PR-14` | integrated; R4 completed |
+| `CRIT-R3-01..03` | plan critique R3 | RED/GREEN split, decision namespaces/adherence/stale refs, and operational state resolved by `PR-14` and status refresh | integrated; R4 completed |
+| `ARQ-R4-01` | architecture R4 | operational freeze/drift/next-step state refreshed toward R5 convergence | integrated; fresh R5 required |
+| `CRIT-R4-01..04` | plan critique R4 | current-round gate safety, single decision baseline/module row, three-class tests, and work state resolved by `PR-15` through `PR-17` | integrated; fresh R5 required |
 
 ## Audit Trigger Matrix
 
@@ -628,10 +643,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Package minimum contents:** `frozen TODO|guard source|fixture suite|read-only reproduction`.
 - **Critique isolation mode:** `fresh internal no-context reviewer`.
-- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R3 findings were integrated, so a fresh R4 reviewer is required before APROVADO`.
+- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R4 findings were integrated, so a fresh R5 reviewer is required before APROVADO`.
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`.
-- **Critique status:** `findings_integrated`
-- **Findings summary:** `R1 through R3 returned NO-GO; all material issue families are integrated as PR-01..PR-14; fresh R4 is mandatory before APROVADO`.
+- **Critique status:** `running`
+- **Findings summary:** `R1 through R4 returned NO-GO; all material issue families are integrated as PR-01..PR-17; fresh R5 is running and the canonical status intentionally remains non-satisfying`.
 - **Resolution ledger:**
 
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
@@ -655,9 +670,14 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `ARQ-R3-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Explicit and all-active active-directory escape fixtures independently prove authority-code precedence. |
 | `ARQ-R3-03` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Decision Adherence Validation now covers D-01 through D-12. |
 | `CRIT-R3-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Behavior-changing RED is separated from pre/post GREEN characterization and preservation. |
-| `CRIT-R3-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Baseline decisions use `BASE-D-*`; stale DOD references and missing adherence rows are corrected. |
+| `CRIT-R3-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Decision identity, stale DOD references, and missing adherence rows were corrected; R4 further consolidated the single D-01..D-12 baseline. |
 | `CRIT-R3-03` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Operational status points to the required R4 refresh/convergence. |
-- **Evidence / reference:** `R1-R3 no-context architecture and critique outputs; PR-01..PR-14; canonical ledger extraction must pass before R4`.
+| `ARQ-R4-01` | `Integrated` | `useful` | `partial` | `none` | `n/a` | Operational next-step, drift, and closeout text now point to R5 convergence after the material R4 corrections. |
+| `CRIT-R4-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Canonical current-round review statuses stay `running` until the dispatched reviewers actually converge. |
+| `CRIT-R4-02` | `Integrated` | `useful` | `yes` | `none` | `n/a` | D-01..D-12 is the only decision baseline and the module exit contract has a consistency row. |
+| `CRIT-R4-03` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Harness precondition, behavior RED, and characterization GREEN are distinct evidence classes. |
+| `CRIT-R4-04` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Active Work State is implementation until local implementation is materially complete. |
+- **Evidence / reference:** `R1-R4 no-context architecture and critique outputs; PR-01..PR-17; canonical ledger extraction must pass before R5`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Gate: Assumption Code Coherence
@@ -730,6 +750,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `closeout#non-mutating` | Preserve | pending | pending | no auto-move |
 | `closeout#all-active` | Preserve + Fix | pending | pending | discover real authority |
 | `closeout#same-governing-todo` | Preserve | pending | pending | no new promotion TODO |
+| `todo_closeout_guard.py#exit-contract` | Preserve + Clarify | pending | pending | exact go/governance/runtime/advisory exits and structured boundary codes |
 
 ## Pipeline/Copilot P1/P2 Preflight
 
@@ -817,7 +838,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** publish the R4 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** publish the R5 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
