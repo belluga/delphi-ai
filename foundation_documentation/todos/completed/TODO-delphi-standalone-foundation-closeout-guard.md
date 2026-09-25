@@ -3,7 +3,7 @@
 ## Artifact Identity
 
 - **Artifact type:** `tactical_execution_contract`
-- **Lifecycle state:** `Active — review`
+- **Lifecycle state:** `Completed`
 - **Created:** `2026-09-25`
 - **Owner:** `Delphi / Strategic CTO-Tech-Lead`, under human authority
 
@@ -40,9 +40,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Delivery Status Canon
 
-- **Current delivery stage:** `Local-Implemented`
+- **Current delivery stage:** `Lane-Promoted`
 - **Qualifiers:** `none`
-- **Next exact step:** run the remaining completion guard, then perform branch promotion and move the TODO to completed.
+- **Next exact step:** `none — delivery and closeout completed on origin/feat/add-stack-capabilities`.
 
 ## Active Work State
 
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@2e42d4c + working tree` | pending delivery commit | n/a | release-package-owned | implementation and primary validation green; independent delivery gates pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@6dc5bd4` | `origin/feat/add-stack-capabilities@6dc5bd4` | n/a | release-package-owned | Lane-Promoted; delivery commit published and closeout evidence recorded |
 
 ## Diff Expectation Contract
 
@@ -939,8 +939,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Disposition:** `move-completed`
 - **Disposition reason:** implementation, all independent reviews/audits, verification debt adjudication, and deterministic delivery gates are green; only commit/push and the exact lifecycle move remain.
-- **Post-commit/push status:** `pending`.
-- **Next path/status action:** after publishing the delivery commit, move this file to `foundation_documentation/todos/completed/TODO-delphi-standalone-foundation-closeout-guard.md`.
+- **Post-commit/push status:** `complete — delivery commit 6dc5bd4 published to origin/feat/add-stack-capabilities`.
+- **Next path/status action:** `completed — moved to foundation_documentation/todos/completed/TODO-delphi-standalone-foundation-closeout-guard.md after push`.
+- **Post-move guard evidence:** explicit validation of this completed TODO is `go`; the global `--all-active` scan correctly returns no-go for two unrelated pre-existing active TODO disposition defects, proving fail-closed discovery without expanding this package's authorized scope.
 
 ## Commands
 
