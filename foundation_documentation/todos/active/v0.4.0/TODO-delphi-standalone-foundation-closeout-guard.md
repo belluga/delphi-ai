@@ -92,7 +92,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@f55475b` | `origin/feat/add-stack-capabilities@f55475b` | n/a | release-package-owned | R3 reviewed; finding-integrated R4 baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@7379f33` | `origin/feat/add-stack-capabilities@7379f33` | n/a | release-package-owned | finding-integrated R4 review baseline published |
 
 ## Diff Expectation Contract
 
@@ -364,11 +364,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `ebf1f2278c3c67e058e81c5516c0ecf96646a567`
+- **Baseline commit:** `7379f337e653b28401f7c9888d643f6f9b33b670`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R3 material findings integrated: authority/lifecycle model, symlink containment, literal result schema, atomic compatibility evidence, RED/GREEN separation, manifest synchronization, complete decision adherence, and explicit active-directory escape precedence; refreshed R4 baseline pending publication.
-- **Evidence / reference:** `R1-R3 architecture and critique ledgers integrated; the next material commit will replace ebf1f2278c3c67e058e81c5516c0ecf96646a567 before R4.`
+- **Findings summary:** R1-R3 material findings integrated: authority/lifecycle model, symlink containment, literal result schema, atomic compatibility evidence, RED/GREEN separation, manifest synchronization, complete decision adherence, and explicit active-directory escape precedence; refreshed R4 baseline published.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@7379f337e653b28401f7c9888d643f6f9b33b670`; R1-R3 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
