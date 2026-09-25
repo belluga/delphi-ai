@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Deterministic closeout guard for tactical TODOs.
 
-The guard catches the process gap where a TODO already has delivery evidence
-but remains in `foundation_documentation/todos/active/` with no explicit
-closeout disposition. It does not move files automatically. It emits a TEACH
-runtime-style response and exits with:
+The guard validates both nested ``foundation_documentation/todos`` and
+standalone ``todos`` authorities. It fails closed for unsupported authorities,
+invalid inputs, lifecycle aliases, and containment escapes. It does not move
+files automatically. It emits a TEACH runtime-style response and exits with:
 
   0  GO: no closeout-disposition blocker was found.
   2  NO-GO: closeout blockers were found.
@@ -15,10 +15,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 from datetime import UTC, datetime
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -40,9 +42,6 @@ DELIVERY_STAGE_MARKERS = (
     "Completed",
     "Complete",
 )
-ACTIVE_PARTS = ("foundation_documentation", "todos", "active")
-PROMOTION_PARTS = ("foundation_documentation", "todos", "promotion_lane")
-COMPLETED_PARTS = ("foundation_documentation", "todos", "completed")
 DISPOSITION_SECTION = "TODO Closeout Disposition"
 ACTIVE_WORK_STATE_SECTION = "Active Work State"
 VALID_DISPOSITIONS = {
@@ -87,6 +86,146 @@ ACTIONABLE_KEEP_ACTIVE_RE = re.compile(
     re.IGNORECASE,
 )
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+LIFECYCLES = ("active", "promotion_lane", "completed")
+
+
+@dataclass(frozen=True)
+class TodoAuthority:
+    root: Path
+    aliases: tuple[Path, ...]
+
+
+@dataclass(frozen=True)
+class TodoSelection:
+    load_path: Path
+    report_path: Path
+    discovered: bool
+
+
+def contains_path(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def boundary_violation(code: str, message: str, resolution: str, todo_path: str | None) -> dict[str, Any]:
+    return {**build_violation(code, message, resolution, "Authority resolution"), "todo_path": todo_path}
+
+
+def resolve_authority(repo: Path) -> tuple[TodoAuthority | None, list[dict[str, Any]]]:
+    lexical_repo = repo.absolute()
+    try:
+        repo_root = repo.resolve()
+    except (OSError, RuntimeError):
+        return None, [
+            boundary_violation(
+                "CLOSEOUT-REPOSITORY-UNRESOLVABLE",
+                "Selected repository path cannot be resolved.",
+                "Replace the cyclic or inaccessible --repo path with a resolvable repository directory.",
+                str(lexical_repo),
+            )
+        ]
+    candidates = (
+        lexical_repo / "foundation_documentation" / "todos",
+        lexical_repo / "todos",
+    )
+    canonical_candidates = (
+        repo_root / "foundation_documentation" / "todos",
+        repo_root / "todos",
+    )
+    for candidate in candidates:
+        if candidate.is_symlink() and not candidate.exists():
+            try:
+                target = candidate.resolve()
+            except RuntimeError:
+                target = candidate
+            if not contains_path(target, repo_root):
+                return None, [
+                    boundary_violation(
+                        "CLOSEOUT-AUTHORITY-OUTSIDE-REPOSITORY",
+                        "A broken TODO authority-root symlink resolves outside the selected repository.",
+                        "Replace the external authority-root symlink with a contained real authority root.",
+                        str(candidate),
+                    )
+                ]
+    # A dangling authority-root symlink is still an explicit authority candidate;
+    # it is incomplete rather than indistinguishable from a completely missing root.
+    existing = [candidate for candidate in candidates if candidate.exists() or candidate.is_symlink()]
+    external = [candidate for candidate in candidates if candidate.exists() and not contains_path(candidate.resolve(), repo_root)]
+    if external:
+        return None, [
+            boundary_violation(
+                "CLOSEOUT-AUTHORITY-OUTSIDE-REPOSITORY",
+                "A TODO authority root resolves outside the selected repository.",
+                "Replace the external authority-root symlink with a contained real authority root.",
+                str(external[0]),
+            )
+        ]
+    grouped: dict[Path, list[Path]] = {}
+    for candidate in (*candidates, *canonical_candidates):
+        active = candidate / "active"
+        if active.is_dir():
+            aliases = grouped.setdefault(candidate.resolve(), [])
+            if candidate not in aliases:
+                aliases.append(candidate)
+    if not grouped:
+        code = "CLOSEOUT-AUTHORITY-INCOMPLETE" if existing else "CLOSEOUT-AUTHORITY-MISSING"
+        return None, [boundary_violation(code, "No supported TODO authority root was found.", "Provide exactly one todos/ root with a real active/ directory.", None)]
+    if len(grouped) != 1:
+        return None, [boundary_violation("CLOSEOUT-AUTHORITY-AMBIGUOUS", "Multiple distinct supported TODO authority roots were found.", "Keep exactly one supported authority root.", None)]
+    root, aliases = next(iter(grouped.items()))
+    return TodoAuthority(root=root, aliases=tuple(aliases)), []
+
+
+def lifecycle_root(authority: TodoAuthority, lifecycle: str, alias: Path) -> tuple[Path | None, list[dict[str, Any]]]:
+    lexical = alias / lifecycle
+    if lexical.is_symlink():
+        try:
+            resolved = lexical.resolve()
+        except RuntimeError:
+            return None, [boundary_violation("CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK", "Lifecycle directory symlink cannot be resolved.", "Replace the cyclic lifecycle symlink with a real contained directory.", str(lexical))]
+        code = "CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE" if not contains_path(resolved, authority.root) else "CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK"
+        return None, [boundary_violation(code, "Lifecycle directory is a symlink.", "Use a real lifecycle directory contained by the authority.", str(lexical))]
+    if not lexical.is_dir() or not contains_path(lexical.resolve(), authority.root):
+        return None, [boundary_violation("CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE", "Lifecycle directory escapes the authority.", "Restore a contained lifecycle directory.", str(lexical))]
+    return lexical.resolve(), []
+
+
+def select_explicit_todo(value: str, authority: TodoAuthority) -> tuple[Path | None, str | None, list[dict[str, Any]]]:
+    lexical = Path(value).absolute()
+    alias = next((item for item in authority.aliases if contains_path(lexical, item)), None)
+    lifecycle = ""
+    if alias is not None:
+        relative = lexical.relative_to(alias)
+        lifecycle = relative.parts[0] if relative.parts else ""
+        if lifecycle in LIFECYCLES and ((alias / lifecycle).exists() or (alias / lifecycle).is_symlink()):
+            _root, lifecycle_violations = lifecycle_root(authority, lifecycle, alias)
+            if lifecycle_violations:
+                return None, None, lifecycle_violations
+    try:
+        resolved = lexical.resolve()
+    except RuntimeError:
+        return None, None, [boundary_violation("CLOSEOUT-TODO-MISSING", "Explicit TODO symlink cannot be resolved.", "Replace the cyclic TODO symlink with an existing Markdown file.", value)]
+    if not lexical.exists():
+        if lexical.is_symlink() and not contains_path(resolved, authority.root):
+            return None, None, [boundary_violation("CLOSEOUT-TODO-OUTSIDE-AUTHORITY", "Explicit TODO symlink escapes the authority.", "Replace the escaping TODO symlink with a contained Markdown file.", value)]
+        return None, None, [boundary_violation("CLOSEOUT-TODO-MISSING", "Explicit TODO path does not exist.", "Pass an existing Markdown TODO file.", value)]
+    if not lexical.is_file():
+        return None, None, [boundary_violation("CLOSEOUT-TODO-NOT-FILE", "Explicit TODO path is not a regular file.", "Pass an existing regular Markdown TODO file.", value)]
+    if lexical.suffix != ".md":
+        return None, None, [boundary_violation("CLOSEOUT-TODO-NOT-MARKDOWN", "Explicit TODO path is not a .md file.", "Pass a Markdown TODO file with the exact .md suffix.", value)]
+    if alias is None:
+        return None, None, [boundary_violation("CLOSEOUT-TODO-OUTSIDE-AUTHORITY", "Explicit TODO is outside the selected authority.", "Pass a TODO contained by the authority.", value)]
+    if not contains_path(resolved, authority.root):
+        return None, None, [boundary_violation("CLOSEOUT-TODO-OUTSIDE-AUTHORITY", "Explicit TODO is outside the selected authority.", "Pass a TODO contained by the authority.", value)]
+    if lifecycle not in LIFECYCLES:
+        return None, None, [boundary_violation("CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED", "TODO lifecycle is not recognized.", "Use active/, promotion_lane/, or completed/.", value)]
+    root, violations = lifecycle_root(authority, lifecycle, alias)
+    if not contains_path(resolved, root):
+        return None, None, [boundary_violation("CLOSEOUT-TODO-LIFECYCLE-ESCAPE", "TODO alias crosses its lexical lifecycle boundary.", "Keep aliases within their lexical lifecycle.", value)]
+    return resolved, lifecycle, []
 
 
 def normalize(value: str | None) -> str:
@@ -164,20 +303,12 @@ def first_field(lines: list[str], labels: tuple[str, ...]) -> str | None:
     return None
 
 
-def path_state(path: Path) -> str:
-    parts = path.as_posix().split("/")
-    if contains_parts(parts, ACTIVE_PARTS):
-        return "active"
-    if contains_parts(parts, PROMOTION_PARTS):
-        return "promotion_lane"
-    if contains_parts(parts, COMPLETED_PARTS):
-        return "completed"
+def path_state(path: Path, authority: TodoAuthority) -> str:
+    resolved = path.resolve()
+    if contains_path(resolved, authority.root):
+        relative = resolved.relative_to(authority.root)
+        return relative.parts[0] if relative.parts and relative.parts[0] in LIFECYCLES else "other"
     return "other"
-
-
-def contains_parts(parts: list[str], sequence: tuple[str, ...]) -> bool:
-    size = len(sequence)
-    return any(tuple(parts[index : index + size]) == sequence for index in range(len(parts) - size + 1))
 
 
 def is_delivery_stage(stage: str | None) -> bool:
@@ -260,7 +391,7 @@ def next_step_is_actionable(next_step: str | None) -> bool:
     return bool(ACTIONABLE_KEEP_ACTIVE_RE.search(next_step or ""))
 
 
-def load_todo(todo_path: Path) -> dict[str, Any]:
+def load_todo(todo_path: Path, authority: TodoAuthority) -> dict[str, Any]:
     text = todo_path.read_text(encoding="utf-8")
     lines = text.splitlines()
     sections = extract_sections(lines)
@@ -280,7 +411,7 @@ def load_todo(todo_path: Path) -> dict[str, Any]:
     return {
         "path": todo_path,
         "sections": sections,
-        "path_state": path_state(todo_path.resolve()),
+        "path_state": path_state(todo_path, authority),
         "stage": stage,
         "qualifiers": qualifiers,
         "next_step": next_step,
@@ -481,27 +612,88 @@ def validate_todo(todo: dict[str, Any], git: dict[str, Any]) -> tuple[list[dict[
     return violations, context
 
 
-def discover_active_todos(repo: Path) -> list[Path]:
-    root = repo.resolve()
-    active_root = root / "foundation_documentation" / "todos" / "active"
-    if not active_root.is_dir():
-        return []
-    return sorted(path for path in active_root.rglob("*.md") if path.is_file())
+def discover_active_todos(authority: TodoAuthority) -> tuple[list[TodoSelection], list[dict[str, Any]]]:
+    active_root, violations = lifecycle_root(authority, "active", authority.aliases[0])
+    if violations:
+        return [], violations
+    discovered: list[TodoSelection] = []
+    seen: set[Path] = set()
+    lexical_active = authority.aliases[0] / "active"
+    candidates: list[Path] = []
+
+    def record_walk_error(error: OSError) -> None:
+        failed_path = str(error.filename) if error.filename else str(lexical_active)
+        violations.append(
+            boundary_violation(
+                "CLOSEOUT-DISCOVERY-UNREADABLE",
+                "Active TODO discovery could not read a filesystem entry or subtree.",
+                "Restore read access to the active TODO tree and rerun the guard.",
+                failed_path,
+            )
+        )
+
+    for directory, dirnames, filenames in os.walk(lexical_active, topdown=True, onerror=record_walk_error, followlinks=False):
+        base = Path(directory)
+        markdown_directories = [name for name in dirnames if name.endswith(".md")]
+        dirnames[:] = [name for name in dirnames if name not in markdown_directories]
+        candidates.extend(base / name for name in markdown_directories)
+        candidates.extend(base / name for name in filenames if name.endswith(".md"))
+
+    for path in sorted(candidates):
+        if path.is_dir() and not path.is_symlink():
+            violations.append(boundary_violation("CLOSEOUT-TODO-NOT-FILE", "Discovered TODO is not a regular file.", "Use a regular Markdown TODO file.", str(path)))
+            continue
+        try:
+            resolved = path.resolve()
+        except RuntimeError:
+            violations.append(boundary_violation("CLOSEOUT-TODO-MISSING", "Discovered TODO symlink cannot be resolved.", "Replace the cyclic TODO symlink with an existing Markdown file.", str(path)))
+            continue
+        if path.is_symlink() and not path.exists():
+            code = "CLOSEOUT-TODO-OUTSIDE-AUTHORITY" if not contains_path(resolved, authority.root) else "CLOSEOUT-TODO-MISSING"
+            message = "Discovered TODO escapes the authority." if code == "CLOSEOUT-TODO-OUTSIDE-AUTHORITY" else "Discovered TODO symlink target is missing."
+            resolution = "Remove the escaping alias." if code == "CLOSEOUT-TODO-OUTSIDE-AUTHORITY" else "Replace the broken TODO symlink with an existing Markdown file."
+            violations.append(boundary_violation(code, message, resolution, str(path)))
+            continue
+        if not path.is_file():
+            violations.append(boundary_violation("CLOSEOUT-TODO-NOT-FILE", "Discovered TODO is not a regular file.", "Use a regular Markdown TODO file.", str(path)))
+            continue
+        if not contains_path(resolved, authority.root):
+            violations.append(boundary_violation("CLOSEOUT-TODO-OUTSIDE-AUTHORITY", "Discovered TODO escapes the authority.", "Remove the escaping alias.", str(path)))
+        elif not contains_path(resolved, active_root):
+            violations.append(boundary_violation("CLOSEOUT-TODO-LIFECYCLE-ESCAPE", "Discovered TODO crosses the active lifecycle boundary.", "Keep aliases inside active/.", str(path)))
+        elif resolved not in seen:
+            seen.add(resolved)
+            discovered.append(TodoSelection(load_path=resolved, report_path=path, discovered=True))
+    return sorted(discovered, key=lambda item: str(item.load_path)), violations
 
 
-def result_for(todo_paths: list[Path], repo: Path | None) -> dict[str, Any]:
+def result_for(todo_selections: list[TodoSelection], repo: Path | None, authority: TodoAuthority | None, boundary_violations: list[dict[str, Any]]) -> dict[str, Any]:
     git = git_context(repo)
     todo_results = []
-    all_violations: list[dict[str, str]] = []
-    for todo_path in todo_paths:
-        todo = load_todo(todo_path)
+    all_violations: list[dict[str, Any]] = list(boundary_violations)
+    for selection in todo_selections:
+        assert authority is not None
+        try:
+            todo = load_todo(selection.load_path, authority)
+        except OSError:
+            if not selection.discovered:
+                raise
+            all_violations.append(
+                boundary_violation(
+                    "CLOSEOUT-DISCOVERY-UNREADABLE",
+                    "Discovered Markdown TODO could not be read.",
+                    "Restore read access to the TODO file and rerun the guard.",
+                    str(selection.report_path),
+                )
+            )
+            continue
         violations, context = validate_todo(todo, git)
-        all_violations.extend({**violation, "todo_path": str(todo_path)} for violation in violations)
+        all_violations.extend({**violation, "todo_path": str(selection.load_path)} for violation in violations)
         todo_results.append({"context": context, "violations": violations})
     return {
         "rule_id": RULE_ID,
         "generated_at_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "todo_count": len(todo_paths),
+        "todo_count": len(todo_results),
         "git": git,
         "todo_results": todo_results,
         "violations": all_violations,
@@ -537,16 +729,16 @@ def print_result(result: dict[str, Any]) -> None:
         return
     for violation in result["violations"]:
         print(f"  - [{violation['code']}] {violation['message']}")
-        print(f"    todo_path: {violation['todo_path']}")
+        print(f"    todo_path: {violation['todo_path'] or 'n/a'}")
         print(f"    section: {violation['section']}")
         print(f"    resolution: {violation['resolution']}")
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate tactical TODO closeout disposition.")
+    parser = argparse.ArgumentParser(description="Validate closeout disposition in nested foundation_documentation/todos or standalone todos authorities.")
     parser.add_argument("todo", nargs="?", help="TODO markdown path to validate.")
-    parser.add_argument("--repo", default=".", help="Repository root for git context and --all-active discovery.")
-    parser.add_argument("--all-active", action="store_true", help="Scan foundation_documentation/todos/active/**/*.md.")
+    parser.add_argument("--repo", default=".", help="Repository/container for authority resolution, Git context, and discovery.")
+    parser.add_argument("--all-active", action="store_true", help="Scan the selected authority active/**/*.md files.")
     parser.add_argument("--json-output", help="Write machine-readable guard result to this path.")
     parser.add_argument("--advisory", action="store_true", help="Always exit 0 after printing findings.")
     args = parser.parse_args(argv)
@@ -558,14 +750,25 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
     repo = Path(args.repo)
-    if args.all_active:
-        todo_paths = discover_active_todos(repo)
-    else:
-        todo_paths = [Path(args.todo)]
-    result = result_for(todo_paths, repo)
+    authority, boundary_violations = resolve_authority(repo)
+    todo_selections: list[TodoSelection] = []
+    if authority is not None:
+        if args.all_active:
+            todo_selections, discovered_violations = discover_active_todos(authority)
+            boundary_violations.extend(discovered_violations)
+        else:
+            todo_path, _lifecycle, explicit_violations = select_explicit_todo(args.todo, authority)
+            boundary_violations.extend(explicit_violations)
+            if todo_path is not None:
+                todo_selections = [TodoSelection(load_path=todo_path, report_path=todo_path, discovered=False)]
+    result = result_for(todo_selections, repo, authority, boundary_violations)
     print_result(result)
     if args.json_output:
-        Path(args.json_output).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        try:
+            Path(args.json_output).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        except OSError as error:
+            print(f"TODO Closeout Guard runtime error: unable to write JSON output: {error}", file=sys.stderr)
+            return 1
     if args.advisory:
         return 0
     return 0 if result["overall_outcome"] == "go" else 2

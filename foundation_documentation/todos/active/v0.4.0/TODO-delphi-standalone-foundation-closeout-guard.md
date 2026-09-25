@@ -3,7 +3,7 @@
 ## Artifact Identity
 
 - **Artifact type:** `tactical_execution_contract`
-- **Lifecycle state:** `Active — planning`
+- **Lifecycle state:** `Active — review`
 - **Created:** `2026-09-25`
 - **Owner:** `Delphi / Strategic CTO-Tech-Lead`, under human authority
 
@@ -40,32 +40,32 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Delivery Status Canon
 
-- **Current delivery stage:** `Pending`
+- **Current delivery stage:** `Local-Implemented`
 - **Qualifiers:** `none`
-- **Next exact step:** await explicit human `APROVADO` for the frozen R9 execution contract before changing guard, tests, manifest, or audit artifact.
+- **Next exact step:** run the remaining completion guard, then perform branch promotion and move the TODO to completed.
 
 ## Active Work State
 
-- **Work state:** `implementation`
-- **Why this state now:** the active TODO is still gaining/changing planning and pre-implementation evidence; product implementation has not started.
-- **Exit condition:** implementation and local validation become materially complete, then the state transitions to `review` for delivery gates.
+- **Work state:** `review`
+- **Why this state now:** implementation and primary local validation are materially complete; independent delivery reviews and closeout guards remain.
+- **Exit condition:** all required audits/reviews and deterministic delivery guards pass, the branch is published, and the TODO moves to its exact completed path.
 
 ## Scope
 
-- [ ] Add a generic authority-root resolver that recognizes `<repo>/foundation_documentation/todos` and `<repo>/todos` without project-specific names.
-- [ ] Classify explicit TODO paths relative to the resolved authority root instead of matching hard-coded absolute path parts after `resolve()`.
-- [ ] Recognize lifecycle only from the first relative component below the authority root (`active`, `promotion_lane`, or `completed`); reject every other explicit in-authority state, including deeper `active` lure segments.
-- [ ] Discover active TODOs in either supported topology, deduplicate equivalent resolved roots/paths, and reject simultaneous distinct authorities as ambiguous.
-- [ ] Fail closed when an explicit TODO is outside every supported authority root.
-- [ ] Fail closed when `--all-active` cannot find exactly one supported TODO authority root; distinguish no root, a candidate `todos/` without `active/`, an ambiguous pair of distinct roots, and a valid empty `active/` directory.
-- [ ] Validate explicit inputs before reading: an existing regular Markdown file is required; missing paths, directories, and non-Markdown files fail closed without traceback.
-- [ ] Canonicalize and containment-check every selected lifecycle directory plus every explicit/discovered TODO; reject lifecycle-directory symlinks and leaf symlinks that escape the resolved authority, and deduplicate equivalent discovered aliases.
-- [ ] Treat each recognized lifecycle directory as its own containment boundary: reject symlink directories for `active`, `promotion_lane`, and `completed` even when their targets remain in authority, and reject explicit/discovered file aliases whose resolved target crosses from their lexical lifecycle into another lifecycle.
-- [ ] Preserve relative explicit-path semantics anchored to the process current working directory and define `--repo` as the repository/container whose two immediate authority candidates and Git context are inspected.
-- [ ] Add RED/GREEN regression fixtures for nested, standalone, relative-path, root-symlink, equivalent-root/path deduplication, escaping leaf symlink, unrecognized-path, invalid explicit input, missing/ambiguous root, exact exit codes, JSON shape, and real active-count behavior.
-- [ ] Preserve existing disposition parsing, git-state handling, JSON output, advisory exit behavior, and non-mutating semantics.
-- [ ] Update the guard docstring/help text inside the same source file so both supported layouts and boundary outcomes are accurately advertised.
-- [ ] Update `tools/manifest.md` in the same change so the canonical inventory describes dual-layout authority resolution and fail-closed boundary validation.
+- [x] Add a generic authority-root resolver that recognizes `<repo>/foundation_documentation/todos` and `<repo>/todos` without project-specific names.
+- [x] Classify explicit TODO paths relative to the resolved authority root instead of matching hard-coded absolute path parts after `resolve()`.
+- [x] Recognize lifecycle only from the first relative component below the authority root (`active`, `promotion_lane`, or `completed`); reject every other explicit in-authority state, including deeper `active` lure segments.
+- [x] Discover active TODOs in either supported topology, deduplicate equivalent resolved roots/paths, and reject simultaneous distinct authorities as ambiguous.
+- [x] Fail closed when an explicit TODO is outside every supported authority root.
+- [x] Fail closed when `--all-active` cannot find exactly one supported TODO authority root; distinguish no root, a candidate `todos/` without `active/`, an ambiguous pair of distinct roots, and a valid empty `active/` directory.
+- [x] Validate explicit inputs before reading: an existing regular Markdown file is required; missing paths, directories, and non-Markdown files fail closed without traceback.
+- [x] Canonicalize and containment-check every selected lifecycle directory plus every explicit/discovered TODO; reject lifecycle-directory symlinks and leaf symlinks that escape the resolved authority, and deduplicate equivalent discovered aliases.
+- [x] Treat each recognized lifecycle directory as its own containment boundary: reject symlink directories for `active`, `promotion_lane`, and `completed` even when their targets remain in authority, and reject explicit/discovered file aliases whose resolved target crosses from their lexical lifecycle into another lifecycle.
+- [x] Preserve relative explicit-path semantics anchored to the process current working directory and define `--repo` as the repository/container whose two immediate authority candidates and Git context are inspected.
+- [x] Add RED/GREEN regression fixtures for nested, standalone, relative-path, root-symlink, equivalent-root/path deduplication, escaping leaf symlink, unrecognized-path, invalid explicit input, missing/ambiguous root, exact exit codes, JSON shape, and real active-count behavior.
+- [x] Preserve existing disposition parsing, git-state handling, JSON output, advisory exit behavior, and non-mutating semantics.
+- [x] Update the guard docstring/help text inside the same source file so both supported layouts and boundary outcomes are accurately advertised.
+- [x] Update `tools/manifest.md` in the same change so the canonical inventory describes dual-layout authority resolution and fail-closed boundary validation.
 
 ## Out of Scope
 
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@92257fa` | `origin/feat/add-stack-capabilities@92257fa` | n/a | release-package-owned | R9 reviews and all deterministic pre-approval gates green; awaiting explicit APROVADO |
+| standalone closeout guard support | `feat/add-stack-capabilities@2e42d4c + working tree` | pending delivery commit | n/a | release-package-owned | implementation and primary validation green; independent delivery gates pending |
 
 ## Diff Expectation Contract
 
@@ -115,7 +115,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `delphi-ai` | `tools/todo_closeout_guard.py` | `M` | generic topology resolution and fail-closed behavior |
 | `delphi-ai` | `tools/tests/todo_closeout_guard_test.sh` | `M` | RED/GREEN nested and standalone fixtures |
 | `delphi-ai` | `tools/manifest.md` | `M` | mandatory canonical inventory synchronization for the materially changed guard |
-| `delphi-ai` | `artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md` | `A, M` | bounded derived audit package |
+| `delphi-ai` | `artifacts/analysis/standalone-foundation-closeout-guard-delivery-package.md` | `any` | bounded derived audit package; `any` admits its expected untracked pre-commit state and later tracked updates |
 | `delphi-ai` | `foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md` | `any` | tactical authority, evidence, and closeout origin |
 | `delphi-ai` | `foundation_documentation/todos/completed/TODO-delphi-standalone-foundation-closeout-guard.md` | `A, R` | exact closeout destination after all gates |
 
@@ -133,7 +133,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Diff item | Classification | Evidence / agent defense | Decision | User validation / renewed approval |
 | --- | --- | --- | --- | --- |
-| `n/a` | `n/a` | guard not yet executed against implementation | `n/a` | `n/a` |
+| Python source CRLF→LF normalization | necessary/justifiable need | newly added CRLF lines were rejected by required `git diff --check`; same approved path, no behavior/scope expansion; functional review uses `--ignore-space-at-eol` | retain | no renewed approval required because contract, path set, CLI, and behavior are unchanged |
+| Derived package reports `??` before first commit | necessary/justifiable need | the package is an approved expected path and must exist before delivery reviews; change type now uses `any` so pre-commit and tracked review updates are both admitted | retain | no path/scope expansion and no renewed approval required |
 
 ## Bounded But Elastic Guardrails
 
@@ -142,74 +143,88 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Definition of Done
 
-- [ ] `DOD-01` An explicit active TODO under standalone `<repo>/todos/active/**` reports `path_state=active` and is actually validated.
-- [ ] `DOD-02` `--all-active --repo <standalone>` discovers the real active TODO count and validates each file.
-- [ ] `DOD-03` Existing nested `<repo>/foundation_documentation/todos/**` behavior remains green.
-- [ ] `DOD-04` A symlink used as `--repo` resolves to the standalone repository, and two candidate roots or file aliases resolving to the same authority/TODO produce exactly one scan and one `todo_result`.
-- [ ] `DOD-05` Explicit outside paths, misleading suffixes, and escaping leaf symlinks emit `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`, exit `2`, and no TODO result.
-- [ ] `DOD-06` Root-state semantics emit the exact schema codes: missing root, incomplete root, ambiguous distinct roots in both explicit/all-active modes, and valid empty active behavior.
-- [ ] `DOD-07` Explicit missing paths, directories, and non-Markdown files emit their exact catalog codes at exit `2` without traceback; argparse misuse remains exit `2`.
-- [ ] `DOD-08` Relative explicit TODO arguments remain anchored to the process current working directory and work from both nested and standalone repository roots.
-- [ ] `DOD-09` Explicit in-authority lifecycle classification uses only the first relative component; unknown/direct-root/deeper-lure cases emit `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED` in nested and standalone fixtures.
-- [ ] `DOD-10` All-active discovery containment is enforced separately: a leaf symlink escape is excluded with `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`; an `active/` directory escape emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE`; equivalent discovered aliases deduplicate.
-- [ ] `DOD-11` Existing disposition parsing scenarios retain direct assertions.
-- [ ] `DOD-12` Advisory mode preserves the no-go envelope and returns exit `0`; normal governance no-go returns `2`; deterministic JSON-output write failure returns runtime/tool exit `1`.
-- [ ] `DOD-13` JSON output satisfies every Boundary Violation and Result Schema invariant, including `todo_count == len(todo_results)`, stable nullable `todo_path`, and mixed discovery results.
-- [ ] `DOD-14` Git metadata is taken from the resolved `--repo` Git worktree and asserted in a temporary committed repository.
-- [ ] `DOD-15` A before/after filesystem snapshot proves the guard is non-mutating except for an explicitly requested JSON output file.
-- [ ] `DOD-16` Root-level discovery violations render in text and JSON without a synthetic `todo_result`; text prints `todo_path: n/a` and JSON stores `null`.
-- [ ] `DOD-17` The shell harness is normalized to LF and executes directly in the declared Linux/WSL lane.
-- [ ] `DOD-18` The guard docstring/help advertises both authority layouts without a nested-only claim.
-- [ ] `DOD-19` No downstream project name/path/business concept is persisted in Delphi surfaces.
-- [ ] `DOD-20` Explicit mode under any recognized lifecycle directory that resolves outside authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE` (not the leaf outside code), with the candidate lifecycle path, count `0`, results `[]`, and exit `2`.
-- [ ] `DOD-21` `tools/manifest.md` describes the guard's dual-layout resolution and fail-closed authority/input behavior in the same change.
-- [ ] `DOD-22` Explicit file aliases crossing in every direction among lexical `active/`, `promotion_lane/`, and `completed/` emit `CLOSEOUT-TODO-LIFECYCLE-ESCAPE`; all-active covers active-origin aliases; same-lifecycle aliases remain eligible and deduplicated.
-- [ ] `DOD-23` A directory symlink for any recognized lifecycle targeting another lifecycle inside the same authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK` in explicit mode; all-active separately covers `active/`; every case reports the candidate path, count `0`, results `[]`, and exit `2`.
+- [x] `DOD-01` An explicit active TODO under standalone `<repo>/todos/active/**` reports `path_state=active` and is actually validated.
+- [x] `DOD-02` `--all-active --repo <standalone>` discovers the real active TODO count and validates each file.
+- [x] `DOD-03` Existing nested `<repo>/foundation_documentation/todos/**` behavior remains green.
+- [x] `DOD-04` A symlink used as `--repo` resolves to the standalone repository, and two candidate roots or file aliases resolving to the same authority/TODO produce exactly one scan and one `todo_result`.
+- [x] `DOD-05` Explicit outside paths, misleading suffixes, and escaping leaf symlinks emit `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`, exit `2`, and no TODO result.
+- [x] `DOD-06` Root-state semantics emit the exact schema codes: missing root, incomplete root, ambiguous distinct roots in both explicit/all-active modes, and valid empty active behavior.
+- [x] `DOD-07` Explicit missing paths, directories, and non-Markdown files emit their exact catalog codes at exit `2` without traceback; argparse misuse remains exit `2`.
+- [x] `DOD-08` Relative explicit TODO arguments remain anchored to the process current working directory and work from both nested and standalone repository roots.
+- [x] `DOD-09` Explicit in-authority lifecycle classification uses only the first relative component; unknown/direct-root/deeper-lure cases emit `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED` in nested and standalone fixtures.
+- [x] `DOD-10` All-active discovery containment is enforced separately: a leaf symlink escape is excluded with `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`; an `active/` directory escape emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE`; equivalent discovered aliases deduplicate.
+- [x] `DOD-11` Existing disposition parsing scenarios retain direct assertions.
+- [x] `DOD-12` Advisory mode preserves the no-go envelope and returns exit `0`; normal governance no-go returns `2`; deterministic JSON-output write failure returns runtime/tool exit `1`.
+- [x] `DOD-13` JSON output satisfies every Boundary Violation and Result Schema invariant, including `todo_count == len(todo_results)`, stable nullable `todo_path`, and mixed discovery results.
+- [x] `DOD-14` Git metadata is taken from the resolved `--repo` Git worktree and asserted in a temporary committed repository.
+- [x] `DOD-15` A before/after filesystem snapshot proves the guard is non-mutating except for an explicitly requested JSON output file.
+- [x] `DOD-16` Root-level discovery violations render in text and JSON without a synthetic `todo_result`; text prints `todo_path: n/a` and JSON stores `null`.
+- [x] `DOD-17` The shell harness is normalized to LF and executes directly in the declared Linux/WSL lane.
+- [x] `DOD-18` The guard docstring/help advertises both authority layouts without a nested-only claim.
+- [x] `DOD-19` No downstream project name/path/business concept is persisted in Delphi surfaces.
+- [x] `DOD-20` Explicit mode under any recognized lifecycle directory that resolves outside authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE` (not the leaf outside code), with the candidate lifecycle path, count `0`, results `[]`, and exit `2`.
+- [x] `DOD-21` `tools/manifest.md` describes the guard's dual-layout resolution and fail-closed authority/input behavior in the same change.
+- [x] `DOD-22` Explicit file aliases crossing in every direction among lexical `active/`, `promotion_lane/`, and `completed/` emit `CLOSEOUT-TODO-LIFECYCLE-ESCAPE`; all-active covers active-origin aliases; same-lifecycle aliases remain eligible and deduplicated.
+- [x] `DOD-23` A directory symlink for any recognized lifecycle targeting another lifecycle inside the same authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK` in explicit mode; all-active separately covers `active/`; every case reports the candidate path, count `0`, results `[]`, and exit `2`.
 
 ## Validation Steps
 
-- [ ] `VAL-01` Run `python3 -m py_compile tools/todo_closeout_guard.py`.
-- [ ] `VAL-02` Run `bash tools/tests/todo_closeout_guard_test.sh` directly from the Linux/WSL checkout and require direct assertions for every DOD topology and exact exit contract.
-- [ ] `VAL-03` Run `bash self_check.sh`.
-- [ ] `VAL-04` Run `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --repo-root .`.
-- [ ] `VAL-05` Run `python3 tools/todo_authority_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --require-delivery-gates`.
-- [ ] `VAL-06` Run `python3 tools/todo_completion_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`.
-- [ ] `VAL-07` Inspect `git diff --check 9ba43e8bba3618d029320bf6d7b40415881a0287 --` and `git diff --name-status --find-renames 9ba43e8bba3618d029320bf6d7b40415881a0287 --`.
+- [x] `VAL-01` Run `python3 -m py_compile tools/todo_closeout_guard.py`.
+- [x] `VAL-02` Run `bash tools/tests/todo_closeout_guard_test.sh` directly from the Linux/WSL checkout and require direct assertions for every DOD topology and exact exit contract.
+- [x] `VAL-03` Run `bash self_check.sh`.
+- [x] `VAL-04` Run `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --repo-root .`.
+- [x] `VAL-05` Run `python3 tools/todo_authority_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --require-delivery-gates`.
+- [x] `VAL-06` Run `python3 tools/todo_completion_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`.
+- [x] `VAL-07` Inspect `git diff --check 9ba43e8bba3618d029320bf6d7b40415881a0287 --` and `git diff --name-status --find-renames 9ba43e8bba3618d029320bf6d7b40415881a0287 --`.
 
 ## Completion Evidence Matrix
 
 | Criterion ID | Source Section | Criterion | Evidence Type | Evidence Artifact / Command | Runtime Target | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `DOD-01` | Definition of Done | standalone explicit path | test | `standalone-explicit-missing-disposition` fixture | local CLI | planned | must produce active classification and real violation |
-| `DOD-02` | Definition of Done | standalone all-active discovery | test | `standalone-all-active-count` fixture | local CLI | planned | assert exact nonzero count |
-| `DOD-03` | Definition of Done | nested compatibility | regression | existing nested fixture matrix | local CLI | planned | no regression |
-| `DOD-04` | Definition of Done | repo symlink + equivalent authority/TODO deduplication | test | `symlinked-repo`; `equivalent-root-aliases`; `equivalent-file-aliases` | local CLI | planned | assert count `1` and exactly one `todo_result` |
-| `DOD-05` | Definition of Done | explicit outside authority | negative test | `misleading-outside-authority`; explicit `leaf-symlink-escape` | local CLI | planned | exact `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`, count `0`, exit `2` |
-| `DOD-06` | Definition of Done | root-state catalog | negative+positive tests | `missing-authority-root`; `missing-active-directory`; `empty-active-authority`; explicit/all-active `distinct-authorities` | local CLI | planned | exact catalog codes, nullable paths, counts, and exits |
-| `DOD-07` | Definition of Done | explicit input catalog + argparse | negative test | `missing-explicit`; `directory-explicit`; `non-markdown-explicit`; argparse misuse | local CLI | planned | exact three codes, governance `2`, argparse `2`, no governed traceback |
-| `DOD-08` | Definition of Done | relative path compatibility | regression | nested and standalone invocation from each repository root | local CLI | planned | path remains CWD-relative |
-| `DOD-09` | Definition of Done | exact lifecycle component | negative test | nested/standalone `archive`; direct-root Markdown; `archive/active` lure | local CLI | planned | exact unrecognized-lifecycle code and exit `2` |
-| `DOD-10` | Definition of Done | all-active item/directory containment + dedup | negative+positive tests | discovered leaf escape; `active/` escape; discovered equivalent file aliases | local CLI | planned | escaped items excluded; exact codes; unique result count |
-| `DOD-11` | Definition of Done | disposition compatibility | regression | existing missing/move/keep-active/blocked scenarios | local CLI | planned | each established disposition code/outcome asserted |
-| `DOD-12` | Definition of Done | advisory and exact process exits | regression+negative test | advisory no-go; normal no-go; `--json-output <existing-directory>` | local CLI | planned | `0`, `2`, and deterministic runtime `1` respectively |
-| `DOD-13` | Definition of Done | JSON envelope | contract test | root errors, explicit errors, mixed valid+escape discovery, normal TODO violations | local CLI | planned | schema invariants and exact nullable paths |
-| `DOD-14` | Definition of Done | resolved Git context | integration test | symlinked `--repo` pointing at temporary initialized/committed Git worktree | local CLI | planned | `git.root` equals resolved `rev-parse --show-toplevel`; clean/sync fields retain types |
-| `DOD-15` | Definition of Done | non-mutation | snapshot test | before/after path+content+mode digest, excluding requested JSON output | local CLI | planned | snapshots identical |
-| `DOD-16` | Definition of Done | discovery violation rendering | contract test | root-level missing/ambiguous violation | local CLI | planned | no TODO result; text `n/a`; JSON `null` |
-| `DOD-17` | Definition of Done | Linux/WSL harness execution | test | `file` + direct shell execution | local CLI | planned | LF terminators and suite reaches final OK marker |
-| `DOD-18` | Definition of Done | accurate CLI documentation | test+review | `--help` and source docstring assertion | local CLI | planned | both layouts represented; no nested-only all-active help |
-| `DOD-19` | Definition of Done | Delphi agnosticism | review | bounded diff | n/a | planned | generic fixture names only |
-| `DOD-20` | Definition of Done | explicit lifecycle-directory escape precedence | negative contract test | explicit TODO below externally escaped `active/`, `promotion_lane/`, and `completed/` | local CLI | planned | exact lifecycle-directory-escape code/path/count/results/exit; no leaf-code substitution |
-| `DOD-21` | Definition of Done | canonical tool inventory synchronization | review+assertion | `tools/manifest.md` row for `todo_closeout_guard.py` | local docs | planned | dual-layout + fail-closed semantics present |
-| `DOD-22` | Definition of Done | lifecycle-contained file aliases | negative+positive contract tests | explicit aliases in both directions among all three lifecycles; all-active active-origin; same-lifecycle aliases | local CLI | planned | exact lifecycle-escape code for cross-lifecycle; same-lifecycle dedup stays allowed |
-| `DOD-23` | Definition of Done | lifecycle-directory alias rejection | negative contract tests | explicit `active -> completed`, `promotion_lane -> active`, `completed -> active`; all-active `active -> completed` | local CLI | planned | exact generic lifecycle-directory-symlink code/path/count/results/exit |
-| `VAL-01` | Validation Steps | Python syntax | test | py_compile command | local | planned | exit 0 |
-| `VAL-02` | Validation Steps | fixture suite | test | shell test command | local | planned | exact assertions |
-| `VAL-03` | Validation Steps | Delphi coherence | test | self_check command | local | planned | no failures |
-| `VAL-04` | Validation Steps | diff contract | guard | diff expectation command | local | planned | outcome go |
-| `VAL-05` | Validation Steps | delivery authority | guard | authority command | local | planned | outcome go |
-| `VAL-06` | Validation Steps | completion evidence | guard | completion command | local | planned | outcome go |
-| `VAL-07` | Validation Steps | clean/bounded diff | review | exact git commands | local | planned | no whitespace/unclassified path |
+| `SCOPE-01` | Scope | Add a generic authority-root resolver that recognizes `<repo>/foundation_documentation/todos` and `<repo>/todos` without project-specific names. | source+CLI test | `tools/todo_closeout_guard.py:117-178`; dual-layout fixture suite | local CLI | passed | one shared generic resolver; both layouts pass |
+| `SCOPE-02` | Scope | Classify explicit TODO paths relative to the resolved authority root instead of matching hard-coded absolute path parts after `resolve()`. | source+negative test | `tools/todo_closeout_guard.py:196-239`; misleading-suffix fixtures | local CLI | passed | authority-relative classification and outside rejection pass |
+| `SCOPE-03` | Scope | Recognize lifecycle only from the first relative component below the authority root (`active`, `promotion_lane`, or `completed`); reject every other explicit in-authority state, including deeper `active` lure segments. | contract test | direct-root, unknown, and deeper-lure fixtures | local CLI | passed | exact unrecognized code and exit `2` asserted |
+| `SCOPE-04` | Scope | Discover active TODOs in either supported topology, deduplicate equivalent resolved roots/paths, and reject simultaneous distinct authorities as ambiguous. | integration test | nested/standalone, alias-dedup, and ambiguous-root fixtures | local CLI | passed | exact counts and typed ambiguity asserted |
+| `SCOPE-05` | Scope | Fail closed when an explicit TODO is outside every supported authority root. | negative test | outside-suffix, traversal, and leaf-escape fixtures | local CLI | passed | exact outside-authority code, zero results, exit `2` |
+| `SCOPE-06` | Scope | Fail closed when `--all-active` cannot find exactly one supported TODO authority root; distinguish no root, a candidate `todos/` without `active/`, an ambiguous pair of distinct roots, and a valid empty `active/` directory. | negative+positive tests | root-state parity fixture matrix | local CLI | passed | missing/incomplete/ambiguous are typed no-go; empty active is go |
+| `SCOPE-07` | Scope | Validate explicit inputs before reading: an existing regular Markdown file is required; missing paths, directories, and non-Markdown files fail closed without traceback. | negative test | explicit input catalog plus FIFO/socket fixtures | local CLI | passed | exact codes/exits and no traceback asserted |
+| `SCOPE-08` | Scope | Canonicalize and containment-check every selected lifecycle directory plus every explicit/discovered TODO; reject lifecycle-directory symlinks and leaf symlinks that escape the resolved authority, and deduplicate equivalent discovered aliases. | security boundary test | lifecycle/leaf escape and alias-dedup fixtures | local CLI | passed | fail-closed containment and canonical uniqueness asserted |
+| `SCOPE-09` | Scope | Treat each recognized lifecycle directory as its own containment boundary: reject symlink directories for `active`, `promotion_lane`, and `completed` even when their targets remain in authority, and reject explicit/discovered file aliases whose resolved target crosses from their lexical lifecycle into another lifecycle. | contract test | all directed lifecycle directory/file alias fixtures | local CLI | passed | symmetric lifecycle-local containment asserted |
+| `SCOPE-10` | Scope | Preserve relative explicit-path semantics anchored to the process current working directory and define `--repo` as the repository/container whose two immediate authority candidates and Git context are inspected. | compatibility test | nested/standalone CWD and symlinked Git repository fixtures | local CLI | passed | process-relative path and resolved Git context retained |
+| `SCOPE-11` | Scope | Add RED/GREEN regression fixtures for nested, standalone, relative-path, root-symlink, equivalent-root/path deduplication, escaping leaf symlink, unrecognized-path, invalid explicit input, missing/ambiguous root, exact exit codes, JSON shape, and real active-count behavior. | test-first evidence | fail-first record plus `bash tools/tests/todo_closeout_guard_test.sh` | local CLI | passed | desired standalone RED captured; full GREEN matrix passes |
+| `SCOPE-12` | Scope | Preserve existing disposition parsing, git-state handling, JSON output, advisory exit behavior, and non-mutating semantics. | regression+snapshot tests | retained disposition/Git/JSON/advisory and filesystem digest fixtures | local CLI | passed | original contracts and read-only behavior pass |
+| `SCOPE-13` | Scope | Update the guard docstring/help text inside the same source file so both supported layouts and boundary outcomes are accurately advertised. | CLI documentation test | docstring review plus `--help` fixture assertions | local CLI | passed | both layouts and fail-closed boundary advertised |
+| `SCOPE-14` | Scope | Update `tools/manifest.md` in the same change so the canonical inventory describes dual-layout authority resolution and fail-closed boundary validation. | inventory review | `tools/manifest.md:86` plus self-check | local docs | passed | canonical inventory synchronized |
+| `DOD-01` | Definition of Done | `DOD-01` An explicit active TODO under standalone `<repo>/todos/active/**` reports `path_state=active` and is actually validated. | test | standalone explicit fixture | local CLI | passed | path state and disposition validation asserted |
+| `DOD-02` | Definition of Done | `DOD-02` `--all-active --repo <standalone>` discovers the real active TODO count and validates each file. | test | standalone all-active JSON fixture | local CLI | passed | two discovered TODOs loaded and invalid result surfaced |
+| `DOD-03` | Definition of Done | `DOD-03` Existing nested `<repo>/foundation_documentation/todos/**` behavior remains green. | regression | retained original nested fixture matrix | local CLI | passed | all original scenarios pass |
+| `DOD-04` | Definition of Done | `DOD-04` A symlink used as `--repo` resolves to the standalone repository, and two candidate roots or file aliases resolving to the same authority/TODO produce exactly one scan and one `todo_result`. | test | repo symlink plus equivalent root/file fixtures | local CLI | passed | canonical Git root and one result asserted |
+| `DOD-05` | Definition of Done | `DOD-05` Explicit outside paths, misleading suffixes, and escaping leaf symlinks emit `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`, exit `2`, and no TODO result. | negative test | outside-suffix, traversal, and leaf-alias fixtures | local CLI | passed | exact code, zero results, exit `2` |
+| `DOD-06` | Definition of Done | `DOD-06` Root-state semantics emit the exact schema codes: missing root, incomplete root, ambiguous distinct roots in both explicit/all-active modes, and valid empty active behavior. | CLI integration test | root-state schema fixture matrix | local CLI | passed | integration test asserts exact schema codes, nullable paths, counts, and exits |
+| `DOD-07` | Definition of Done | `DOD-07` Explicit missing paths, directories, and non-Markdown files emit their exact catalog codes at exit `2` without traceback; argparse misuse remains exit `2`. | negative test | explicit input loop plus exact argparse status | local CLI | passed | exact codes and exit `2` |
+| `DOD-08` | Definition of Done | `DOD-08` Relative explicit TODO arguments remain anchored to the process current working directory and work from both nested and standalone repository roots. | regression | nested/standalone CWD fixtures | local CLI | passed | process-relative semantics retained |
+| `DOD-09` | Definition of Done | `DOD-09` Explicit in-authority lifecycle classification uses only the first relative component; unknown/direct-root/deeper-lure cases emit `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED` in nested and standalone fixtures. | negative test | nested/standalone direct-root and lure fixtures | local CLI | passed | exact unrecognized code and exit `2` |
+| `DOD-10` | Definition of Done | `DOD-10` All-active discovery containment is enforced separately: a leaf symlink escape is excluded with `CLOSEOUT-TODO-OUTSIDE-AUTHORITY`; an `active/` directory escape emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE`; equivalent discovered aliases deduplicate. | CLI integration test | mixed-discovery, directory-escape, and alias-dedup fixtures | local CLI | passed | integration test excludes escapes and retains the unique valid result |
+| `DOD-11` | Definition of Done | `DOD-11` Existing disposition parsing scenarios retain direct assertions. | regression | retained original disposition scenarios plus punctuation case | local CLI | passed | strict established outcomes directly asserted |
+| `DOD-12` | Definition of Done | `DOD-12` Advisory mode preserves the no-go envelope and returns exit `0`; normal governance no-go returns `2`; deterministic JSON-output write failure returns runtime/tool exit `1`. | regression+negative test | captured advisory/governance/runtime statuses | local CLI | passed | exact `0`, `2`, and `1` asserted |
+| `DOD-13` | Definition of Done | `DOD-13` JSON output satisfies every Boundary Violation and Result Schema invariant, including `todo_count == len(todo_results)`, stable nullable `todo_path`, and mixed discovery results. | CLI integration test | result-schema root-error and mixed-discovery JSON assertions | local CLI | passed | integration test asserts every schema key, nullable path, and count invariant |
+| `DOD-14` | Definition of Done | `DOD-14` Git metadata is taken from the resolved `--repo` Git worktree and asserted in a temporary committed repository. | integration test | symlinked temporary committed worktree fixture | local CLI | passed | canonical root and Boolean clean asserted |
+| `DOD-15` | Definition of Done | `DOD-15` A before/after filesystem snapshot proves the guard is non-mutating except for an explicitly requested JSON output file. | snapshot test | tree/content/mode/link digest fixture | local CLI | passed | before/after snapshots identical |
+| `DOD-16` | Definition of Done | `DOD-16` Root-level discovery violations render in text and JSON without a synthetic `todo_result`; text prints `todo_path: n/a` and JSON stores `null`. | CLI integration test | missing-root text/JSON fixture | local CLI | passed | integration test asserts both renderings and zero results |
+| `DOD-17` | Definition of Done | `DOD-17` The shell harness is normalized to LF and executes directly in the declared Linux/WSL lane. | test | `file` inspection plus direct shell execution | local CLI | passed | LF executable reaches final OK marker |
+| `DOD-18` | Definition of Done | `DOD-18` The guard docstring/help advertises both authority layouts without a nested-only claim. | test+review | source docstring and `--help` assertions | local CLI | passed | both layouts and generic discovery described |
+| `DOD-19` | Definition of Done | `DOD-19` No downstream project name/path/business concept is persisted in Delphi surfaces. | review | bounded functional diff and independent reviews | local files | passed | no downstream concept introduced |
+| `DOD-20` | Definition of Done | `DOD-20` Explicit mode under any recognized lifecycle directory that resolves outside authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE` (not the leaf outside code), with the candidate lifecycle path, count `0`, results `[]`, and exit `2`. | negative contract test | all-lifecycle external-symlink loop | local CLI | passed | directory escape precedence and full envelope asserted |
+| `DOD-21` | Definition of Done | `DOD-21` `tools/manifest.md` describes the guard's dual-layout resolution and fail-closed authority/input behavior in the same change. | review+assertion | `tools/manifest.md:86` | local docs | passed | dual-layout fail-closed semantics present |
+| `DOD-22` | Definition of Done | `DOD-22` Explicit file aliases crossing in every direction among lexical `active/`, `promotion_lane/`, and `completed/` emit `CLOSEOUT-TODO-LIFECYCLE-ESCAPE`; all-active covers active-origin aliases; same-lifecycle aliases remain eligible and deduplicated. | negative+positive contract tests | directed cross- and safe same-lifecycle fixtures | local CLI | passed | cross rejects; safe aliases classify and deduplicate |
+| `DOD-23` | Definition of Done | `DOD-23` A directory symlink for any recognized lifecycle targeting another lifecycle inside the same authority emits `CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK` in explicit mode; all-active separately covers `active/`; every case reports the candidate path, count `0`, results `[]`, and exit `2`. | negative contract tests | all-lifecycle inside-symlink loop plus all-active | local CLI | passed | exact code, path, count, results, and exit asserted |
+| `VAL-01` | Validation Steps | `VAL-01` Run `python3 -m py_compile tools/todo_closeout_guard.py`. | test | `python3 -m py_compile tools/todo_closeout_guard.py` | local | passed | exit `0` on 2026-09-25 |
+| `VAL-02` | Validation Steps | `VAL-02` Run `bash tools/tests/todo_closeout_guard_test.sh` directly from the Linux/WSL checkout and require direct assertions for every DOD topology and exact exit contract. | test | `bash tools/tests/todo_closeout_guard_test.sh` | local CLI | passed | final `todo_closeout_guard_test: OK` marker on 2026-09-25 |
+| `VAL-03` | Validation Steps | `VAL-03` Run `bash self_check.sh`. | test | `bash self_check.sh` | local | passed | 243 files; 0 individual failures; 0 coherence failures |
+| `VAL-04` | Validation Steps | `VAL-04` Run `python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --repo-root .`. | guard | exact declared command | local | passed | overall `go`; five matched paths; zero forbidden/unclassified |
+| `VAL-05` | Validation Steps | `VAL-05` Run `python3 tools/todo_authority_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --require-delivery-gates`. | guard | exact declared command | local | passed | overall `go`; delivery gate rows accepted |
+| `VAL-06` | Validation Steps | `VAL-06` Run `python3 tools/todo_completion_guard.py foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`. | guard | exact declared command | local | passed | parser-ready 44-row matrix; final invocation returned overall `go` |
+| `VAL-07` | Validation Steps | `VAL-07` Inspect `git diff --check 9ba43e8bba3618d029320bf6d7b40415881a0287 --` and `git diff --name-status --find-renames 9ba43e8bba3618d029320bf6d7b40415881a0287 --`. | review | exact declared commands | local | passed | diff-check clean; four tracked changes plus the authorized untracked derived package; diff guard confirms five matched paths |
 
 ## External Dependency Readiness
 
@@ -230,9 +245,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | From Profile | To Profile | Why the Handoff Exists | Touched Surfaces | Status / Evidence |
 | --- | --- | --- | --- | --- |
-| strategic-cto | operational-coder | minimal deterministic Python implementation | `tools/todo_closeout_guard.py` | planned; scope-check unknown is expected and routed |
-| operational-coder | assurance-tester-quality | false-green regression and negative cases | `tools/tests/todo_closeout_guard_test.sh` | planned; scope-check unknown is expected and routed |
-| assurance-tester-quality | strategic-cto | final agnosticism/contract review, canonical tool-inventory synchronization, and derived packet | bounded diff + `tools/manifest.md` + `artifacts/analysis/**` | planned; scope-check unknown is expected and routed |
+| strategic-cto | operational-coder | minimal deterministic Python implementation | `tools/todo_closeout_guard.py` | completed by one serialized routine executor; compile and full fixture suite green |
+| operational-coder | assurance-tester-quality | false-green regression and negative cases | `tools/tests/todo_closeout_guard_test.sh` | completed; full matrix green and fresh independent test-quality R8 returned no material findings |
+| assurance-tester-quality | strategic-cto | final agnosticism/contract review, canonical tool-inventory synchronization, and derived packet | bounded diff + `tools/manifest.md` + `artifacts/analysis/**` | completed; final R1 findings remediated and fresh R2 returned GO with no material findings |
 
 ## Complexity
 
@@ -283,15 +298,18 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Condition | Exact violation code | `todo_path` | `todo_count` / `todo_results` |
 | --- | --- | --- | --- |
+| selected `--repo` cannot be resolved because of a cycle or filesystem error | `CLOSEOUT-REPOSITORY-UNRESOLVABLE` | lexical repository path | `0` / `[]` |
 | neither candidate authority exists | `CLOSEOUT-AUTHORITY-MISSING` | `null` | `0` / `[]` |
-| candidate `todos/` exists but no candidate has an `active/` directory | `CLOSEOUT-AUTHORITY-INCOMPLETE` | `null` | `0` / `[]` |
+| candidate `todos/` exists (including a dangling contained symlink) but no candidate has an `active/` directory | `CLOSEOUT-AUTHORITY-INCOMPLETE` | `null` | `0` / `[]` |
+| candidate authority root resolves outside the selected repository, including a dangling external symlink | `CLOSEOUT-AUTHORITY-OUTSIDE-REPOSITORY` | lexical candidate-root path | `0` / `[]` |
 | two candidate roots resolve to distinct supported authorities | `CLOSEOUT-AUTHORITY-AMBIGUOUS` | `null` | `0` / `[]` in explicit and all-active modes |
+| active discovery cannot read an entry or subtree | `CLOSEOUT-DISCOVERY-UNREADABLE` | lexical unreadable entry/subtree path | unreadable subtree contributes no results and forces no-go |
 | a selected recognized lifecycle directory resolves outside its resolved authority | `CLOSEOUT-LIFECYCLE-DIRECTORY-ESCAPE` | string path of the lexical lifecycle directory | `0` / `[]`; resolver rejects it before explicit leaf classification or discovery |
 | a selected recognized lifecycle directory is a symlink whose resolved target remains inside authority | `CLOSEOUT-LIFECYCLE-DIRECTORY-SYMLINK` | string path of the lexical lifecycle directory | `0` / `[]`; directory aliases are rejected before explicit/discovery work |
 | explicit or discovered TODO resolves outside the selected authority | `CLOSEOUT-TODO-OUTSIDE-AUTHORITY` | string path as supplied/discovered | path is excluded from count/results |
 | explicit or discovered TODO alias resolves inside authority but outside the lifecycle selected by its first lexical relative component | `CLOSEOUT-TODO-LIFECYCLE-ESCAPE` | string path as supplied/discovered | path is excluded from count/results |
-| explicit path does not exist | `CLOSEOUT-TODO-MISSING` | supplied path string | `0` / `[]` |
-| explicit path exists but is not a regular file | `CLOSEOUT-TODO-NOT-FILE` | supplied path string | `0` / `[]` |
+| explicit path does not exist, or discovered contained symlink target is missing/cyclic | `CLOSEOUT-TODO-MISSING` | supplied/discovered path string | `0` / `[]` |
+| explicit/discovered path is not a regular file, including directory, FIFO, socket, or a symlink to a non-file | `CLOSEOUT-TODO-NOT-FILE` | supplied/discovered path string | `0` / `[]` |
 | explicit regular file is not `.md` (case-insensitive suffix policy is not added; exact suffix is `.md`) | `CLOSEOUT-TODO-NOT-MARKDOWN` | supplied path string | `0` / `[]` |
 | explicit Markdown is within authority but first relative component is not a recognized lifecycle | `CLOSEOUT-TODO-LIFECYCLE-UNRECOGNIZED` | supplied path string | `0` / `[]` |
 
@@ -357,8 +375,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
 - **Adherence review package:** `bounded-file-set`
-- **Adherence review status:** `not_run`
-- **Adherence review evidence / resolution:** `pending implementation`
+- **Adherence review status:** `no_material_findings`
+- **Adherence review evidence / resolution:** `R1-R8 findings were classified and remediated in-scope; fresh R9 returned GO on the final os.walk/TodoSelection package, including unreadable subtree/leaf handling, sibling retention, strict enums, containment, evidence references, and downstream-agnostic scope.`
 - **No-go handling:** return to the affected loop; do not request approval or close with unresolved divergence.
 
 ## Gate: Review Baseline Freeze
@@ -382,9 +400,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline source:** `Gate: Review Baseline Freeze -> Baseline commit`
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
-- **Gate status:** `no_material_findings`
-- **Findings summary:** `R9 reviews converged with no material findings; deterministic drift found zero changed material sections out of 22.`
-- **Evidence / reference:** `review_scope_drift_guard: overall go; baseline 92257fa8dd8bf8e490a60b96966e43151c43e7c9; changed material sections 0.`
+- **Gate status:** `findings_integrated`
+- **Findings summary:** `Post-approval same-TODO review remediation changed seven material sections. Human authority renewed approval on 2026-09-25 after explicit disclosure that paths, product boundary, CLI shape, supported layouts, and downstream exclusion remain unchanged; the evolved fail-closed hardening is integrated.`
+- **Evidence / reference:** `review_scope_drift_guard: baseline 92257fa8dd8bf8e490a60b96966e43151c43e7c9; 7/22 material sections changed; renewed user APROVADO received 2026-09-25; technical R9/TQ-R8/P1P2-R4/triple-round-05 reviews are green.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -462,11 +480,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ### Local CI-Equivalent Suite Matrix
 
-| Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| closeout guard syntax | Python changes | import/parse | Python 3 | `python3 -m py_compile tools/todo_closeout_guard.py` | Local-Implemented | planned | command output | narrow first |
-| closeout guard fixture suite | behavior changes | nested + standalone + invalid input + negative/ambiguous topology + exits/JSON | self-seeded mktemp dirs/symlinks; LF harness | `bash tools/tests/todo_closeout_guard_test.sh` | Local-Implemented | planned | command output | direct Linux/WSL execution; exact count/path/code/exit assertions |
-| Delphi self-check | shared tooling coherence | repository checks | principal checkout | `bash self_check.sh` | Local-Implemented | planned | command output | authoritative broad gate |
+| Repository / CI Surface | Why In Scope | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| closeout guard syntax | Python source changed | `python3 -m py_compile tools/todo_closeout_guard.py` | Local-Implemented | passed | exit `0` on 2026-09-25 | import/parse gate |
+| closeout guard fixture suite | behavior and test logic changed | `bash tools/tests/todo_closeout_guard_test.sh` | Local-Implemented | passed | `todo_closeout_guard_test: OK` on 2026-09-25 | real Linux/WSL CLI; exact topology, path, code, schema, and exit assertions |
+| Delphi self-check | shared tooling coherence changed | `bash self_check.sh` | Local-Implemented | passed | 243 files; 0 individual failures; 0 coherence failures on 2026-09-25 | authoritative broad repository gate |
 
 ## Plan Review Gate
 
@@ -756,8 +774,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Approval
 
-- **Approved by:** `pending explicit APROVADO`.
-- **Approval scope:** `pending`.
+- **Approved by:** `human authority in the active Codex session; explicit APROVADO received 2026-09-25`.
+- **Approval scope:** `the frozen R9 contract only: dual-layout authority resolution, fail-closed boundary/input behavior, regression harness, canonical manifest synchronization, bounded delivery artifact, and governing TODO evidence`.
+- **Post-implementation scope revalidation:** `APROVADO by human authority on 2026-09-25 after deterministic drift reported 7/22 changed material sections; approved evolved scope preserves the same path/file/CLI/product boundaries`.
 - **Pre-approval authority evidence:** `todo_authority_guard.py --pre-approval: preflight-go; no violations after R9 review, coherence, and scope-drift convergence`.
 - **Execution not authorized by approval:** downstream project edits, policy redesign, automatic moves, worktrees, or additional layouts.
 - **Renewed approval required when:** CLI contract, supported layouts, changed files, mutation behavior, or risk materially changes.
@@ -772,6 +791,16 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `skills/test-creation-standard/SKILL.md` | fixture logic changes | real CLI boundary and exact assertions | status-only confidence | contract tests |
 | `workflows/docker/deterministic-todo-validation-method.md` | tactical TODO | canonical structure | derived bundle edits | validation |
 
+- **Post-approval ingestion outcome:** `completed 2026-09-25; no conflict with the frozen plan or touched surfaces`.
+- **Profile-scope evidence:** `operational-coder returned review required only for the already-declared Delphi tool/test/manifest/derived-artifact handoffs; the TODO path itself is allowed`.
+
+## Package-First Assessment
+
+- **Query:** `bash delphi-ai/tools/query_packages.sh --project-root <downstream-project-root> --search "todo closeout authority path resolver"`.
+- **Result:** `0 package(s) found`; the full registry contains only unrelated Flutter packages.
+- **Decision:** extend the existing canonical `tools/todo_closeout_guard.py`; no external or proprietary package supplies this governance-specific filesystem authority contract.
+- **Manifest check:** `tools/manifest.md` was inspected before implementation and remains an approved same-change surface.
+
 ## Agent Routing Preflight
 
 - **Client surface:** `codex`
@@ -781,7 +810,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Selected effort:** `medium`
 - **Proof mode:** `declared`
 - **Exception reason:** `n/a`
-- **Subagent / delegation authorization:** `reviewers only; implementation remains principal-checkout single-writer`
+- **Subagent / delegation authorization:** `one routine-executor may implement in the principal checkout; all additional writers remain serialized; fresh read-only reviewers remain required for delivery gates`
 - **Execution topology:** `primary-checkout-single-writer`
 - **Worktree / auxiliary-checkout authorization:** `not-authorized`
 - **Worktree authorization evidence:** `n/a`
@@ -803,39 +832,39 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Decision ID | Status | Evidence | Notes |
 | --- | --- | --- | --- |
-| `D-01` | pending | pending implementation | two supported layouts |
-| `D-02` | pending | pending implementation | relative classification |
-| `D-03` | pending | pending implementation | deduplication |
-| `D-04` | pending | pending implementation | fail closed |
-| `D-05` | pending | pending implementation | empty active distinction |
-| `D-06` | pending | pending implementation | relative path and resolved repo/Git semantics |
-| `D-07` | pending | pending implementation | explicit-input and exit contract |
-| `D-08` | pending | pending implementation | discovery-level result rendering |
-| `D-09` | pending | pending implementation | LF harness |
-| `D-10` | pending | pending implementation | no instruction/workflow/template change; manifest sync only |
-| `D-11` | pending | pending implementation | exact first-component lifecycle classification |
-| `D-12` | pending | pending implementation | all lifecycle-directory and explicit/discovered-item containment |
+| `D-01` | Adherent | `tools/todo_closeout_guard.py:117-178`; dual-layout fixtures | exactly two immediate candidates plus typed unresolvable/external-root handling |
+| `D-02` | Adherent | `tools/todo_closeout_guard.py:196-239,306-311` | resolved-authority-relative selection and classification |
+| `D-03` | Adherent | `tools/todo_closeout_guard.py:130-178`; equivalent-root/file fixtures | canonical deduplication and distinct ambiguity |
+| `D-04` | Adherent | `tools/todo_closeout_guard.py:196-239,615-669`; negative fixtures | explicit and discovery paths fail closed, including unreadable subtrees/leaves |
+| `D-05` | Adherent | empty/incomplete authority fixtures | empty active is go; incomplete is typed no-go |
+| `D-06` | Adherent | CWD-relative + symlinked temporary Git fixtures | process-relative explicit path and resolved repo Git context |
+| `D-07` | Adherent | explicit input/exit fixture blocks | exact governed and runtime exits preserved |
+| `D-08` | Adherent | `tools/todo_closeout_guard.py:670-736`; root/mixed JSON fixtures | stable nullable result-level violations |
+| `D-09` | Adherent | LF `tools/tests/todo_closeout_guard_test.sh`; direct execution | harness precondition completed |
+| `D-10` | Adherent | bounded diff + `tools/manifest.md` | no instruction/workflow/template changes |
+| `D-11` | Adherent | `tools/todo_closeout_guard.py:200-211`; nested/standalone lure fixtures | exact first lexical component |
+| `D-12` | Adherent | `tools/todo_closeout_guard.py:182-239,615-669`; lifecycle/non-regular/unreadable matrix | symmetric containment, regular-file-only loading, and error-aware discovery |
 
 ## Module Decision Consistency Validation
 
 | Module Decision Ref | Planned Handling | Delivery Status | Evidence | Notes |
 | --- | --- | --- | --- | --- |
-| `todo-closeout-promotion-method#active-todo-scan` | Preserve | pending | pending | workflow contract remains generic across nested and standalone authority layouts |
-| `todo_closeout_guard.py#path-state` | Supersede (Intentional) | pending | pending | replace absolute segment matching with resolved-root-relative lifecycle classification |
-| `todo_closeout_guard.py#all-active` | Supersede (Intentional) | pending | pending | replace nested-only empty-success discovery with the frozen fail-closed resolver |
-| `todo_closeout_guard.py#exit-contract` | Preserve | pending | pending | preserve process exits while clarifying structured boundary codes and advisory behavior |
+| `todo-closeout-promotion-method#active-todo-scan` | Preserve | Preserved | retained disposition fixtures + workflow review | generic active scan contract remains intact |
+| `todo_closeout_guard.py#path-state` | Supersede (Intentional) | Superseded (Approved) | `tools/todo_closeout_guard.py:196-239,306-311` | resolved-root-relative classification delivered |
+| `todo_closeout_guard.py#all-active` | Supersede (Intentional) | Superseded (Approved) | `tools/todo_closeout_guard.py:615-669` | fail-closed error-aware shared authority discovery delivered |
+| `todo_closeout_guard.py#exit-contract` | Preserve | Preserved | exact exit fixture block | normal/advisory/runtime/argparse exits preserved |
 
 ## Pipeline/Copilot P1/P2 Preflight
 
 | Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard diff | path escape, false go, nested regression, duplicate scans | planned | pending | pending | pre-delivery |
+| standalone closeout guard diff | path escape, false go, nested regression, duplicate scans | passed | fresh Pipeline/Copilot-style R4 preflight + full harness/diff checks | none | no P1/P2 findings after strict-enum and unreadable-tree/leaf remediation |
 
 ## Rule-Spirit Anti-Pattern Hunt
 
 | Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
 | --- | --- | --- | --- | --- | --- |
-| deterministic closeout | exit-0 without recognized authority, fixture-only shortcut, project alias | planned | pending | pending | pre-delivery |
+| deterministic closeout | exit-0 without recognized authority, fixture-only shortcut, project alias | passed | `artifacts/tmp/standalone-foundation-closeout-guard-review/rule-spirit-bounded.json` + human adjudication | none | bounded shared/Docker scan returned zero findings; broader manifest hits were stack-irrelevant keyword false positives |
 
 ## Security Risk Assessment
 
@@ -844,14 +873,14 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Attack surface in scope:** CLI paths, symlinks, recursive markdown discovery, optional JSON output.
 - **Attack simulation decision:** `not_needed` (audit floor `SEC-NOT-TRIGGERED`; bounded negative path/symlink regression tests remain required).
 - **Review evidence:** negative outside-root and symlink fixtures planned; no auth, tenant, secret, network, or runtime mutation surface.
-- **Residual security risk:** `pending review`.
+- **Residual security risk:** `low`; malformed, cyclic, escaping, dangling, and non-regular filesystem inputs are covered by bounded fail-closed fixtures.
 
 ## Performance & Concurrency Risk Assessment
 
 - **Policy schema version:** `pcv-1`
 - **Global sensitivity level:** `low`
 - **Why this level:** two bounded root candidates and local markdown scan; no concurrency surface.
-- **Current delivery stage at review time:** `Pending`
+- **Current delivery stage at review time:** `Local-Implemented`
 - **Audit-floor position:** independent performance/concurrency validation is recommended for release sensitivity; all four runtime lanes remain objectively `not_needed` because no endpoint, UI, write, or pressure surface changes.
 
 | Policy | Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Trigger Rationale | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code | Recorded At UTC | Executor ID |
@@ -863,10 +892,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 ## Verification Debt Assessment
 
-- **Audit outcome:** `required before Completed`.
-- **Why this outcome:** false-green shared guard behavior must not close on unreviewed tests.
-- **Inline code TODO debt:** `none expected`.
-- **Evidence / audit artifact:** `pending`.
+- **Audit outcome:** `none after semantic adjudication`.
+- **Why this outcome:** the helper's raw `high` heuristic is composed of canonical policy vocabulary, intentional negative-test fixture content, five unchecked Out of Scope exclusions, and the three still-active final validation steps; none represents deferred verification work.
+- **Inline code TODO debt:** `none`; bounded inspection found no actionable `TODO`, `FIXME`, `HACK`, `XXX`, or `TBD` marker in the changed implementation, test logic, or manifest. Test heredocs deliberately contain TODO governance fixtures and are executable coverage, not debt.
+- **Evidence / audit artifact:** `sed 's/\r$//' tools/verification_debt_audit.sh | bash -s -- --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md --repo . --path tools/todo_closeout_guard.py --path tools/tests/todo_closeout_guard_test.sh --path tools/manifest.md`; raw counts were adjudicated against their exact lines. All validation steps are now completed with concrete evidence.
 - **Accepted residual debt:** `none`.
 
 ## Independent Test Quality Audit Gate
@@ -878,9 +907,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Audit isolation mode:** `fresh internal no-context reviewer`.
 - **Internal reviewer mandate:** `required before Completed`.
-- **Audit status:** `not_run`
-- **Findings summary:** `pending`.
-- **Evidence / reference:** `pending`.
+- **Audit status:** `no_material_findings`
+- **Findings summary:** `R1-R7 findings were remediated in the same approved TODO; fresh R8 returned GO on unreadable subtree/leaf handling, lexical provenance, readable-sibling retention, strict enum behavior, and the full prior matrix.`
+- **Evidence / reference:** `independent R8 read-only review + current full CLI harness; static scanner outcome none`.
 
 ## Independent No-Context Final Review Gate
 
@@ -890,9 +919,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Review isolation mode:** `fresh internal no-context reviewer`.
 - **Internal reviewer mandate:** `required before Completed`.
-- **Final review status:** `not_run`
-- **Findings summary:** `pending`.
-- **Evidence / reference:** `pending`.
+- **Final review status:** `no_material_findings`
+- **Findings summary:** `Final R1 identified a real exact-code precedence defect and incomplete parser-compatible evidence rows. Both were remediated in-scope: an unknown-lifecycle escaping Markdown alias now receives outside-authority precedence with a fail-first regression, and all 44 delivery criteria have exact row-level evidence. Fresh final R2 returned GO with no P1/P2 or closeout blocker.`
+- **Evidence / reference:** `fresh independent no-context final R2; full CLI harness OK; self-check 243/0/0; deterministic/audit/coherence/diff guards and git diff-check passed`.
 
 ## Independent Multi-Lane Audit Gate
 
@@ -902,16 +931,16 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Required lanes:** `performance + test-quality`; cutover-integrity is not triggered.
 - **Package mode:** `bounded-file-set`.
 - **Run root:** `artifacts/tmp/standalone-foundation-closeout-guard-audit`.
-- **Audit status:** `not_run`
-- **Findings summary:** `pending implementation and primary validation`.
-- **Evidence / reference:** `pending session.json + round summary`.
+- **Audit status:** `passed`
+- **Findings summary:** `Rounds 01-03 findings/conflicts were resolved; rounds 04-05 were clean. Post-remediation round 06 lanes were substantively clean and its wording-only recommended-path conflict was explicitly resolved; fresh convergence round 07 is clean in both performance and test-quality lanes with zero findings.`
+- **Evidence / reference:** `artifacts/tmp/standalone-foundation-closeout-guard-audit/session.json`; `round-07/round-summary.md` (`clean`).
 
 ## TODO Closeout Disposition
 
-- **Disposition:** `keep-active`.
-- **Disposition reason:** planning, approval, implementation, and validation remain.
+- **Disposition:** `move-completed`
+- **Disposition reason:** implementation, all independent reviews/audits, verification debt adjudication, and deterministic delivery gates are green; only commit/push and the exact lifecycle move remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** await explicit APROVADO, then implement the frozen contract, validate all delivery gates, and move to the exact completed path.
+- **Next path/status action:** after publishing the delivery commit, move this file to `foundation_documentation/todos/completed/TODO-delphi-standalone-foundation-closeout-guard.md`.
 
 ## Commands
 
