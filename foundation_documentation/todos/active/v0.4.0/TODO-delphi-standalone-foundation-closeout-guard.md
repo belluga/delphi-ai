@@ -88,7 +88,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@1900476` | `origin/feat/add-stack-capabilities@1900476` | n/a | release-package-owned | R1 reviewed; finding-integrated baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@00392ee` | `origin/feat/add-stack-capabilities@00392ee` | n/a | release-package-owned | finding-integrated R2 review baseline published |
 
 ## Diff Expectation Contract
 
@@ -313,11 +313,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `36b71230a4cb88f8dc8c9454b6dfd7eb5bdbc8bd`
+- **Baseline commit:** `00392eef2460232337da01333af6d76fdc25b051`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1 material findings integrated: exact authority-state model, symlink dedup/escape semantics, explicit-input/exit contract, LF harness, canonical architecture schema, and 1:1 evidence mapping; refreshed baseline commit pending publication.
-- **Evidence / reference:** `R1 architecture and plan critique finding ledgers integrated; refreshed origin baseline will replace 36b7123 before R2.`
+- **Findings summary:** R1 material findings integrated: exact authority-state model, symlink dedup/escape semantics, explicit-input/exit contract, LF harness, canonical architecture schema, and 1:1 evidence mapping; refreshed baseline published for R2.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@00392eef2460232337da01333af6d76fdc25b051`; R1 architecture and plan critique finding ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
