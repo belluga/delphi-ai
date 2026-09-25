@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** conclude and adjudicate the explicitly routed fresh R9 reviews, then run assumption coherence, scope drift, and authority preflight; request `APROVADO` only if every pre-approval gate is green.
+- **Next exact step:** await explicit human `APROVADO` for the frozen R9 execution contract before changing guard, tests, manifest, or audit artifact.
 
 ## Active Work State
 
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@92257fa` | `origin/feat/add-stack-capabilities@92257fa` | n/a | release-package-owned | R9 material baseline published; explicitly routed reviews running |
+| standalone closeout guard support | `feat/add-stack-capabilities@92257fa` | `origin/feat/add-stack-capabilities@92257fa` | n/a | release-package-owned | R9 reviews and all deterministic pre-approval gates green; awaiting explicit APROVADO |
 
 ## Diff Expectation Contract
 
@@ -351,8 +351,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Decision review lifecycle:** `after diagnosis is closed and before APROVADO`
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** `bounded-file-set`
-- **Decision review status:** `running`
-- **Decision review evidence / resolution:** `R1 through R8 architecture/critique rounds are adjudicated; canonical scope and explicit review routing are integrated as PR-22. Fresh explicitly routed R9 confirmation is pending and this status intentionally remains non-satisfying until it completes.`
+- **Decision review status:** `no_material_findings`
+- **Decision review evidence / resolution:** `Explicitly routed R9 architecture_opinion on origin/feat/add-stack-capabilities@92257fa returned GO with no material findings; performance acceptable and elegance/structural/operational fit strong-positive.`
 - **Architecture adherence review:** `required`
 - **Adherence review lifecycle:** `after implementation and before Completed`
 - **Adherence review kind:** `architecture_adherence`
@@ -369,8 +369,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline branch:** `feat/add-stack-capabilities`
 - **Baseline commit:** `92257fa8dd8bf8e490a60b96966e43151c43e7c9`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
-- **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R8 material findings integrated, including canonical `delphi-self-maintenance` scope and deterministic R9 routing proof; refreshed R9 baseline published with review statuses intentionally running.
+- **Gate status:** `no_material_findings`
+- **Findings summary:** R1-R8 material findings integrated; explicitly routed R9 architecture and critique returned no material findings against the published material baseline.
 - **Evidence / reference:** `origin/feat/add-stack-capabilities@92257fa8dd8bf8e490a60b96966e43151c43e7c9`; R1-R8 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
@@ -382,9 +382,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Baseline source:** `Gate: Review Baseline Freeze -> Baseline commit`
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
-- **Gate status:** `not_run`
-- **Findings summary:** `R9 material baseline 92257fa8dd8bf8e490a60b96966e43151c43e7c9 is published; scope-drift rerun awaits explicitly routed R9 convergence.`
-- **Evidence / reference:** `review_scope_drift_guard will run after both R9 reviewers finish; no redundant baseline publication remains.`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `R9 reviews converged with no material findings; deterministic drift found zero changed material sections out of 22.`
+- **Evidence / reference:** `review_scope_drift_guard: overall go; baseline 92257fa8dd8bf8e490a60b96966e43151c43e7c9; changed material sections 0.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -661,8 +661,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `CRIT-R6-01` | plan critique R6 | lifecycle-local containment and alias policy resolved by `PR-20` | integrated; R7 completed |
 | `ARQ-R7` | architecture R7 | no material findings | clean; critique R7 still required correction |
 | `CRIT-R7-01` | plan critique R7 | lifecycle directory/file containment generalized symmetrically by `PR-21` | integrated; R8 completed |
-| `ARQ-R8-01` | architecture R8 | canonical technical scope corrected by `PR-22` | integrated; fresh R9 required |
-| `CRIT-R8` | plan critique R8 | no technical material findings; routing proof caveat resolved by explicit R9 preflight/model | integrated; fresh R9 required |
+| `ARQ-R8-01` | architecture R8 | canonical technical scope corrected by `PR-22` | integrated; R9 completed |
+| `CRIT-R8` | plan critique R8 | no technical material findings; routing proof caveat resolved by explicit R9 preflight/model | integrated; R9 completed |
+| `ARQ-R9` | explicitly routed architecture R9 | no material findings | clean |
+| `CRIT-R9` | explicitly routed plan critique R9 | no material findings | clean |
 
 ## Audit Trigger Matrix
 
@@ -692,10 +694,10 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Package mode:** `bounded-file-set`.
 - **Package minimum contents:** `frozen TODO|guard source|fixture suite|read-only reproduction`.
 - **Critique isolation mode:** `fresh internal no-context reviewer`.
-- **Internal reviewer mandate:** `required after each material baseline refresh; R1-R8 findings were adjudicated, so an explicitly routed fresh R9 reviewer is required before APROVADO`.
+- **Internal reviewer mandate:** `satisfied by explicitly routed fresh R9 architecture and critique reviewers on the frozen material baseline`.
 - **Critique lenses:** `correctness|performance|elegance|structural-soundness|risk`.
-- **Critique status:** `running`
-- **Findings summary:** `R1 through R8 were adjudicated; all material issue families are integrated as PR-01..PR-22; explicitly routed fresh R9 is pending and the canonical status intentionally remains non-satisfying`.
+- **Critique status:** `no_material_findings`
+- **Findings summary:** `R1 through R8 were adjudicated and PR-01..PR-22 integrated; explicitly routed fresh R9 critique returned GO with no material findings`.
 - **Resolution ledger:**
 
 | Finding ID | Resolution (`Integrated|Challenged|Deferred`) | Usefulness (`useful|noise|mixed|unknown`) | Formalizable (`yes|partial|no|unknown`) | Candidate Rule Level (`paced|project|none|unknown`) | Candidate Rule ID | Rationale / Evidence |
@@ -735,7 +737,9 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 | `CRIT-R7-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Directory symlink rejection and cross-lifecycle file containment now apply symmetrically to active, promotion_lane, and completed. |
 | `ARQ-R8-01` | `Integrated` | `useful` | `yes` | `none` | `n/a` | Active technical scope now uses canonical `delphi-self-maintenance`. |
 | `CRIT-R8` | `Integrated` | `useful` | `partial` | `none` | `n/a` | R8 critique returned technical GO; its routing-proof caveat is resolved by deterministic R9 preflights and explicit model/effort dispatch. |
-- **Evidence / reference:** `R1-R8 no-context architecture and critique outputs; PR-01..PR-22; canonical ledger extraction must pass before R9`.
+| `ARQ-R9` | `Integrated` | `useful` | `no` | `none` | `n/a` | Explicitly routed architecture R9 returned GO with no material findings. |
+| `CRIT-R9` | `Integrated` | `useful` | `no` | `none` | `n/a` | Explicitly routed critique R9 returned GO with no material findings. |
+- **Evidence / reference:** `R9 formal review routing guards GO; fresh architecture and critique outputs both GO on origin/feat/add-stack-capabilities@92257fa`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Gate: Assumption Code Coherence
@@ -745,15 +749,16 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Trigger stage:** `after critique convergence and before APROVADO`.
 - **Guard scope:** `none — direct facts/decisions, no live assumptions`.
 - **Guard command:** `python3 tools/assumption_code_coherence_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`.
-- **Gate status:** `not_run`
-- **Findings summary:** `pending`.
-- **Evidence / reference:** `pending`.
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `No live assumptions exist; frozen facts and decisions match the unchanged pre-implementation guard/test sources.`
+- **Evidence / reference:** `assumption_code_coherence_guard: overall go; live assumptions checked 0; gate required/no_material_findings`.
 - **Waiver authority / reference:** `n/a`.
 
 ## Approval
 
 - **Approved by:** `pending explicit APROVADO`.
 - **Approval scope:** `pending`.
+- **Pre-approval authority evidence:** `todo_authority_guard.py --pre-approval: preflight-go; no violations after R9 review, coherence, and scope-drift convergence`.
 - **Execution not authorized by approval:** downstream project edits, policy redesign, automatic moves, worktrees, or additional layouts.
 - **Renewed approval required when:** CLI contract, supported layouts, changed files, mutation behavior, or risk materially changes.
 
@@ -906,7 +911,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** converge the running explicitly routed R9 reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** await explicit APROVADO, then implement the frozen contract, validate all delivery gates, and move to the exact completed path.
 
 ## Commands
 
