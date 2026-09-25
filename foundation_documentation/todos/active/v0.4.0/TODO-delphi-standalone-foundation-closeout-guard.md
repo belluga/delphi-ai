@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** integrate R5 findings, publish the refreshed material baseline, and run fresh R6 architecture and plan critique before coherence, drift, and authority preflight.
+- **Next exact step:** conclude and adjudicate the two fresh R6 reviews, then run assumption coherence, scope drift, and authority preflight; request `APROVADO` only if every pre-approval gate is green.
 
 ## Active Work State
 
@@ -92,7 +92,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@0fa3b59` | `origin/feat/add-stack-capabilities@0fa3b59` | n/a | release-package-owned | R5 reviewed; finding-integrated R6 baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@87e2237` | `origin/feat/add-stack-capabilities@87e2237` | n/a | release-package-owned | R6 material baseline published; reviews running |
 
 ## Diff Expectation Contract
 
@@ -358,11 +358,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `43cabfcf8172823f17e0a3744921b9c38c3a4c05`
+- **Baseline commit:** `87e2237946c91a2db7eb1ebdb0b1cbfcdb433429`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R5 material findings integrated: technical contract, status safety, single decision baseline, three-class test evidence, correct work state, and exact 4/4 module snapshot/adherence identity; refreshed R6 baseline pending publication.
-- **Evidence / reference:** `R1-R5 architecture and critique ledgers integrated; the next material commit will replace 43cabfcf8172823f17e0a3744921b9c38c3a4c05 before R6.`
+- **Findings summary:** R1-R5 material findings integrated: technical contract, status safety, single decision baseline, three-class test evidence, correct work state, and exact 4/4 module snapshot/adherence identity; refreshed R6 baseline published with review statuses intentionally running.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@87e2237946c91a2db7eb1ebdb0b1cbfcdb433429`; R1-R5 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -374,8 +374,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending refreshed baseline and R6 convergence`
-- **Evidence / reference:** `R1 changes are material by design; drift will run only after the refreshed baseline is published and reviewed.`
+- **Findings summary:** `R6 material baseline 87e2237946c91a2db7eb1ebdb0b1cbfcdb433429 is published; scope-drift rerun awaits R6 review convergence.`
+- **Evidence / reference:** `review_scope_drift_guard will run after both R6 reviewers finish; no redundant baseline publication remains.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -855,7 +855,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** publish the R6 review baseline, converge fresh reviews, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** converge the running R6 reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
