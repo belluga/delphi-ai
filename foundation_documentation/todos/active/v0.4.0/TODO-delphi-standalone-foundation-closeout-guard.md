@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** freeze and publish the review baseline, run independent plan critique, then execute pre-approval guards.
+- **Next exact step:** run fresh architecture and plan critique against `origin/feat/add-stack-capabilities@36b7123`, then execute coherence, drift, and authority preflight.
 
 ## Active Work State
 
@@ -86,7 +86,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@9ba43e8` | `origin/feat/add-stack-capabilities` | n/a | release-package-owned | planning baseline pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@36b7123` | `origin/feat/add-stack-capabilities@36b7123` | n/a | release-package-owned | review baseline published |
 
 ## Diff Expectation Contract
 
@@ -268,11 +268,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `pending`
+- **Baseline commit:** `36b71230a4cb88f8dc8c9454b6dfd7eb5bdbc8bd`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
-- **Gate status:** `not_run`
-- **Findings summary:** `pending`
-- **Evidence / reference:** `pending`
+- **Gate status:** `running`
+- **Findings summary:** refined standalone/nested/fail-closed contract frozen; fresh reviews pending.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@36b7123`; validator/diff/audit/routing guards passed before freeze.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
