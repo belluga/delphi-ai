@@ -42,7 +42,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** integrate the R7 symmetric-lifecycle finding, publish the refreshed material baseline, and run fresh R8 architecture and plan critique before coherence, drift, and authority preflight.
+- **Next exact step:** conclude and adjudicate the two fresh R8 reviews, then run assumption coherence, scope drift, and authority preflight; request `APROVADO` only if every pre-approval gate is green.
 
 ## Active Work State
 
@@ -93,7 +93,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@217ac56` | `origin/feat/add-stack-capabilities@217ac56` | n/a | release-package-owned | R7 reviewed; finding-integrated R8 baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@4b9af28` | `origin/feat/add-stack-capabilities@4b9af28` | n/a | release-package-owned | R8 material baseline published; reviews running |
 
 ## Diff Expectation Contract
 
@@ -367,11 +367,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `dc46f9d0c29d59f1a072c328cfb060c2210ba95a`
+- **Baseline commit:** `4b9af284357d67fc217063f98817c8d12968ab37`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R7 material findings integrated, including symmetric lifecycle-local containment for all recognized directories and both file-alias directions; refreshed R8 baseline pending publication.
-- **Evidence / reference:** `R1-R7 architecture and critique ledgers integrated; the next material commit will replace dc46f9d0c29d59f1a072c328cfb060c2210ba95a before R8.`
+- **Findings summary:** R1-R7 material findings integrated, including symmetric lifecycle-local containment for all recognized directories and both file-alias directions; refreshed R8 baseline published with review statuses intentionally running.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@4b9af284357d67fc217063f98817c8d12968ab37`; R1-R7 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
@@ -383,8 +383,8 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Material sections compared:** `template canonical set`
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/v0.4.0/TODO-delphi-standalone-foundation-closeout-guard.md`
 - **Gate status:** `not_run`
-- **Findings summary:** `pending refreshed baseline and R8 convergence`
-- **Evidence / reference:** `R7 symmetric-lifecycle correction is material; drift reruns after the R8 baseline is published and reviewed.`
+- **Findings summary:** `R8 material baseline 4b9af284357d67fc217063f98817c8d12968ab37 is published; scope-drift rerun awaits R8 review convergence.`
+- **Evidence / reference:** `review_scope_drift_guard will run after both R8 reviewers finish; no redundant baseline publication remains.`
 - **Waiver authority / reference:** `n/a`
 
 ## Questions To Close
@@ -886,7 +886,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Disposition:** `keep-active`.
 - **Disposition reason:** planning, approval, implementation, and validation remain.
 - **Post-commit/push status:** `pending`.
-- **Next path/status action:** publish the R8 review baseline, converge fresh reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
+- **Next path/status action:** converge the running R8 reviews, execute coherence/drift/authority preflight, obtain APROVADO, implement, validate, and move to the exact completed path.
 
 ## Commands
 
