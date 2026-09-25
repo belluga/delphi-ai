@@ -92,7 +92,7 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 
 | Scope Item | Local Branch/Commit | PR to lane threshold | PR to `stage` | PR to `main` | Current Status |
 | --- | --- | --- | --- | --- | --- |
-| standalone closeout guard support | `feat/add-stack-capabilities@df10037` | `origin/feat/add-stack-capabilities@df10037` | n/a | release-package-owned | R4 reviewed; finding-integrated R5 baseline publication pending |
+| standalone closeout guard support | `feat/add-stack-capabilities@43cabfc` | `origin/feat/add-stack-capabilities@43cabfc` | n/a | release-package-owned | R5 review baseline published; reviews running |
 
 ## Diff Expectation Contract
 
@@ -358,11 +358,11 @@ Make `todo_closeout_guard.py` correctly classify and discover TODOs in both nest
 - **Why this decision:** shared guard behavior needs an immutable review packet.
 - **Trigger stage:** `before planning-side reviews`
 - **Baseline branch:** `feat/add-stack-capabilities`
-- **Baseline commit:** `7379f337e653b28401f7c9888d643f6f9b33b670`
+- **Baseline commit:** `43cabfcf8172823f17e0a3744921b9c38c3a4c05`
 - **Baseline push reference:** `origin/feat/add-stack-capabilities`
 - **Gate status:** `findings_integrated`
-- **Findings summary:** R1-R4 material findings integrated: technical authority/schema contract plus current-round status safety, single decision baseline, three-class test evidence, correct active work state, and module exit-contract adherence; refreshed R5 baseline pending publication.
-- **Evidence / reference:** `R1-R4 architecture and critique ledgers integrated; the next material commit will replace 7379f337e653b28401f7c9888d643f6f9b33b670 before R5.`
+- **Findings summary:** R1-R4 material findings integrated: technical authority/schema contract plus current-round status safety, single decision baseline, three-class test evidence, correct active work state, and module exit-contract adherence; refreshed R5 baseline published with review statuses intentionally running.
+- **Evidence / reference:** `origin/feat/add-stack-capabilities@43cabfcf8172823f17e0a3744921b9c38c3a4c05`; R1-R4 architecture and critique ledgers integrated.
 - **Waiver authority / reference:** `n/a`
 
 ## Gate: Review Scope Drift
