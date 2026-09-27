@@ -1,4 +1,4 @@
 interface:
   display_name: "Orchestrated Single Todo Implementation"
-  short_description: "Run bounded micro-adjustments from routing JSON"
-  default_prompt: "Use $orchestrated-single-todo-implementation for this explicitly authorized bounded micro-adjustment."
+  short_description: "Implement one approved tactical TODO"
+  default_prompt: "Use $orchestrated-single-todo-implementation for this explicitly authorized single-TODO implementation."

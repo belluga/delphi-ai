@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resolve a declared micro-adjustment route from the canonical JSON contract."""
+"""Resolve a declared single-TODO route from the canonical JSON contract."""
 
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def resolve(*, client: str, surface: str, role: str, review_kind: str | None = N
             break
 
     return {
-        "artifact_kind": "codex_micro_adjustment_routing",
+        "artifact_kind": "orchestrated_single_todo_routing",
         "authority": "config/agent_role_routing.json",
         "client": client,
         "surface": surface,

@@ -6,7 +6,7 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 ROUTE_JSON="$TMP_DIR/route.json"
-python3 "$ROOT_DIR/tools/codex_micro_adjustment_routing.py" \
+python3 "$ROOT_DIR/tools/orchestrated_single_todo_routing.py" \
   --client codex --surface implementation --role routine-executor \
   --json-output "$ROUTE_JSON" >/dev/null
 
@@ -22,28 +22,34 @@ assert payload["model_aliases"]
 assert payload["effort_aliases"] == ["medium"]
 PY
 
-RAW_ROOT="$ROOT_DIR/artifacts/tmp/todo-execution/p2-test/session-1"
-python3 "$ROOT_DIR/tools/codex_micro_adjustment_teach.py" \
+RAW_ROOT="$ROOT_DIR/artifacts/tmp/todo-execution/single-todo-test/session-1"
+python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --todo "$ROOT_DIR/foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md" \
-  --changed-path tools/codex_micro_adjustment_routing.py \
+  --baseline v0.6.2-rc@634b546 \
+  --approval-gate approved \
+  --authority-gate canonical \
+  --changed-path tools/orchestrated_single_todo_routing.py \
+  --expected-path foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md \
+  --expected-path 'skills/orchestrated-single-todo-implementation/**' \
+  --expected-path tools/orchestrated_single_todo_routing.py \
+  --expected-path tools/orchestrated_single_todo_teach.py \
+  --expected-path tools/tests/orchestrated_single_todo_test.sh \
   --writer-role routine-executor \
-  --provider-fallback prohibited \
-  --runtime-introspection prohibited \
-  --schema-migration prohibited \
   --raw-artifact-root "$RAW_ROOT" \
   --token-total unavailable >/dev/null
 
-if python3 "$ROOT_DIR/tools/codex_micro_adjustment_teach.py" \
+if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --todo "$ROOT_DIR/foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md" \
-  --changed-path tools/codex_micro_adjustment_routing.py \
+  --baseline v0.6.2-rc@634b546 \
+  --approval-gate pending \
+  --authority-gate canonical \
+  --changed-path tools/orchestrated_single_todo_routing.py \
+  --expected-path tools/orchestrated_single_todo_routing.py \
   --writer-role primary-chat \
-  --provider-fallback allowed \
-  --runtime-introspection prohibited \
-  --schema-migration prohibited \
   --raw-artifact-root "$RAW_ROOT" \
   --token-total unavailable >/dev/null 2>&1; then
   echo "expected bounded assessment to block" >&2
   exit 1
 fi
 
-printf 'codex_micro_adjustment_executor_test: OK\n'
+printf 'orchestrated_single_todo_test: OK\n'
