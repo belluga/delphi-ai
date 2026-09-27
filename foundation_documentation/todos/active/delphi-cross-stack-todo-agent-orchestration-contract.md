@@ -24,7 +24,9 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 ## Contract Boundary
 
 - The TODO defines the reusable Delphi method. It does not authorize a downstream application TODO by itself.
-- The method consumes the routing JSON and never copies role-to-model mappings into workflow, skill, guard code, or prose.
+- The method consumes the routing JSON and never copies a role-to-model routing matrix into workflow, skill, guard code, or prose. A dated per-action resolver result is execution evidence only, never an alternate authority, and must be refreshed before dispatch.
+- Raw execution payloads (Problems snapshots, test stdout/stderr, review payloads, and provider usage reports) stay only under the profile-directed ignored temporary artifact root: `foundation_documentation/artifacts/tmp/todo-execution/<todo-id>/<session-id>/` for downstream TODOs, or `delphi-ai/artifacts/tmp/todo-execution/<todo-id>/<session-id>/` for Delphi self-maintenance. They are never staged or tracked.
+- The tracked TODO is the durable execution summary: it records only decision-relevant command/result metadata, findings, classifications, and provider-reported token totals accumulated by canonical tier. It never embeds raw logs, full payloads, inferred token counts, inferred cost, or a second telemetry authority.
 - The contract uses three distinct terms:
   - **surface:** implementation, implementation-validation, monitoring, formal-review, delivery-review, or another JSON-defined surface;
   - **execution role:** primary-chat, routine-executor, formal-reviewer, process-monitor, or deterministic-only;
@@ -74,7 +76,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [ ] Add generic static-analysis provider schema/resolver; absence, invalidity, or failure blocks and provider switching requires explicit user selection plus rerun.
 - [ ] Add the canonical cross-stack workflow and explicitly invoked Codex skill as contract consumers.
 - [ ] Implement executor-owned clean Problems, complete non-fail-fast focused-test matrix, bounded repair, and post-green independent diff review.
-- [ ] Record minimal per-TODO phase/handoff evidence without inferring usage/cost or creating telemetry.
+- [ ] Record minimal per-TODO phase/handoff and test/diagnostic/review summaries; keep raw execution payloads only in the ignored temporary artifact root.
+- [ ] Consolidate provider-reported token totals by canonical tier in the exact TODO without estimating usage, converting to cost, or creating telemetry.
 - [ ] Make surface traits, role catalog, review-kind-to-surface binding, and model-family resolution canonical data; production guard invocation cannot replace the contract path, while fixture injection remains test-only.
 - [ ] Bind `implementation_diff_review` canonically to `surface=formal-review` and `role=formal-reviewer`; reject any other surface/role combination.
 - [ ] Update affected workflows, templates, manifests, tooling register, mirrors, and tests.
@@ -136,6 +139,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [ ] Test repair restores intended contract only; it cannot weaken, skip, delete, or narrow expectations.
 - [ ] Implementation diff, critique/governance, and final delivery review remain separate.
 - [ ] Per-TODO phase/handoff observation is minimal, non-authoritative, and represents unavailable usage as unavailable.
+- [ ] Raw Problems/test/review/usage payloads are written only to the ignored temporary artifact root; the TODO retains the bounded result summary required to interpret a gate and nothing more.
+- [ ] Each completed governed LLM action updates the exact TODO's cumulative provider-reported token total for its JSON-resolved tier; an unavailable provider report remains `unavailable`, never an estimate or zero.
 - [ ] Exact tests, self-check/mirrors, TODO/diff gates, fresh final review, and delivery evidence are complete before any delivery claim.
 
 ## Validation Steps
@@ -145,6 +150,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [ ] Review fixtures: request_changes, approve_green_diff, green matrix binding, missing/non-green rejection, invalid payload, wrong-surface/wrong-role rejection, and final-review/critique separation.
 - [ ] Focused-matrix fixtures: continue after failure; row completeness; cleanup; missing/skipped/unclassifiable equals non-green; repair resets Problems plus full matrix.
 - [ ] Observability fixtures: platform usage preserved when available and unavailable when absent; data cannot alter routing/gates.
+- [ ] Evidence-ledger fixtures: raw Problems/test/review/usage payloads remain under the ignored temporary root; TODO summaries omit raw output and token totals aggregate only provider-reported values by JSON-resolved tier.
 - [ ] Run affected routing/review/provider tests, Python compilation for new tools, bash self_check.sh, and git diff --check.
 - [ ] Run python3 tools/todo_deterministic_validator.py against this TODO.
 - [ ] Run fresh independent implementation/delivery review after implementation.
@@ -243,6 +249,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [x] D-18: A review kind carries canonical allowed-surface and allowed-role bindings; `implementation_diff_review` is valid only for `surface=formal-review` and `role=formal-reviewer`.
 - [x] D-19: `audit-protocol-triple-review` is optional/recommended only when the audit floor requests it. Canonical-path retirement still requires a distinct required cutover-integrity gate; neither replaces critique, implementation-diff review, test-quality audit, or final review.
 - [x] D-20: Delphi self-maintenance is not a PCV product/runtime lane. Its `PCV-NOT-TRIGGERED` result does not alter the global `pcv-1` policy and any separately authorized downstream/product TODO evaluates PCV under its own scope.
+- [x] D-21: Raw Problems, test, review, and provider-usage payloads are transient ignored artifacts. The tracked TODO stores only gate-relevant summary facts, never raw output or a competing telemetry record.
+- [x] D-22: Provider-reported token totals are accumulated in the exact TODO by canonical JSON-resolved tier. Missing usage is `unavailable`; neither tokens nor cost may be estimated or influence routing/gates.
 
 ## Module Decision Baseline Snapshot
 
@@ -263,32 +271,53 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Architecture Change Governance
 
-- **Applicability:** required
-- **Deviation / debt:** Discretionary role/provider selection, ambiguous test/review order, implicit provider fallback, and review of untested diffs.
-- **Target steady-state:** One routing authority; explicit selections/exceptions; executor-owned green matrix; post-green independent review; normal single writer.
-- **Temporary exceptions:** none in V1
-- **Cutover condition:** JSON, guards, workflow, skill, templates, and mirrors agree; obsolete conflicting provider wording is retired.
+- **Applicability (`required|not_needed`):** required
+- **Why this applies:** V1 corrects the architecture of execution authority: discretionary role/provider choice and untested-diff review must become a single JSON-backed, fail-closed lifecycle.
+- **Deviation / debt being retired:** Discretionary role/provider selection, ambiguous test/review order, implicit provider fallback, review of untested diffs, and durable raw-output artifacts outside the TODO summary.
+- **Target steady-state after closeout:** One routing authority; explicit selections/exceptions; executor-owned green matrix; ignored raw execution payloads plus compact TODO evidence; per-tier provider-reported token totals; post-green independent review; normal single writer.
+- **Temporary exceptions allowed:** none in V1
+- **Cutover / removal condition:** JSON, guards, workflow, skill, templates, and mirrors agree; obsolete conflicting provider wording and tracked raw execution-output paths are retired.
+
+### Patterns To Enforce
+
+| Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
+| --- | --- | --- | --- |
+| JSON-backed role, model-family, review, and tier resolution | D-01, D-15, D-17, D-18 | routing and review admission | Consumers must not create a second selection matrix or infer a routing tier. |
+| Fail-closed provider and active-model admission | D-05, D-06, D-16 | execution intake | Missing proof or provider health must stop rather than silently downgrade quality or analysis. |
+| Raw-temporary, summary-tracked evidence | D-12 and Execution Artifact & Token Ledger | Problems, test, review, and usage evidence | Reproducible gate facts and token totals remain in the TODO without tracking verbose or sensitive transient payloads. |
+| Green matrix before independent diff review | D-08, D-09, D-10 | implementation validation | A reviewer must assess a tested diff, and a requested change must restart the full quality cycle. |
 
 ### Prohibited Anti-Patterns
 
-| Anti-pattern | Detection signal | Policy |
-| --- | --- | --- |
-| hardcoded role/model matrix | values outside canonical contract | block |
-| automatic provider fallback | provider changed without user record/rerun | block |
-| pre-green diff review | no clean Problems/full green evidence | block |
-| test weakening for green | reduced contract/coverage | block |
-| local orchestrator implementation | V1 diff lacks executor ownership | block |
-| generic coordinator or telemetry | scope expands beyond per-TODO evidence | renewed approval |
+| Anti-Pattern / Wrong Path | Detection Signal | Why It Is Forbidden After Cutover | Exception Policy |
+| --- | --- | --- | --- |
+| hardcoded role/model/tier matrix | values or tier policy outside canonical JSON contract | It recreates a competing selection authority. | none |
+| automatic provider fallback | provider changes without explicit user selection and rerun | It hides unavailable/invalid static evidence. | none |
+| pre-green diff review | missing clean Problems or full green matrix evidence | It asks independent review to validate an untested diff. | none |
+| test weakening for green | changed expectation, fixture, or harness outside frozen contract | It converts a regression into a passing signal. | renewed approval only |
+| tracked raw execution output or usage payload | artifact path outside ignored temporary root or raw payload copied into TODO | It creates noisy, durable pseudo-evidence and competing telemetry. | none |
+| local orchestrator implementation or generic coordinator | V1 diff grants writer bypass or expands into queue/retry/telemetry framework | It violates single-writer scope and Architecture Simplification First. | renewed approval only |
+
+### Architecture Protection Harness
+
+| Harness Type | Surface | Command / Rule / Artifact | Regression It Must Catch | Adoption Timing (`already-enforced|implement-in-this-todo|follow-up-approved|manual-only-with-rationale`) | Evidence Plan / Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| structural approval guard | TODO contract | `tools/todo_authority_guard.py --pre-approval` | missing canonical routing, rules ingestion, architecture fields, or implementation readiness | already-enforced | P1.5 requires `preflight-go` before APROVADO. |
+| routing-contract fixture suite | role/model/tier admission | `bash tools/tests/agent_role_routing_guard_test.sh` | hardcoded or mismatched routing, invalid continuation, and second authority | implement-in-this-todo | Local CI matrix row and validation fixture requirement. |
+| provider/review fixture suites | provider and post-green review gates | `bash tools/tests/static_analysis_provider_guard_test.sh`; `bash tools/tests/review_dispatch_guard_test.sh` | implicit fallback, wrong provider evidence, wrong review surface/role, or review before green matrix | implement-in-this-todo | Local CI matrix rows and required implementation fixtures. |
+| execution-evidence lifecycle rule | transient raw artifacts and tracked TODO summary | Execution Artifact & Token Ledger plus focused-matrix/evidence-ledger fixtures | raw output tracked outside temporary root, missing bounded summary, inferred token/cost, or non-aggregated tier totals | implement-in-this-todo | Definition of Done and Validation Steps require fixture coverage and final TODO evidence. |
 
 ## Architecture Review Gates
 
-- **Architecture decision review:** required (from `audit_escalation_guard.py`)
+- **Architecture decision review:** required
+- **Architecture decision review source:** `audit_escalation_guard.py`
 - **Decision review lifecycle:** after P0/P1 are closed and before APROVADO
 - **Decision review kind:** `architecture_opinion`
 - **Decision review package:** bounded-file-set
 - **Decision review status:** not_run
 - **Decision review evidence / resolution:** pending P0/P1 closure and fresh freeze-backed review
-- **Architecture adherence review:** required (from `audit_escalation_guard.py`)
+- **Architecture adherence review:** required
+- **Architecture adherence review source:** `audit_escalation_guard.py`
 - **Adherence review lifecycle:** after implementation and before Completed
 - **Adherence review kind:** `architecture_adherence`
 - **Adherence review package:** bounded-file-set
@@ -341,7 +370,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | --- | --- | --- | --- |
 | P0 | existing routing-guard TODO | close it and retire bootstrap exception | its closeout completes |
 | P1 | existing platform/scenario/settings TODO after P0 | stabilize approved schema/migration/taxonomy only | its closeout completes |
-| P2 | this TODO after P0/P1 | extend routing guard; add post-green review kind; provider schema/resolver; canonical wording | routing/provider/review fixtures pass |
+| P1.5 | this TODO after P0/P1 | refresh baseline; run architecture/plan/critique gates; run assumption and drift guards; prepare one implementation tuple and pre-approval authority preflight | all planning gates converge and `todo_authority_guard.py --pre-approval` returns `preflight-go` |
+| P2 | this TODO after P1.5 and explicit APROVADO | extend routing guard; add post-green review kind; provider schema/resolver; canonical wording | routing/provider/review fixtures pass |
 | P3 | this TODO after P2 | add explicit workflow/skill, matrix rules, minimal evidence, templates/manifests/mirrors | consumers use JSON roles only |
 | P4 | separately authorized downstream task | create provider declaration and bridge/plugin setup if selected | project provider preflight returns go |
 | P5 | separate future TODO | consider writer lease/atomic mechanical permit | separately approved/validated |
@@ -355,12 +385,27 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 4. Routine executor is the sole normal writer. Orchestrator waits with collaboration.wait_agent timeout_ms 240000; timeout is a wait window, not failure.
 5. At checkpoint, collect selected-provider static evidence. Bridge mode requires stable full-workspace live Problems.
 6. Errors, warnings, or new attributable diagnostics return to executor.
-7. With clean Problems, executor runs every declared focused-test command as one non-fail-fast matrix. Each row records command, exit, duration, evidence/output, and product/environment classification. Cleanup is protected.
+7. With clean Problems, executor runs every declared focused-test command as one non-fail-fast matrix. Raw stdout/stderr and payloads go only to the ignored temporary root; the TODO records the command, exit, duration, bounded result reference, and product/environment classification. Cleanup is protected.
 8. Any non-green, missing, skipped, or unclassifiable row is non-green. Executor may make one bounded contract-preserving repair batch, then returns to step 5.
 9. Only clean Problems plus green complete matrix dispatches fresh no-context implementation_diff_review through canonical `surface=formal-review` and `role=formal-reviewer`.
 10. Reviewer checks frozen diff scope, architecture, contract integrity, and attached test evidence; emits request_changes or approve_green_diff.
 11. Request changes returns to step 5. Approval proceeds only to remaining delivery gates and never replaces final delivery review.
 12. Extra audit is only for explicit security, data integrity, concurrency, public-contract, or user-request risk.
+
+### Execution Artifact & Token Ledger
+
+1. For each governed action, the executor or reviewer writes raw Problems snapshots, test stdout/stderr, review payloads, and provider usage payloads below the profile-directed ignored temporary root defined in Contract Boundary. The action directory is scoped to the exact TODO and session and is not a tracked evidence artifact.
+2. The exact TODO receives only the compact gate-relevant summary: action ID, selected canonical surface/role/tier, command or review kind, exit/outcome, duration when applicable, failure classification, reviewer decision, and any user continuation. It must not reproduce raw output or depend on an ignored file as its sole durable evidence.
+3. If a provider reports token usage, aggregate its reported token total into exactly one row for the action's canonical JSON-resolved tier. Do not calculate a cost, estimate missing values, or use the aggregate to select a model, tier, provider, or gate result. If no report exists, record `unavailable` for that action/tier rather than `0`.
+4. At TODO closeout, preserve the compact summary and tier totals in the tracked TODO; temporary payloads may be pruned under the existing transient-artifact policy only after their relevant result/classification is recorded.
+
+### Token-Tier Consolidation (Tracked TODO Summary)
+
+The routing JSON supplies the tier identifiers. During execution, append or update one row per observed tier; do not pre-copy the tier catalog here.
+
+| Canonical JSON-resolved tier | Cumulative provider-reported tokens | Included governed action IDs | Evidence status |
+| --- | --- | --- | --- |
+| no tier observed yet | unavailable | none | no governed execution has completed for this TODO |
 
 ### Runtime-Model Evidence State Machine
 
@@ -373,6 +418,14 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | `unknown` or `unavailable` | `blocked` | The active runtime model could not be determined; identify the recommended model and request the user's continuation decision. | `go` with an explicitly unverified user-confirmed continuation, or remain blocked. |
 
 The record binds TODO, session, surface, action, canonical recommendation, observed/declaration values, decision, reason, attestor/source, and expiry. The guard rejects expired, mismatched, incomplete, or cross-scope records. No state selects another model or provider automatically.
+
+### Pre-APROVADO Gate Ordering
+
+1. After P0/P1 close, refresh and push the review baseline.
+2. Run architecture decision review, plan review, critique, assumption-code coherence, and scope-drift gates. Planning-review dispatch records its own JSON-derived review evidence; it is not combined into the implementation tuple.
+3. Prepare exactly one planned implementation tuple: `surface=implementation`, `role=routine-executor`, and the model family resolved by the canonical routing JSON. Provider evidence is `n/a` for this structural preflight and becomes mandatory before the provider-dependent static-analysis gate.
+4. Run `python3 tools/todo_authority_guard.py foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md --pre-approval` and require `Overall outcome: preflight-go`.
+5. Request explicit APROVADO. Only after approval do rule ingestion and the action-specific normal routing guard require `go` before implementation or implementation-side formal review.
 
 ### Deterministic Tool Boundaries
 
@@ -500,14 +553,40 @@ The record binds TODO, session, surface, action, canonical recommendation, obser
 ## Approval
 
 - **Status:** not requested
-- **Required before implementation:** P0/P1 closure, refreshed plan review/critique, assumption-code coherence, review-scope-drift evidence, explicit user APROVADO.
+- **Required before implementation:** P0/P1 closure, refreshed plan review/critique, assumption-code coherence, review-scope-drift evidence, pre-approval authority `preflight-go`, and explicit user APROVADO.
+
+## Rules Acknowledgement / Ingestion
+
+These are the concrete P1.5 inputs prepared for pre-approval structural validation. Reload them after APROVADO immediately before execution; if they materially conflict with the frozen plan, stop, update this TODO, and obtain renewed approval.
+
+| Source | Why It Applies Now | Must Preserve | Must Avoid | Execution Impact |
+| --- | --- | --- | --- | --- |
+| `workflows/docker/todo-approval-gates-method.md` | P1.5 freezes, reviews, structurally preflights, then requests APROVADO. | planning-review order and one implementation tuple | treating pre-approval as execution authority | refresh baseline, complete reviews, and require `preflight-go` before approval. |
+| `workflows/docker/todo-execution-boundary-method.md` | P2 implementation will be delegated under one normal writer. | principal checkout and single-writer authorization | implicit worktrees, auxiliary checkouts, or parallel writers | record primary-checkout topology and dispatch only the JSON-resolved executor. |
+| `workflows/docker/effort-selection-method.md` | model/tier selection and evidence are governed actions. | JSON resolution, evidence mode, compact state, and review-tier separation | hardcoded model/tier policy or unrecorded active-model exception | rerun canonical routing guard before each governed action. |
+| `workflows/docker/independent-critique-method.md` | P1.5 requires a fresh no-context critique before APROVADO. | reviewer independence and frozen bounded package | letting implementation or its routing tuple substitute for critique | record separate JSON-derived formal-review evidence. |
+| `skills/deterministic-tooling-register.md` | V1 adds deterministic guard/fixture consumers and must not duplicate workflow authority. | named tools' boundaries and TEACH-style diagnostics | a new generic coordinator or opaque policy engine | implement only the listed deterministic checks and their fixtures. |
 
 ## Agent Routing Preflight
 
 - **Canonical contract:** config/agent_role_routing.json
-- **Required evidence:** Exact TODO; resolved surface/role/model family/provider; actual-model status; user map confirmation; selection/continuation records as needed.
-- **Fail-closed behavior:** No implementation, provider evidence, review, or focused tests without guard result go.
-- **Status:** n/a until APROVADO
+- **Client surface:** `codex`
+- **Current governed action:** `implementation`
+- **Selected role:** `routine-executor`
+- **Selected model:** `gpt-5.6-luna` — current resolver snapshot only, derived from the canonical JSON on 2026-09-27; P1.5 must rerun it after P0/P1 and before any dispatch.
+- **Selected effort:** `medium`
+- **Proof mode:** `declared`
+- **Exception reason:** `n/a`
+- **Execution topology:** `primary-checkout-single-writer`
+- **Worktree authorization:** `not-authorized`
+- **Worktree authorization reference:** `n/a`
+- **Guard outcome:** `go`
+- **Guard-outcome limitation:** This is the current routing declaration only; it grants neither P1.5 `preflight-go` nor implementation authority.
+- **Pre-approval implementation tuple:** `surface=implementation`; `role=routine-executor`; model family resolved from the canonical routing JSON; provider `n/a` for structural preflight only.
+- **Required pre-approval evidence:** Exact TODO; resolved implementation surface/role/model family; actual-model status; user map confirmation; selection/continuation records as needed; concrete Rules Acknowledgement paths.
+- **Planning-review separation:** Architecture/plan/critique dispatch uses separately recorded JSON-derived formal-review evidence and does not alter the single machine-readable implementation tuple.
+- **Fail-closed behavior:** `todo_authority_guard.py --pre-approval` must return `preflight-go` before APROVADO. After approval, provider evidence becomes mandatory only for provider-dependent static analysis, and the action-specific routing guard must return `go` before implementation or implementation-side formal review.
+- **Status:** blocked by P0/P1; first action after their closure is the pre-APROVADO planning-gate sequence above.
 
 ## Consolidated Review Record
 
@@ -522,7 +601,7 @@ Independent reviews established the V1 outcomes below:
 - V1 has no writer bypass;
 - executor completes full matrix and bounded repair before independent review;
 - request changes restarts Problems, matrix, and review;
-- usage/cost is retained only when platform-reported and otherwise unavailable.
+- provider-reported token totals are retained only as cumulative canonical-tier summaries in the exact TODO; unavailable usage remains unavailable.
 
 The post-green review order is material and requires a fresh review after the post-P0/P1 baseline refresh/freeze and before APROVADO.
 
@@ -604,13 +683,17 @@ The post-green review order is material and requires a fresh review after the po
 | `FR-02` | final internal pre-prerequisite plan review | medium | release-blocker | replace residual command placeholders | fixed | Commands section now repeats the exact Local CI-Equivalent script paths. |
 | `FR-03` | final internal pre-prerequisite plan review | medium | release-blocker | correct review/freeze order wording | fixed | Consolidated record now requires refresh/freeze before the fresh review. |
 | `FR-04` | final internal pre-prerequisite plan review | low | follow-up-fast-follow | correct count and closeout wording | fixed | Reconciled record says seven findings; closeout names the real next action. |
+| `INT-01` | Delphi-ready internal plan review | medium | release-blocker | remove preflight/approval circularity | fixed | P1.5 and Agent Routing Preflight now follow the canonical pre-APROVADO implementation-tuple sequence; planning-review evidence remains separate. |
+| `INT-02` | Delphi-ready internal plan review | low | follow-up-fast-follow | update stale closeout wording | fixed | Closeout now records the final correction as the pending publication, then P0/P1 as the next action. |
+| `INT-03` | deterministic pre-approval guard | medium | release-blocker | add canonical structural fields, rules-ingestion rows, and machine-readable routing tuple | fixed | `todo_authority_guard.py --pre-approval` now reports only the deliberate post-P0/P1 architecture-decision-review blocker. |
+| `INT-04` | user-directed plan refinement | medium | release-blocker | keep raw execution results untracked and consolidate provider-reported tokens by canonical tier in the TODO | fixed | D-21/D-22 and Execution Artifact & Token Ledger define the ignored artifact root, bounded tracked summaries, and no-inference aggregation. |
 
 ## TODO Closeout Disposition
 
 - **Disposition:** blocked
 - **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward.
-- **Post-commit/push status:** pending the refreshed-freeze metadata commit.
-- **Next path/status action:** publish the refreshed freeze; run the final pre-prerequisite plan check; then await P0/P1 rather than start P2.
+- **Post-commit/push status:** pending publication of the reconciled pre-APROVADO and evidence-ledger corrections.
+- **Next path/status action:** publish those corrections; then await P0/P1 rather than start P2.
 
 ## Commands (Run Locally)
 
