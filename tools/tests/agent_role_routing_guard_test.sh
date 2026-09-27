@@ -23,6 +23,7 @@ CODEX_CHAT_MODEL="$(contract_model codex chat_orchestrator 0)"
 CODEX_ROUTINE_MODEL="$(contract_model codex routine_executor 0)"
 CODEX_REVIEW_MODEL="$(contract_model codex strongest_review 0)"
 CLAUDE_CHAT_MODEL="$(contract_model claude-code chat_orchestrator 0)"
+CLAUDE_ROUTINE_MODEL="$(contract_model claude-code routine_executor 0)"
 CLAUDE_REVIEW_MODEL="$(contract_model claude-code strongest_review 0)"
 CLINE_CHAT_MODEL="$(contract_model cline-ide chat_orchestrator 1)"
 CLINE_ROUTINE_MODEL="$(contract_model cline-ide routine_executor 1)"
@@ -238,6 +239,14 @@ assert_outcome go \
   --role primary-chat \
   --model "claude-${CLAUDE_CHAT_MODEL}-5" \
   --effort xhigh \
+  --proof-mode declared
+
+assert_outcome go \
+  --client claude-code \
+  --surface implementation \
+  --role routine-executor \
+  --model "claude-${CLAUDE_ROUTINE_MODEL}-4-6" \
+  --effort medium \
   --proof-mode declared
 
 assert_json_violation MODEL-MISMATCH \
