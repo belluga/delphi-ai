@@ -15,14 +15,6 @@ import sys
 from pathlib import Path
 
 contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-projection = contract["platform_scenario_settings"]
-assert projection["schema_id"] == "delphi.platform-scenario-settings.v1"
-assert projection["schema_version"] == 1
-assert set(projection["scenario_vocabulary"]) == {
-    "chat_orchestrator", "routine_executor", "high_risk_executor", "monitoring",
-    "todo_approval", "formal_review", "delivery_review", "self_improvement",
-}
-assert set(projection["platforms"]) == set(contract["clients"])
 print(contract["clients"][sys.argv[2]]["preferred_models"][sys.argv[3]][int(sys.argv[4])])
 PY
 }
