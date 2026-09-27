@@ -67,19 +67,20 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Scope
 
-- [ ] Extend the canonical routing schema/guard after P0/P1 so surface, role, model family, capability, precedence, and fallback resolve from one authority.
-- [ ] Add active-runtime-model evidence distinct from declared routing selection; define quality and token-cost tiers only in canonical schema.
+- [ ] Extend the canonical routing schema/guard after P0/P1 so surface, role, model family, capability, precedence, and a `fallback_policy=prohibited` resolve from one authority.
+- [ ] Add active-runtime-model evidence distinct from declared routing selection, with explicit evidence states/outcomes; define quality and token-cost tiers only in canonical schema.
 - [ ] Make model mismatch, unknown identity, or absent runtime proof return blocked with scoped user continuation and rerun.
 - [ ] Add implementation_diff_review as a distinct post-green review kind under formal-review.
 - [ ] Add generic static-analysis provider schema/resolver; absence, invalidity, or failure blocks and provider switching requires explicit user selection plus rerun.
 - [ ] Add the canonical cross-stack workflow and explicitly invoked Codex skill as contract consumers.
 - [ ] Implement executor-owned clean Problems, complete non-fail-fast focused-test matrix, bounded repair, and post-green independent diff review.
 - [ ] Record minimal per-TODO phase/handoff evidence without inferring usage/cost or creating telemetry.
+- [ ] Make surface traits, role catalog, review-kind-to-surface binding, and model-family resolution canonical data; production guard invocation cannot replace the contract path, while fixture injection remains test-only.
 - [ ] Update affected workflows, templates, manifests, tooling register, mirrors, and tests.
 
 ## Out of Scope
 
-- [ ] A second routing authority or hardcoded agent/model matrix.
+- [ ] A second routing authority or hardcoded surface/role/model/review matrix.
 - [ ] Automatic dispatch, automatic subagent spawning, automatic waiver approval, or fabricated runtime proof.
 - [ ] Local orchestrator code writing in V1, including unused-import removal.
 - [ ] Generic queue, retry engine, coordinator, patch executor, multi-writer topology, or accounting platform.
@@ -122,11 +123,11 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Definition of Done
 
-- [ ] Routing JSON remains the only role/model authority; all consumers resolve surface, role, and family from it.
+- [ ] Routing JSON remains the only surface/role/model/review authority; all consumers resolve their selection and binding from it.
 - [ ] Intake validates and presents implementation, monitoring, review, and provider selections before real execution.
 - [ ] Guard distinguishes declared selection from active-runtime evidence and validates scoped continuation through rerun.
 - [ ] Provider selection has no automatic fallback. Missing/invalid/unavailable selection blocks until an explicitly chosen provider validates.
-- [ ] V1 has no local orchestrator writing exception; routine executor is the sole normal material writer.
+- [ ] V1 creates no local-orchestrator writing exception; routine executor is the sole normal material writer, and any pre-existing canonical exception stays governed by its own current contract rather than this TODO.
 - [ ] Executor owns complete declared focused-test matrices after clean Problems; every command is attempted and individually evidenced.
 - [ ] Fresh independent implementation_diff_review occurs only after clean Problems and a full green matrix; request changes restarts the complete cycle.
 - [ ] Test repair restores intended contract only; it cannot weaken, skip, delete, or narrow expectations.
@@ -136,9 +137,9 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Validation Steps
 
-- [ ] Routing fixtures: exact, stronger, weaker, lateral, unknown, runtime unavailable, continuation, expiry, and no hardcoded family drift.
+- [ ] Routing fixtures: declared versus observed model; exact, stronger, weaker, lateral, unknown, and unavailable states; scoped continuation/expiry; prohibited automatic transition; and no hardcoded surface/role/family/review or contract-path drift.
 - [ ] Provider fixtures: absent/invalid declaration, exact CLI command, missing CLI command, healthy bridge, bridge health/workspace/revision failure, explicit provider switch, prohibited fallback.
-- [ ] Review fixtures: request_changes, approve_green_diff, green matrix binding, missing/non-green rejection, invalid payload, and final-review/critique separation.
+- [ ] Review fixtures: request_changes, approve_green_diff, green matrix binding, missing/non-green rejection, invalid payload, wrong-surface/wrong-role rejection, and final-review/critique separation.
 - [ ] Focused-matrix fixtures: continue after failure; row completeness; cleanup; missing/skipped/unclassifiable equals non-green; repair resets Problems plus full matrix.
 - [ ] Observability fixtures: platform usage preserved when available and unavailable when absent; data cannot alter routing/gates.
 - [ ] Run affected routing/review/provider tests, Python compilation for new tools, bash self_check.sh, and git diff --check.
@@ -161,6 +162,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | review dispatch/schema | post-green decision validation | green/non-green fixtures | affected dispatch regression | Local-Implemented | planned |
 | focused matrix | all-command execution/evidence | controlled command fixtures | new matrix regression | Local-Implemented | planned |
 | Delphi coherence | mirrors and canonical wording | none | bash self_check.sh | Local-Implemented | planned |
+| approval-readiness | every placeholder resolves to an exact P2/P3 command and oracle | P0/P1 closed schema/tool names | replace planned rows with exact commands and fixtures | APROVADO | blocked |
 
 ## Profile Scope & Handoffs
 
@@ -186,7 +188,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 - **Canonical method:** `wf-docker-audit-escalation-method`
 - **Guard command:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md`
-- **Latest TEACH evidence / artifact:** pending initial guard run
+- **Latest TEACH evidence / artifact:** 2026-09-27 `audit_escalation_guard.py` -> `Overall outcome: go`; post-critique fingerprint `178eae887ce0`.
 
 | Trigger | Value | Notes |
 | --- | --- | --- |
@@ -198,8 +200,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | `touches_runtime_or_infra` | `no` | V1 does not change product runtime, deployment, or infrastructure; a project provider instance is deferred to P4. |
 | `touches_tests` | `yes` | Routing, provider, review, and matrix regressions require fixtures. |
 | `critical_user_journey` | `no` | This is Delphi self-maintenance, not a downstream user journey. |
-| `release_or_promotion_critical` | `no` | No release or promotion is claimed by this planning artifact. |
-| `high_severity_plan_review_issue` | `no` | No current high-severity issue card is unresolved in this TODO. |
+| `release_or_promotion_critical` | `yes` | The future canonical routing/provider/review behavior materially governs delivery confidence even though this artifact itself makes no delivery claim. |
+| `high_severity_plan_review_issue` | `yes` | The pre-prerequisite critique found unresolved P0/P1 ownership/taxonomy and V1-contract blockers. |
 | `explicit_three_lane_request` | `no` | The user requested an independent review loop, not the additive three-lane delivery protocol. |
 
 ## Canonical Module Anchors
@@ -231,6 +233,11 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [x] D-11: Extra adversarial review is risk-triggered only.
 - [x] D-12: Usage/handoff evidence is per-TODO and non-authoritative; absent usage is unavailable.
 - [x] D-13: Mechanical token-economy path is deferred to writer lease plus atomic-consumption work.
+- [x] D-14: V1 adds no writer bypass. Existing P0-owned exceptions are neither expanded nor reinterpreted here; each remains subject to the current canonical surface, authorization, and single-writer rules.
+- [x] D-15: Runtime evidence records `declared_model`, `observed_active_model`, `evidence_state`, attestor/source, TODO/session/surface/action binding, and expiry. Declared routing is never upgraded into observed proof.
+- [x] D-16: `exact`, `stronger`, `weaker`, `lateral`, `unknown`, and `unavailable` start blocked unless exact observed proof already produces `go`; a user-confirmed scoped continuation plus successful rerun may produce `go` with `continuation_status=user_confirmed`, remains explicitly unverified when applicable, and never changes routing/provider authority.
+- [x] D-17: Production resolution uses the canonical contract path only. An alternate contract path is allowed solely as explicit fixture/test injection and is rejected from the operational workflow.
+- [x] D-18: A review kind carries canonical allowed-surface and allowed-role bindings; `implementation_diff_review` is valid only for the canonical formal-review combination.
 
 ## Module Decision Baseline Snapshot
 
@@ -293,8 +300,9 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Baseline commit:** `bf67507`
 - **Baseline push reference:** `origin/v0.6.2-rc`
 - **Gate status:** no_material_findings
-- **Findings summary:** `bf67507` is the committed, pushed planning package. This freeze does not satisfy the still-required fresh review after P0/P1.
+- **Findings summary:** `bf67507` is the committed, pushed package for pre-prerequisite critique only. It is invalid for the formal gate once P0/P1 close or their canonical contract changes.
 - **Evidence / reference:** `origin/v0.6.2-rc` push of `bf67507` on 2026-09-27.
+- **Mandatory refresh condition:** after P0 closeout and P1 closeout are each committed/pushed, capture and push a new baseline before formal plan review, architecture decision review, or critique.
 - **Waiver authority / reference (required if waived):** n/a
 
 ## Gate: Review Scope Drift
@@ -306,9 +314,9 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Material sections compared:** Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix
 - **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md`
 - **No-go handling rule:** return to the review loop, revalidate material evolution with the user, refresh the pushed baseline when needed, and rerun affected gates.
-- **Gate status:** not_run
-- **Findings summary:** no freeze-backed review has converged
-- **Evidence / reference:** pending the review baseline and fresh critique
+- **Gate status:** blocked
+- **Findings summary:** 2026-09-27 guard found material drift in Scope, Out of Scope, Definition of Done, Validation Steps, Decisions, Assumptions, Execution Plan, and PCV. The user authorized this bounded correction loop; formal revalidation remains blocked until P0/P1 close and a new baseline is pushed.
+- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md` -> `REVIEW-SCOPE-DRIFT-MATERIAL-CHANGE` against `bf67507`.
 - **Waiver authority / reference (required if waived):** n/a
 
 ## Assumptions Preview
@@ -318,7 +326,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | Existing routing guard can extend instead of be replaced. | It already resolves client/surface/role/model/effort. | Do not create a second selector. | block |
 | P0/P1 can close before P2. | Active ownership is explicit. | Keep TODO blocked and re-sequence. | block |
 | Project authority can provide provider declaration path at intake. | User chose explicit selection rather than default. | Guard blocks and requests scoped selection. | keep |
-| Platform may lack active-model telemetry. | Current guard accepts declared selection, not telemetry. | Explicit continuation remains unverified. | keep |
+| Platform may lack active-model telemetry. | Current guard accepts declared selection, not telemetry. | A human may explicitly accept a scoped unverified continuation; it is never represented as observed proof. | keep |
 
 ## Execution Plan
 
@@ -337,8 +345,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 ### V1 Runtime Cycle
 
 1. Explicit skill invocation loads the exact TODO and current workspace.
-2. Intake resolves surface, role, model family, provider, capabilities, precedence, and fallback; user confirms the map.
-3. Missing/mismatched model or provider state is blocked. A scoped record is accepted only through successful guard rerun.
+2. Intake resolves surface, role, model family, provider, capabilities, precedence, and `fallback_policy`; its only V1 value is `prohibited`. User confirms the map.
+3. Missing/mismatched model or provider state is blocked. A scoped user continuation is accepted only through successful guard rerun and does not fabricate proof or alter authority.
 4. Routine executor is the sole normal writer. Orchestrator waits with collaboration.wait_agent timeout_ms 240000; timeout is a wait window, not failure.
 5. At checkpoint, collect selected-provider static evidence. Bridge mode requires stable full-workspace live Problems.
 6. Errors, warnings, or new attributable diagnostics return to executor.
@@ -349,13 +357,25 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 11. Request changes returns to step 5. Approval proceeds only to remaining delivery gates and never replaces final delivery review.
 12. Extra audit is only for explicit security, data integrity, concurrency, public-contract, or user-request risk.
 
+### Runtime-Model Evidence State Machine
+
+| Evidence state | Initial outcome | User-facing explanation | Valid continuation result after scoped record + guard rerun |
+| --- | --- | --- | --- |
+| `verified-exact` | `go` | Observed active model is the canonical model or a declared canonical equivalence. | n/a |
+| `verified-stronger` | `blocked` | Recommended model is available through a stronger actual model; request explicit token-cost acceptance. | `go` with `continuation_status=user_confirmed` |
+| `verified-weaker` | `blocked` | Actual model is weaker than the recommendation; request explicit quality acceptance. | `go` with `continuation_status=user_confirmed` |
+| `verified-lateral` | `blocked` | Actual model is neither canonically equivalent nor ordered relative to the recommendation. | `go` with user-specific continuation reason; otherwise remain blocked. |
+| `unknown` or `unavailable` | `blocked` | The active runtime model could not be determined; identify the recommended model and request the user's continuation decision. | `go` with an explicitly unverified user-confirmed continuation, or remain blocked. |
+
+The record binds TODO, session, surface, action, canonical recommendation, observed/declaration values, decision, reason, attestor/source, and expiry. The guard rejects expired, mismatched, incomplete, or cross-scope records. No state selects another model or provider automatically.
+
 ### Deterministic Tool Boundaries
 
 | Tool / surface | Responsibility | Must not do |
 | --- | --- | --- |
-| routing guard | resolve authority; compare canonical identity/evidence/tier; validate continuation | invent runtime proof or second authority |
+| routing guard | resolve canonical surface/role/family/review binding; compare declared versus observed identity/evidence/tier; validate continuation | invent runtime proof, accept an operational alternate contract path, or maintain a second authority |
 | provider guard | validate explicit declaration/selection, command or bridge health/workspace/stability | analyze source or fall back |
-| review schema/dispatch | validate post-green decision/matrix binding; resolve review family | approve untested diff or replace final review |
+| review schema/dispatch | validate post-green decision/matrix binding plus canonical allowed surface/role; resolve review family | approve untested/wrong-surface diff or replace final review |
 | workflow/skill | invoke tools in order and present user decisions | duplicate selection policy |
 | mechanical guard | deferred from V1 | create writer authority |
 
@@ -370,6 +390,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 ### Failure Modes & Edge Cases
 
 - [ ] P0/P1 remain active or touch overlapping routing/schema surfaces: keep this TODO blocked; do not create a second owner.
+- [ ] P1 is observed as `implementation` while P0 is still `review`: this TODO cannot mutate P1; its owner must re-sequence/approve P1 before P2 may start.
 - [ ] Runtime model evidence or the explicitly selected provider is absent, invalid, unstable, or mismatched: return `blocked`; require the scoped user record and a successful rerun, never fallback.
 - [ ] Problems is non-clean, a matrix row is non-green/missing/skipped/unclassifiable, or review requests changes: return the work to the routine executor and restart the cycle from Problems.
 - [ ] A review proposes a generic coordinator, queue, retry, new abstraction, writer bypass, or scope expansion: challenge it against the frozen TODO and require renewed approval if it is not indispensable.
@@ -378,7 +399,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 - [ ] P0/P1 timing and their final schema/taxonomy are external prerequisites; this TODO must be re-reviewed against their closed state before approval.
 - [ ] The downstream project provider-declaration location and bridge installation authority are intentionally not invented in V1; P4 remains separately authorized.
-- [ ] Platform evidence may not attest the active runtime model; unverified evidence remains blocked until the future canonical continuation path is validated.
+- [ ] Platform evidence may not attest the active runtime model; it remains blocked until a bounded user continuation is accepted by the guard rerun, and then remains labelled unverified rather than proved.
 
 ## Independent No-Context Critique Gate
 
@@ -389,7 +410,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Package minimum contents:** frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing blockers
 - **Critique isolation mode:** fresh internal no-context reviewer
 - **Internal reviewer mandate:** required; the reviewer is not the implementing agent, waits are status-based, and an external provider does not satisfy this gate.
-- **Canonical multi-lane audit protocol:** n/a; the delivery-side triple protocol is recommended and additive, not a critique substitute.
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is required at delivery and additive; it never substitutes for this critique.
 - **Critique lenses:** correctness|performance|elegance|structural-soundness|risk
 - **Trigger:** After P0/P1 closure, plan review convergence, and baseline freeze; before APROVADO.
 - **Focus:** Simplification First, scope expansion, second authority, implicit fallback, generic coordinator/telemetry drift, and premature mechanical exception.
@@ -420,7 +441,16 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Global sensitivity level:** none
 - **Why this level:** V1 does not alter a query path, user-flow latency target, concurrent write path, queue, runtime, or deployment system.
 - **Current delivery stage at review time:** Pending
-- **Derived performance/concurrency decision:** not_needed (from `audit_escalation_guard.py`); no PCV-1 lane is applicable unless scope changes.
+- **Derived performance/concurrency decision:** recommended (from the 2026-09-27 post-critique audit guard); resolve the four PCV-1 lanes after APROVADO and before their deadlines.
+
+| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `EPS-DATA-PATH-CHANGED` | `before_local_implemented` | `n/a` | `not_applicable` | none | none |
+| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `FRC-LIFECYCLE-ASYNC-EFFECT` | `before_local_implemented` | `n/a` | `not_applicable` | none | none |
+| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `BCI-NON-IDEMPOTENT-WRITE` | `before_local_implemented` | `n/a` | `not_applicable` | none | none |
+| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `RLS-QUEUE-WORKER-REALTIME-CHANGED` | `before_production_ready` | `n/a` | `not_applicable` | none | none |
+
+These are pre-APROVADO planning classifications, not runtime evidence or gate satisfaction. The global `recommended` audit floor requires the selected executor to reclassify all four lanes under `pcv-1` after APROVADO; the current no-surface forecast may remain `not_needed/not_applicable` only if the approved P2/P3 diff still has no corresponding exposure. Reclassify and rerun the audit guard if P2/P3 changes any of those surfaces.
 
 ## Verification Debt Assessment
 
@@ -451,7 +481,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Impact signals in scope:** cross-module blast radius|public contract/schema/api
 - **Package mode:** bounded-file-set
 - **Review isolation mode:** fresh internal no-context reviewer
-- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is recommended and additive at delivery; it cannot replace this final review.
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is required and additive at delivery; it cannot replace this final review.
 - **Final review status:** not_run
 - **Findings summary:** no implementation exists
 - **Evidence / reference:** delivery-stage gate after validation, test-quality audit, verification-debt audit, and architecture-adherence review
@@ -484,6 +514,73 @@ Independent reviews established the V1 outcomes below:
 - usage/cost is retained only when platform-reported and otherwise unavailable.
 
 The post-green review order is material and requires the pending fresh review before freeze.
+
+## Pre-Prerequisite Critique Record (Non-Gate-Satisfying)
+
+- **Date / mode:** 2026-09-27; fresh internal no-context, read-only bounded-file-set review selected through the current routing JSON formal-review family.
+- **Baseline assessed:** substantive package `bf67507`; `49b23e3` only records its freeze metadata.
+- **Gate limitation:** This is pre-prerequisite challenge evidence only. It does not satisfy the required plan review, architecture decision review, or critique after P0/P1 close and a new baseline is pushed.
+- **Summary:** P0/P1 ownership/taxonomy remains externally blocked. The review integrated deterministic state, authority, review-binding, audit, PCV, baseline-refresh, and wording corrections into this TODO.
+- **Performance:** acceptable and product-runtime neutral; local guard/resolver overhead is bounded.
+- **Elegance:** one authority, thin consumers, fail-closed provider selection, and no V1 writer exception remain the simplest coherent path.
+- **Structural soundness:** blocked until P0/P1 resolve ownership/taxonomy and the refreshed formal gates reconverge; no generic coordinator or hidden fallback is introduced.
+
+### Plan Review Issue Cards
+
+#### PR-01 — P0/P1 ownership and taxonomy are not yet serially coherent
+
+- **Evidence:** P0 remains in `review` with the bootstrap exception (`delphi-pre-execution-agent-routing-guard.md`); P1 is currently `implementation` and mixes scenario, role, and model-family vocabulary (`delphi-platform-scenario-settings-routing-contract.md`).
+- **Option A:** Edit P1 from this TODO. Effort: low; risk/blast radius: high/cross-module; elegance/structural soundness: regresses by violating separate-owner discipline.
+- **Option B (recommended):** Keep this TODO blocked; require P0 closeout, then P1 owner re-sequences, freezes taxonomy as surface -> role -> model family, and closes P1 before P2. Effort: medium; risk: low; performance: neutral; elegance/structural soundness: improves.
+- **Option C:** Start P2 around the unresolved owners. Effort: low initially; risk/maintenance burden: high; performance: neutral; elegance/structural soundness: regresses through overlapping authority.
+- **Resolution:** Integrated Option B. No user decision is reopened; ownership is external and must be true before APROVADO.
+
+#### PR-02 — Active runtime-model evidence needs a deterministic continuation state
+
+- **Evidence:** Current guard accepts declared values but lacks observed-model fields; the user required a blocked result that presents the recommended model and lets the user decide whether to continue.
+- **Option A:** Treat declared routing as active proof. Effort: low; risk: high; elegance/structural soundness: regresses by fabricating evidence.
+- **Option B (recommended):** Keep non-exact/unknown evidence blocked; accept only a user-bound, expiring continuation record through a guard rerun, explicitly retaining the verified/unverified distinction. Effort: medium; risk: bounded; performance: neutral; elegance/structural soundness: improves.
+- **Option C:** Keep unknown evidence permanently blocked. Effort: low; risk: low; operational fit: regresses against the user-approved continuation decision.
+- **Resolution:** Integrated Option B as D-15/D-16 and the runtime-model state machine.
+
+#### PR-03 — JSON authority must cover all operational selection and review bindings
+
+- **Evidence:** Existing guard surfaces/roles and review compatibility include code-level policy; arbitrary operational contract substitution would create a second authority.
+- **Option A:** Retain hardcoded catalogs and optional contract substitution. Effort: low; risk: high; elegance/structural soundness: regresses.
+- **Option B (recommended):** Canonicalize surface traits, role catalog, family and review bindings in JSON; permit alternate path only as explicit test injection. Effort: medium; performance: neutral; elegance/structural soundness: improves.
+- **Option C:** Add another resolver/configuration layer. Effort/risk/maintenance: high; scope expansion prohibited.
+- **Resolution:** Integrated Option B as D-17/D-18 and validation fixtures.
+
+#### PR-04 — Audit assertions need a real TEACH record and complete PCV shape
+
+- **Evidence:** Audit decisions must come from the trigger matrix; PCV-1 requires independent EPS/FRC/BCI/RLS disposition rows.
+- **Option A:** Leave prose-only derived claims. Effort: low; risk: medium; structural soundness: regresses.
+- **Option B (recommended):** Record the executed TEACH result, re-run after material trigger changes, include four `not_needed`/`not_applicable` lanes, and demand exact P2/P3 commands before APROVADO. Effort: low; performance: neutral; structural soundness: improves.
+- **Option C:** Run delivery audits during planning. Effort: high; invalid lifecycle placement.
+- **Resolution:** Integrated Option B; the next guard run below supersedes the pre-review fingerprint.
+
+## Promotion Finding Routing Ledger
+
+| Finding ID | Finding Source | Severity | Classification | Required Action | Status | Rationale / Follow-up Reference |
+| --- | --- | --- | --- | --- | --- | --- |
+| `PC-01` | internal no-context pre-prerequisite critique | blocker | release-blocker | external P1 owner re-sequences its state after P0 closeout | blocked | This TODO cannot edit a separate active owner; P2 remains blocked by PR-01. |
+| `PC-02` | internal no-context pre-prerequisite critique | blocker | release-blocker | P1 owner separates surface, role, and model-family taxonomy before closeout | blocked | Required by this TODO's contract boundary and PR-01. |
+| `PC-03` | internal no-context pre-prerequisite critique | blocker | by-design/no-action | clarify V1 writer boundary only | fixed | D-14 preserves, but does not expand or re-interpret, current P0-owned exceptions; V1 creates no new bypass. |
+| `PC-04` | internal no-context pre-prerequisite critique | blocker | release-blocker | add state machine and continuation binding | fixed | D-15/D-16 and Runtime-Model Evidence State Machine; implementation still needs fixtures. |
+| `PC-05` | internal no-context pre-prerequisite critique | blocker | release-blocker | close canonical-authority bypasses in P2 fixtures/guard | fixed | D-17, scope, DoD, and validation now require data-driven operational resolution. |
+| `PC-06` | internal no-context pre-prerequisite critique | blocker | release-blocker | bind `implementation_diff_review` to canonical formal-review surface/role | fixed | D-18 and wrong-surface/wrong-role fixtures are required. |
+| `PC-07` | internal no-context pre-prerequisite critique | blocker | release-blocker | record and rerun audit TEACH after material triggers | fixed pending revalidation | Matrix now reflects risk signals; rerun required below and after P0/P1. |
+| `PC-08` | internal no-context pre-prerequisite critique | blocker | release-blocker | complete four PCV-1 lanes | fixed pending validation | EPS/FRC/BCI/RLS rows added; no delivery audit is claimed. |
+| `PC-09` | internal no-context pre-prerequisite critique | blocker | release-blocker | make post-P0/P1 baseline refresh mandatory | fixed | Review Baseline Freeze now limits `bf67507` to pre-prerequisite review. |
+| `PC-10` | internal no-context pre-prerequisite critique | minor | release-blocker | replace ambiguous fallback wording | fixed | V1 uses `fallback_policy=prohibited`; alternate provider requires user selection and rerun. |
+| `PC-11` | internal no-context pre-prerequisite critique | minor | release-blocker | replace planned test placeholders before APROVADO | blocked | Local CI matrix has an explicit approval-readiness row; exact commands await P0/P1 artifact names. |
+
+## TODO Closeout Disposition
+
+- **Disposition:** blocked
+- **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward.
+- **Post-commit/push status:** pending this critique-integration commit.
+- **Next path/status action:** publish the critique integration; then wait for P0/P1 rather than start P2.
 
 ## Commands (Run Locally)
 
