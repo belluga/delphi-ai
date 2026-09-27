@@ -77,12 +77,21 @@ cline_delivery = json.loads(Path(sys.argv[10]).read_text(encoding="utf-8"))
 codex_models = contract["clients"]["codex"]["preferred_models"]
 claude_models = contract["clients"]["claude-code"]["preferred_models"]
 cline_models = contract["clients"]["cline-ide"]["preferred_models"]
+projection = contract["platform_scenario_settings"]
+assert projection["schema_id"] == "delphi.platform-scenario-settings.v1"
+assert set(projection["scenario_vocabulary"]) == {
+    "chat_orchestrator", "routine_executor", "high_risk_executor", "monitoring",
+    "todo_approval", "formal_review", "delivery_review", "self_improvement",
+}
 
 assert executor["recommended_model"] == codex_models["routine_executor"][0]
+assert executor["scenario"] == "routine_executor"
+assert executor["contract_schema_id"] == projection["schema_id"]
 assert executor["recommended_effort"] == "medium"
 assert executor["goal_policy"] == "required"
 assert executor["execution_state_policy"] == "sticky-per-chat-or-todo-compact-state"
 assert review["recommended_model"] == codex_models["strongest_review"][0]
+assert review["scenario"] == "formal_review"
 assert review["recommended_effort"] == "ExtraRight-or-closest-equivalent"
 assert review["goal_policy"] == "stateless-default"
 assert ambiguity["recommended_effort"] == "ExtraRight-or-closest-equivalent"
@@ -92,6 +101,7 @@ assert monitoring["recommended_model"] == (
     f"deterministic-first-or-{codex_models['monitoring'][0]}-if-llm-needed"
 )
 assert monitoring["recommended_effort"] == "low-or-medium"
+assert monitoring["scenario"] == "monitoring"
 assert monitoring["execution_state_policy"] == "ephemeral-bounded-status-pass"
 assert ordinary["recommended_model"] == codex_models["chat_orchestrator"][0]
 assert ordinary["recommended_model_family"] == "chat_orchestrator"

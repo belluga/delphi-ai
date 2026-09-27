@@ -59,6 +59,34 @@ so Delphi can describe Codex, Claude Code, Cline IDE, and future clients through
 - [ ] Runtime introspection beyond the current declared/artifact/waiver proof model unless required to finish this contract cleanly.
 - [ ] Replacing the current Delphi role split with a different delegation philosophy.
 
+## Diff Expectation Contract
+- **Contract status:** `required`
+- **Policy:** `strict; this checkpoint is limited to the canonical projection, its deterministic consumers, and this TODO`
+- **User validation:** `required on deviation`
+- **Comparison mode:** `working_tree`
+
+### Repository Baselines
+| Repository | Path | Baseline ref | Comparison mode |
+| --- | --- | --- | --- |
+| `delphi-ai` | `.` | `v0.6.2-rc@6fe8931` | `working_tree` |
+
+### Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `delphi-ai` | `config/agent_role_routing.json` | `M` | Canonical platform/scenario/settings projection and migration boundary. |
+| `delphi-ai` | `tools/agent_role_routing_guard.py` | `M` | Deterministic validation of the projection while preserving legacy routing behavior. |
+| `delphi-ai` | `tools/effort_selection_advisor.py` | `M` | Advisor metadata and scenario derivation from the canonical projection. |
+| `delphi-ai` | `tools/tests/agent_role_routing_guard_test.sh` | `M` | Regression coverage for projection schema, vocabulary, and platform mappings. |
+| `delphi-ai` | `tools/tests/effort_selection_advisor_test.sh` | `M` | Regression coverage for advisor schema/scenario output. |
+| `delphi-ai` | `foundation_documentation/todos/active/delphi-platform-scenario-settings-routing-contract.md` | `M` | P1 checkpoint contract, assumption gate, and evidence updates. |
+
+### Not Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `delphi-ai` | `foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md` | `any` | P0 is closed/bounded separately and must not be changed by this P1 checkpoint. |
+| `delphi-ai` | `foundation_documentation/todos/active/delphi-*-p2-*.md` | `any` | P2 work is explicitly out of scope for this checkpoint. |
+| `delphi-ai` | `**/belluga*` | `any` | Downstream project surfaces are explicitly out of scope. |
+
 ## Definition of Done
 - [ ] Delphi has one canonical machine-readable routing contract that expresses `platform -> scenario -> settings`.
 - [ ] The contract explicitly covers both model and effort for the governed scenarios instead of splitting those truths inconsistently across prose and config.
@@ -129,8 +157,19 @@ so Delphi can describe Codex, Claude Code, Cline IDE, and future clients through
 ## Assumptions Preview
 | Assumption ID | Assumption | Evidence | If False | Confidence (`High|Medium|Low`) | Handling (`Keep as Assumption|Promote to Decision|Block`) |
 | --- | --- | --- | --- | --- | --- |
-| `A-01` | The existing `config/agent_role_routing.json` can be evolved into the canonical platform/scenario/settings contract instead of being replaced by an entirely new file. | current machine-readable routing already exists and is the nearest canonical surface | the slice may need a new config artifact and migration path | `Medium` | `Keep as Assumption` |
-| `A-02` | Existing routing guard/advisor infrastructure can be adapted to the new representation without inventing a second routing subsystem. | `agent_role_routing_guard.py` and `effort_selection_advisor.py` already enforce/advise routing behavior | the deterministic layer may need a deeper redesign | `Medium` | `Keep as Assumption` |
+| `A-01` | The existing `config/agent_role_routing.json` can be evolved into the canonical platform/scenario/settings contract instead of being replaced by an entirely new file. | `config/agent_role_routing.json` is the current machine-readable routing authority and `tools/tests/agent_role_routing_guard_test.sh` exercises its contract consumers | the slice may need a new config artifact and migration path | `Medium` | `Keep as Assumption` |
+| `A-02` | Existing routing guard/advisor infrastructure can be adapted to the new representation without inventing a second routing subsystem. | `tools/agent_role_routing_guard.py`; `tools/effort_selection_advisor.py` already enforce/advise routing behavior | the deterministic layer may need a deeper redesign | `Medium` | `Keep as Assumption` |
+
+## Gate: Assumption Code Coherence
+- **Gate decision:** `required`
+- **Why this decision:** The checkpoint depends on the existing canonical JSON and the current guard/advisor insertion points remaining valid while the compatibility projection is introduced.
+- **Trigger stage:** `after the first implementation checkpoint and before the next P1 contract expansion`
+- **Guard scope:** `A-01,A-02`
+- **Guard command:** `python3 tools/assumption_code_coherence_guard.py --todo foundation_documentation/todos/active/delphi-platform-scenario-settings-routing-contract.md`
+- **Gate status:** `no_material_findings`
+- **Findings summary:** `A-01 is anchored in the canonical routing JSON; A-02 is anchored in the existing deterministic guard and effort advisor, with the checkpoint preserving their legacy read-through behavior.`
+- **Evidence / reference:** `config/agent_role_routing.json; tools/agent_role_routing_guard.py; tools/effort_selection_advisor.py; focused P1 guard/advisor tests`
+- **Waiver authority / reference (required if waived):** `n/a`
 
 ## Execution Plan
 ### Touched Surfaces

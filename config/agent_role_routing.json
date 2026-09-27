@@ -1,6 +1,156 @@
 {
   "contract_id": "delphi.agent-role-routing.v1",
   "version": 1,
+  "platform_scenario_settings": {
+    "schema_id": "delphi.platform-scenario-settings.v1",
+    "schema_version": 1,
+    "migration": {
+      "legacy_contract": "clients + surfaces",
+      "mode": "read-through-compatibility",
+      "status": "checkpoint-1",
+      "cutover_policy": "legacy callers remain valid until each caller opts into the platform/scenario/settings projection"
+    },
+    "scenario_vocabulary": [
+      "chat_orchestrator",
+      "routine_executor",
+      "high_risk_executor",
+      "monitoring",
+      "todo_approval",
+      "formal_review",
+      "delivery_review",
+      "self_improvement"
+    ],
+    "settings_vocabulary": {
+      "model": "platform model alias or model-family reference",
+      "effort": "literal effort alias or bounded effort policy reference",
+      "goal_policy": "GOAL/state requirement for the scenario",
+      "state_policy": "state retention boundary for the scenario",
+      "proof_mode_policy": "proof modes accepted by the platform",
+      "escalation_hooks": "explicit review-kind or exception hooks that may change defaults"
+    },
+    "scenario_settings": {
+      "chat_orchestrator": {
+        "source_surface": "todo-approval",
+        "settings": {
+          "model": "clients.preferred_models.chat_orchestrator",
+          "effort": "effort_aliases.highest_review_tier",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "review_kind_model_families"
+        }
+      },
+      "routine_executor": {
+        "source_surface": "implementation",
+        "settings": {
+          "model": "clients.preferred_models.routine_executor",
+          "effort": "effort_aliases.medium",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "surfaces.allowed_exception_reasons"
+        }
+      },
+      "high_risk_executor": {
+        "source_surface": "implementation-validation",
+        "settings": {
+          "model": "clients.preferred_models.strongest_review",
+          "effort": "effort_aliases.highest_review_tier",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "review_kind_model_families"
+        }
+      },
+      "monitoring": {
+        "source_surface": "monitoring",
+        "settings": {
+          "model": "clients.preferred_models.monitoring",
+          "effort": "effort_aliases.low_or_medium",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "surfaces.allowed_exception_reasons"
+        }
+      },
+      "todo_approval": {
+        "source_surface": "todo-approval",
+        "settings": {
+          "model": "clients.preferred_models.chat_orchestrator",
+          "effort": "effort_aliases.highest_review_tier",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "review_kind_model_families"
+        }
+      },
+      "formal_review": {
+        "source_surface": "formal-review",
+        "settings": {
+          "model": "clients.preferred_models.strongest_review",
+          "effort": "effort_aliases.highest_review_tier",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "review_kind_model_families"
+        }
+      },
+      "delivery_review": {
+        "source_surface": "delivery-review",
+        "settings": {
+          "model": "clients.preferred_models.chat_orchestrator",
+          "effort": "effort_aliases.highest_review_tier",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "review_kind_model_families"
+        }
+      },
+      "self_improvement": {
+        "source_surface": "self-improvement",
+        "settings": {
+          "model": "clients.preferred_models.strongest_review",
+          "effort": "effort_aliases.highest_review_tier",
+          "goal_policy": "surfaces.goal_policy",
+          "state_policy": "surfaces.state_policy",
+          "proof_mode_policy": "clients.allowed_proof_modes",
+          "escalation_hooks": "review_kind_model_families"
+        }
+      }
+    },
+    "platforms": {
+      "codex": {
+        "source_client": "codex",
+        "capabilities": {
+          "artifact_proof": false,
+          "declared_proof": true,
+          "waiver_proof": true,
+          "persistent_goals": true
+        },
+        "scenarios_source": "scenario_settings"
+      },
+      "claude-code": {
+        "source_client": "claude-code",
+        "capabilities": {
+          "artifact_proof": true,
+          "declared_proof": true,
+          "waiver_proof": true,
+          "persistent_goals": false
+        },
+        "scenarios_source": "scenario_settings"
+      },
+      "cline-ide": {
+        "source_client": "cline-ide",
+        "capabilities": {
+          "artifact_proof": false,
+          "declared_proof": true,
+          "waiver_proof": true,
+          "persistent_goals": false
+        },
+        "scenarios_source": "scenario_settings"
+      }
+    }
+  },
   "clients": {
     "codex": {
       "display_name": "Codex",

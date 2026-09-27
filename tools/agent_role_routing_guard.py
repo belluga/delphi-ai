@@ -24,6 +24,25 @@ from typing import Any
 
 
 RULE_ID = "paced.agent-role-routing"
+PLATFORM_SCENARIO_SCHEMA_ID = "delphi.platform-scenario-settings.v1"
+PLATFORM_SCENARIO_REQUIRED_SCENARIOS = {
+    "chat_orchestrator",
+    "routine_executor",
+    "high_risk_executor",
+    "monitoring",
+    "todo_approval",
+    "formal_review",
+    "delivery_review",
+    "self_improvement",
+}
+PLATFORM_SCENARIO_REQUIRED_SETTINGS = {
+    "model",
+    "effort",
+    "goal_policy",
+    "state_policy",
+    "proof_mode_policy",
+    "escalation_hooks",
+}
 DEFAULT_CONTRACT_PATH = Path(__file__).resolve().parent.parent / "config" / "agent_role_routing.json"
 OUTCOME_GO = "go"
 OUTCOME_DELEGATE = "delegate-required"
@@ -130,6 +149,29 @@ def validate_contract(contract: dict[str, Any]) -> None:
         or "execution_topologies" not in contract
     ):
         raise ValueError("Contract must define clients, surfaces, effort_aliases, and execution_topologies.")
+    projection = contract.get("platform_scenario_settings")
+    if not isinstance(projection, dict):
+        raise ValueError("Contract must define platform_scenario_settings.")
+    if projection.get("schema_id") != PLATFORM_SCENARIO_SCHEMA_ID or projection.get("schema_version") != 1:
+        raise ValueError("platform_scenario_settings must use the supported schema id and version.")
+    if set(projection.get("scenario_vocabulary", [])) != PLATFORM_SCENARIO_REQUIRED_SCENARIOS:
+        raise ValueError("platform_scenario_settings scenario vocabulary is incomplete or contradictory.")
+    if set(projection.get("settings_vocabulary", {})) != PLATFORM_SCENARIO_REQUIRED_SETTINGS:
+        raise ValueError("platform_scenario_settings settings vocabulary is incomplete or contradictory.")
+    scenario_settings = projection.get("scenario_settings", {})
+    if set(scenario_settings) != PLATFORM_SCENARIO_REQUIRED_SCENARIOS:
+        raise ValueError("platform_scenario_settings scenario settings are incomplete or contradictory.")
+    for scenario, declaration in scenario_settings.items():
+        if not isinstance(declaration, dict) or not declaration.get("source_surface"):
+            raise ValueError(f"platform_scenario_settings scenario `{scenario}` lacks a source surface.")
+        if set(declaration.get("settings", {})) != PLATFORM_SCENARIO_REQUIRED_SETTINGS:
+            raise ValueError(f"platform_scenario_settings scenario `{scenario}` has incomplete settings.")
+    platforms = projection.get("platforms", {})
+    if set(platforms) != set(contract["clients"]):
+        raise ValueError("platform_scenario_settings platforms must map exactly to declared clients.")
+    for platform, declaration in platforms.items():
+        if declaration.get("source_client") != platform or declaration.get("scenarios_source") != "scenario_settings":
+            raise ValueError(f"platform_scenario_settings platform `{platform}` has an invalid compatibility mapping.")
 
 
 def evaluate_routing(

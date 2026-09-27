@@ -13,6 +13,18 @@ LOW_OR_MEDIUM_TIER = "low-or-medium"
 ROUTING_CONTRACT = Path(__file__).resolve().parent.parent / "config" / "agent_role_routing.json"
 ROUTING_DATA = json.loads(ROUTING_CONTRACT.read_text(encoding="utf-8"))
 CLIENT_CHOICES = tuple(ROUTING_DATA["clients"])
+PLATFORM_SCENARIO_SETTINGS = ROUTING_DATA["platform_scenario_settings"]
+SCENARIO_BY_SURFACE = {
+    "ordinary-session": "chat_orchestrator",
+    "self-improvement": "self_improvement",
+    "strategic-framing": "chat_orchestrator",
+    "todo-approval": "todo_approval",
+    "delivery-review": "delivery_review",
+    "executor-subagent": "routine_executor",
+    "monitoring": "monitoring",
+    "review-subagent": "formal_review",
+    "exploratory-review": "routine_executor",
+}
 
 
 def model_family(client: str, family: str) -> str:
@@ -119,8 +131,11 @@ def build_decision(
 
     return {
         "artifact_kind": "effort_selection_advice",
+        "contract_schema_id": PLATFORM_SCENARIO_SETTINGS["schema_id"],
+        "contract_schema_version": PLATFORM_SCENARIO_SETTINGS["schema_version"],
         "client": client,
         "surface": surface,
+        "scenario": SCENARIO_BY_SURFACE[surface],
         "material_strategic_ambiguity": material_ambiguity,
         "goals_supported": goals_supported,
         "recommended_model": recommended_model,
