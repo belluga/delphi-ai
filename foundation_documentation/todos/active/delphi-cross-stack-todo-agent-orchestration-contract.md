@@ -290,11 +290,11 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Why this decision:** A fresh independent planning review must assess one committed, pushed contract rather than transient conversation state.
 - **Trigger stage:** before the first freeze-backed planning-side review or guard run
 - **Baseline branch:** `v0.6.2-rc`
-- **Baseline commit:** pending structural-amendment push
+- **Baseline commit:** `bf67507`
 - **Baseline push reference:** `origin/v0.6.2-rc`
-- **Gate status:** not_run
-- **Findings summary:** The first tracked TODO commit is pushed; this structural amendment must be pushed before it becomes the review baseline.
-- **Evidence / reference:** `25a687e` is the preceding tracked-TODO commit; refresh after the next push.
+- **Gate status:** no_material_findings
+- **Findings summary:** `bf67507` is the committed, pushed planning package. This freeze does not satisfy the still-required fresh review after P0/P1.
+- **Evidence / reference:** `origin/v0.6.2-rc` push of `bf67507` on 2026-09-27.
 - **Waiver authority / reference (required if waived):** n/a
 
 ## Gate: Review Scope Drift
