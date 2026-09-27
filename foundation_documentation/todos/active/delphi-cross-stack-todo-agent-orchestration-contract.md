@@ -182,6 +182,26 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Checkpoint policy:** section-by-section
 - **Why:** This crosses routing/schema, guards, provider selection, test/review sequencing, workflow/skill/templates, and mirrors.
 
+## Audit Trigger Matrix
+
+- **Canonical method:** `wf-docker-audit-escalation-method`
+- **Guard command:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md`
+- **Latest TEACH evidence / artifact:** pending initial guard run
+
+| Trigger | Value | Notes |
+| --- | --- | --- |
+| `complexity` | `big` | Routing, guards, provider resolution, workflow/skill, tests, and mirrors change together. |
+| `blast_radius` | `cross-module` | The V1 package stays in Delphi but crosses its canonical modules. |
+| `behavioral_change_or_bugfix` | `yes` | It defines execution admission, validation, and review behavior. |
+| `changes_public_contract` | `yes` | It extends the canonical routing/provider/review contract consumed by Delphi tooling. |
+| `touches_auth_or_tenant` | `no` | No identity, authorization, or tenant behavior belongs to V1. |
+| `touches_runtime_or_infra` | `no` | V1 does not change product runtime, deployment, or infrastructure; a project provider instance is deferred to P4. |
+| `touches_tests` | `yes` | Routing, provider, review, and matrix regressions require fixtures. |
+| `critical_user_journey` | `no` | This is Delphi self-maintenance, not a downstream user journey. |
+| `release_or_promotion_critical` | `no` | No release or promotion is claimed by this planning artifact. |
+| `high_severity_plan_review_issue` | `no` | No current high-severity issue card is unresolved in this TODO. |
+| `explicit_three_lane_request` | `no` | The user requested an independent review loop, not the additive three-lane delivery protocol. |
+
 ## Canonical Module Anchors
 
 - **Primary module doc:** config/agent_role_routing.json
@@ -248,6 +268,49 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | local orchestrator implementation | V1 diff lacks executor ownership | block |
 | generic coordinator or telemetry | scope expands beyond per-TODO evidence | renewed approval |
 
+## Architecture Review Gates
+
+- **Architecture decision review:** required (from `audit_escalation_guard.py`)
+- **Decision review lifecycle:** after P0/P1 are closed and before APROVADO
+- **Decision review kind:** `architecture_opinion`
+- **Decision review package:** bounded-file-set
+- **Decision review status:** not_run
+- **Decision review evidence / resolution:** pending P0/P1 closure and fresh freeze-backed review
+- **Architecture adherence review:** required (from `audit_escalation_guard.py`)
+- **Adherence review lifecycle:** after implementation and before Completed
+- **Adherence review kind:** `architecture_adherence`
+- **Adherence review package:** bounded-file-set
+- **Adherence review status:** not_run
+- **Adherence review evidence / resolution:** delivery-stage gate; no implementation exists
+- **No-go handling:** absent, blocked, or unresolved required review returns to the applicable plan or delivery loop; it never authorizes APROVADO or Completed.
+
+## Gate: Review Baseline Freeze
+
+- **Gate decision:** required
+- **Why this decision:** A fresh independent planning review must assess one committed, pushed contract rather than transient conversation state.
+- **Trigger stage:** before the first freeze-backed planning-side review or guard run
+- **Baseline branch:** `v0.6.2-rc`
+- **Baseline commit:** pending structural-amendment push
+- **Baseline push reference:** `origin/v0.6.2-rc`
+- **Gate status:** not_run
+- **Findings summary:** The first tracked TODO commit is pushed; this structural amendment must be pushed before it becomes the review baseline.
+- **Evidence / reference:** `25a687e` is the preceding tracked-TODO commit; refresh after the next push.
+- **Waiver authority / reference (required if waived):** n/a
+
+## Gate: Review Scope Drift
+
+- **Gate decision:** required
+- **Why this decision:** Review changes must not silently alter scope, validation semantics, ownership, or the no-fallback contract.
+- **Trigger stage:** after the planning-side review/guard cycle converges and before APROVADO
+- **Baseline source:** Review Baseline Freeze -> Baseline commit
+- **Material sections compared:** Context|Contract Boundary|Scope|Out of Scope|Definition of Done|Validation Steps|Execution Lane Tracking|Canonical Module Anchors|Decisions|Decision Baseline|Architecture Change Governance|Assumptions Preview|Execution Plan|Flow Evidence Planning Matrix|Local CI-Equivalent Suite Matrix
+- **Guard command:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md`
+- **No-go handling rule:** return to the review loop, revalidate material evolution with the user, refresh the pushed baseline when needed, and rerun affected gates.
+- **Gate status:** not_run
+- **Findings summary:** no freeze-backed review has converged
+- **Evidence / reference:** pending the review baseline and fresh critique
+- **Waiver authority / reference (required if waived):** n/a
+
 ## Assumptions Preview
 
 | Assumption | Evidence | If False | Handling |
@@ -304,12 +367,36 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Focus:** P0/P1 ownership, taxonomy, provider non-fallback, model continuation, matrix/review order, test-strength preservation, and no V1 writer bypass.
 - **Status:** pending fresh review after P0/P1
 
+### Failure Modes & Edge Cases
+
+- [ ] P0/P1 remain active or touch overlapping routing/schema surfaces: keep this TODO blocked; do not create a second owner.
+- [ ] Runtime model evidence or the explicitly selected provider is absent, invalid, unstable, or mismatched: return `blocked`; require the scoped user record and a successful rerun, never fallback.
+- [ ] Problems is non-clean, a matrix row is non-green/missing/skipped/unclassifiable, or review requests changes: return the work to the routine executor and restart the cycle from Problems.
+- [ ] A review proposes a generic coordinator, queue, retry, new abstraction, writer bypass, or scope expansion: challenge it against the frozen TODO and require renewed approval if it is not indispensable.
+
+### Residual Unknowns / Risks
+
+- [ ] P0/P1 timing and their final schema/taxonomy are external prerequisites; this TODO must be re-reviewed against their closed state before approval.
+- [ ] The downstream project provider-declaration location and bridge installation authority are intentionally not invented in V1; P4 remains separately authorized.
+- [ ] Platform evidence may not attest the active runtime model; unverified evidence remains blocked until the future canonical continuation path is validated.
+
 ## Independent No-Context Critique Gate
 
 - **Critique decision:** required
-- **Trigger:** After plan review convergence and before APROVADO.
+- **Why this decision:** The guard derives the expanded critique floor from big, cross-module, behavior-defining, canonical-contract, and test-touching scope.
+- **Impact signals in scope:** cross-module blast radius|public contract/schema/api
+- **Package mode:** bounded-file-set
+- **Package minimum contents:** frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing blockers
+- **Critique isolation mode:** fresh internal no-context reviewer
+- **Internal reviewer mandate:** required; the reviewer is not the implementing agent, waits are status-based, and an external provider does not satisfy this gate.
+- **Canonical multi-lane audit protocol:** n/a; the delivery-side triple protocol is recommended and additive, not a critique substitute.
+- **Critique lenses:** correctness|performance|elegance|structural-soundness|risk
+- **Trigger:** After P0/P1 closure, plan review convergence, and baseline freeze; before APROVADO.
 - **Focus:** Simplification First, scope expansion, second authority, implicit fallback, generic coordinator/telemetry drift, and premature mechanical exception.
 - **Critique status:** not_run
+- **Findings summary:** no freeze-backed critique has run
+- **Evidence / reference:** pending P0/P1 and the refreshed review baseline
+- **Waiver authority / reference (required if waived):** n/a
 
 ## Gate: Assumption Code Coherence
 
@@ -317,6 +404,57 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Trigger:** before APROVADO and before delivery
 - **Required evidence:** Guards/dispatch/bridge support every claimed capability; unsupported capability remains blocked.
 - **Gate status:** not_run
+
+## Security Risk Assessment
+
+- **Risk level:** low
+- **Why this risk level:** V1 changes governance tooling rather than an auth, tenant, secret, payment, or public runtime surface; a mistaken allow decision is contained by fail-closed routing/provider gates and independent review.
+- **Attack surface in scope:** local routing/provider/review configuration and CLI/bridge invocation policy; no credentials or downstream endpoint behavior.
+- **Attack simulation decision:** not_needed (from `audit_escalation_guard.py`)
+- **Review evidence:** `SEC-NOT-TRIGGERED`; reassess if V1 later introduces untrusted input, credentials, or a public service boundary.
+- **Residual security risk:** incorrect local policy implementation; mitigated by fixtures, bounded scope, and required final review.
+
+## Performance & Concurrency Risk Assessment
+
+- **Policy schema version:** `pcv-1`
+- **Global sensitivity level:** none
+- **Why this level:** V1 does not alter a query path, user-flow latency target, concurrent write path, queue, runtime, or deployment system.
+- **Current delivery stage at review time:** Pending
+- **Derived performance/concurrency decision:** not_needed (from `audit_escalation_guard.py`); no PCV-1 lane is applicable unless scope changes.
+
+## Verification Debt Assessment
+
+- **Audit decision:** required
+- **Audit outcome:** pending
+- **Why this outcome:** Big cross-module tooling work requires a delivery-stage check that validation and evidence debt did not accumulate.
+- **Inline code TODO debt:** none known before implementation
+- **Evidence / audit artifact:** not_run; execute `verification-debt-audit` before Completed.
+- **Accepted residual debt:** none; unverified delivery evidence cannot be accepted as debt.
+
+## Independent Test Quality Audit Gate
+
+- **Audit decision:** required
+- **Why this decision:** V1 adds behavior-defining routing/provider/review/matrix fixtures under a canonical tooling contract.
+- **Trigger signals in scope:** changed test logic|behavior-defining change|architectural change|shared contract/api/schema|non-trivial validation risk
+- **Required evidence matrix:** unit (deterministic guard/resolver fixtures)|n/a downstream runtime lanes
+- **Package mode:** bounded-file-set
+- **Canonical method:** `wf-docker-independent-test-quality-audit-method`
+- **Audit isolation mode:** fresh internal no-context reviewer
+- **Audit status:** not_run
+- **Findings summary:** no implementation or test diff exists
+- **Evidence / reference:** delivery-stage gate after P2/P3 implementation and exact fixtures
+
+## Independent No-Context Final Review Gate
+
+- **Final review decision:** required
+- **Why this decision:** The final package changes a cross-module canonical contract and its test/review gates.
+- **Impact signals in scope:** cross-module blast radius|public contract/schema/api
+- **Package mode:** bounded-file-set
+- **Review isolation mode:** fresh internal no-context reviewer
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is recommended and additive at delivery; it cannot replace this final review.
+- **Final review status:** not_run
+- **Findings summary:** no implementation exists
+- **Evidence / reference:** delivery-stage gate after validation, test-quality audit, verification-debt audit, and architecture-adherence review
 
 ## Approval
 
