@@ -11,10 +11,9 @@
       "requires_effort": true,
       "preferred_models": {
         "chat_orchestrator": [
-          "gpt-5.4"
+          "gpt-5.6-terra"
         ],
         "routine_executor": [
-          "gpt-5.6-terra",
           "gpt-5.6-luna"
         ],
         "strongest_review": [
@@ -27,13 +26,14 @@
           "gpt-5.6-sol"
         ],
         "monitoring": [
-          "gpt-5.4-mini"
+          "gpt-5.6-luna"
         ]
       },
       "notes": [
         "Codex routing is currently enforced through declared preflight evidence plus explicit waiver handling.",
-        "Ordinary Codex chat/orchestrator work should default to gpt-5.4 when the active session model is configurable.",
-        "Routine code and implementation-side execution should default to gpt-5.6-terra, with gpt-5.6-luna kept as the bounded cheaper fallback.",
+        "Ordinary Codex chat/orchestrator work should default to gpt-5.6-terra when the active session model is configurable.",
+        "Routine code and implementation-side execution should default to gpt-5.6-luna.",
+        "Codex process monitoring uses gpt-5.6-luna when an LLM pass is needed after deterministic monitoring.",
         "OpenAI strongest-review lanes use gpt-5.6-sol; technical delivery lanes use gpt-5.6-terra."
       ]
     },
