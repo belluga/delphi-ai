@@ -20,12 +20,12 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 ## Delivery Status Canon (Required)
 - **Current delivery stage:** `Pending`
 - **Qualifiers:** `none`
-- **Next exact step:** `review the completed routing package, decide closeout/commit sequencing, and retire the bootstrap exception at TODO closeout`
+- **Next exact step:** `freeze this closeout-evidence retrofit, rerun the bounded validation package through the resolved executor lane, then complete the audit-derived independent review gates before deciding disposition`
 
 ## Active Work State (Required While TODO Remains In `active/`)
 - **Work state:** `review`
-- **Why this state now:** The bounded routing package is implemented and locally validated; the TODO remains active while the package is reviewed and prepared for closeout/commit handling.
-- **Exit condition:** Review/closeout either confirms the package for completion or opens a bounded follow-up/blocker.
+- **Why this state now:** The bounded routing package was implemented in the historic P0 commits, but its closeout evidence predates the current deterministic delivery-gate contract. This TODO is being retrofitted only to revalidate and independently review that already-bounded package.
+- **Exit condition:** The current-closeout validation and audit-derived review gates either confirm the historic package for completion or open a bounded follow-up/blocker.
 
 ## Scope
 - [ ] Add a canonical agent-role routing contract that maps execution surfaces, role responsibilities, client capabilities, model defaults, and permitted exceptions.
@@ -41,6 +41,28 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - [ ] Downstream Belluga project code or project-specific runtime contracts.
 - [ ] Pretending that Cline IDE supports implementation subagents in the same way as Codex or Claude when it does not.
 
+## Diff Expectation Contract
+- **Contract status:** `required`
+- **Policy:** `strict; the closeout-evidence diff is bounded to this TODO, while the historic implementation is proven by the immutable implementation evidence below`
+- **User validation:** `required on deviation`
+- **Comparison mode:** `working_tree`
+- **Legacy-package rationale:** This TODO was implemented before the current diff-contract requirement existed. Its historic implementation began at `181c0bb` and was subsequently hardened by committed routing-policy changes through `cb3ac9a`. The live guard baseline is deliberately the last published head before this closeout-evidence retrofit, so it cannot silently absorb unrelated current work; the completion matrix names the immutable historic implementation commits separately.
+
+### Repository Baselines
+| Repository | Path | Baseline ref | Comparison mode |
+| --- | --- | --- | --- |
+| `delphi-ai` | `.` | `v0.6.2-rc@cb3ac9a` | `working_tree` |
+
+### Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `delphi-ai` | `foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md` | `M` | Closeout-only contract, evidence, and disposition for the already-implemented P0 package. |
+
+### Not Expected Changed Paths
+| Repository | Path glob | Change types (`A|M|D|R|any`) | Reason |
+| --- | --- | --- | --- |
+| `delphi-ai` | `config/agent_role_routing.json` | `any` | The closeout-evidence retrofit must not alter the canonical routing authority; that would be new implementation requiring renewed scope handling. |
+
 ## Bounded But Elastic Guardrails
 - **May stay inside this TODO:** local contract refinements, client-capability clarifications, guard/test additions, workflow/template wiring, and Claude/Cline/Codex compatibility surfaces that preserve the same routing objective.
 - **Must update or split the TODO:** any expansion into downstream project behavior, broad promotion-flow redesign unrelated to routing, or generalized client orchestration beyond pre-execution routing enforcement.
@@ -55,12 +77,12 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - [ ] Tool manifest, deterministic tooling register, mirrors, and affected workflow surfaces are updated and validated.
 
 ## Validation Steps
-- [x] Run `python3 -m py_compile tools/agent_role_routing_guard.py` and any supporting Python helpers created for this slice.
-- [x] Run `bash tools/tests/agent_role_routing_guard_test.sh`.
-- [x] Run existing regression suites for any touched deterministic guards or routing helpers.
-- [x] Run `bash self_check.sh`.
-- [x] Run `git diff --check`.
-- [x] Run representative routing preflight commands for at least Codex, Claude Code, and Cline IDE mappings and record the expected outcome.
+- [ ] Rerun `python3 -m py_compile tools/agent_role_routing_guard.py tools/sync_claude_agent_routing.py tools/todo_authority_guard.py`.
+- [ ] Rerun `bash tools/tests/agent_role_routing_guard_test.sh`.
+- [ ] Rerun `bash tools/tests/todo_authority_guard_test.sh`.
+- [ ] Rerun `bash self_check.sh`.
+- [ ] Run `git diff --check`.
+- [ ] Run representative routing preflight commands for Codex, Claude Code, and Cline IDE mappings and record the expected outcome.
 
 ### Flow Evidence Planning Matrix
 | Criterion / Flow | Why Flow-Impacting | Platform Parity | Required Runtime Lane | Mutation Lane Required? | Backend Real-Data Required? | Planned Evidence | Non-Applicability Rationale |
@@ -70,14 +92,30 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 ### Local CI-Equivalent Suite Matrix
 | Repository / CI Surface | Why In Scope | Behavior / Scenario Covered | Fixture / Seed / Runtime Preconditions | Local CI-Equivalent Command | Required Before | Status | Evidence Artifact / Command | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `delphi-ai / routing guard compile` | New deterministic Python tooling. | Python guard and helper syntax is valid. | none | `python3 -m py_compile tools/agent_role_routing_guard.py tools/sync_claude_agent_routing.py tools/todo_authority_guard.py` | `Local-Implemented` | `passed` | `python3 -m py_compile tools/agent_role_routing_guard.py tools/sync_claude_agent_routing.py tools/todo_authority_guard.py` | Includes the new Claude sync tool plus the touched authority guard. |
-| `delphi-ai / routing guard regression` | New fail-closed routing behavior needs positive and negative fixtures. | Guard returns the correct routing outcome for implementation, review, monitoring, unsupported-capability, and waiver scenarios. | deterministic fixture inputs only | `bash tools/tests/agent_role_routing_guard_test.sh` | `Local-Implemented` | `passed` | `bash tools/tests/agent_role_routing_guard_test.sh` | Covers go, delegate-required, review-required, waiver-required, and blocked paths. |
-| `delphi-ai / touched guard regressions` | Existing deterministic guards may ingest the new routing ledger or preflight evidence. | Existing approval/execution/orchestration guard behavior stays coherent after routing integration. | relevant fixture TODO/plan files | `bash tools/tests/todo_authority_guard_test.sh` | `Local-Implemented` | `passed` | `bash tools/tests/todo_authority_guard_test.sh` | Includes the new `Agent Routing Preflight` enforcement path. |
-| `delphi-ai / mirror and instruction coherence` | Workflows, skills, manifests, mirrors, and possibly generated client artifacts will change. | Canonical and mirror surfaces remain synchronized and internally coherent. | none | `bash self_check.sh` | `Local-Implemented` | `passed` | `bash self_check.sh` | Synced `.cline`, `.claude`, `.clinerules`, public Codex mirrors, and Claude routing agents. |
-
+| `delphi-ai / routing guard compile` | Deterministic Python routing tooling. | Python guard and helper syntax is valid. | none | `python3 -m py_compile tools/agent_role_routing_guard.py tools/sync_claude_agent_routing.py tools/todo_authority_guard.py` | `Local-Implemented` | `planned` | `current-closeout rerun pending` | Includes the guard, Claude sync tool, and authority guard. |
+| `delphi-ai / routing guard regression` | Fail-closed routing behavior needs positive and negative fixtures. | Correct outcomes for implementation, review, monitoring, unsupported-capability, and waiver scenarios. | deterministic fixture inputs only | `bash tools/tests/agent_role_routing_guard_test.sh` | `Local-Implemented` | `planned` | `current-closeout rerun pending` | Covers go, delegate-required, review-required, waiver-required, and blocked paths. |
+| `delphi-ai / touched guard regressions` | The authority guard ingests routing evidence. | Existing approval/execution/orchestration guard behavior remains coherent after routing integration. | relevant fixture TODO/plan files | `bash tools/tests/todo_authority_guard_test.sh` | `Local-Implemented` | `planned` | `current-closeout rerun pending` | Includes the `Agent Routing Preflight` enforcement path. |
+| `delphi-ai / mirror and instruction coherence` | Workflows, skills, manifests, and generated client artifacts must remain coherent. | Canonical and mirror surfaces remain synchronized and internally coherent. | none | `bash self_check.sh` | `Local-Implemented` | `planned` | `current-closeout rerun pending` | Covers canonical/mirror coherence including generated routing artifacts. |
 ### Runtime / Rollout Notes
 - No downstream runtime rollout is in scope.
 - Client-facing artifact generation must remain declarative and must not depend on private runtime credentials or project-specific env.
+
+## Completion Evidence Matrix
+| Criterion ID | Source Section | Criterion | Evidence Type | Evidence Artifact / Command | Runtime Target | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `DOD-01` | `Definition of Done` | Delphi has one canonical routing contract for roles, surfaces, clients, capabilities, and exception policy. | `code|doc` | `config/agent_role_routing.json`; historic implementation `181c0bb`; current closeout review pending | `n/a` | `planned` | The closeout review must confirm that the JSON remains the sole policy authority. |
+| `DOD-02` | `Definition of Done` | A deterministic pre-execution guard exists and is invoked by the execution boundary before code writing, file edits, implementation validation, monitoring, or formal review can proceed. | `code|test` | `tools/agent_role_routing_guard.py`; `workflows/docker/todo-execution-boundary-method.md`; current regression rerun pending | `n/a` | `planned` | The bounded code/workflow pair is reviewed against the historic P0 package. |
+| `DOD-03` | `Definition of Done` | Routine implementation and operational execution route to the routine executor role by default; formal review/approval/delivery review route to the stronger review role; the primary chat remains orchestration-first. | `code|test` | `config/agent_role_routing.json`; representative current routing preflights pending | `n/a` | `planned` | Must prove normal executor/reviewer separation without hardcoding it in the closeout record. |
+| `DOD-04` | `Definition of Done` | Missing routing proof or unsupported client capability yields an explicit exception/waiver path instead of silent fallback in the primary agent. | `code|test` | `tools/agent_role_routing_guard.py`; routing-guard regression rerun pending | `n/a` | `planned` | Negative fixtures must keep the exception path visible and fail closed. |
+| `DOD-05` | `Definition of Done` | Claude-compatible agent artifacts are generated or synchronized from the canonical routing contract. | `code|test` | `tools/sync_claude_agent_routing.py`; `.claude/agents/delphi-*.md`; `bash self_check.sh` pending | `n/a` | `planned` | Coherence check must verify generated support, not a duplicate policy matrix. |
+| `DOD-06` | `Definition of Done` | Cline-compatible surfaces express the routing contract without claiming unsupported executor-subagent automation. | `code|review` | `.cline/**`; `.clinerules/**`; bounded architecture/adherence review pending | `n/a` | `planned` | Review must reject a fake client-capability claim. |
+| `DOD-07` | `Definition of Done` | Tool manifest, deterministic tooling register, mirrors, and affected workflow surfaces are updated and validated. | `test|doc` | `tools/manifest.md`; `skills/deterministic-tooling-register.md`; `bash self_check.sh` pending | `n/a` | `planned` | Current-closeout self-check is the coherence evidence. |
+| `VAL-01` | `Validation Steps` | Rerun `python3 -m py_compile tools/agent_role_routing_guard.py tools/sync_claude_agent_routing.py tools/todo_authority_guard.py`. | `test` | `current-closeout executor run pending` | `local` | `planned` | Exact command is in the CI-equivalent matrix. |
+| `VAL-02` | `Validation Steps` | Rerun `bash tools/tests/agent_role_routing_guard_test.sh`. | `test` | `current-closeout executor run pending` | `local` | `planned` | Exact command is in the CI-equivalent matrix. |
+| `VAL-03` | `Validation Steps` | Rerun `bash tools/tests/todo_authority_guard_test.sh`. | `test` | `current-closeout executor run pending` | `local` | `planned` | Exact command is in the CI-equivalent matrix. |
+| `VAL-04` | `Validation Steps` | Rerun `bash self_check.sh`. | `test` | `current-closeout executor run pending` | `local` | `planned` | Exact command is in the CI-equivalent matrix. |
+| `VAL-05` | `Validation Steps` | Run `git diff --check`. | `test` | `current-closeout orchestration run pending` | `local` | `planned` | Runs after the final closeout evidence edit. |
+| `VAL-06` | `Validation Steps` | Run representative routing preflight commands for Codex, Claude Code, and Cline IDE mappings and record the expected outcome. | `test` | `current-closeout executor run pending` | `local` | `planned` | The preflights must be derived from the current canonical JSON. |
 
 ## Profile Scope & Handoffs
 - **Primary execution profile:** `operational-coder`
@@ -128,7 +166,7 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - [x] `D-04` Prefer a dedicated `agent_role_routing_guard.py` and canonical routing config over overloading `effort_selection_advisor.py` into a blocker with mixed responsibilities.
 - [x] `D-05` Treat routine code writing, file-edit execution, and implementation-side validation as the same routing family unless an explicit workflow exception allows orchestrator-local reconciliation glue.
 - [x] `D-06` Keep review-only/no-context routing stateless by default and keep monitoring deterministic first or ephemeral bounded summarization only.
-- [x] `D-07` This TODO carries a one-time bootstrap exception: until the first routing guard exists and validates, the current session may implement the enforcement package directly in the primary chat under explicit approval; that exception expires when this TODO closes.
+- [x] `D-07` This TODO carried a one-time bootstrap exception only while the first routing guard was being built. It is not available to closeout validation or any future TODO and will be recorded as retired in the completion disposition.
 
 ## Module Decision Baseline Snapshot
 | Module Decision Ref | Current Module Decision | Planned Handling | Evidence |
@@ -148,8 +186,8 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Why this applies:** This TODO corrects a recurring process deviation: the primary agent can still absorb implementation/execution despite an approved delegated routing policy.
 - **Deviation / debt being retired:** prose-only routing that allows post-hoc rationalization instead of pre-execution enforcement
 - **Target steady-state after closeout:** deterministic preflight resolves required role/model/state before implementation, execution, monitoring, or review begins
-- **Temporary exceptions allowed:** bounded orchestrator-local reconciliation, merge-conflict resolution, minimal integration glue explicitly authorized by workflow and recorded in routing evidence, plus this TODO's one-time bootstrap exception while the first routing guard is still the thing being built
-- **Cutover / removal condition:** once the new guard, routing ledger/evidence, and workflow/template integrations are in place and validated, the old discretionary fallback behavior becomes prohibited
+- **Temporary exceptions allowed:** only bounded orchestration-local reconciliation, merge-conflict resolution, or minimal integration glue explicitly authorized by workflow and recorded in routing evidence. The P0 bootstrap exception is retired at closeout and cannot authorize new work.
+- **Cutover / removal condition:** the new guard, routing ledger/evidence, and workflow/template integrations are in place and revalidated; the old discretionary fallback behavior and P0 bootstrap exception are prohibited
 
 ### Patterns To Enforce
 | Pattern / Decision | Source / ID | Scope | Why It Must Hold After Cutover |
@@ -174,28 +212,44 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 | `test` | `tools/tests/agent_role_routing_guard_test.sh` | regression suite | false `go`, false waiver, or unsupported-client drift | `implement-in-this-todo` | new regression suite |
 | `hook/reminder` | `.clinerules/hooks/session_start` or equivalent declarative client surface | client-start reminder where supported | forgetting to resolve routing at session start | `implement-in-this-todo` | limited to reminder/enforcement surfaces the client truly supports |
 
+## Architecture Review Gates
+- **Architecture decision review:** `required`
+- **Decision-review derivation:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md`
+- **Decision review lifecycle:** `historic diagnosis closed; recovery review before disposition, without reopening approved scope`
+- **Decision review kind:** `architecture_opinion`
+- **Decision review package:** `bounded-summary: P0 contract, historic implementation range, current canonical routing JSON, guard/workflow/test evidence`
+- **Decision review status:** `not_run`
+- **Decision review evidence / resolution:** `pending a fresh, no-context strongest-review lane after the closeout baseline is pushed`
+- **Architecture adherence review:** `required`
+- **Adherence-review derivation:** `same audit guard result as the decision review`
+- **Adherence review lifecycle:** `after current-closeout validation and before Completed`
+- **Adherence review kind:** `architecture_adherence`
+- **Adherence review package:** `bounded-summary: frozen P0 contract, current canonical routing JSON, guard/workflow/test evidence, and validation evidence`
+- **Adherence review status:** `not_run`
+- **Adherence review evidence / resolution:** `pending a fresh, no-context strongest-review lane after validation`
+- **No-go handling:** `an unresolved approval-breaking divergence returns to the bounded P0 remediation loop; it does not expand into the later P1/P2 contracts.`
 ## Gate: Review Baseline Freeze
 - **Gate decision:** `required`
-- **Why this decision:** This is a big Delphi self-maintenance slice touching core execution policy; the review package must freeze before plan-side review and critique.
-- **Trigger stage:** `before the first planning-side review or guard run`
-- **Baseline branch:** `pending`
-- **Baseline commit:** `pending`
-- **Baseline push reference:** `pending`
-- **Gate status:** `waived`
-- **Findings summary:** `the user approved the execution contract directly after the bounded plan review; no separate no-context critique packet was run before implementation`
-- **Evidence / reference:** `session approval thread on 2026-07-06`
-- **Waiver authority / reference (required if waived):** `user - APROVADO on 2026-07-06`
+- **Why this decision:** The historic implementation predates the current review baseline protocol. A narrowly scoped, committed and pushed closeout-evidence baseline is required before the recovery review loop so it cannot absorb P1/P2 work.
+- **Trigger stage:** `before the first recovery review or closeout guard run`
+- **Baseline branch:** `v0.6.2-rc`
+- **Baseline commit:** `pending current closeout-evidence commit`
+- **Baseline push reference:** `pending current closeout-evidence push`
+- **Gate status:** `not_run`
+- **Findings summary:** `the 2026-07-06 approval remains the historic implementation authority; this new baseline governs only the evidence/review recovery, not a scope rewrite.`
+- **Evidence / reference:** `historic approval: user APROVADO on 2026-07-06; current baseline pending`
+- **Waiver authority / reference (required if waived):** `n/a`
 
 ## Gate: Review Scope Drift
 - **Gate decision:** `required`
-- **Why this decision:** Routing policy is approval-material; drift in scope, exceptions, or client coverage must reconverge before APROVADO.
-- **Trigger stage:** `after planning-side review convergence and before APROVADO`
+- **Why this decision:** The historic approval is not reopened, but the closeout retrofit must prove that it did not change scope, exceptions, or client coverage before disposition.
+- **Trigger stage:** `after recovery review convergence and before the closeout disposition`
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md`
-- **Gate status:** `waived`
-- **Findings summary:** `the touched insertion points were inspected directly during TODO preparation; no separate assumption-code coherence guard exists yet for this slice`
-- **Evidence / reference:** `direct code/doc inspection during TODO preparation on 2026-07-06`
-- **Waiver authority / reference (required if waived):** `bootstrap exception within this TODO`
+- **Gate status:** `not_run`
+- **Findings summary:** `pending comparison of the frozen closeout baseline with the final evidence/disposition edit`
+- **Evidence / reference:** `pending current closeout guard run`
+- **Waiver authority / reference (required if waived):** `n/a`
 
 ## Questions To Close
 - [x] Claude artifact generation stays in the first slice and is implemented through `tools/sync_claude_agent_routing.py` plus generated `.claude/agents/*.md`.
@@ -400,11 +454,142 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 
 ## Agent Routing Preflight
 - **Client surface:** `codex`
-- **Current governed action:** `implementation`
-- **Selected role:** `primary-chat`
-- **Selected model:** `gpt-5.4-mini`
+- **Current governed action:** `implementation-validation`
+- **Selected role:** `routine-executor`
+- **Selected model:** `gpt-5.6-luna`
 - **Selected effort:** `medium`
-- **Proof mode:** `waiver`
-- **Exception reason:** `bootstrap-guard-implementation`
+- **Proof mode:** `declared`
+- **Exception reason:** `n/a`
+- **Subagent / delegation authorization:** `explicit human reference: user assigned the orchestrator responsibility for P0 -> P1 -> P1.5 sequencing in this session`
+- **Execution topology:** `primary-checkout-single-writer`
+- **Worktree / auxiliary-checkout authorization:** `not-authorized`
+- **Worktree authorization evidence:** `n/a`
+- **Writer scheduling policy:** `single-writer-serialized`
 - **Guard outcome:** `go`
-- **Waiver / exception reference:** `D-07 bootstrap exception`
+- **Waiver / exception reference:** `n/a; current command verified 2026-09-27 with agent_role_routing_guard.py`
+
+## Decision Adherence Validation
+| Decision ID | Status (`Adherent`/`Exception`) | Evidence | Notes |
+| --- | --- | --- |
+| `D-01` | `Adherent` | `config/agent_role_routing.json`; `tools/agent_role_routing_guard.py`; current review pending | Canonical routing resolution remains JSON-driven. |
+| `D-02` | `Adherent` | `tools/agent_role_routing_guard.py`; regression rerun pending | Missing proof uses explicit failure/waiver outcomes rather than hidden fallback. |
+| `D-03` | `Adherent` | `.claude/**`, `.cline/**`, `.clinerules/**`; `bash self_check.sh` pending | Client-specific support stays within declared capability boundaries. |
+| `D-04` | `Adherent` | `tools/agent_role_routing_guard.py` | Dedicated routing guard remains separate from effort advice. |
+| `D-05` | `Adherent` | current `implementation-validation` preflight | Routine writing/validation stays in the executor routing family. |
+| `D-06` | `Adherent` | current config and review workflow evidence pending | Review and monitoring remain separately routed. |
+| `D-07` | `Adherent` | this closeout contract | The bootstrap exception is historical only and retired at disposition. |
+
+## Module Decision Consistency Validation
+| Module Decision Ref | Planned Handling | Delivery Status (`Preserved|Superseded (Approved)|Regression`) | Evidence | Notes |
+| --- | --- | --- | --- |
+| `main_instructions.md#effort-model-goal-budget-discipline` | `Supersede (Intentional)` | `Superseded (Approved)` | historic P0 implementation; current review pending | Routing moved from advisory prose to canonical deterministic preflight. |
+| `workflows/docker/effort-selection-method.md#model-routing-defaults` | `Supersede (Intentional)` | `Superseded (Approved)` | historic P0 implementation; current review pending | Default role/model routing is now guard-backed. |
+| `workflows/docker/todo-execution-boundary-method.md#procedure` | `Supersede (Intentional)` | `Superseded (Approved)` | historic P0 implementation; current review pending | Pre-execution routing is part of the execution boundary. |
+
+## Pipeline/Copilot P1/P2 Preflight
+| Reviewer Surface / Package | Review Focus | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| `historic P0 routing package + current closeout evidence` | `CI/Copilot-style P1/P2: canonical-source bypass, wrong role/model default, unsupported client-capability claim, missing regression coverage` | `planned` | `fresh strongest-review package after baseline freeze` | `none yet` | `Do not claim delivery until a fresh independent reviewer records the result.` |
+
+## Rule-Spirit Anti-Pattern Hunt
+| Rule / Principle Surface | Bypass or Anti-Pattern Search Lens | Status | Evidence Artifact / Command | Findings | Resolution / Notes |
+| --- | --- | --- | --- | --- | --- |
+| `Architecture Simplification First` | `duplicated routing matrix, generic orchestration framework, policy moved from JSON into prose` | `planned` | `fresh architecture/adherence review` | `none yet` | `The JSON must remain the authority; client artifacts are derived only.` |
+| `single-writer and execution boundary` | `primary-chat implementation/validation bypass, fake delegation, worktree inference` | `planned` | `current preflight plus fresh review` | `none yet` | `Current closeout validation is routed to routine-executor in the primary checkout.` |
+| `client capability integrity` | `Claude/Cline claims that exceed actual product support` | `planned` | `self_check plus fresh review` | `none yet` | `Unsupported automation must fail closed or stay declarative.` |
+
+## Promotion Finding Routing Ledger
+| Finding ID | Finding Source | Severity | Classification | Required Action | Status | Rationale / Follow-up Reference |
+| --- | --- | --- | --- | --- | --- | --- |
+
+## TODO Closeout Disposition
+- **Disposition:** `keep-active`
+- **Disposition reason:** `The historic P0 package needs current deterministic validation, review, and evidence before it can be completed; no new implementation scope is authorized by this recovery.`
+- **Post-commit/push status:** `pending`
+- **Next path/status action:** `freeze and push the closeout-evidence baseline; then run the executor validation and independent review gates.`
+
+## Security Risk Assessment
+- **Risk level:** `low`
+- **Why this risk level:** `The P0 guard affects developer execution governance but does not add a public endpoint, credential flow, or downstream runtime behavior.`
+- **Attack surface in scope:** `local agent/client instruction and deterministic CLI inputs only`
+- **Attack simulation decision:** `not_needed`
+- **Review evidence:** `audit escalation result 2026-09-27: security_review=not_needed (SEC-NOT-TRIGGERED)`
+- **Residual security risk:** `A malformed local routing configuration could block or misroute work; regression fixtures and independent review are the bounded mitigations.`
+
+## Performance & Concurrency Risk Assessment
+- **Policy schema version:** `pcv-1`
+- **Global sensitivity level:** `low`
+- **Why this level:** `This is Delphi self-maintenance without downstream request, state, async UI, database, queue, or runtime-load behavior.`
+- **Current delivery stage at review time:** `Pending`
+
+| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `EPS-DATA-PATH-CHANGED` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
+| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `FRC-LIFECYCLE-ASYNC-EFFECT` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
+| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `BCI-NON-IDEMPOTENT-WRITE` | `before_local_implemented` | `n/a` | `not_applicable` | `none` | `none` |
+| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `RLS-SLO-CLAIM` | `before_production_ready` | `n/a` | `not_applicable` | `none` | `none` |
+- **Audit escalation overlay:** `recommended for performance/concurrency only because the historic trigger matrix says release_or_promotion_critical=yes; the PCV method must validate or correct these lane classifications before Local-Implemented.`
+
+## Verification Debt Assessment
+- **Audit outcome:** `pending`
+- **Why this outcome:** `Audit escalation requires a verification-debt audit for this big/release-sensitive historic package.`
+- **Inline code TODO debt:** `pending`
+- **Evidence / audit artifact:** `pending wf-docker verification-debt audit`
+- **Accepted residual debt:** `pending`
+
+## Independent Test Quality Audit Gate
+- **Audit decision:** `required`
+- **Why this decision:** `audit escalation: tests touched, behavior-defining routing change, and release-sensitive governance surface.`
+- **Trigger signals in scope:** `changed test logic|behavior-defining change|architectural change|compatibility|non-trivial validation risk`
+- **Required evidence matrix (when architectural):** `unit|n/a widget|n/a integration|n/a web real-backend|n/a mobile real-backend`
+- **Package mode:** `bounded-summary`
+- **Package minimum contents:** `frozen closeout baseline|historic implementation range|bounded test diff|current validation evidence|DoD|residual risks`
+- **Canonical method:** `wf-docker-independent-test-quality-audit-method`
+- **Audit isolation mode:** `fresh internal no-context reviewer`
+- **Internal reviewer mandate:** `required; resolve strongest-review from the canonical JSON; wait for the live reviewer without recycling on a timeout`
+- **Gate-satisfying evidence expectation:** `required fresh internal no-context audit; external provider evidence does not satisfy the gate`
+- **Audit focus:** `routing fixture coverage, fail-closed assertions, client-capability boundaries, and test-only bypass detection`
+- **Required applicable evidence:** `audit framing|bypass scan|assertion efficacy|issue cards when material findings exist|failure modes|decision adherence evidence`
+- **Audit status:** `not_run`
+- **Findings summary:** `not started`
+- **Resolution ledger:** `none yet`
+- **Evidence / reference:** `pending fresh internal review`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Independent No-Context Final Review Gate
+- **Final review decision:** `required`
+- **Why this decision:** `audit escalation: big, cross-stack governance surface with a historic high-severity architecture issue.`
+- **Impact signals in scope:** `cross-module blast radius|intentional module supersede|high-severity issue card`
+- **Package mode:** `bounded-summary`
+- **Package minimum contents:** `frozen closeout baseline|approved historical scope boundary|bounded historic package summary|adherence status|validation evidence|test-audit evidence|residual risks|verification debt`
+- **Review isolation mode:** `fresh internal no-context reviewer`
+- **Internal reviewer mandate:** `required; resolve strongest-review from the canonical JSON; wait for the live reviewer without recycling on a timeout`
+- **Canonical multi-lane audit protocol (when required):** `audit-protocol-triple-review`
+- **Audit session / round evidence (when protocol used):** `pending`
+- **Review focus:** `adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance|structural regressions|verification debt`
+- **Final review status:** `not_run`
+- **Findings summary:** `not started`
+- **Resolution ledger:** `none yet`
+- **Evidence / reference:** `pending fresh internal review and required triple protocol`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Independent Cutover Integrity Audit Gate
+- **Cutover audit decision:** `required`
+- **Why this decision:** `P0 retires the bootstrap exception and the prior discretionary-routing path, so canonical cutover and legacy-path retirement must be checked.`
+- **Cutover signals in scope:** `canonical cutover|legacy-path retirement|compatibility exception`
+- **Package mode:** `bounded-summary`
+- **Canonical multi-lane audit protocol (when used):** `audit-protocol-triple-review`
+- **Audit session / round evidence (when protocol used):** `pending`
+- **Audit focus:** `canonical JSON authority|bootstrap-exception retirement|hidden fallback mirrors|pseudo-canonical client artifacts`
+- **Cutover audit status:** `not_run`
+- **Findings summary:** `not started`
+- **Resolution ledger:** `none yet`
+- **Evidence / reference:** `pending independent closeout review`
+- **Waiver authority / reference (required if waived):** `n/a`
+
+## Module Consolidation Gate
+- [ ] Canonical module docs were updated with stable conceptual outcomes and final decisions from this TODO.
+- [ ] Decision promotion ledger (or equivalent trace table) in module docs links back to this TODO.
+- [ ] Every relevant prior module decision is either preserved or intentionally superseded with explicit traceability.
+- [ ] Superseded/conflicting tactical notes were removed or replaced by canonical module references.
+- [ ] TODO/module cross-links were updated (including active/completed path changes).
