@@ -95,25 +95,42 @@ def build_violation(code: str, message: str, resolution: str) -> dict[str, str]:
     }
 
 
-def match_token(actual: str, expected: str) -> bool:
+def exact_token_match(actual: str, expected: str) -> bool:
     actual_norm = normalize_token(actual)
     expected_norm = normalize_token(expected)
     if not actual_norm or not expected_norm:
         return False
-    return (
-        actual_norm == expected_norm
-        or actual_norm.startswith(expected_norm)
-        or expected_norm.startswith(actual_norm)
-        or f"-{expected_norm}-" in f"-{actual_norm}-"
+    return actual_norm == expected_norm
+
+
+def model_alias_match(actual: str, expected: str) -> bool:
+    """Match a declared model alias exactly, or as provider/version syntax.
+
+    The provider/version form is intentionally narrow: one provider token,
+    the complete declared alias, and a numeric version (for example,
+    ``claude-opus-5`` for the declared ``opus`` alias). Abbreviated or
+    ambiguous tokens must not match.
+    """
+    if exact_token_match(actual, expected):
+        return True
+
+    actual_norm = normalize_token(actual)
+    expected_norm = normalize_token(expected)
+    if not actual_norm or not expected_norm:
+        return False
+    provider_version = re.fullmatch(
+        rf"[a-z0-9]+-{re.escape(expected_norm)}-[0-9]+(?:-[0-9]+)*",
+        actual_norm,
     )
+    return provider_version is not None
 
 
 def model_matches(actual: str, expected_aliases: list[str]) -> bool:
-    return any(match_token(actual, alias) for alias in expected_aliases)
+    return any(model_alias_match(actual, alias) for alias in expected_aliases)
 
 
 def effort_matches(actual: str, expected_aliases: list[str]) -> bool:
-    return any(match_token(actual, alias) for alias in expected_aliases)
+    return any(exact_token_match(actual, alias) for alias in expected_aliases)
 
 
 def set_outcome(current: str, new: str) -> str:

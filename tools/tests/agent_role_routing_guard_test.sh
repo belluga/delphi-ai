@@ -58,6 +58,29 @@ assert_outcome() {
   }
 }
 
+assert_json_violation() {
+  local expected_code="$1"
+  shift
+  local output="$TMP_DIR/result.json"
+  set +e
+  python3 "$TOOL" "$@" --json-output "$output" >/dev/null 2>&1
+  local status=$?
+  set -e
+  [[ $status -eq 2 ]] || {
+    cat "$output"
+    printf 'expected JSON fixture to exit 2, got %s\n' "$status" >&2
+    exit 1
+  }
+  python3 - "$output" "$expected_code" <<'PY'
+import json
+import sys
+
+payload = json.loads(open(sys.argv[1], encoding="utf-8").read())
+assert payload["outcome"] == "delegate-required"
+assert any(item["code"] == sys.argv[2] for item in payload["violations"])
+PY
+}
+
 assert_outcome delegate-required \
   --client codex \
   --surface implementation \
@@ -75,6 +98,30 @@ assert_outcome go \
   --proof-mode declared \
   --execution-topology primary-checkout-single-writer \
   --worktree-authorization not-authorized
+
+assert_json_violation MODEL-MISMATCH \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model gpt \
+  --effort medium \
+  --proof-mode declared
+
+assert_json_violation EFFORT-MISMATCH \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort m \
+  --proof-mode declared
+
+assert_json_violation EFFORT-MISMATCH \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium-plus \
+  --proof-mode declared
 
 assert_outcome blocked \
   --client codex \
