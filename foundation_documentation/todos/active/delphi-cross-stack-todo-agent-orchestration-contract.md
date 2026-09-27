@@ -68,7 +68,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 ## Scope
 
 - [ ] Extend the canonical routing schema/guard after P0/P1 so surface, role, model family, capability, precedence, and a `fallback_policy=prohibited` resolve from one authority.
-- [ ] Add active-runtime-model evidence distinct from declared routing selection, with explicit evidence states/outcomes; define quality and token-cost tiers only in canonical schema.
+- [ ] Add active-runtime-model evidence distinct from declared routing selection, with one closed active-model-state enum and explicit continuation outcomes; define quality and token-cost tiers only in canonical schema.
 - [ ] Make model mismatch, unknown identity, or absent runtime proof return blocked with scoped user continuation and rerun.
 - [ ] Add implementation_diff_review as a distinct post-green review kind under formal-review.
 - [ ] Add generic static-analysis provider schema/resolver; absence, invalidity, or failure blocks and provider switching requires explicit user selection plus rerun.
@@ -76,6 +76,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [ ] Implement executor-owned clean Problems, complete non-fail-fast focused-test matrix, bounded repair, and post-green independent diff review.
 - [ ] Record minimal per-TODO phase/handoff evidence without inferring usage/cost or creating telemetry.
 - [ ] Make surface traits, role catalog, review-kind-to-surface binding, and model-family resolution canonical data; production guard invocation cannot replace the contract path, while fixture injection remains test-only.
+- [ ] Bind `implementation_diff_review` canonically to `surface=formal-review` and `role=formal-reviewer`; reject any other surface/role combination.
 - [ ] Update affected workflows, templates, manifests, tooling register, mirrors, and tests.
 
 ## Out of Scope
@@ -128,6 +129,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [ ] Guard distinguishes declared selection from active-runtime evidence and validates scoped continuation through rerun.
 - [ ] Provider selection has no automatic fallback. Missing/invalid/unavailable selection blocks until an explicitly chosen provider validates.
 - [ ] V1 creates no local-orchestrator writing exception; routine executor is the sole normal material writer, and any pre-existing canonical exception stays governed by its own current contract rather than this TODO.
+- [ ] A human continuation can affect only active-model admission; it never unblocks an absent, invalid, unhealthy, or wrong-workspace static-analysis provider.
 - [ ] Executor owns complete declared focused-test matrices after clean Problems; every command is attempted and individually evidenced.
 - [ ] Fresh independent implementation_diff_review occurs only after clean Problems and a full green matrix; request changes restarts the complete cycle.
 - [ ] Test repair restores intended contract only; it cannot weaken, skip, delete, or narrow expectations.
@@ -137,8 +139,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Validation Steps
 
-- [ ] Routing fixtures: declared versus observed model; exact, stronger, weaker, lateral, unknown, and unavailable states; scoped continuation/expiry; prohibited automatic transition; and no hardcoded surface/role/family/review or contract-path drift.
-- [ ] Provider fixtures: absent/invalid declaration, exact CLI command, missing CLI command, healthy bridge, bridge health/workspace/revision failure, explicit provider switch, prohibited fallback.
+- [ ] Routing fixtures: declared versus observed model; active-model states `exact|stronger|weaker|lateral|unknown|unavailable`; scoped continuation/expiry; prohibited automatic transition; and no hardcoded surface/role/family/review or contract-path drift.
+- [ ] Provider fixtures: absent/invalid declaration, exact CLI command, missing CLI command, healthy bridge, bridge health/workspace/revision failure, explicit provider switch, prohibited fallback, and human-model continuation cannot unlock a provider.
 - [ ] Review fixtures: request_changes, approve_green_diff, green matrix binding, missing/non-green rejection, invalid payload, wrong-surface/wrong-role rejection, and final-review/critique separation.
 - [ ] Focused-matrix fixtures: continue after failure; row completeness; cleanup; missing/skipped/unclassifiable equals non-green; repair resets Problems plus full matrix.
 - [ ] Observability fixtures: platform usage preserved when available and unavailable when absent; data cannot alter routing/gates.
@@ -158,11 +160,11 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | Repository / CI Surface | Behavior | Preconditions | Command | Required Before | Status |
 | --- | --- | --- | --- | --- | --- |
 | routing guard | role/evidence/continuation resolution | deterministic JSON fixtures | bash tools/tests/agent_role_routing_guard_test.sh | Local-Implemented | planned |
-| provider resolver | explicit selection and fail-closed behavior | provider fixtures | new provider regression | Local-Implemented | planned |
-| review dispatch/schema | post-green decision validation | green/non-green fixtures | affected dispatch regression | Local-Implemented | planned |
-| focused matrix | all-command execution/evidence | controlled command fixtures | new matrix regression | Local-Implemented | planned |
+| provider resolver | explicit selection, provider-only validation, and fail-closed behavior | provider fixtures | bash tools/tests/static_analysis_provider_guard_test.sh | Local-Implemented | planned |
+| review dispatch/schema | post-green decision and formal-review/formal-reviewer binding validation | green/non-green and wrong-surface/role fixtures | bash tools/tests/review_dispatch_guard_test.sh | Local-Implemented | planned |
+| focused matrix | all-command execution/evidence | controlled command fixtures | bash tools/tests/focused_test_matrix_guard_test.sh | Local-Implemented | planned |
 | Delphi coherence | mirrors and canonical wording | none | bash self_check.sh | Local-Implemented | planned |
-| approval-readiness | every placeholder resolves to an exact P2/P3 command and oracle | P0/P1 closed schema/tool names | replace planned rows with exact commands and fixtures | APROVADO | blocked |
+| approval-readiness | each named P2/P3 script exists and its fixture/oracle matches this frozen contract | P0/P1 closed schema/tool names | bash tools/tests/agent_role_routing_guard_test.sh; bash tools/tests/static_analysis_provider_guard_test.sh; bash tools/tests/review_dispatch_guard_test.sh; bash tools/tests/focused_test_matrix_guard_test.sh | APROVADO | blocked |
 
 ## Profile Scope & Handoffs
 
@@ -188,7 +190,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 - **Canonical method:** `wf-docker-audit-escalation-method`
 - **Guard command:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md`
-- **Latest TEACH evidence / artifact:** 2026-09-27 `audit_escalation_guard.py` -> `Overall outcome: go`; post-critique fingerprint `178eae887ce0`.
+- **Latest TEACH evidence / artifact:** 2026-09-27 `audit_escalation_guard.py` -> `Overall outcome: go`; reconciled-critique fingerprint `00fa3104f472`.
 
 | Trigger | Value | Notes |
 | --- | --- | --- |
@@ -202,7 +204,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | `critical_user_journey` | `no` | This is Delphi self-maintenance, not a downstream user journey. |
 | `release_or_promotion_critical` | `yes` | The future canonical routing/provider/review behavior materially governs delivery confidence even though this artifact itself makes no delivery claim. |
 | `high_severity_plan_review_issue` | `yes` | The pre-prerequisite critique found unresolved P0/P1 ownership/taxonomy and V1-contract blockers. |
-| `explicit_three_lane_request` | `no` | The user requested an independent review loop, not the additive three-lane delivery protocol. |
+| `explicit_three_lane_request` | `yes` | The derived floor requires `audit-protocol-triple-review` as an additive delivery-side protocol; it never replaces critique or final review. |
 
 ## Canonical Module Anchors
 
@@ -234,10 +236,11 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [x] D-12: Usage/handoff evidence is per-TODO and non-authoritative; absent usage is unavailable.
 - [x] D-13: Mechanical token-economy path is deferred to writer lease plus atomic-consumption work.
 - [x] D-14: V1 adds no writer bypass. Existing P0-owned exceptions are neither expanded nor reinterpreted here; each remains subject to the current canonical surface, authorization, and single-writer rules.
-- [x] D-15: Runtime evidence records `declared_model`, `observed_active_model`, `evidence_state`, attestor/source, TODO/session/surface/action binding, and expiry. Declared routing is never upgraded into observed proof.
-- [x] D-16: `exact`, `stronger`, `weaker`, `lateral`, `unknown`, and `unavailable` start blocked unless exact observed proof already produces `go`; a user-confirmed scoped continuation plus successful rerun may produce `go` with `continuation_status=user_confirmed`, remains explicitly unverified when applicable, and never changes routing/provider authority.
+- [x] D-15: Runtime evidence records `declared_model`, `observed_active_model`, `active_model_state`, attestor/source, TODO/session/surface/action binding, and expiry. `active_model_state` is exactly `exact|stronger|weaker|lateral|unknown|unavailable`; declared routing is never upgraded into observed proof.
+- [x] D-16: Every non-`exact` active-model state starts blocked. A user-confirmed scoped continuation plus successful rerun may produce `go` with `continuation_status=user_confirmed`, remains explicitly unverified when applicable, and never changes routing/provider authority. Provider health/selection has no continuation path.
 - [x] D-17: Production resolution uses the canonical contract path only. An alternate contract path is allowed solely as explicit fixture/test injection and is rejected from the operational workflow.
-- [x] D-18: A review kind carries canonical allowed-surface and allowed-role bindings; `implementation_diff_review` is valid only for the canonical formal-review combination.
+- [x] D-18: A review kind carries canonical allowed-surface and allowed-role bindings; `implementation_diff_review` is valid only for `surface=formal-review` and `role=formal-reviewer`.
+- [x] D-19: `audit-protocol-triple-review` is a required delivery-side additive protocol. Canonical-path retirement requires a distinct required cutover-integrity gate; neither replaces critique, implementation-diff review, test-quality audit, or final review.
 
 ## Module Decision Baseline Snapshot
 
@@ -346,13 +349,13 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 1. Explicit skill invocation loads the exact TODO and current workspace.
 2. Intake resolves surface, role, model family, provider, capabilities, precedence, and `fallback_policy`; its only V1 value is `prohibited`. User confirms the map.
-3. Missing/mismatched model or provider state is blocked. A scoped user continuation is accepted only through successful guard rerun and does not fabricate proof or alter authority.
+3. Model and provider admission are independent. A non-`exact` active-model state is blocked until a scoped user continuation passes guard rerun; an absent, invalid, unhealthy, wrong-workspace, or wrong-revision provider remains blocked until an explicitly selected provider validates independently. No human model continuation unlocks a provider.
 4. Routine executor is the sole normal writer. Orchestrator waits with collaboration.wait_agent timeout_ms 240000; timeout is a wait window, not failure.
 5. At checkpoint, collect selected-provider static evidence. Bridge mode requires stable full-workspace live Problems.
 6. Errors, warnings, or new attributable diagnostics return to executor.
 7. With clean Problems, executor runs every declared focused-test command as one non-fail-fast matrix. Each row records command, exit, duration, evidence/output, and product/environment classification. Cleanup is protected.
 8. Any non-green, missing, skipped, or unclassifiable row is non-green. Executor may make one bounded contract-preserving repair batch, then returns to step 5.
-9. Only clean Problems plus green complete matrix dispatches fresh no-context implementation_diff_review through contract-selected formal review.
+9. Only clean Problems plus green complete matrix dispatches fresh no-context implementation_diff_review through canonical `surface=formal-review` and `role=formal-reviewer`.
 10. Reviewer checks frozen diff scope, architecture, contract integrity, and attached test evidence; emits request_changes or approve_green_diff.
 11. Request changes returns to step 5. Approval proceeds only to remaining delivery gates and never replaces final delivery review.
 12. Extra audit is only for explicit security, data integrity, concurrency, public-contract, or user-request risk.
@@ -361,10 +364,10 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 | Evidence state | Initial outcome | User-facing explanation | Valid continuation result after scoped record + guard rerun |
 | --- | --- | --- | --- |
-| `verified-exact` | `go` | Observed active model is the canonical model or a declared canonical equivalence. | n/a |
-| `verified-stronger` | `blocked` | Recommended model is available through a stronger actual model; request explicit token-cost acceptance. | `go` with `continuation_status=user_confirmed` |
-| `verified-weaker` | `blocked` | Actual model is weaker than the recommendation; request explicit quality acceptance. | `go` with `continuation_status=user_confirmed` |
-| `verified-lateral` | `blocked` | Actual model is neither canonically equivalent nor ordered relative to the recommendation. | `go` with user-specific continuation reason; otherwise remain blocked. |
+| `exact` | `go` | Observed active model is the canonical model or a declared canonical equivalence. | n/a |
+| `stronger` | `blocked` | Recommended model is available through a stronger actual model; request explicit token-cost acceptance. | `go` with `continuation_status=user_confirmed` |
+| `weaker` | `blocked` | Actual model is weaker than the recommendation; request explicit quality acceptance. | `go` with `continuation_status=user_confirmed` |
+| `lateral` | `blocked` | Actual model is neither canonically equivalent nor ordered relative to the recommendation. | `go` with user-specific continuation reason; otherwise remain blocked. |
 | `unknown` or `unavailable` | `blocked` | The active runtime model could not be determined; identify the recommended model and request the user's continuation decision. | `go` with an explicitly unverified user-confirmed continuation, or remain blocked. |
 
 The record binds TODO, session, surface, action, canonical recommendation, observed/declaration values, decision, reason, attestor/source, and expiry. The guard rejects expired, mismatched, incomplete, or cross-scope records. No state selects another model or provider automatically.
@@ -441,16 +444,16 @@ The record binds TODO, session, surface, action, canonical recommendation, obser
 - **Global sensitivity level:** none
 - **Why this level:** V1 does not alter a query path, user-flow latency target, concurrent write path, queue, runtime, or deployment system.
 - **Current delivery stage at review time:** Pending
-- **Derived performance/concurrency decision:** recommended (from the 2026-09-27 post-critique audit guard); resolve the four PCV-1 lanes after APROVADO and before their deadlines.
+- **Derived performance/concurrency decision:** recommended (from the 2026-09-27 post-critique audit guard); this pre-APROVADO package resolves the four planned no-surface classifications before approval, and any contrary discovery is material scope drift requiring renewed approval.
 
-| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `EPS-DATA-PATH-CHANGED` | `before_local_implemented` | `n/a` | `not_applicable` | none | none |
-| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `FRC-LIFECYCLE-ASYNC-EFFECT` | `before_local_implemented` | `n/a` | `not_applicable` | none | none |
-| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `BCI-NON-IDEMPOTENT-WRITE` | `before_local_implemented` | `n/a` | `not_applicable` | none | none |
-| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `RLS-QUEUE-WORKER-REALTIME-CHANGED` | `before_production_ready` | `n/a` | `not_applicable` | none | none |
+| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Trigger Rationale | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code | Recorded At (UTC) | Executor ID |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `EPS-DATA-PATH-CHANGED` | Planned V1 changes no read, query, endpoint, or data-access path. | `before_local_implemented` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
+| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `FRC-LIFECYCLE-ASYNC-EFFECT` | Planned V1 changes no retriggerable or lifecycle-sensitive UI async surface. | `before_local_implemented` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
+| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `BCI-NON-IDEMPOTENT-WRITE` | Planned V1 changes no backend write, invariant, job, webhook, or overlapping mutation surface. | `before_local_implemented` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
+| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `RLS-QUEUE-WORKER-REALTIME-CHANGED` | Planned V1 changes no runtime-pressure, queue, worker, realtime, batch, cache, index, or SLO surface. | `before_production_ready` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
 
-These are pre-APROVADO planning classifications, not runtime evidence or gate satisfaction. The global `recommended` audit floor requires the selected executor to reclassify all four lanes under `pcv-1` after APROVADO; the current no-surface forecast may remain `not_needed/not_applicable` only if the approved P2/P3 diff still has no corresponding exposure. Reclassify and rerun the audit guard if P2/P3 changes any of those surfaces.
+The global `recommended` audit floor was resolved by this documented four-lane classification. These terminal no-surface rows are not runtime evidence. No lane may be reclassified after APROVADO: any discovery that P2/P3 touches a corresponding surface is material scope drift, requires renewed user approval, and must be classified before that changed scope executes.
 
 ## Verification Debt Assessment
 
@@ -485,6 +488,19 @@ These are pre-APROVADO planning classifications, not runtime evidence or gate sa
 - **Final review status:** not_run
 - **Findings summary:** no implementation exists
 - **Evidence / reference:** delivery-stage gate after validation, test-quality audit, verification-debt audit, and architecture-adherence review
+
+## Independent Cutover Integrity Audit Gate
+
+- **Cutover audit decision:** required
+- **Why this decision:** V1 retires conflicting provider/fallback wording and makes one JSON-backed canonical selection path authoritative.
+- **Cutover signals in scope:** canonical cutover|legacy-path retirement|fallback bridge
+- **Package mode:** bounded-file-set
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` (additive delivery-side evidence)
+- **Audit focus:** true canonical path|approved temporary exception scope|removal criteria|hidden fallback mirrors|pseudo-canonical fields
+- **Cutover audit status:** not_run
+- **Findings summary:** no implementation exists
+- **Evidence / reference:** delivery-stage gate after P2/P3; inspect consumers, obsolete bridge/CLI wording, and migration/compatibility artifacts for a second authority or implicit fallback.
+- **Waiver authority / reference (required if waived):** n/a
 
 ## Approval
 
@@ -559,6 +575,14 @@ The post-green review order is material and requires the pending fresh review be
 - **Option C:** Run delivery audits during planning. Effort: high; invalid lifecycle placement.
 - **Resolution:** Integrated Option B; the next guard run below supersedes the pre-review fingerprint.
 
+## Reconciled Pre-Prerequisite Critique Record (Non-Gate-Satisfying)
+
+- **Date / mode:** 2026-09-27; second fresh internal no-context, read-only bounded-file-set review selected through the current routing JSON formal-review family.
+- **Baseline assessed:** substantive corrected package `c95cb9d`; `5fbe7f8` only refreshes its freeze reference.
+- **Result:** the external P0/P1 blockers remain; all six internal findings were integrated as `RC-01` through `RC-07` below.
+- **Gate limitation:** This reconciliation is still not the mandatory formal review/critique after P0/P1 close and a new baseline is pushed.
+- **Performance / elegance / structural soundness:** local overhead remains bounded; authority and provider/model paths are less ambiguous; structural readiness remains blocked solely by P0/P1 and the future formal gates.
+
 ## Promotion Finding Routing Ledger
 
 | Finding ID | Finding Source | Severity | Classification | Required Action | Status | Rationale / Follow-up Reference |
@@ -569,11 +593,18 @@ The post-green review order is material and requires the pending fresh review be
 | `PC-04` | internal no-context pre-prerequisite critique | blocker | release-blocker | add state machine and continuation binding | fixed | D-15/D-16 and Runtime-Model Evidence State Machine; implementation still needs fixtures. |
 | `PC-05` | internal no-context pre-prerequisite critique | blocker | release-blocker | close canonical-authority bypasses in P2 fixtures/guard | fixed | D-17, scope, DoD, and validation now require data-driven operational resolution. |
 | `PC-06` | internal no-context pre-prerequisite critique | blocker | release-blocker | bind `implementation_diff_review` to canonical formal-review surface/role | fixed | D-18 and wrong-surface/wrong-role fixtures are required. |
-| `PC-07` | internal no-context pre-prerequisite critique | blocker | release-blocker | record and rerun audit TEACH after material triggers | fixed pending revalidation | Matrix now reflects risk signals; rerun required below and after P0/P1. |
-| `PC-08` | internal no-context pre-prerequisite critique | blocker | release-blocker | complete four PCV-1 lanes | fixed pending validation | EPS/FRC/BCI/RLS rows added; no delivery audit is claimed. |
+| `PC-07` | internal no-context pre-prerequisite critique | blocker | release-blocker | record and rerun audit TEACH after material triggers | fixed | Matrix reflects risk signals; rerun is required after P0/P1 as part of the new formal baseline. |
+| `PC-08` | internal no-context pre-prerequisite critique | blocker | release-blocker | complete four PCV-1 lanes | fixed | EPS/FRC/BCI/RLS are closed pre-APROVADO classifications; scope drift, not post-approval reclassification, handles a new runtime surface. |
 | `PC-09` | internal no-context pre-prerequisite critique | blocker | release-blocker | make post-P0/P1 baseline refresh mandatory | fixed | Review Baseline Freeze now limits `bf67507` to pre-prerequisite review. |
 | `PC-10` | internal no-context pre-prerequisite critique | minor | release-blocker | replace ambiguous fallback wording | fixed | V1 uses `fallback_policy=prohibited`; alternate provider requires user selection and rerun. |
-| `PC-11` | internal no-context pre-prerequisite critique | minor | release-blocker | replace planned test placeholders before APROVADO | blocked | Local CI matrix has an explicit approval-readiness row; exact commands await P0/P1 artifact names. |
+| `PC-11` | internal no-context pre-prerequisite critique | minor | release-blocker | replace planned test placeholders before APROVADO | fixed | Local CI matrix names exact P2/P3 scripts and behavior oracles; P0/P1 block their implementation, not their planning. |
+| `RC-01` | second internal no-context pre-prerequisite critique | high | release-blocker | separate model continuation from provider admission | fixed | D-16, V1 step 3, and provider fixtures now prohibit a human model continuation from unlocking a provider. |
+| `RC-02` | second internal no-context pre-prerequisite critique | high | release-blocker | close PCV-1 plan before APROVADO | fixed | Four terminal no-surface rows now include rationale, date, and executor applicability; new exposure is material scope drift requiring renewed approval. |
+| `RC-03` | second internal no-context pre-prerequisite critique | high | release-blocker | align triple trigger and add cutover audit | fixed | Trigger is `yes`; triple protocol and cutover-integrity gate are required/additive delivery-side gates. |
+| `RC-04` | second internal no-context pre-prerequisite critique | high | release-blocker | close implementation-diff-review role binding | fixed | D-18 and runtime cycle require `formal-review` plus `formal-reviewer`; fixtures reject other combinations. |
+| `RC-05` | second internal no-context pre-prerequisite critique | medium | release-blocker | use one active-model-state enum | fixed | D-15, D-16, matrix, table, and fixtures use exactly `exact|stronger|weaker|lateral|unknown|unavailable`. |
+| `RC-06` | second internal no-context pre-prerequisite critique | medium | release-blocker | name exact P2/P3 test scripts and oracles | fixed | Local CI matrix now names provider, review dispatch, and focused matrix scripts; their declared behavior is the required oracle. |
+| `RC-07` | second internal no-context pre-prerequisite critique | low | follow-up-fast-follow | normalize noncanonical ledger statuses | fixed | PC-07/PC-08 now use canonical `fixed`; remaining future rerun is in rationale. |
 
 ## TODO Closeout Disposition
 
