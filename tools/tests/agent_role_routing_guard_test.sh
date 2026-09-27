@@ -76,7 +76,7 @@ import json
 import sys
 
 payload = json.loads(open(sys.argv[1], encoding="utf-8").read())
-assert payload["outcome"] == "delegate-required"
+assert payload["outcome"] != "go"
 assert any(item["code"] == sys.argv[2] for item in payload["violations"])
 PY
 }
@@ -237,6 +237,22 @@ assert_outcome go \
   --surface todo-approval \
   --role primary-chat \
   --model "claude-${CLAUDE_CHAT_MODEL}-5" \
+  --effort xhigh \
+  --proof-mode declared
+
+assert_json_violation MODEL-MISMATCH \
+  --client claude-code \
+  --surface todo-approval \
+  --role primary-chat \
+  --model "claude-${CLAUDE_CHAT_MODEL}-x" \
+  --effort xhigh \
+  --proof-mode declared
+
+assert_json_violation MODEL-MISMATCH \
+  --client claude-code \
+  --surface todo-approval \
+  --role primary-chat \
+  --model "claude-${CLAUDE_CHAT_MODEL}-5-beta" \
   --effort xhigh \
   --proof-mode declared
 

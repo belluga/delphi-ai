@@ -242,11 +242,11 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Why this decision:** The historic implementation predates the current review baseline protocol. A narrowly scoped, committed and pushed closeout-evidence baseline is required before the recovery review loop so it cannot absorb P1/P2 work.
 - **Trigger stage:** `before the first recovery review or closeout guard run`
 - **Baseline branch:** `v0.6.2-rc`
-- **Baseline commit:** `2b827b25db0f3d39bd1e8e03b899b2478b3da57d`
+- **Baseline commit:** `5348c76d7cea7c00b4bd24de6e287fe29bb320d3`
 - **Baseline push reference:** `origin/v0.6.2-rc`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `the 2026-07-06 approval remains the historic implementation authority; 2b827b2 freezes the bounded D-07 remediation plus its recovery evidence and is pushed to origin.`
-- **Evidence / reference:** `historic approval: user APROVADO on 2026-07-06; current-session responsibility/closeout direction confirmed by user; closeout baseline commit/push 2b827b2 on 2026-09-27`
+- **Findings summary:** `the 2026-07-06 approval remains the historic implementation authority; 5348c76 freezes the bounded D-07 remediation, exact-declaration hardening, and recovery evidence and is pushed to origin.`
+- **Evidence / reference:** `historic approval: user APROVADO on 2026-07-06; current-session responsibility/closeout direction confirmed by user; closeout baseline commit/push 5348c76 on 2026-09-27`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Gate: Review Scope Drift
@@ -256,7 +256,7 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `2b827b2 is the refreshed pushed review baseline; the only successor edit records this baseline and does not alter a material scope-governing section.`
+- **Findings summary:** `5348c76 is the refreshed pushed review baseline; the only successor edit records this baseline and does not alter a material scope-governing section.`
 - **Evidence / reference:** `2026-09-27: python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md`
 - **Waiver authority / reference (required if waived):** `n/a`
 
@@ -512,6 +512,7 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 | --- | --- | --- | --- | --- | --- | --- |
 | `ARCH-P0-BOOTSTRAP-RETIREMENT-001` | `high` | `release-blocker` | `same-todo` | `The expired bootstrap exception is a literal P0 D-07/cutover obligation, not a new behavior or P1/P2 concern.` | `fixed` | `Fresh Sol architecture-opinion re-review on 2026-09-27 found no remaining P0 blocker after JSON exception removal and two negative fixtures; raw packets are transient outside Git.` |
 | `P0-FINAL-ROUTING-MATCH-001` | `high` | `release-blocker` | `same-todo` | `Abbreviated model/effort acceptance defeats P0's literal fail-closed preflight objective; the bounded guard/test repair adds no new selection policy.` | `integrated_pending_re-review` | `Fresh Sol final review on 2026-09-27; routine-executor replaced bidirectional prefix matching with exact aliases plus the narrow existing provider/alias/version form and added negative fixtures. Current review/validation rerun remains required.` |
+| `P0-EXACT-MATCH-TEST-001` | `medium` | `release-blocker` | `same-todo` | `The narrow provider/alias/numeric-version compatibility form is part of the repaired P0 guard; its malformed boundary must be regression-protected before closeout.` | `integrated_pending_re-audit` | `Fresh Terra test-quality audit on 2026-09-27 found missing malformed-version negatives. Routine-executor added contract-derived `claude-<alias>-x` and `claude-<alias>-5-beta` fixtures requiring `MODEL-MISMATCH`; fresh audit remains required.` |
 | `P0-FINAL-PCV-CLOSEOUT-001` | `high` | `release-blocker` | `blocked-user-decision` | `The immutable pcv-1 schema cannot truthfully encode P0's absent runtime surfaces with its current positive reason-code registry; a versioned policy evolution or an exceptional human closure waiver is outside the approved P0 routing scope.` | `blocked` | `Fresh Sol final review on 2026-09-27. Do not silently reinterpret the rows or treat a lane waiver as schema repair; await user decision on separately approved PCV evolution versus explicit P0 closure waiver.` |
 
 ## TODO Closeout Disposition
@@ -562,10 +563,10 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Gate-satisfying evidence expectation:** `required fresh internal no-context audit; external provider evidence does not satisfy the gate`
 - **Audit focus:** `routing fixture coverage, fail-closed assertions, client-capability boundaries, and test-only bypass detection`
 - **Required applicable evidence:** `audit framing|bypass scan|assertion efficacy|issue cards when material findings exist|failure modes|decision adherence evidence`
-- **Audit status:** `no_material_findings`
-- **Findings summary:** `Fresh no-context Terra test-quality audit on 2026-09-27 accepted the bounded delta: it faithfully proves D-07 retirement across both execution surfaces with no test-only bypass, weakened assertion, or inefficient excess coverage.`
-- **Resolution ledger:** `none`
-- **Evidence / reference:** `Structured internal audit/merge completed; raw derived packets remain transient outside Git, while this TODO retains the scope, exact commands, and result summary.`
+- **Audit status:** `findings_integrated`
+- **Findings summary:** `The first fresh Terra audit of the exact-match hardening found P0-EXACT-MATCH-TEST-001: malformed provider/alias/version forms lacked negatives. The bounded fixtures are integrated; a fresh no-context re-audit is still required before closeout.`
+- **Resolution ledger:** `P0-EXACT-MATCH-TEST-001 -> same-todo integrated_pending_re-audit`
+- **Evidence / reference:** `2026-09-27 structured test-quality audit/merge; routine-executor validation of the added negative fixtures: routing test exit 0, 1714 ms; diff check exit 0, 7 ms. Raw packets remain transient outside Git.`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Independent No-Context Final Review Gate
