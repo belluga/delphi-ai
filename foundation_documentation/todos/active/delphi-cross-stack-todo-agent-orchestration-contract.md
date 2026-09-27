@@ -8,17 +8,15 @@
 
 ## Context
 
-Delphi has role/model routing and a pre-execution guard, but not one bounded repeatable method for executing a current cross-stack TODO with the correct executor, static-analysis provider, test matrix, and independent review.
+Delphi has role/model routing and a pre-execution guard. This bounded P2 package adds an explicitly invoked Codex skill and two deterministic helpers for a small, user-directed micro-adjustment while preserving the existing execution boundaries.
 
-The method must reduce discretion, not create a generic coordinator. It preserves Architecture Simplification First, the principal checkout, one normal material writer, exact-TODO scope, and existing AGENTS/profile/authorization rules.
-
-The execution baseline is the exact active TODO plus current Docker/Laravel/Flutter workspace state. Historic SHAs and unrelated Foundation Documentation do not select the initial executor.
+The package reduces discretion without creating a generic coordinator. It preserves Architecture Simplification First, the principal checkout, one normal material writer, exact-TODO scope, and existing AGENTS/profile/authorization rules.
 
 ## Framing Source & Story Slice
 
 - **Feature brief:** direct-to-todo
 - **Primary story ID:** n/a
-- **Why this is the right current slice:** The user requested a durable Delphi contract for agent-selected cross-stack TODO execution, including deterministic admission, provider selection, test/review ordering, and evidence.
+- **Why this is the right current slice:** The user requested a directly invoked Codex executor skill with deterministic role/model resolution and TEACH assessment of bounded micro-adjustment criteria.
 - **Direct-to-TODO rationale:** This is Delphi self-maintenance. It changes process/tooling, not a downstream product feature.
 
 ## Contract Boundary
@@ -35,30 +33,28 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Implementation Intent
 
-- **Current delivery:** Create the V1 workflow, explicitly invoked Codex skill, routing/provider/review guard extensions, tests, and coherent documentation/mirrors.
-- **Planned next steps:** Complete P0, then P1, then refresh independent review and request APROVADO.
+- **Current delivery:** Create one explicitly invoked Codex skill plus deterministic helpers that consume the existing routing JSON.
+- **Planned next steps:** Validate the skill/helpers and retain broader provider/review orchestration for a separately authorized future TODO.
 - **Anticipatory implementation authorized now:** none
-- **Rationale:** V1 consumes existing authority, centralizes only deterministic checks, and defers any local orchestrator-writing exception until a genuine writer-lease capability exists.
+- **Rationale:** This package consumes existing authority and does not migrate the routing schema, add runtime introspection, or create a writer bypass.
 
 ## Delivery Status Canon (Required)
 
 - **Current delivery stage:** Pending
-- **Qualifiers:** Blocked
-- **Next exact step:** await P0 closure, then P1 closure; run a fresh independent review of this tracked TODO before APROVADO.
+- **Qualifiers:** none
+- **Next exact step:** implement and validate the explicitly invoked skill and two deterministic helpers.
 
 ## Active Work State (Required While TODO Remains In active)
 
-- **Work state:** blocked
-- **Why this state now:** P0/P1 own prerequisite routing/schema work, and the post-green test/review order requires a fresh review before this contract is frozen.
-- **Exit condition:** P0 closes with its bootstrap exception retired; P1 closes with schema/taxonomy migration stabilized; the refreshed review converges; the user gives explicit APROVADO.
+- **Work state:** implementation
+- **Why this state now:** The bounded P2 package is authorized directly against the existing JSON authority; no P0/P1 or schema cutover prerequisite is required.
+- **Exit condition:** The skill, helpers, focused tests, and deterministic evidence are complete without changing the existing routing contract.
 
-## Blocker Notes
+## Execution Boundary Clarification
 
-- **Blocker:** Active prerequisite TODOs own routing guard and platform/scenario/settings work.
-- **Why blocked now:** Concurrent changes to their shared config/guard/workflow surfaces violate single-owner discipline.
-- **What unblocks it:** Close P0, then P1, then refresh this TODO's review and obtain APROVADO.
-- **Owner / source:** delphi-pre-execution-agent-routing-guard followed by delphi-platform-scenario-settings-routing-contract.
-- **Last confirmed truth:** The plan is implementation-ready in shape but must not begin until this ordering is true.
+- **Prerequisites:** none beyond the existing `config/agent_role_routing.json` and this exact TODO.
+- **Explicit invocation:** the Codex skill is never selected automatically; invoke it by name for this bounded micro-adjustment.
+- **Authority:** existing JSON remains the sole role/model source; helpers may resolve and report, never mutate or replace it.
 
 ## Execution Lane Tracking (Required)
 
@@ -69,33 +65,28 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 ## Scope
 
-- [ ] Extend the canonical routing schema/guard after P0/P1 so surface, role, model family, capability, precedence, and a `fallback_policy=prohibited` resolve from one authority.
-- [ ] Add active-runtime-model evidence distinct from declared routing selection, with one closed active-model-state enum and explicit continuation outcomes; define quality and token-cost tiers only in canonical schema.
-- [ ] Make model mismatch, unknown identity, or absent runtime proof return blocked with scoped user continuation and rerun.
-- [ ] Add implementation_diff_review as a distinct post-green review kind under formal-review.
-- [ ] Add generic static-analysis provider schema/resolver; absence, invalidity, or failure blocks and provider switching requires explicit user selection plus rerun.
-- [ ] Add the canonical cross-stack workflow and explicitly invoked Codex skill as contract consumers.
-- [ ] Implement executor-owned clean Problems, complete non-fail-fast focused-test matrix, bounded repair, and post-green independent diff review.
-- [ ] Record minimal per-TODO phase/handoff and test/diagnostic/review summaries; keep raw execution payloads only in the ignored temporary artifact root.
-- [ ] Consolidate provider-reported token totals by canonical tier in the exact TODO without estimating usage, converting to cost, or creating telemetry.
-- [ ] Make surface traits, role catalog, review-kind-to-surface binding, and model-family resolution canonical data; production guard invocation cannot replace the contract path, while fixture injection remains test-only.
-- [ ] Bind `implementation_diff_review` canonically to `surface=formal-review` and `role=formal-reviewer`; reject any other surface/role combination.
-- [ ] Update affected workflows, templates, manifests, tooling register, mirrors, and tests.
+- [ ] Add a concise, explicitly invoked Codex skill for the bounded micro-adjustment flow.
+- [ ] Add a deterministic helper that resolves the selected role/model/effort from the existing JSON for a declared surface and client.
+- [ ] Add a deterministic TEACH helper that assesses only the bounded micro-adjustment criteria and returns a blocking or admissible result.
+- [ ] Add focused tests proving JSON authority, no provider fallback, executor-only normal writing, and bounded criteria enforcement.
+- [ ] Record only compact TODO summaries and provider-reported token totals; keep raw artifacts in the ignored temporary root.
 
 ## Out of Scope
 
 - [ ] A second routing authority or hardcoded surface/role/model/review matrix.
 - [ ] Automatic dispatch, automatic subagent spawning, automatic waiver approval, or fabricated runtime proof.
+- [ ] Routing-schema migration, platform/scenario cutover, or changes to the existing global guard/advisor/workflows.
+- [ ] Runtime model introspection, provider switching, provider health bridges, or automatic provider fallback.
 - [ ] Local orchestrator code writing in V1, including unused-import removal.
 - [ ] Generic queue, retry engine, coordinator, patch executor, multi-writer topology, or accounting platform.
 - [ ] Downstream project provider declaration/plugin installation/product implementation.
 - [ ] Implicit CLI fallback, historical-SHA assignment, automatic delivery, or automatic promotion.
 - [ ] A global `pcv-1` schema/policy change; PCV product/runtime lanes are not applicable to this Delphi self-maintenance TODO.
 
-## Diff Expectation Contract (Required Before Delivery)
+## Diff Expectation Contract
 
-- **Contract status:** required before APROVADO
-- **Policy:** strict; unclassified or forbidden paths block delivery
+- **Contract status:** required
+- **Policy:** strict; only the bounded P2 skill/helper package may change
 - **User validation:** required on deviation
 - **Comparison mode:** working_tree
 
@@ -103,23 +94,35 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 | Repository | Path | Baseline ref | Comparison mode |
 | --- | --- | --- | --- |
-| delphi-ai | delphi-ai | capture immediately before APROVADO | working_tree |
-| current downstream project | separately authorized P4 | capture in P4 | working_tree |
+| delphi-ai | . | v0.6.2-rc@634b546 | working_tree |
 
 ### Expected Changed Paths
 
 | Repository | Path glob | Change types | Reason |
 | --- | --- | --- | --- |
-| delphi-ai | config/agent_role_routing.json, schema, routing guard, review dispatch/schema, tests | A or M | Canonical contract and deterministic enforcement. |
-| delphi-ai | workflows/docker, skills, templates, tools/manifest.md, tooling register | A or M | Method, skill, consumer documentation, and mirrors. |
-| delphi-ai | tools/vscode_diagnostics_bridge | A or M | Only if required for provider health/schema support. |
+| delphi-ai | foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md | any | This P2 TODO contract and bounded evidence. |
+| delphi-ai | skills/codex-micro-adjustment-executor/** | any | Explicitly invoked P2 skill package. |
+| delphi-ai | tools/codex_micro_adjustment_routing.py | any | Deterministic JSON-authority resolver. |
+| delphi-ai | tools/codex_micro_adjustment_teach.py | any | Deterministic bounded-adjustment TEACH gate. |
+| delphi-ai | tools/tests/codex_micro_adjustment_executor_test.sh | any | Focused P2 helper/skill regression fixtures. |
 
 ### Not Expected Changed Paths
 
 | Repository | Path glob | Change types | Reason |
 | --- | --- | --- | --- |
-| downstream project | all paths | any | P4 is separately authorized; V1 does not mutate application/product surfaces. |
-| delphi-ai | unrelated promotion, runtime, CI, or stack policy | any | Prevent scope expansion. |
+| delphi-ai | foundation_documentation/todos/active/delphi-platform-scenario-settings-routing-contract.md | any | P1 is out of scope. |
+| delphi-ai | config/agent_role_routing.json | any | Existing JSON authority is unchanged. |
+| delphi-ai | tools/agent_role_routing_guard.py | any | P0/global routing guard is unchanged. |
+| delphi-ai | tools/effort_selection_advisor.py | any | P1/global advisor is unchanged. |
+| delphi-ai | tools/todo_authority_guard.py | any | Global TODO guard is unchanged. |
+| delphi-ai | tools/todo_completion_guard.py | any | Global TODO guard is unchanged. |
+| delphi-ai | tools/todo_deterministic_validator.py | any | Global TODO validator is unchanged. |
+| delphi-ai | tools/review_scope_drift_guard.py | any | Global scope guard is unchanged. |
+| delphi-ai | tools/assumption_code_coherence_guard.py | any | Global coherence guard is unchanged. |
+| delphi-ai | tools/tests/agent_role_routing_guard_test.sh | any | P0 test is unchanged. |
+| delphi-ai | tools/tests/effort_selection_advisor_test.sh | any | P1 test is unchanged. |
+| delphi-ai | workflows/** | any | Existing workflows are unchanged. |
+| delphi-ai | downstream/** | any | Downstream work is out of scope. |
 
 ## Bounded But Elastic Guardrails
 
@@ -368,29 +371,17 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 | Phase | Owner / prerequisite | Bounded outcome | Exit gate |
 | --- | --- | --- | --- |
-| P0 | existing routing-guard TODO | close it and retire bootstrap exception | its closeout completes |
-| P1 | existing platform/scenario/settings TODO after P0 | stabilize approved schema/migration/taxonomy only | its closeout completes |
-| P1.5 | this TODO after P0/P1 | refresh baseline; run architecture/plan/critique gates; run assumption and drift guards; prepare one implementation tuple and pre-approval authority preflight | all planning gates converge and `todo_authority_guard.py --pre-approval` returns `preflight-go` |
-| P2 | this TODO after P1.5 and explicit APROVADO | extend routing guard; add post-green review kind; provider schema/resolver; canonical wording | routing/provider/review fixtures pass |
-| P3 | this TODO after P2 | add explicit workflow/skill, matrix rules, minimal evidence, templates/manifests/mirrors | consumers use JSON roles only |
-| P4 | separately authorized downstream task | create provider declaration and bridge/plugin setup if selected | project provider preflight returns go |
-| P5 | separate future TODO | consider writer lease/atomic mechanical permit | separately approved/validated |
-| P6 | consolidated V1 | exact fixture matrix, TODO/diff validation, fresh final review | all gates pass |
+| P2 | this TODO and explicit skill invocation | resolve existing JSON role/model settings, assess bounded criteria, and execute only the approved micro-adjustment | focused helper tests and TEACH output pass |
+| Future | separately authorized TODO | routing-schema migration, provider/runtime admission, post-green review orchestration, or writer lease | separate approval and validation |
 
 ### V1 Runtime Cycle
 
 1. Explicit skill invocation loads the exact TODO and current workspace.
-2. Intake resolves surface, role, model family, provider, capabilities, precedence, and `fallback_policy`; its only V1 value is `prohibited`. User confirms the map.
-3. Model and provider admission are independent. A non-`exact` active-model state is blocked until a scoped user continuation passes guard rerun; an absent, invalid, unhealthy, wrong-workspace, or wrong-revision provider remains blocked until an explicitly selected provider validates independently. No human model continuation unlocks a provider.
-4. Routine executor is the sole normal writer. Orchestrator waits with collaboration.wait_agent timeout_ms 240000; timeout is a wait window, not failure.
-5. At checkpoint, collect selected-provider static evidence. Bridge mode requires stable full-workspace live Problems.
-6. Errors, warnings, or new attributable diagnostics return to executor.
-7. With clean Problems, executor runs every declared focused-test command as one non-fail-fast matrix. Raw stdout/stderr and payloads go only to the ignored temporary root; the TODO records the command, exit, duration, bounded result reference, and product/environment classification. Cleanup is protected.
-8. Any non-green, missing, skipped, or unclassifiable row is non-green. Executor may make one bounded contract-preserving repair batch, then returns to step 5.
-9. Only clean Problems plus green complete matrix dispatches fresh no-context implementation_diff_review through canonical `surface=formal-review` and `role=formal-reviewer`.
-10. Reviewer checks frozen diff scope, architecture, contract integrity, and attached test evidence; emits request_changes or approve_green_diff.
-11. Request changes returns to step 5. Approval proceeds only to remaining delivery gates and never replaces final delivery review.
-12. Extra audit is only for explicit security, data integrity, concurrency, public-contract, or user-request risk.
+2. The resolver reads `config/agent_role_routing.json` and reports the selected surface, role, model family, model alias, effort, and proof policy; it never edits the JSON or invents a provider fallback.
+3. The TEACH helper checks only the bounded micro-adjustment criteria: exact TODO scope, one normal executor writer, no runtime/provider/schema cutover, reversible bounded edits, and compact evidence.
+4. The routine executor is the sole normal material writer; the skill does not grant primary-chat or alternate-provider bypasses.
+5. Raw command/review/usage payloads remain under the ignored temporary artifact root. The exact TODO records only compact phase/result summaries and provider-reported token totals by canonical tier; unavailable usage stays `unavailable`.
+6. Any criterion failure returns a deterministic TEACH block and requires user correction before rerun; no automatic dispatch, retry, fallback, or waiver is created.
 
 ### Execution Artifact & Token Ledger
 
@@ -440,9 +431,9 @@ The record binds TODO, session, surface, action, canonical recommendation, obser
 ## Plan Review Gate
 
 - **Gate decision:** required
-- **Why:** A material refinement now puts complete executor-owned focused-test matrix and repair before independent diff review.
+- **Why:** The bounded skill/helpers package needs a focused review of JSON authority, explicit invocation, writer boundaries, and TEACH criteria.
 - **Reviewer selection:** Resolve formal-review/strongest-review through routing JSON; no named model here.
-- **Focus:** P0/P1 ownership, taxonomy, provider non-fallback, model continuation, matrix/review order, test-strength preservation, and no V1 writer bypass.
+- **Focus:** existing JSON authority, no automatic provider fallback, executor-only normal writing, ignored raw artifacts, compact TODO summaries, and no generic coordinator drift.
 - **Status:** pending fresh review after P0/P1
 
 ### Failure Modes & Edge Cases
@@ -553,7 +544,7 @@ The record binds TODO, session, surface, action, canonical recommendation, obser
 ## Approval
 
 - **Status:** not requested
-- **Required before implementation:** P0/P1 closure, refreshed plan review/critique, assumption-code coherence, review-scope-drift evidence, pre-approval authority `preflight-go`, and explicit user APROVADO.
+- **Required before implementation:** explicit invocation of this skill and the deterministic resolver/TEACH helpers; no P0/P1 or schema-cutover prerequisite.
 
 ## Rules Acknowledgement / Ingestion
 
