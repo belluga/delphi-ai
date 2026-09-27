@@ -195,7 +195,6 @@
       "failure_outcome": "delegate-required",
       "waiver_allowed": true,
       "allowed_exception_reasons": [
-        "bootstrap-guard-implementation",
         "reconciliation",
         "merge-conflict",
         "minimal-integration-glue"
@@ -218,7 +217,6 @@
       "failure_outcome": "delegate-required",
       "waiver_allowed": true,
       "allowed_exception_reasons": [
-        "bootstrap-guard-implementation",
         "reconciliation",
         "merge-conflict",
         "minimal-integration-glue"

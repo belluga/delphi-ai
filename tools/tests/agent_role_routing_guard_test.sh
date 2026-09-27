@@ -21,7 +21,6 @@ PY
 
 CODEX_CHAT_MODEL="$(contract_model codex chat_orchestrator 0)"
 CODEX_ROUTINE_MODEL="$(contract_model codex routine_executor 0)"
-CODEX_ROUTINE_FALLBACK="$(contract_model codex routine_executor 1)"
 CODEX_REVIEW_MODEL="$(contract_model codex strongest_review 0)"
 CLAUDE_CHAT_MODEL="$(contract_model claude-code chat_orchestrator 0)"
 CLAUDE_REVIEW_MODEL="$(contract_model claude-code strongest_review 0)"
@@ -113,13 +112,23 @@ assert_outcome go \
   --client codex \
   --surface implementation \
   --role routine-executor \
-  --model "$CODEX_ROUTINE_FALLBACK" \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
   --proof-mode declared
 
-assert_outcome go \
+assert_outcome blocked \
   --client codex \
   --surface implementation \
+  --role primary-chat \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium \
+  --proof-mode waiver \
+  --exception-reason bootstrap-guard-implementation \
+  --waiver-reference "D-07 bootstrap exception"
+
+assert_outcome blocked \
+  --client codex \
+  --surface implementation-validation \
   --role primary-chat \
   --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
@@ -138,7 +147,7 @@ assert_outcome review-required \
   --client codex \
   --surface formal-review \
   --role formal-reviewer \
-  --model "$CODEX_ROUTINE_FALLBACK" \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort ExtraRight-or-closest-equivalent \
   --proof-mode declared
 
