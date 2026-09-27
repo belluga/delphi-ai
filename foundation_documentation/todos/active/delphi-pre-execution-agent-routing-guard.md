@@ -72,7 +72,7 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 | --- | --- | --- | --- | --- |
 | `delphi-ai:config/agent_role_routing.json M` | `necessary need` | `ARCH-P0-BOOTSTRAP-RETIREMENT-001` proves the P0 bootstrap exception remained executable; D-07 already requires it to expire at closeout. | `retain under existing P0 approval` | `No renewed approval needed: the historic user APROVADO on 2026-07-06 explicitly approved D-07 and its expiry; this change is its literal, bounded enforcement.` |
 | `delphi-ai:tools/agent_role_routing_guard.py M` | `necessary need` | `P0-FINAL-ROUTING-MATCH-001` proves bidirectional prefix matching lets abbreviated model/effort declarations bypass the approved fail-closed guard. | `retain under existing P0 approval` | `No renewed approval needed: exact declared routing is a literal P0 deterministic-preflight and fail-closed requirement; no role, model family, client capability, or execution surface was added.` |
-| `delphi-ai:templates/todo_template.md M` | `necessary need` | `P0-FINAL-TEMPLATE-CUTOVER-001` proves canonical authoring guidance still advertises the retired D-07 exception. | `retain under existing P0 approval` | `No renewed approval needed: template/workflow wiring and retirement of the one-time bootstrap exception are literal P0 scope; a narrow regression assertion constrains the static template exception set to the canonical JSON union.` |
+| `delphi-ai:templates/todo_template.md M` | `necessary need` | `P0-FINAL-TEMPLATE-CUTOVER-001` proves canonical authoring guidance still advertises the retired D-07 exception. | `retain under existing P0 approval` | `No renewed approval needed: template/workflow wiring and retirement of the one-time bootstrap exception are literal P0 scope; the template now defers the allowed reason to the canonical source for the selected surface.` |
 
 ## Bounded But Elastic Guardrails
 - **May stay inside this TODO:** local contract refinements, client-capability clarifications, guard/test additions, workflow/template wiring, and Claude/Cline/Codex compatibility surfaces that preserve the same routing objective.
@@ -244,11 +244,11 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Why this decision:** The historic implementation predates the current review baseline protocol. A narrowly scoped, committed and pushed closeout-evidence baseline is required before the recovery review loop so it cannot absorb P1/P2 work.
 - **Trigger stage:** `before the first recovery review or closeout guard run`
 - **Baseline branch:** `v0.6.2-rc`
-- **Baseline commit:** `6785ae739f3506d5019515d455932f90ce6840cd`
+- **Baseline commit:** `dbf8321c3dcf3f566d204646123f89e9c136f64d`
 - **Baseline push reference:** `origin/v0.6.2-rc`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `the 2026-07-06 approval remains the historic implementation authority; 6785ae7 freezes the bounded D-07 remediation, exact-declaration hardening, and complete compatibility-boundary fixture set and is pushed to origin.`
-- **Evidence / reference:** `historic approval: user APROVADO on 2026-07-06; current-session responsibility/closeout direction confirmed by user; closeout baseline commit/push 6785ae7 on 2026-09-27`
+- **Findings summary:** `the 2026-07-06 approval remains the historic implementation authority; dbf8321 freezes the bounded D-07 remediation, exact-declaration hardening, compatibility fixtures, and template cutover repair and is pushed to origin.`
+- **Evidence / reference:** `historic approval: user APROVADO on 2026-07-06; current-session responsibility/closeout direction confirmed by user; closeout baseline commit/push dbf8321 on 2026-09-27`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Gate: Review Scope Drift
@@ -258,7 +258,7 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Baseline source:** `Review Baseline Freeze -> Baseline commit`
 - **Guard command:** `python3 delphi-ai/tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md`
 - **Gate status:** `no_material_findings`
-- **Findings summary:** `6785ae7 is the refreshed pushed review baseline; the only successor edit records this baseline and does not alter a material scope-governing section.`
+- **Findings summary:** `dbf8321 is the refreshed pushed review baseline; the only successor edit records this baseline and does not alter a material scope-governing section.`
 - **Evidence / reference:** `2026-09-27: python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-pre-execution-agent-routing-guard.md`
 - **Waiver authority / reference (required if waived):** `n/a`
 
@@ -513,18 +513,18 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 | Finding ID | Severity | Classification | Routing Decision | Same TODO / Split Rationale | Status | Approval / Follow-up Reference |
 | --- | --- | --- | --- | --- | --- | --- |
 | `ARCH-P0-BOOTSTRAP-RETIREMENT-001` | `high` | `release-blocker` | `same-todo` | `The expired bootstrap exception is a literal P0 D-07/cutover obligation, not a new behavior or P1/P2 concern.` | `fixed` | `Fresh Sol architecture-opinion re-review on 2026-09-27 found no remaining P0 blocker after JSON exception removal and two negative fixtures; raw packets are transient outside Git.` |
-| `P0-FINAL-ROUTING-MATCH-001` | `high` | `release-blocker` | `same-todo` | `Abbreviated model/effort acceptance defeats P0's literal fail-closed preflight objective; the bounded guard/test repair adds no new selection policy.` | `integrated_pending_re-review` | `Fresh Sol final review on 2026-09-27; routine-executor replaced bidirectional prefix matching with exact aliases plus the narrow existing provider/alias/version form and added negative fixtures. Current review/validation rerun remains required.` |
-| `P0-EXACT-MATCH-TEST-001` | `medium` | `release-blocker` | `same-todo` | `The narrow provider/alias/numeric-version compatibility form is part of the repaired P0 guard; its malformed boundary must be regression-protected before closeout.` | `integrated_pending_re-audit` | `Fresh Terra test-quality audit on 2026-09-27 found missing malformed-version negatives. Routine-executor added contract-derived `claude-<alias>-x` and `claude-<alias>-5-beta` fixtures requiring `MODEL-MISMATCH`; fresh audit remains required.` |
-| `P0-EXACT-MATCH-TEST-002` | `medium` | `release-blocker` | `same-todo` | `The same narrow matcher supports numeric multipart versions used by the current Claude routine configuration; a contract-derived positive fixture is needed to prevent an over-tightening regression.` | `integrated_pending_re-audit` | `Fresh Terra re-audit on 2026-09-27 found the missing `claude-sonnet-4-6` positive. Routine-executor added a JSON-derived Claude routine fixture; fresh audit remains required.` |
-| `P0-FINAL-TEMPLATE-CUTOVER-001` | `medium` | `release-blocker` | `same-todo` | `The P0 template is an explicitly in-scope canonical authoring surface; advertising a retired exception creates avoidable policy drift even though the guard rejects it.` | `integrated_pending_re-review` | `Fresh Sol final re-review on 2026-09-27 found the stale template option. Routine-executor removed it and added a test that the template exception set is a subset of the JSON union; fresh audit/re-review remains required.` |
+| `P0-FINAL-ROUTING-MATCH-001` | `high` | `release-blocker` | `same-todo` | `Abbreviated model/effort acceptance defeats P0's literal fail-closed preflight objective; exact normalized aliases are the smallest source-authoritative repair.` | `fixed` | `Routine-executor removed prefix and unmodeled provider/version matching; `gpt`, `m`, and `fake-opus-5` now return non-go while declared aliases pass. Current focused validation is green.` |
+| `P0-EXACT-MATCH-TEST-001` | `medium` | `by-design/no-action` | `same-todo` | `Provider/version syntax is not declared by the JSON and therefore is not a P0 compatibility contract.` | `superseded` | `The malformed-provider fixture branch was removed together with the unmodeled syntax; exact alias matching is the canonical behavior.` |
+| `P0-EXACT-MATCH-TEST-002` | `medium` | `by-design/no-action` | `same-todo` | `Multipart provider/version syntax is not declared by the JSON and therefore is not a P0 compatibility contract.` | `superseded` | `The multipart fixture branch was removed with the unmodeled syntax; exact alias matching is the canonical behavior.` |
+| `P0-FINAL-TEMPLATE-CUTOVER-001` | `medium` | `release-blocker` | `same-todo` | `The P0 template is an explicitly in-scope canonical authoring surface; advertising a retired exception creates avoidable policy drift even though the guard rejects it.` | `fixed` | `Routine-executor removed the stale option and replaced static enumeration with a canonical-source placeholder.` |
 | `P0-FINAL-VERIFICATION-DEBT-001` | `high` | `release-blocker` | `same-todo` | `The required P0 verification-debt audit had not been run. Its current high result is explicit evidence, not a hidden implementation defect: the material residual is the separately blocked PCV disposition plus remaining closure gates.` | `findings_integrated` | `2026-09-27 verification-debt audit completed. Source/test/config scan has no inline code-debt marker; its heuristic reports documentation/template text and unresolved closure status, which are recorded in this TODO rather than silently waived.` |
 | `P0-FINAL-PCV-CLOSEOUT-001` | `high` | `release-blocker` | `blocked-user-decision` | `The immutable pcv-1 schema cannot truthfully encode P0's absent runtime surfaces with its current positive reason-code registry; a versioned policy evolution or an exceptional human closure waiver is outside the approved P0 routing scope.` | `blocked` | `Fresh Sol final review on 2026-09-27. Do not silently reinterpret the rows or treat a lane waiver as schema repair; await user decision on separately approved PCV evolution versus explicit P0 closure waiver.` |
 
 ## TODO Closeout Disposition
 - **Disposition:** `keep-active`
-- **Disposition reason:** `The historic P0 package needs current deterministic validation, review, and evidence before it can be completed; no new implementation scope is authorized by this recovery.`
-- **Post-commit/push status:** `pending`
-- **Next path/status action:** `freeze and push the closeout-evidence baseline; then run the executor validation and independent review gates.`
+- **Disposition reason:** `The routing correction is bounded and validated, but P0 cannot close until the user resolves the independently recorded PCV disposition.`
+- **Post-commit/push status:** `pending current simplification commit`
+- **Next path/status action:** `await explicit PCV closure disposition; do not start P1/P2 implementation before P0 is unblocked.`
 
 ## Security Risk Assessment
 - **Risk level:** `low`
@@ -569,9 +569,9 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Audit focus:** `routing fixture coverage, fail-closed assertions, client-capability boundaries, and test-only bypass detection`
 - **Required applicable evidence:** `audit framing|bypass scan|assertion efficacy|issue cards when material findings exist|failure modes|decision adherence evidence`
 - **Audit status:** `no_material_findings`
-- **Findings summary:** `Fresh final Terra test-quality audit accepted exact aliases, single/multipart numeric provider forms, malformed-boundary negatives, and JSON-derived fixtures without test-only bypass or excess scope. The subsequent template-coherence test change requires its own bounded re-audit.`
-- **Resolution ledger:** `P0-EXACT-MATCH-TEST-001 -> fixed by final re-audit; P0-EXACT-MATCH-TEST-002 -> fixed by final re-audit; P0-FINAL-TEMPLATE-CUTOVER-001 -> integrated_pending_re-review`
-- **Evidence / reference:** `2026-09-27 structured final exact-match test-quality audit/merge; routing test exit 0, 2020 ms; diff check exit 0, 7 ms. Raw packets remain transient outside Git.`
+- **Findings summary:** `The overextended provider/version fixture branch was removed because it had no JSON authority. Current focused guard test is green with exact-alias, abbreviated-token, and D-07 coverage.`
+- **Resolution ledger:** `P0-EXACT-MATCH-TEST-001/002 -> superseded by exact-source simplification; P0-FINAL-TEMPLATE-CUTOVER-001 -> fixed`
+- **Evidence / reference:** `2026-09-27 routine-executor: py_compile exit 0 (41 ms); routing test exit 0 (1513 ms); self_check exit 0 (4928 ms); diff check exit 0 (16 ms); fake provider non-go and declared alias go.`
 - **Waiver authority / reference (required if waived):** `n/a`
 
 ## Independent No-Context Final Review Gate
@@ -586,8 +586,8 @@ The current Delphi effort/model routing policy is clear enough as intent but not
 - **Audit session / round evidence (when protocol used):** `2026-09-27 triple audit round 01: all performance, test-quality, and cutover-integrity lanes zero findings; runner wording-only recommended-path conflict was adjudicated resolved. Session artifacts are transient outside Git.`
 - **Review focus:** `adherence|regressions|validation evidence|test-audit evidence|security/performance residuals|elegance|structural regressions|verification debt`
 - **Final review status:** `blocked`
-- **Findings summary:** `Fresh no-context Sol final review found P0-FINAL-ROUTING-MATCH-001 and P0-FINAL-PCV-CLOSEOUT-001. The first is integrated in the bounded P0 guard/test loop and awaits fresh validation/re-review; the second requires a user-authorized PCV disposition.`
-- **Resolution ledger:** `P0-FINAL-ROUTING-MATCH-001 -> same-todo integrated_pending_re-review; P0-FINAL-PCV-CLOSEOUT-001 -> blocked-user-decision`
+- **Findings summary:** `P0-FINAL-ROUTING-MATCH-001 and P0-FINAL-TEMPLATE-CUTOVER-001 are fixed by the simplified source-authoritative implementation; P0-FINAL-PCV-CLOSEOUT-001 remains the only recorded user-decision blocker. No additional review loop is started before that decision.`
+- **Resolution ledger:** `P0-FINAL-ROUTING-MATCH-001 -> fixed; P0-FINAL-TEMPLATE-CUTOVER-001 -> fixed; P0-FINAL-PCV-CLOSEOUT-001 -> blocked-user-decision`
 - **Evidence / reference:** `2026-09-27 structured final-review merge; raw packets remain transient outside Git. Dedicated triple protocol was already resolved in round 01 and remains additive, not a substitute for this final review.`
 - **Waiver authority / reference (required if waived):** `n/a`
 

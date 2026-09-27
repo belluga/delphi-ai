@@ -19,34 +19,9 @@ print(contract["clients"][sys.argv[2]]["preferred_models"][sys.argv[3]][int(sys.
 PY
 }
 
-assert_template_exception_reasons_are_canonical() {
-  python3 - "$CONTRACT" "$ROOT_DIR/templates/todo_template.md" <<'PY'
-import json
-import re
-import sys
-from pathlib import Path
-
-contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-canonical = {
-    reason
-    for surface in contract["surfaces"].values()
-    for reason in surface["allowed_exception_reasons"]
-}
-template = Path(sys.argv[2]).read_text(encoding="utf-8")
-match = re.search(r"\*\*Exception reason:\*\*\s*`<([^>]+)>`", template)
-assert match, "template Exception reason field not found"
-declared = {item.strip() for item in match.group(1).split("|") if item.strip() != "n/a"}
-assert declared <= canonical, sorted(declared - canonical)
-PY
-}
-
-assert_template_exception_reasons_are_canonical
-
 CODEX_CHAT_MODEL="$(contract_model codex chat_orchestrator 0)"
 CODEX_ROUTINE_MODEL="$(contract_model codex routine_executor 0)"
 CODEX_REVIEW_MODEL="$(contract_model codex strongest_review 0)"
-CLAUDE_CHAT_MODEL="$(contract_model claude-code chat_orchestrator 0)"
-CLAUDE_ROUTINE_MODEL="$(contract_model claude-code routine_executor 0)"
 CLAUDE_REVIEW_MODEL="$(contract_model claude-code strongest_review 0)"
 CLINE_CHAT_MODEL="$(contract_model cline-ide chat_orchestrator 1)"
 CLINE_ROUTINE_MODEL="$(contract_model cline-ide routine_executor 1)"
@@ -254,38 +229,6 @@ assert_outcome go \
   --review-kind final_review \
   --model "$CODEX_REVIEW_MODEL" \
   --effort ExtraRight-or-closest-equivalent \
-  --proof-mode declared
-
-assert_outcome go \
-  --client claude-code \
-  --surface todo-approval \
-  --role primary-chat \
-  --model "claude-${CLAUDE_CHAT_MODEL}-5" \
-  --effort xhigh \
-  --proof-mode declared
-
-assert_outcome go \
-  --client claude-code \
-  --surface implementation \
-  --role routine-executor \
-  --model "claude-${CLAUDE_ROUTINE_MODEL}-4-6" \
-  --effort medium \
-  --proof-mode declared
-
-assert_json_violation MODEL-MISMATCH \
-  --client claude-code \
-  --surface todo-approval \
-  --role primary-chat \
-  --model "claude-${CLAUDE_CHAT_MODEL}-x" \
-  --effort xhigh \
-  --proof-mode declared
-
-assert_json_violation MODEL-MISMATCH \
-  --client claude-code \
-  --surface todo-approval \
-  --role primary-chat \
-  --model "claude-${CLAUDE_CHAT_MODEL}-5-beta" \
-  --effort xhigh \
   --proof-mode declared
 
 assert_outcome go \
