@@ -19,6 +19,29 @@ print(contract["clients"][sys.argv[2]]["preferred_models"][sys.argv[3]][int(sys.
 PY
 }
 
+assert_template_exception_reasons_are_canonical() {
+  python3 - "$CONTRACT" "$ROOT_DIR/templates/todo_template.md" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+contract = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+canonical = {
+    reason
+    for surface in contract["surfaces"].values()
+    for reason in surface["allowed_exception_reasons"]
+}
+template = Path(sys.argv[2]).read_text(encoding="utf-8")
+match = re.search(r"\*\*Exception reason:\*\*\s*`<([^>]+)>`", template)
+assert match, "template Exception reason field not found"
+declared = {item.strip() for item in match.group(1).split("|") if item.strip() != "n/a"}
+assert declared <= canonical, sorted(declared - canonical)
+PY
+}
+
+assert_template_exception_reasons_are_canonical
+
 CODEX_CHAT_MODEL="$(contract_model codex chat_orchestrator 0)"
 CODEX_ROUTINE_MODEL="$(contract_model codex routine_executor 0)"
 CODEX_REVIEW_MODEL="$(contract_model codex strongest_review 0)"
