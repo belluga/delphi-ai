@@ -87,6 +87,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [ ] Generic queue, retry engine, coordinator, patch executor, multi-writer topology, or accounting platform.
 - [ ] Downstream project provider declaration/plugin installation/product implementation.
 - [ ] Implicit CLI fallback, historical-SHA assignment, automatic delivery, or automatic promotion.
+- [ ] A global `pcv-1` schema/policy change; PCV product/runtime lanes are not applicable to this Delphi self-maintenance TODO.
 
 ## Diff Expectation Contract (Required Before Delivery)
 
@@ -190,7 +191,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 
 - **Canonical method:** `wf-docker-audit-escalation-method`
 - **Guard command:** `python3 tools/audit_escalation_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md`
-- **Latest TEACH evidence / artifact:** 2026-09-27 `audit_escalation_guard.py` -> `Overall outcome: go`; reconciled-critique fingerprint `00fa3104f472`.
+- **Latest TEACH evidence / artifact:** 2026-09-27 `audit_escalation_guard.py` -> `Overall outcome: go`; Delphi self-maintenance fingerprint `e7b8e59cd3e2`.
 
 | Trigger | Value | Notes |
 | --- | --- | --- |
@@ -202,9 +203,9 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 | `touches_runtime_or_infra` | `no` | V1 does not change product runtime, deployment, or infrastructure; a project provider instance is deferred to P4. |
 | `touches_tests` | `yes` | Routing, provider, review, and matrix regressions require fixtures. |
 | `critical_user_journey` | `no` | This is Delphi self-maintenance, not a downstream user journey. |
-| `release_or_promotion_critical` | `yes` | The future canonical routing/provider/review behavior materially governs delivery confidence even though this artifact itself makes no delivery claim. |
-| `high_severity_plan_review_issue` | `yes` | The pre-prerequisite critique found unresolved P0/P1 ownership/taxonomy and V1-contract blockers. |
-| `explicit_three_lane_request` | `yes` | The derived floor requires `audit-protocol-triple-review` as an additive delivery-side protocol; it never replaces critique or final review. |
+| `release_or_promotion_critical` | `no` | This is Delphi self-maintenance planning, not a downstream product release or promotion package. |
+| `high_severity_plan_review_issue` | `no` | The internal critique findings are integrated; P0/P1 are external prerequisites, not a runtime/product audit trigger for this TODO. |
+| `explicit_three_lane_request` | `no` | The user requested independent review loops, not the dedicated delivery-side three-lane protocol. |
 
 ## Canonical Module Anchors
 
@@ -240,7 +241,8 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - [x] D-16: Every non-`exact` active-model state starts blocked. A user-confirmed scoped continuation plus successful rerun may produce `go` with `continuation_status=user_confirmed`, remains explicitly unverified when applicable, and never changes routing/provider authority. Provider health/selection has no continuation path.
 - [x] D-17: Production resolution uses the canonical contract path only. An alternate contract path is allowed solely as explicit fixture/test injection and is rejected from the operational workflow.
 - [x] D-18: A review kind carries canonical allowed-surface and allowed-role bindings; `implementation_diff_review` is valid only for `surface=formal-review` and `role=formal-reviewer`.
-- [x] D-19: `audit-protocol-triple-review` is a required delivery-side additive protocol. Canonical-path retirement requires a distinct required cutover-integrity gate; neither replaces critique, implementation-diff review, test-quality audit, or final review.
+- [x] D-19: `audit-protocol-triple-review` is optional/recommended only when the audit floor requests it. Canonical-path retirement still requires a distinct required cutover-integrity gate; neither replaces critique, implementation-diff review, test-quality audit, or final review.
+- [x] D-20: Delphi self-maintenance is not a PCV product/runtime lane. Its `PCV-NOT-TRIGGERED` result does not alter the global `pcv-1` policy and any separately authorized downstream/product TODO evaluates PCV under its own scope.
 
 ## Module Decision Baseline Snapshot
 
@@ -413,7 +415,7 @@ The record binds TODO, session, surface, action, canonical recommendation, obser
 - **Package minimum contents:** frozen baseline|approved scope boundary|assumptions preview|execution plan summary|issue cards|residual risks|existing blockers
 - **Critique isolation mode:** fresh internal no-context reviewer
 - **Internal reviewer mandate:** required; the reviewer is not the implementing agent, waits are status-based, and an external provider does not satisfy this gate.
-- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is required at delivery and additive; it never substitutes for this critique.
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is recommended only if a future audit rerun derives it; it is additive and never substitutes for this critique.
 - **Critique lenses:** correctness|performance|elegance|structural-soundness|risk
 - **Trigger:** After P0/P1 closure, plan review convergence, and baseline freeze; before APROVADO.
 - **Focus:** Simplification First, scope expansion, second authority, implicit fallback, generic coordinator/telemetry drift, and premature mechanical exception.
@@ -442,18 +444,11 @@ The record binds TODO, session, surface, action, canonical recommendation, obser
 
 - **Policy schema version:** `pcv-1`
 - **Global sensitivity level:** none
-- **Why this level:** V1 does not alter a query path, user-flow latency target, concurrent write path, queue, runtime, or deployment system.
+- **Why this level:** V1 changes Delphi governance tooling only; it does not alter a downstream query path, user-flow latency target, concurrent write path, queue, runtime, or deployment system.
 - **Current delivery stage at review time:** Pending
-- **Derived performance/concurrency decision:** recommended (from the 2026-09-27 post-critique audit guard); this pre-APROVADO package resolves the four planned no-surface classifications before approval, and any contrary discovery is material scope drift requiring renewed approval.
-
-| Lane ID | Lane | Trigger Result | Trigger Severity | Trigger Reason Code | Trigger Rationale | Gate Deadline | Minimum Evidence Rule | State | Residual Risk | Uncertainty Reason Code | Recorded At (UTC) | Executor ID |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `EPS` | `endpoint-performance-scrutiny` | `not_needed` | `low` | `EPS-DATA-PATH-CHANGED` | Planned V1 changes no read, query, endpoint, or data-access path. | `before_local_implemented` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
-| `FRC` | `frontend-race-condition-validation` | `not_needed` | `low` | `FRC-LIFECYCLE-ASYNC-EFFECT` | Planned V1 changes no retriggerable or lifecycle-sensitive UI async surface. | `before_local_implemented` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
-| `BCI` | `backend-concurrency-idempotency-validation` | `not_needed` | `low` | `BCI-NON-IDEMPOTENT-WRITE` | Planned V1 changes no backend write, invariant, job, webhook, or overlapping mutation surface. | `before_local_implemented` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
-| `RLS` | `runtime-load-stress-validation` | `not_needed` | `low` | `RLS-QUEUE-WORKER-REALTIME-CHANGED` | Planned V1 changes no runtime-pressure, queue, worker, realtime, batch, cache, index, or SLO surface. | `before_production_ready` | `n/a` | `not_applicable` | none | none | `2026-09-27T11:47:03Z` | `not_applicable` |
-
-The global `recommended` audit floor was resolved by this documented four-lane classification. These terminal no-surface rows are not runtime evidence. No lane may be reclassified after APROVADO: any discovery that P2/P3 touches a corresponding surface is material scope drift, requires renewed user approval, and must be classified before that changed scope executes.
+- **PCV applicability:** not applicable to this Delphi self-maintenance TODO by the user's scope clarification.
+- **Derived performance/concurrency decision:** not_needed (2026-09-27 audit guard; `PCV-NOT-TRIGGERED`).
+- **Boundary:** Do not alter `pcv-1`, invent no lane values, and do not use PCV rows as a surrogate for Delphi tooling review. If a later separately authorized downstream/product TODO changes endpoint, async UI, backend-write, or runtime-pressure behavior, that TODO applies the PCV method under its own scope.
 
 ## Verification Debt Assessment
 
@@ -484,7 +479,7 @@ The global `recommended` audit floor was resolved by this documented four-lane c
 - **Impact signals in scope:** cross-module blast radius|public contract/schema/api
 - **Package mode:** bounded-file-set
 - **Review isolation mode:** fresh internal no-context reviewer
-- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is required and additive at delivery; it cannot replace this final review.
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` is recommended only if a future audit rerun derives it; it is additive and cannot replace this final review.
 - **Final review status:** not_run
 - **Findings summary:** no implementation exists
 - **Evidence / reference:** delivery-stage gate after validation, test-quality audit, verification-debt audit, and architecture-adherence review
@@ -495,7 +490,7 @@ The global `recommended` audit floor was resolved by this documented four-lane c
 - **Why this decision:** V1 retires conflicting provider/fallback wording and makes one JSON-backed canonical selection path authoritative.
 - **Cutover signals in scope:** canonical cutover|legacy-path retirement|fallback bridge
 - **Package mode:** bounded-file-set
-- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` (additive delivery-side evidence)
+- **Canonical multi-lane audit protocol:** `audit-protocol-triple-review` only if separately derived/recommended; it remains additive delivery-side evidence.
 - **Audit focus:** true canonical path|approved temporary exception scope|removal criteria|hidden fallback mirrors|pseudo-canonical fields
 - **Cutover audit status:** not_run
 - **Findings summary:** no implementation exists
@@ -567,11 +562,11 @@ The post-green review order is material and requires a fresh review after the po
 - **Option C:** Add another resolver/configuration layer. Effort/risk/maintenance: high; scope expansion prohibited.
 - **Resolution:** Integrated Option B as D-17/D-18 and validation fixtures.
 
-#### PR-04 — Audit assertions need a real TEACH record and complete PCV shape
+#### PR-04 — Audit assertions need a real TEACH record without misapplying PCV
 
-- **Evidence:** Audit decisions must come from the trigger matrix; PCV-1 requires independent EPS/FRC/BCI/RLS disposition rows.
+- **Evidence:** Audit decisions must come from the trigger matrix; PCV-1 is a product/runtime lane policy and this TODO is Delphi self-maintenance.
 - **Option A:** Leave prose-only derived claims. Effort: low; risk: medium; structural soundness: regresses.
-- **Option B (recommended):** Record the executed TEACH result, re-run after material trigger changes, include four `not_needed`/`not_applicable` lanes, and demand exact P2/P3 commands before APROVADO. Effort: low; performance: neutral; structural soundness: improves.
+- **Option B (recommended):** Record the executed TEACH result, re-run after material trigger changes, record PCV non-applicability for this scope without changing the global policy, and demand exact P2/P3 commands before APROVADO. Effort: low; performance: neutral; structural soundness: improves.
 - **Option C:** Run delivery audits during planning. Effort: high; invalid lifecycle placement.
 - **Resolution:** Integrated Option B; the next guard run below supersedes the pre-review fingerprint.
 
@@ -594,18 +589,18 @@ The post-green review order is material and requires a fresh review after the po
 | `PC-05` | internal no-context pre-prerequisite critique | blocker | release-blocker | close canonical-authority bypasses in P2 fixtures/guard | fixed | D-17, scope, DoD, and validation now require data-driven operational resolution. |
 | `PC-06` | internal no-context pre-prerequisite critique | blocker | release-blocker | bind `implementation_diff_review` to canonical formal-review surface/role | fixed | D-18 and wrong-surface/wrong-role fixtures are required. |
 | `PC-07` | internal no-context pre-prerequisite critique | blocker | release-blocker | record and rerun audit TEACH after material triggers | fixed | Matrix reflects risk signals; rerun is required after P0/P1 as part of the new formal baseline. |
-| `PC-08` | internal no-context pre-prerequisite critique | blocker | release-blocker | complete four PCV-1 lanes | fixed | EPS/FRC/BCI/RLS are closed pre-APROVADO classifications; scope drift, not post-approval reclassification, handles a new runtime surface. |
+| `PC-08` | internal no-context pre-prerequisite critique | blocker | by-design/no-action | assess PCV applicability | fixed | User clarified that PCV product/runtime lanes do not apply to Delphi self-maintenance; no `pcv-1` change or invented lane value is needed. |
 | `PC-09` | internal no-context pre-prerequisite critique | blocker | release-blocker | make post-P0/P1 baseline refresh mandatory | fixed | Review Baseline Freeze now limits `bf67507` to pre-prerequisite review. |
 | `PC-10` | internal no-context pre-prerequisite critique | minor | release-blocker | replace ambiguous fallback wording | fixed | V1 uses `fallback_policy=prohibited`; alternate provider requires user selection and rerun. |
 | `PC-11` | internal no-context pre-prerequisite critique | minor | release-blocker | replace planned test placeholders before APROVADO | fixed | Local CI matrix names exact P2/P3 scripts and behavior oracles; P0/P1 block their implementation, not their planning. |
 | `RC-01` | second internal no-context pre-prerequisite critique | high | release-blocker | separate model continuation from provider admission | fixed | D-16, V1 step 3, and provider fixtures now prohibit a human model continuation from unlocking a provider. |
-| `RC-02` | second internal no-context pre-prerequisite critique | high | release-blocker | close PCV-1 plan before APROVADO | fixed | Four terminal no-surface rows now include rationale, date, and executor applicability; new exposure is material scope drift requiring renewed approval. |
-| `RC-03` | second internal no-context pre-prerequisite critique | high | release-blocker | align triple trigger and add cutover audit | fixed | Trigger is `yes`; triple protocol and cutover-integrity gate are required/additive delivery-side gates. |
+| `RC-02` | second internal no-context pre-prerequisite critique | high | by-design/no-action | assess PCV-1 scope | fixed | User clarified this is Delphi self-maintenance; PCV product/runtime lanes are non-applicable and the global policy remains unchanged. |
+| `RC-03` | second internal no-context pre-prerequisite critique | high | by-design/no-action | align triple trigger and cutover audit | fixed | The triple trigger is `no`; a future audit may recommend it. Cutover-integrity remains required for canonical-path retirement. |
 | `RC-04` | second internal no-context pre-prerequisite critique | high | release-blocker | close implementation-diff-review role binding | fixed | D-18 and runtime cycle require `formal-review` plus `formal-reviewer`; fixtures reject other combinations. |
 | `RC-05` | second internal no-context pre-prerequisite critique | medium | release-blocker | use one active-model-state enum | fixed | D-15, D-16, matrix, table, and fixtures use exactly `exact|stronger|weaker|lateral|unknown|unavailable`. |
 | `RC-06` | second internal no-context pre-prerequisite critique | medium | release-blocker | name exact P2/P3 test scripts and oracles | fixed | Local CI matrix now names provider, review dispatch, and focused matrix scripts; their declared behavior is the required oracle. |
 | `RC-07` | second internal no-context pre-prerequisite critique | low | follow-up-fast-follow | normalize noncanonical ledger statuses | fixed | PC-07/PC-08 now use canonical `fixed`; remaining future rerun is in rationale. |
-| `FR-01` | final internal pre-prerequisite plan review | high | release-blocker | resolve immutable PCV-1 no-surface representation | blocked | `pcv-1` has no canonical no-surface trigger/evidence values; choosing between a versioned policy evolution or a separately owned prerequisite is a material scope decision. |
+| `FR-01` | final internal pre-prerequisite plan review | high | by-design/no-action | correct PCV applicability | fixed | User clarified that PCV is not applicable to Delphi self-maintenance; retain `pcv-1` unchanged and do not create a synthetic lane record. |
 | `FR-02` | final internal pre-prerequisite plan review | medium | release-blocker | replace residual command placeholders | fixed | Commands section now repeats the exact Local CI-Equivalent script paths. |
 | `FR-03` | final internal pre-prerequisite plan review | medium | release-blocker | correct review/freeze order wording | fixed | Consolidated record now requires refresh/freeze before the fresh review. |
 | `FR-04` | final internal pre-prerequisite plan review | low | follow-up-fast-follow | correct count and closeout wording | fixed | Reconciled record says seven findings; closeout names the real next action. |
@@ -613,9 +608,9 @@ The post-green review order is material and requires a fresh review after the po
 ## TODO Closeout Disposition
 
 - **Disposition:** blocked
-- **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward. Before any delivery gate, resolve FR-01 without inventing a noncanonical PCV-1 value.
+- **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward.
 - **Post-commit/push status:** pending the final plan-review corrections.
-- **Next path/status action:** publish these corrections; obtain the user's scope decision for FR-01; then await P0/P1 rather than start P2.
+- **Next path/status action:** publish the clarified non-applicability decision; then await P0/P1 rather than start P2.
 
 ## Commands (Run Locally)
 
