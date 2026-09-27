@@ -297,11 +297,11 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **Why this decision:** A fresh independent planning review must assess one committed, pushed contract rather than transient conversation state.
 - **Trigger stage:** before the first freeze-backed planning-side review or guard run
 - **Baseline branch:** `v0.6.2-rc`
-- **Baseline commit:** `bf67507`
+- **Baseline commit:** `c95cb9d`
 - **Baseline push reference:** `origin/v0.6.2-rc`
 - **Gate status:** no_material_findings
-- **Findings summary:** `bf67507` is the committed, pushed package for pre-prerequisite critique only. It is invalid for the formal gate once P0/P1 close or their canonical contract changes.
-- **Evidence / reference:** `origin/v0.6.2-rc` push of `bf67507` on 2026-09-27.
+- **Findings summary:** `c95cb9d` is the committed, pushed corrected package for pre-prerequisite critique only. It is invalid for the formal gate once P0/P1 close or their canonical contract changes.
+- **Evidence / reference:** `origin/v0.6.2-rc` push of `c95cb9d` on 2026-09-27.
 - **Mandatory refresh condition:** after P0 closeout and P1 closeout are each committed/pushed, capture and push a new baseline before formal plan review, architecture decision review, or critique.
 - **Waiver authority / reference (required if waived):** n/a
 
@@ -316,7 +316,7 @@ The execution baseline is the exact active TODO plus current Docker/Laravel/Flut
 - **No-go handling rule:** return to the review loop, revalidate material evolution with the user, refresh the pushed baseline when needed, and rerun affected gates.
 - **Gate status:** blocked
 - **Findings summary:** 2026-09-27 guard found material drift in Scope, Out of Scope, Definition of Done, Validation Steps, Decisions, Assumptions, Execution Plan, and PCV. The user authorized this bounded correction loop; formal revalidation remains blocked until P0/P1 close and a new baseline is pushed.
-- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md` -> `REVIEW-SCOPE-DRIFT-MATERIAL-CHANGE` against `bf67507`.
+- **Evidence / reference:** `python3 tools/review_scope_drift_guard.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md` -> `REVIEW-SCOPE-DRIFT-MATERIAL-CHANGE` against the superseded `bf67507`; second pre-prerequisite review uses `c95cb9d`.
 - **Waiver authority / reference (required if waived):** n/a
 
 ## Assumptions Preview
