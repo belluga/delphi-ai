@@ -1,9 +1,9 @@
 ---
-name: codex-micro-adjustment-executor
+name: orchestrated-single-todo-implementation
 description: Explicitly run a bounded micro-adjustment using the canonical routing JSON and deterministic TEACH checks.
 ---
 
-# Codex Micro-Adjustment Executor
+# Orchestrated Single Todo Implementation
 
 Invoke this skill by name only for a user-authorized, small Delphi self-maintenance adjustment. It is not an automatic coordinator and does not apply to downstream product work, routing-schema migration, provider/runtime introspection, P1/P2 cutover, or broad refactors.
 

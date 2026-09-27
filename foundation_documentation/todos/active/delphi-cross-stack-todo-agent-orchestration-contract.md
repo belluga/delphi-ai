@@ -101,7 +101,7 @@ The package reduces discretion without creating a generic coordinator. It preser
 | Repository | Path glob | Change types | Reason |
 | --- | --- | --- | --- |
 | delphi-ai | foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md | any | This P2 TODO contract and bounded evidence. |
-| delphi-ai | skills/codex-micro-adjustment-executor/** | any | Explicitly invoked P2 skill package. |
+| delphi-ai | skills/orchestrated-single-todo-implementation/** | any | Explicitly invoked P2 skill package. |
 | delphi-ai | tools/codex_micro_adjustment_routing.py | any | Deterministic JSON-authority resolver. |
 | delphi-ai | tools/codex_micro_adjustment_teach.py | any | Deterministic bounded-adjustment TEACH gate. |
 | delphi-ai | tools/tests/codex_micro_adjustment_executor_test.sh | any | Focused P2 helper/skill regression fixtures. |

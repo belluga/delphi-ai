@@ -1,4 +1,0 @@
-interface:
-  display_name: "Codex Micro-Adjustment Executor"
-  short_description: "Run bounded micro-adjustments from routing JSON"
-  default_prompt: "Use $codex-micro-adjustment-executor for this explicitly authorized bounded micro-adjustment."
