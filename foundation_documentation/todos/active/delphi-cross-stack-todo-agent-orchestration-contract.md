@@ -529,7 +529,7 @@ Independent reviews established the V1 outcomes below:
 - request changes restarts Problems, matrix, and review;
 - usage/cost is retained only when platform-reported and otherwise unavailable.
 
-The post-green review order is material and requires the pending fresh review before freeze.
+The post-green review order is material and requires a fresh review after the post-P0/P1 baseline refresh/freeze and before APROVADO.
 
 ## Pre-Prerequisite Critique Record (Non-Gate-Satisfying)
 
@@ -579,7 +579,7 @@ The post-green review order is material and requires the pending fresh review be
 
 - **Date / mode:** 2026-09-27; second fresh internal no-context, read-only bounded-file-set review selected through the current routing JSON formal-review family.
 - **Baseline assessed:** substantive corrected package `c95cb9d`; `5fbe7f8` only refreshes its freeze reference.
-- **Result:** the external P0/P1 blockers remain; all six internal findings were integrated as `RC-01` through `RC-07` below.
+- **Result:** the external P0/P1 blockers remain; all seven internal findings were integrated as `RC-01` through `RC-07` below.
 - **Gate limitation:** This reconciliation is still not the mandatory formal review/critique after P0/P1 close and a new baseline is pushed.
 - **Performance / elegance / structural soundness:** local overhead remains bounded; authority and provider/model paths are less ambiguous; structural readiness remains blocked solely by P0/P1 and the future formal gates.
 
@@ -605,20 +605,24 @@ The post-green review order is material and requires the pending fresh review be
 | `RC-05` | second internal no-context pre-prerequisite critique | medium | release-blocker | use one active-model-state enum | fixed | D-15, D-16, matrix, table, and fixtures use exactly `exact|stronger|weaker|lateral|unknown|unavailable`. |
 | `RC-06` | second internal no-context pre-prerequisite critique | medium | release-blocker | name exact P2/P3 test scripts and oracles | fixed | Local CI matrix now names provider, review dispatch, and focused matrix scripts; their declared behavior is the required oracle. |
 | `RC-07` | second internal no-context pre-prerequisite critique | low | follow-up-fast-follow | normalize noncanonical ledger statuses | fixed | PC-07/PC-08 now use canonical `fixed`; remaining future rerun is in rationale. |
+| `FR-01` | final internal pre-prerequisite plan review | high | release-blocker | resolve immutable PCV-1 no-surface representation | blocked | `pcv-1` has no canonical no-surface trigger/evidence values; choosing between a versioned policy evolution or a separately owned prerequisite is a material scope decision. |
+| `FR-02` | final internal pre-prerequisite plan review | medium | release-blocker | replace residual command placeholders | fixed | Commands section now repeats the exact Local CI-Equivalent script paths. |
+| `FR-03` | final internal pre-prerequisite plan review | medium | release-blocker | correct review/freeze order wording | fixed | Consolidated record now requires refresh/freeze before the fresh review. |
+| `FR-04` | final internal pre-prerequisite plan review | low | follow-up-fast-follow | correct count and closeout wording | fixed | Reconciled record says seven findings; closeout names the real next action. |
 
 ## TODO Closeout Disposition
 
 - **Disposition:** blocked
-- **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward.
-- **Post-commit/push status:** pending this critique-integration commit.
-- **Next path/status action:** publish the critique integration; then wait for P0/P1 rather than start P2.
+- **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward. Before any delivery gate, resolve FR-01 without inventing a noncanonical PCV-1 value.
+- **Post-commit/push status:** pending the final plan-review corrections.
+- **Next path/status action:** publish these corrections; obtain the user's scope decision for FR-01; then await P0/P1 rather than start P2.
 
 ## Commands (Run Locally)
 
 - bash tools/tests/agent_role_routing_guard_test.sh
-- new provider guard regression command
-- affected review dispatch/schema regression command
-- new focused-test matrix regression command
+- bash tools/tests/static_analysis_provider_guard_test.sh
+- bash tools/tests/review_dispatch_guard_test.sh
+- bash tools/tests/focused_test_matrix_guard_test.sh
 - bash self_check.sh
 - git diff --check
 - python3 tools/todo_deterministic_validator.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md
