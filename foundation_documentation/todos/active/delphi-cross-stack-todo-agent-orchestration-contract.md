@@ -692,8 +692,8 @@ The post-green review order is material and requires a fresh review after the po
 
 - **Disposition:** blocked
 - **Disposition reason:** P0 must close and retire bootstrap; P1 must then stabilize its own state/taxonomy and close. The final review baseline and gates must be refreshed afterward.
-- **Post-commit/push status:** pending publication of the reconciled pre-APROVADO and evidence-ledger corrections.
-- **Next path/status action:** publish those corrections; then await P0/P1 rather than start P2.
+- **Post-commit/push status:** reconciled pre-APROVADO and evidence-ledger corrections published in `8bcf229` on `v0.6.2-rc`.
+- **Next path/status action:** await P0/P1 rather than start P2; then refresh the baseline and execute P1.5.
 
 ## Commands (Run Locally)
 
