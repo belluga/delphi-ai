@@ -10,7 +10,7 @@
 
 This TODO defines an explicitly invoked Codex skill for implementing exactly one approved tactical TODO. The approved TODO may name Laravel, Flutter, Docker, or Delphi paths; those cross-stack paths are allowed only when this same canonical TODO explicitly lists them.
 
-The method preserves the principal checkout, one normal material writer, deterministic intake, ignored raw artifacts, compact TODO summaries, and provider-reported token totals.
+The method preserves the principal checkout, one normal material writer, deterministic intake, ignored raw artifacts, compact TODO summaries, and Goal runtime telemetry.
 
 ## Contract Boundary
 
@@ -19,13 +19,24 @@ The method preserves the principal checkout, one normal material writer, determi
 - Existing JSON is the only role/model authority. Resolver output is execution evidence, never a second authority.
 - The routine executor is the sole normal material writer. Provider fallback and automatic dispatch are prohibited.
 - Raw Problems, test, review, and usage payloads stay under `artifacts/tmp/todo-execution/<todo-id>/<session-id>/` and are never staged or tracked.
-- The TODO stores only compact command/result summaries and provider-reported token totals; missing usage is `unavailable`.
+- Every dispatched LLM subagent creates a Goal before work and calls `update_goal` with `status=complete` after work. It returns `tokensUsed`, `tokenBudget` (an integer or `unbudgeted`), and `timeUsedSeconds`.
+- The orchestrator records compact per-subagent Goal runtime telemetry plus totals grouped by the model tier/family resolved from `config/agent_role_routing.json`.
+- Goal runtime telemetry is not a provider receipt, never an estimate, and never a session total. Deterministic-only work explicitly reports `n/a` for Goal fields.
+- Missing or invalid Goal metrics for an LLM subagent block. Raw payloads remain ignored; the TODO stores only compact telemetry and command/result summaries.
 
 ## Implementation Intent
 
 - **Current delivery:** one explicit skill and deterministic intake helpers for one approved tactical TODO.
 - **Allowed work:** any Laravel, Flutter, Docker, or Delphi change explicitly listed by that TODO.
 - **Not implied:** permission for another TODO, broad initiative, automatic coordination, or unlisted path.
+
+## Goal Runtime Telemetry Contract
+
+- Each LLM subagent record binds `todo`, `subagent`, `model_family`, and Goal lifecycle status.
+- The compact record fields are exactly `tokensUsed`, `tokenBudget`, and `timeUsedSeconds`; `tokenBudget` may be `unbudgeted`.
+- Totals are grouped by the `model_family` returned by the JSON resolver, never by an inferred provider receipt or a session aggregate.
+- `telemetry_kind` is `goal_runtime`; `provider_receipt=false`, `estimated=false`, and `session_total=false` are required semantics.
+- Deterministic-only records use `model_family=n/a`, `tokensUsed=n/a`, `tokenBudget=n/a`, and `timeUsedSeconds=n/a`.
 
 ## Delivery Status Canon (Required)
 
@@ -52,7 +63,7 @@ The method preserves the principal checkout, one normal material writer, determi
 - [ ] Resolve declared role/model selections from the existing JSON without duplicating its matrix.
 - [ ] Require canonical TODO, frozen baseline, approval/authority gates, and bounded expected paths before implementation.
 - [ ] Enforce that every changed path, including cross-stack paths, is authorized by the same TODO.
-- [ ] Preserve no provider fallback, single-writer execution, ignored raw artifacts, compact summaries, and provider-reported token totals.
+- [ ] Preserve no provider fallback, single-writer execution, ignored raw artifacts, compact summaries, and Goal runtime telemetry.
 - [ ] Add focused tests for the resolver and single-TODO intake boundaries.
 
 ## Out of Scope
@@ -110,7 +121,9 @@ The method preserves the principal checkout, one normal material writer, determi
 - [ ] Every changed path matches an expected path present in that same TODO.
 - [ ] JSON remains the sole routing authority and the resolver does not mutate or duplicate it.
 - [ ] The routine executor remains the sole normal material writer and provider fallback is prohibited.
-- [ ] Raw artifacts are ignored; the TODO contains only compact summaries and provider-reported totals or `unavailable`.
+- [ ] Every LLM subagent has a complete Goal lifecycle and valid `tokensUsed`, `tokenBudget`, and `timeUsedSeconds`; deterministic-only work is explicit `n/a`.
+- [ ] The TODO contains compact per-subagent Goal records and totals grouped by JSON-resolved model family, never provider receipts, estimates, or session totals.
+- [ ] Raw artifacts are ignored; no raw payload is copied into the TODO.
 - [ ] Focused tests, TODO validation, diff expectation, self-check, and diff check pass.
 
 ## Validation Steps
@@ -118,6 +131,7 @@ The method preserves the principal checkout, one normal material writer, determi
 - [ ] Resolver fixture proves JSON-authoritative role/model selection.
 - [ ] Intake fixtures reject missing/non-canonical TODO, unfrozen baseline, failed approval/authority gates, and unlisted paths.
 - [ ] Intake fixture accepts an explicitly authorized cross-stack path and rejects one absent from the same TODO.
+- [ ] Goal fixtures accept complete LLM lifecycle telemetry, accept deterministic-only `n/a`, and reject missing/invalid LLM metrics.
 - [ ] Focused test and Python compilation pass.
 - [ ] `python3 tools/todo_deterministic_validator.py` passes for this TODO.
 - [ ] `python3 tools/todo_diff_expectation_guard.py` passes for this TODO.
@@ -129,13 +143,14 @@ The method preserves the principal checkout, one normal material writer, determi
 | --- | --- | --- | --- | --- |
 | Single-TODO intake and execution | exact scope and writer authority | JSON route plus approved TODO | deterministic fixtures, skill validation, self-check | no second TODO or automatic coordinator is admitted |
 | Explicit cross-stack path | path may touch Laravel, Flutter, or Docker | same TODO authorization | expected-path fixture and diff guard | unlisted product paths remain out of scope |
+| Goal runtime telemetry | per-subagent lifecycle and family totals | completed Goal for LLM work | TEACH output and compact-record review | deterministic-only work is explicitly `n/a` |
 
 ### Local CI-Equivalent Suite Matrix
 
 | Repository / CI Surface | Behavior | Preconditions | Command | Required Before | Status |
 | --- | --- | --- | --- | --- | --- |
 | routing resolver | JSON-authoritative role/model selection | deterministic JSON fixtures | python3 tools/orchestrated_single_todo_routing.py --client codex --surface implementation --role routine-executor | Local-Implemented | planned |
-| single-TODO intake | canonical TODO, frozen baseline, approval/authority gates, and bounded paths | exact TODO contract | bash tools/tests/orchestrated_single_todo_test.sh | Local-Implemented | planned |
+| single-TODO intake | canonical TODO, frozen baseline, approval/authority gates, bounded paths, and Goal telemetry | exact TODO contract | bash tools/tests/orchestrated_single_todo_test.sh | Local-Implemented | planned |
 | Delphi coherence | canonical wording and mirrors | none | bash self_check.sh | Local-Implemented | planned |
 | approval-readiness | named skill/helpers/tests match this contract | approved exact TODO | python3 tools/todo_deterministic_validator.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md; python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md | APROVADO | planned |
 
@@ -169,4 +184,4 @@ The method preserves the principal checkout, one normal material writer, determi
 - [x] D-04: a frozen baseline, approval/authority gates, and bounded expected paths are mandatory intake evidence.
 - [x] D-05: cross-stack Laravel, Flutter, or Docker work is allowed only when explicitly named by that same TODO.
 - [x] D-06: the routine executor is the sole normal material writer and provider fallback is prohibited.
-- [x] D-07: raw artifacts remain ignored and the TODO retains compact summaries plus provider-reported token totals.
+- [x] D-07: raw artifacts remain ignored and the TODO retains compact Goal runtime telemetry plus command/result summaries.

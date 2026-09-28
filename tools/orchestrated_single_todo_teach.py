@@ -40,11 +40,44 @@ def assess(args: argparse.Namespace) -> dict[str, object]:
         failures.append({"code": "RAW-ARTIFACT-ROOT", "reason": "raw payloads must remain under the ignored TODO execution artifact root"})
     if args.token_total != "unavailable" and (not args.token_total.isdigit() or int(args.token_total) < 0):
         failures.append({"code": "TOKEN-TOTAL", "reason": "token totals must be provider-reported digits or unavailable"})
+    telemetry = {
+        "telemetry_kind": "goal_runtime",
+        "model_family": args.model_family,
+        "execution_kind": args.execution_kind,
+        "goal_created": bool(args.goal_created),
+        "goal_completed": bool(args.goal_completed),
+        "tokensUsed": args.goal_tokens_used,
+        "tokenBudget": args.goal_token_budget,
+        "timeUsedSeconds": args.goal_time_used_seconds,
+        "provider_receipt": False,
+        "estimated": False,
+        "session_total": False,
+    }
+    if args.execution_kind == "llm-subagent":
+        if not args.model_family or args.model_family == "n/a":
+            failures.append({"code": "GOAL-MODEL-FAMILY", "reason": "LLM subagent Goal telemetry requires the JSON-resolved model family"})
+        if not args.goal_created or not args.goal_completed:
+            failures.append({"code": "GOAL-LIFECYCLE", "reason": "LLM subagent must create a Goal and call update_goal complete"})
+        if not args.goal_tokens_used.isdigit() or int(args.goal_tokens_used) < 0:
+            failures.append({"code": "GOAL-TOKENS", "reason": "LLM subagent Goal tokensUsed must be a non-negative integer"})
+        if args.goal_token_budget != "unbudgeted" and (not args.goal_token_budget.isdigit() or int(args.goal_token_budget) < 0):
+            failures.append({"code": "GOAL-BUDGET", "reason": "LLM subagent Goal tokenBudget must be a non-negative integer or unbudgeted"})
+        try:
+            if float(args.goal_time_used_seconds) < 0:
+                raise ValueError
+        except ValueError:
+            failures.append({"code": "GOAL-TIME", "reason": "LLM subagent Goal timeUsedSeconds must be a non-negative number"})
+    else:
+        if args.model_family != "n/a" or any(value != "n/a" for value in (args.goal_tokens_used, args.goal_token_budget, args.goal_time_used_seconds)):
+            failures.append({"code": "DETERMINISTIC-TELEMETRY", "reason": "deterministic-only work must explicitly report n/a Goal telemetry"})
+        if args.goal_created or args.goal_completed:
+            failures.append({"code": "DETERMINISTIC-GOAL", "reason": "deterministic-only work must not claim an LLM Goal lifecycle"})
     return {
         "artifact_kind": "orchestrated_single_todo_teach",
         "overall_outcome": "go" if not failures else "blocked",
         "todo": str(todo),
         "changed_paths": args.changed_path,
+        "goal_runtime_telemetry": telemetry,
         "failures": failures,
     }
 
@@ -60,10 +93,18 @@ def main() -> int:
     parser.add_argument("--writer-role", required=True)
     parser.add_argument("--raw-artifact-root", required=True)
     parser.add_argument("--token-total", required=True)
+    parser.add_argument("--execution-kind", required=True, choices=("llm-subagent", "deterministic-only"))
+    parser.add_argument("--model-family", required=True)
+    parser.add_argument("--goal-created", action="store_true")
+    parser.add_argument("--goal-completed", action="store_true")
+    parser.add_argument("--goal-tokens-used", required=True)
+    parser.add_argument("--goal-token-budget", required=True)
+    parser.add_argument("--goal-time-used-seconds", required=True)
     args = parser.parse_args()
     result = assess(args)
     print("TEACH single-TODO assessment")
     print(f"Overall outcome: {result['overall_outcome']}")
+    print(json.dumps(result["goal_runtime_telemetry"], sort_keys=True))
     for failure in result["failures"]:
         print(f"- [{failure['code']}] {failure['reason']}")
     return 0 if result["overall_outcome"] == "go" else 2
