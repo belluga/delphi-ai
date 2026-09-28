@@ -21,9 +21,7 @@ PY
 
 CODEX_CHAT_MODEL="$(contract_model codex chat_orchestrator 0)"
 CODEX_ROUTINE_MODEL="$(contract_model codex routine_executor 0)"
-CODEX_ROUTINE_FALLBACK="$(contract_model codex routine_executor 1)"
 CODEX_REVIEW_MODEL="$(contract_model codex strongest_review 0)"
-CLAUDE_CHAT_MODEL="$(contract_model claude-code chat_orchestrator 0)"
 CLAUDE_REVIEW_MODEL="$(contract_model claude-code strongest_review 0)"
 CLINE_CHAT_MODEL="$(contract_model cline-ide chat_orchestrator 1)"
 CLINE_ROUTINE_MODEL="$(contract_model cline-ide routine_executor 1)"
@@ -59,6 +57,29 @@ assert_outcome() {
   }
 }
 
+assert_json_violation() {
+  local expected_code="$1"
+  shift
+  local output="$TMP_DIR/result.json"
+  set +e
+  python3 "$TOOL" "$@" --json-output "$output" >/dev/null 2>&1
+  local status=$?
+  set -e
+  [[ $status -eq 2 ]] || {
+    cat "$output"
+    printf 'expected JSON fixture to exit 2, got %s\n' "$status" >&2
+    exit 1
+  }
+  python3 - "$output" "$expected_code" <<'PY'
+import json
+import sys
+
+payload = json.loads(open(sys.argv[1], encoding="utf-8").read())
+assert payload["outcome"] != "go"
+assert any(item["code"] == sys.argv[2] for item in payload["violations"])
+PY
+}
+
 assert_outcome delegate-required \
   --client codex \
   --surface implementation \
@@ -76,6 +97,30 @@ assert_outcome go \
   --proof-mode declared \
   --execution-topology primary-checkout-single-writer \
   --worktree-authorization not-authorized
+
+assert_json_violation MODEL-MISMATCH \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model gpt \
+  --effort medium \
+  --proof-mode declared
+
+assert_json_violation EFFORT-MISMATCH \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort m \
+  --proof-mode declared
+
+assert_json_violation EFFORT-MISMATCH \
+  --client codex \
+  --surface implementation \
+  --role routine-executor \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium-plus \
+  --proof-mode declared
 
 assert_outcome blocked \
   --client codex \
@@ -113,13 +158,23 @@ assert_outcome go \
   --client codex \
   --surface implementation \
   --role routine-executor \
-  --model "$CODEX_ROUTINE_FALLBACK" \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
   --proof-mode declared
 
-assert_outcome go \
+assert_outcome blocked \
   --client codex \
   --surface implementation \
+  --role primary-chat \
+  --model "$CODEX_ROUTINE_MODEL" \
+  --effort medium \
+  --proof-mode waiver \
+  --exception-reason bootstrap-guard-implementation \
+  --waiver-reference "D-07 bootstrap exception"
+
+assert_outcome blocked \
+  --client codex \
+  --surface implementation-validation \
   --role primary-chat \
   --model "$CODEX_ROUTINE_MODEL" \
   --effort medium \
@@ -138,7 +193,7 @@ assert_outcome review-required \
   --client codex \
   --surface formal-review \
   --role formal-reviewer \
-  --model "$CODEX_ROUTINE_FALLBACK" \
+  --model "$CODEX_ROUTINE_MODEL" \
   --effort ExtraRight-or-closest-equivalent \
   --proof-mode declared
 
@@ -174,14 +229,6 @@ assert_outcome go \
   --review-kind final_review \
   --model "$CODEX_REVIEW_MODEL" \
   --effort ExtraRight-or-closest-equivalent \
-  --proof-mode declared
-
-assert_outcome go \
-  --client claude-code \
-  --surface todo-approval \
-  --role primary-chat \
-  --model "claude-${CLAUDE_CHAT_MODEL}-5" \
-  --effort xhigh \
   --proof-mode declared
 
 assert_outcome go \

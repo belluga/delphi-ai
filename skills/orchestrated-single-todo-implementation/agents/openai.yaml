@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrated Single Todo Implementation"
+  short_description: "Implement one approved tactical TODO with Goal admission telemetry"
+  default_prompt: "Use $orchestrated-single-todo-implementation for this explicitly authorized single-TODO implementation."

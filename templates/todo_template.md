@@ -481,7 +481,7 @@ Use the canonical routing contract from `config/agent_role_routing.json` plus `p
 - **Selected model:** `<exact model or canonical family alias; use n/a only for deterministic-only monitoring>`
 - **Selected effort:** `<medium|xhigh|max|ExtraRight-or-closest-equivalent|n/a when the client exposes no named effort control>`
 - **Proof mode:** `<artifact|declared|waiver>`
-- **Exception reason:** `<bootstrap-guard-implementation|reconciliation|merge-conflict|minimal-integration-glue|n/a>`
+- **Exception reason:** `<reason permitted by the canonical source for the current surface, or n/a>`
 - **Subagent / delegation authorization:** `<not-requested|explicit human reference>`
 - **Execution topology:** `<primary-checkout-single-writer|worktree-isolated>`
 - **Worktree / auxiliary-checkout authorization:** `<not-authorized|explicit>`

@@ -95,25 +95,20 @@ def build_violation(code: str, message: str, resolution: str) -> dict[str, str]:
     }
 
 
-def match_token(actual: str, expected: str) -> bool:
+def exact_token_match(actual: str, expected: str) -> bool:
     actual_norm = normalize_token(actual)
     expected_norm = normalize_token(expected)
     if not actual_norm or not expected_norm:
         return False
-    return (
-        actual_norm == expected_norm
-        or actual_norm.startswith(expected_norm)
-        or expected_norm.startswith(actual_norm)
-        or f"-{expected_norm}-" in f"-{actual_norm}-"
-    )
+    return actual_norm == expected_norm
 
 
 def model_matches(actual: str, expected_aliases: list[str]) -> bool:
-    return any(match_token(actual, alias) for alias in expected_aliases)
+    return any(exact_token_match(actual, alias) for alias in expected_aliases)
 
 
 def effort_matches(actual: str, expected_aliases: list[str]) -> bool:
-    return any(match_token(actual, alias) for alias in expected_aliases)
+    return any(exact_token_match(actual, alias) for alias in expected_aliases)
 
 
 def set_outcome(current: str, new: str) -> str:

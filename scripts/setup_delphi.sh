@@ -360,12 +360,12 @@ setup_claude_code_artifacts() {
 setup_cline_artifacts() {
   local module="$1"
   local base_path="${REPO_ROOT}/${module}"
-  
+
   if [[ ! -d "$base_path" ]]; then
     warn "Submodule ${module} not found; skipping Cline symlinks."
     return
   fi
-  
+
   # Determine relative path based on whether this is root or a submodule
   local rel_prefix
   if [[ -z "$module" ]]; then
@@ -375,7 +375,7 @@ setup_cline_artifacts() {
     # Submodule - need ../ prefix
     rel_prefix="../delphi-ai"
   fi
-  
+
   # Create .cline directory for skills
   if [[ "$CHECK_ONLY" == "true" ]]; then
     if [[ ! -d "${base_path}/.cline" ]]; then
@@ -384,7 +384,7 @@ setup_cline_artifacts() {
   else
     mkdir -p "${base_path}/.cline"
   fi
-  
+
   # Symlink .cline/skills/ (skills are directories with SKILL.md)
   local skills_target
   if [[ -z "$module" ]]; then
@@ -393,10 +393,10 @@ setup_cline_artifacts() {
     skills_target="${rel_prefix}/.cline/skills"
   fi
   ensure_symlink "$skills_target" "${base_path}/.cline/skills"
-  
+
   # Symlink CLINE.md bootloader
   ensure_symlink "${rel_prefix}/CLINE.md" "${base_path}/CLINE.md"
-  
+
   # Symlink .clinerules directory (contains rules, workflows, and hooks)
   # This includes: rules (*.md), workflows/, hooks/, glob/, manual/, model-decision/
   ensure_symlink "${rel_prefix}/.clinerules" "${base_path}/.clinerules"
