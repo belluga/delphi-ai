@@ -32,6 +32,7 @@ MATERIAL_HEADINGS = (
     "## Definition of Done",
     "## Validation Steps",
     "## Execution Lane Tracking",
+    "## Diff Expectation Contract",
     "## Complexity",
     "## Canonical Module Anchors",
     "## Decisions (Resolved Before Freeze)",

@@ -31,6 +31,11 @@ Baseline context.
 ## Scope
 - [ ] original scope
 
+## Diff Expectation Contract
+- **Contract status:** `required`
+- **Policy:** `strict`
+- **Comparison mode:** `committed_diff`
+
 ## Definition of Done
 - [ ] keep original scope stable during review
 
@@ -94,6 +99,11 @@ Baseline context.
 ## Scope
 - [ ] original scope
 
+## Diff Expectation Contract
+- **Contract status:** \`required\`
+- **Policy:** \`strict\`
+- **Comparison mode:** \`committed_diff\`
+
 ## Definition of Done
 - [ ] keep original scope stable during review
 
@@ -150,6 +160,31 @@ if ! python3 "$TOOL" --todo "$todo" >"$tmpdir/go.txt"; then
 fi
 
 grep -q "Overall outcome: go" "$tmpdir/go.txt"
+
+cp "$todo" "$tmpdir/pre_diff_contract_drift.md"
+python3 - <<'PY' "$todo"
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace(
+    "- **Policy:** `strict`",
+    "- **Policy:** `permissive`",
+    1,
+)
+path.write_text(text, encoding="utf-8")
+PY
+
+if python3 "$TOOL" --todo "$todo" >"$tmpdir/diff_contract_no_go.txt"; then
+  echo "Expected no-go outcome when the diff expectation contract drifts." >&2
+  cat "$tmpdir/diff_contract_no_go.txt" >&2 || true
+  exit 1
+fi
+
+grep -q "REVIEW-SCOPE-DRIFT-MATERIAL-CHANGE" "$tmpdir/diff_contract_no_go.txt"
+grep -q "Diff Expectation Contract" "$tmpdir/diff_contract_no_go.txt"
+cp "$tmpdir/pre_diff_contract_drift.md" "$todo"
 
 python3 - <<'PY' "$todo"
 from pathlib import Path
