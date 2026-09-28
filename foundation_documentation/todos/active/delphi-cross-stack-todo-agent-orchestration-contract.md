@@ -38,6 +38,14 @@ The method preserves the principal checkout, one normal material writer, determi
 - `telemetry_kind` is `goal_runtime`; `provider_receipt=false`, `estimated=false`, and `session_total=false` are required semantics.
 - Deterministic-only records use `model_family=n/a`, `tokensUsed=n/a`, `tokenBudget=n/a`, and `timeUsedSeconds=n/a`.
 
+## Primary Goal Admission
+
+- Before real TODO execution, the primary orchestrator creates and holds an active Goal and reports its state to TEACH.
+- The only alternative is a user-approved metrics opt-out recorded in this exact TODO under this section with `Status: approved` and a non-empty `Reference: user-approved:<reference>`; the CLI must pass that exact reference.
+- A missing active primary Goal, missing report, malformed opt-out, or unrecorded opt-out is blocked. No opt-out is inferred from absent telemetry.
+- **Status:** not-requested
+- **Reference:** n/a
+
 ## Delivery Status Canon (Required)
 
 - **Current delivery stage:** Local-Implemented
@@ -117,6 +125,7 @@ The method preserves the principal checkout, one normal material writer, determi
 ## Definition of Done
 
 - [ ] The skill is explicit-only and accepts exactly one approved tactical TODO.
+- [ ] The primary orchestrator reports an active Goal before execution, or supplies a valid exact-TODO user metrics opt-out.
 - [ ] Intake requires the canonical TODO, frozen baseline, approval gate, authority gate, and bounded expected paths.
 - [ ] Every changed path matches an expected path present in that same TODO.
 - [ ] JSON remains the sole routing authority and the resolver does not mutate or duplicate it.
@@ -132,6 +141,7 @@ The method preserves the principal checkout, one normal material writer, determi
 - [ ] Intake fixtures reject missing/non-canonical TODO, unfrozen baseline, failed approval/authority gates, and unlisted paths.
 - [ ] Intake fixture accepts an explicitly authorized cross-stack path and rejects one absent from the same TODO.
 - [ ] Goal fixtures accept complete LLM lifecycle telemetry, accept deterministic-only `n/a`, and reject missing/invalid LLM metrics.
+- [ ] Primary Goal fixtures reject absent state without opt-out and malformed/unrecorded opt-out references.
 - [ ] Focused test and Python compilation pass.
 - [ ] `python3 tools/todo_deterministic_validator.py` passes for this TODO.
 - [ ] `python3 tools/todo_diff_expectation_guard.py` passes for this TODO.
@@ -144,13 +154,14 @@ The method preserves the principal checkout, one normal material writer, determi
 | Single-TODO intake and execution | exact scope and writer authority | JSON route plus approved TODO | deterministic fixtures, skill validation, self-check | no second TODO or automatic coordinator is admitted |
 | Explicit cross-stack path | path may touch Laravel, Flutter, or Docker | same TODO authorization | expected-path fixture and diff guard | unlisted product paths remain out of scope |
 | Goal runtime telemetry | per-subagent lifecycle and family totals | completed Goal for LLM work | TEACH output and compact-record review | deterministic-only work is explicitly `n/a` |
+| Primary Goal admission | orchestrator readiness before execution | active Goal or explicit user opt-out | TEACH primary-state fixtures | opt-out is never inferred |
 
 ### Local CI-Equivalent Suite Matrix
 
 | Repository / CI Surface | Behavior | Preconditions | Command | Required Before | Status |
 | --- | --- | --- | --- | --- | --- |
 | routing resolver | JSON-authoritative role/model selection | deterministic JSON fixtures | python3 tools/orchestrated_single_todo_routing.py --client codex --surface implementation --role routine-executor | Local-Implemented | planned |
-| single-TODO intake | canonical TODO, frozen baseline, approval/authority gates, bounded paths, and Goal telemetry | exact TODO contract | bash tools/tests/orchestrated_single_todo_test.sh | Local-Implemented | planned |
+| single-TODO intake | canonical TODO, frozen baseline, approval/authority gates, bounded paths, primary Goal, and subagent telemetry | exact TODO contract | bash tools/tests/orchestrated_single_todo_test.sh | Local-Implemented | planned |
 | Delphi coherence | canonical wording and mirrors | none | bash self_check.sh | Local-Implemented | planned |
 | approval-readiness | named skill/helpers/tests match this contract | approved exact TODO | python3 tools/todo_deterministic_validator.py --todo foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md; python3 tools/todo_diff_expectation_guard.py foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md | APROVADO | planned |
 

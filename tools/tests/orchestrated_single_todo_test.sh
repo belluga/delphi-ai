@@ -28,6 +28,8 @@ python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --baseline v0.6.2-rc@634b546 \
   --approval-gate approved \
   --authority-gate canonical \
+  --primary-goal-state active \
+  --primary-goal-report 'active:primary-goal-1' \
   --changed-path tools/orchestrated_single_todo_routing.py \
   --expected-path foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md \
   --expected-path 'skills/orchestrated-single-todo-implementation/**' \
@@ -50,6 +52,8 @@ python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --baseline v0.6.2-rc@634b546 \
   --approval-gate approved \
   --authority-gate canonical \
+  --primary-goal-state active \
+  --primary-goal-report 'active:primary-goal-1' \
   --changed-path tools/orchestrated_single_todo_routing.py \
   --expected-path tools/orchestrated_single_todo_routing.py \
   --writer-role routine-executor \
@@ -66,6 +70,8 @@ if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --baseline v0.6.2-rc@634b546 \
   --approval-gate approved \
   --authority-gate canonical \
+  --primary-goal-state active \
+  --primary-goal-report 'active:primary-goal-1' \
   --changed-path tools/orchestrated_single_todo_routing.py \
   --expected-path tools/orchestrated_single_todo_routing.py \
   --writer-role routine-executor \
@@ -85,6 +91,8 @@ if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --baseline v0.6.2-rc@634b546 \
   --approval-gate pending \
   --authority-gate canonical \
+  --primary-goal-state active \
+  --primary-goal-report 'active:primary-goal-1' \
   --changed-path tools/orchestrated_single_todo_routing.py \
   --expected-path tools/orchestrated_single_todo_routing.py \
   --writer-role primary-chat \
@@ -96,6 +104,49 @@ if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --goal-token-budget 1 \
   --goal-time-used-seconds 0.1 >/dev/null 2>&1; then
   echo "expected bounded assessment to block" >&2
+  exit 1
+fi
+
+if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
+  --todo "$ROOT_DIR/foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md" \
+  --baseline v0.6.2-rc@634b546 \
+  --approval-gate approved \
+  --authority-gate canonical \
+  --primary-goal-state absent \
+  --primary-goal-report 'absent:no-opt-out' \
+  --changed-path tools/orchestrated_single_todo_routing.py \
+  --expected-path tools/orchestrated_single_todo_routing.py \
+  --writer-role routine-executor \
+  --raw-artifact-root "$RAW_ROOT" \
+  --token-total unavailable \
+  --execution-kind deterministic-only \
+  --model-family n/a \
+  --goal-tokens-used n/a \
+  --goal-token-budget n/a \
+  --goal-time-used-seconds n/a >/dev/null 2>&1; then
+  echo "expected missing primary Goal without opt-out to block" >&2
+  exit 1
+fi
+
+if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
+  --todo "$ROOT_DIR/foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md" \
+  --baseline v0.6.2-rc@634b546 \
+  --approval-gate approved \
+  --authority-gate canonical \
+  --primary-goal-state absent \
+  --primary-goal-report 'metrics-opt-out:malformed' \
+  --metrics-opt-out-reference malformed-reference \
+  --changed-path tools/orchestrated_single_todo_routing.py \
+  --expected-path tools/orchestrated_single_todo_routing.py \
+  --writer-role routine-executor \
+  --raw-artifact-root "$RAW_ROOT" \
+  --token-total unavailable \
+  --execution-kind deterministic-only \
+  --model-family n/a \
+  --goal-tokens-used n/a \
+  --goal-token-budget n/a \
+  --goal-time-used-seconds n/a >/dev/null 2>&1; then
+  echo "expected malformed opt-out to block" >&2
   exit 1
 fi
 

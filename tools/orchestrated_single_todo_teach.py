@@ -34,6 +34,25 @@ def assess(args: argparse.Namespace) -> dict[str, object]:
         failures.append({"code": "APPROVAL-GATE", "reason": "an approved tactical TODO is required before implementation"})
     if args.authority_gate != "canonical":
         failures.append({"code": "AUTHORITY-GATE", "reason": "the canonical routing/TODO authority gate must pass"})
+    opt_out = args.metrics_opt_out_reference
+    opt_out_section = "## User Metrics Opt-Out" in todo_text
+    valid_opt_out = bool(
+        opt_out
+        and opt_out_section
+        and opt_out.startswith("user-approved:")
+        and opt_out in todo_text
+        and re.search(r"\*\*Status:\*\*\s*approved", todo_text)
+    )
+    if opt_out and not valid_opt_out:
+        failures.append({"code": "PRIMARY-GOAL-OPTOUT", "reason": "metrics opt-out must be an explicit user-approved reference recorded in the exact TODO"})
+    if args.primary_goal_state != "active" and not valid_opt_out:
+        failures.append({"code": "PRIMARY-GOAL", "reason": "primary orchestrator must hold and report an active Goal before execution, or provide a valid exact-TODO user metrics opt-out"})
+    if not args.primary_goal_report or args.primary_goal_report == "n/a":
+        failures.append({"code": "PRIMARY-GOAL-REPORT", "reason": "primary orchestrator must report its Goal state"})
+    elif args.primary_goal_state == "active" and not args.primary_goal_report.startswith("active:"):
+        failures.append({"code": "PRIMARY-GOAL-REPORT", "reason": "active primary Goal report must identify the active state"})
+    elif args.primary_goal_state == "absent" and valid_opt_out and not args.primary_goal_report.startswith("metrics-opt-out:"):
+        failures.append({"code": "PRIMARY-GOAL-REPORT", "reason": "opt-out primary report must identify the metrics opt-out state"})
     if args.writer_role != "routine-executor":
         failures.append({"code": "WRITER-ROLE", "reason": "routine-executor is the sole normal material writer"})
     if "/artifacts/tmp/todo-execution/" not in Path(args.raw_artifact_root).as_posix():
@@ -90,6 +109,9 @@ def main() -> int:
     parser.add_argument("--baseline", required=True)
     parser.add_argument("--approval-gate", required=True)
     parser.add_argument("--authority-gate", required=True)
+    parser.add_argument("--primary-goal-state", required=True, choices=("active", "absent"))
+    parser.add_argument("--primary-goal-report", required=True)
+    parser.add_argument("--metrics-opt-out-reference")
     parser.add_argument("--writer-role", required=True)
     parser.add_argument("--raw-artifact-root", required=True)
     parser.add_argument("--token-total", required=True)
