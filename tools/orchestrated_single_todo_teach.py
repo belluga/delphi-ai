@@ -10,11 +10,23 @@ import re
 from pathlib import Path
 
 
+def is_active_foundation_todo(todo: Path) -> bool:
+    """Accept Foundation TODOs through a downstream link or the repo itself."""
+    if not todo.is_file():
+        return False
+    for parent in todo.parents:
+        if parent.name != "active" or parent.parent.name != "todos":
+            continue
+        foundation_root = parent.parent.parent
+        return (foundation_root / "project_constitution.md").is_file()
+    return False
+
+
 def assess(args: argparse.Namespace) -> dict[str, object]:
     failures: list[dict[str, str]] = []
     todo = Path(args.todo).resolve()
     todo_text = todo.read_text(encoding="utf-8") if todo.is_file() else ""
-    if not todo.is_file() or "foundation_documentation/todos/active/" not in todo.as_posix():
+    if not is_active_foundation_todo(todo):
         failures.append({"code": "TODO-SCOPE", "reason": "canonical TODO must be an existing active Foundation TODO"})
     if "## Diff Expectation Contract" not in todo_text:
         failures.append({"code": "TODO-CONTRACT", "reason": "canonical TODO must declare its strict Diff Expectation Contract"})

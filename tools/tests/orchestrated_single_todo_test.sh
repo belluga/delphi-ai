@@ -65,6 +65,36 @@ python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --goal-token-budget n/a \
   --goal-time-used-seconds n/a >/dev/null
 
+# Direct Foundation repositories and downstream symlink targets resolve to
+# `<foundation-root>/todos/active/**`, without a literal
+# `foundation_documentation` path segment. They remain canonical when the
+# Foundation root marker is present.
+DIRECT_FOUNDATION="$TMP_DIR/uninotas-foundation"
+mkdir -p "$DIRECT_FOUNDATION/todos/active/features"
+touch "$DIRECT_FOUNDATION/project_constitution.md"
+cat > "$DIRECT_FOUNDATION/todos/active/features/TODO-direct-foundation.md" <<'EOF'
+## Diff Expectation Contract
+
+- `tools/orchestrated_single_todo_teach.py`
+EOF
+python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
+  --todo "$DIRECT_FOUNDATION/todos/active/features/TODO-direct-foundation.md" \
+  --baseline v0.6.2-rc@634b546 \
+  --approval-gate approved \
+  --authority-gate canonical \
+  --primary-goal-state active \
+  --primary-goal-report 'active:primary-goal-1' \
+  --changed-path tools/orchestrated_single_todo_teach.py \
+  --expected-path tools/orchestrated_single_todo_teach.py \
+  --writer-role routine-executor \
+  --raw-artifact-root "$RAW_ROOT" \
+  --token-total unavailable \
+  --execution-kind deterministic-only \
+  --model-family n/a \
+  --goal-tokens-used n/a \
+  --goal-token-budget n/a \
+  --goal-time-used-seconds n/a >/dev/null
+
 if python3 "$ROOT_DIR/tools/orchestrated_single_todo_teach.py" \
   --todo "$ROOT_DIR/foundation_documentation/todos/active/delphi-cross-stack-todo-agent-orchestration-contract.md" \
   --baseline v0.6.2-rc@634b546 \
