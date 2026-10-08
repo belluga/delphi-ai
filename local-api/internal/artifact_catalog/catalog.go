@@ -19,16 +19,21 @@ import (
 )
 
 const (
-	SchemaVersion    = "1"
-	MaxPrototypes    = 256
-	MaxScreens       = 256
-	MaxFiles         = source.MaxFiles
-	MaxFileBytes     = 2 << 20
-	MaxTotalBytes    = 64 << 20
-	MaxManifestBytes = 256 << 10
-	MaxPathBytes     = source.MaxPathBytes
-	MaxLinks         = 4096
-	MaxRelated       = 64
+	SchemaVersion          = "1"
+	PrototypeSchemaVersion = "3"
+	MaxPrototypes          = 256
+	MaxScreens             = 256
+	MaxStates              = 1024
+	MaxFiles               = source.MaxFiles
+	MaxFileBytes           = 2 << 20
+	MaxTotalBytes          = 64 << 20
+	MaxManifestBytes       = 256 << 10
+	MaxPathBytes           = source.MaxPathBytes
+	MaxTransitions         = 4096
+	MaxScenarios           = 256
+	MaxScenarioSteps       = 4096
+	MaxRelated             = 64
+	MaxApprovedReferences  = 256
 	// Each admitted file can have at most MaxPathBytes/2 nested one-byte path
 	// segments, so this caps directory nodes without an arbitrary file multiplier.
 	MaxInventoryNodes   = source.MaxInventoryNodes
@@ -60,30 +65,62 @@ type Prototype struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	Root        string  `json:"root"`
+	Status      string  `json:"status"`
 }
 
 type Manifest struct {
 	SchemaVersion   string           `json:"schema_version"`
 	ID              string           `json:"id"`
+	AuthoringMode   string           `json:"authoring_mode"`
 	EntryPoint      string           `json:"entry_point"`
 	Screens         []Screen         `json:"screens"`
 	Sources         []string         `json:"sources"`
 	Assets          []string         `json:"assets"`
-	Links           []Link           `json:"links"`
+	Transitions     []Transition     `json:"transitions"`
+	Scenarios       []Scenario       `json:"scenarios"`
 	Related         []Related        `json:"related"`
 	DesignSystemRef *DesignSystemRef `json:"design_system_ref"`
 }
 
 type Screen struct {
-	ID    string  `json:"id"`
-	Name  string  `json:"name"`
-	Path  string  `json:"path"`
-	Scope *string `json:"scope"`
+	ID             string  `json:"id"`
+	Name           string  `json:"name"`
+	Path           string  `json:"path"`
+	Scope          *string `json:"scope"`
+	DefaultStateID string  `json:"default_state_id"`
+	States         []State `json:"states"`
 }
 
-type Link struct {
+type State struct {
+	ID                 string              `json:"id"`
+	Name               string              `json:"name"`
+	IdentifierImage    string              `json:"identifier_image"`
+	ApprovedReferences []ApprovedReference `json:"approved_references"`
+}
+
+type ApprovedReference struct {
+	ID               string `json:"id"`
+	Image            string `json:"image"`
+	ApprovalEvidence string `json:"approval_evidence"`
+}
+
+type Transition struct {
 	FromScreenID string `json:"from_screen_id"`
+	FromStateID  string `json:"from_state_id"`
+	Action       string `json:"action"`
 	ToScreenID   string `json:"to_screen_id"`
+	ToStateID    string `json:"to_state_id"`
+}
+
+type Scenario struct {
+	ID    string         `json:"id"`
+	Name  string         `json:"name"`
+	Steps []ScenarioStep `json:"steps"`
+}
+
+type ScenarioStep struct {
+	ScreenID string `json:"screen_id"`
+	StateID  string `json:"state_id"`
 }
 
 type Related struct {
@@ -106,12 +143,16 @@ type Diagnostic struct {
 }
 
 type Item struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description *string  `json:"description"`
-	Root        string   `json:"root"`
-	EntryPoint  string   `json:"entry_point"`
-	Screens     []Screen `json:"screens"`
+	ID            string       `json:"id"`
+	Name          string       `json:"name"`
+	Description   *string      `json:"description"`
+	Root          string       `json:"root"`
+	Status        string       `json:"status"`
+	AuthoringMode string       `json:"authoring_mode"`
+	EntryPoint    string       `json:"entry_point"`
+	Screens       []Screen     `json:"screens"`
+	Transitions   []Transition `json:"transitions"`
+	Scenarios     []Scenario   `json:"scenarios"`
 }
 
 type Response struct {
@@ -156,7 +197,7 @@ func ValidateRelativePath(path string) error { return source.ValidateRelativePat
 
 func Evaluate(source Source, projectID string) Response {
 	response := Response{
-		SchemaVersion: SchemaVersion, ProjectID: projectID, Target: TargetPrototypes,
+		SchemaVersion: PrototypeSchemaVersion, ProjectID: projectID, Target: TargetPrototypes,
 		AuthorityScope: AuthorityScope, Mode: source.Mode(), Revision: source.Revision(),
 		Outcome: "no_go", Items: []Item{}, Diagnostics: []Diagnostic{},
 		DesignSystemValidation: DesignSystemPending,
@@ -240,14 +281,19 @@ func Evaluate(source Source, projectID string) Response {
 		response.Diagnostics = sortedDiagnostics(diagnostics)
 		return response
 	}
-	var catalog Catalog
-	if err := DecodeStrict(catalogBytes, &catalog); err != nil {
-		diagnostics.add("invalid_schema", projectID, "", "prototypes/catalog.json", err.Error(), "Correct the catalog to the exact schema_version 1 fields and valid UTF-8 JSON.")
+	if schemaVersion(catalogBytes) == "2" {
+		diagnostics.add("unsupported_schema", projectID, "", "prototypes/catalog.json", "Prototype schema v2 is no longer admitted", prototypeV3MigrationResolution)
 		response.Diagnostics = sortedDiagnostics(diagnostics)
 		return response
 	}
-	if catalog.SchemaVersion != SchemaVersion || catalog.ProjectID != projectID || catalog.Prototypes == nil {
-		diagnostics.add("invalid_schema", projectID, "", "prototypes/catalog.json", "schema_version, project_id, or prototypes is invalid", "Use schema_version \"1\", the bound project ID, and a non-null prototypes array.")
+	var catalog Catalog
+	if err := DecodeStrict(catalogBytes, &catalog); err != nil {
+		diagnostics.add("invalid_schema", projectID, "", "prototypes/catalog.json", err.Error(), "Correct the catalog to the exact schema_version 3 fields and valid UTF-8 JSON.")
+		response.Diagnostics = sortedDiagnostics(diagnostics)
+		return response
+	}
+	if catalog.SchemaVersion != PrototypeSchemaVersion || catalog.ProjectID != projectID || catalog.Prototypes == nil {
+		diagnostics.add("invalid_schema", projectID, "", "prototypes/catalog.json", "schema_version, project_id, or prototypes is invalid", "Use schema_version \"3\", the bound project ID, and a non-null prototypes array.")
 	}
 	if len(catalog.Prototypes) > MaxPrototypes {
 		diagnostics.add("limit_exceeded", projectID, "", "prototypes/catalog.json", "prototype count exceeds 256", "Reduce the catalog to at most 256 Prototypes.")
@@ -280,6 +326,9 @@ func Evaluate(source Source, projectID string) Response {
 		seenIDs[prototype.ID] = true
 		if !validDisplay(prototype.Name, 160) || (prototype.Description != nil && (!utf8.ValidString(*prototype.Description) || len([]rune(*prototype.Description)) > 2000)) {
 			diagnostics.add("invalid_schema", projectID, prototype.ID, "prototypes/catalog.json", "Prototype name or description exceeds its contract", "Use a 1–160 character name and a null or at most 2000 character description.")
+		}
+		if prototype.Status != "active" && prototype.Status != "archived" {
+			diagnostics.add("invalid_schema", projectID, prototype.ID, "prototypes/catalog.json", "Prototype lifecycle status is missing or unsupported", "Set status to active or archived.")
 		}
 		if err := validatePrototypeRoot(prototype.Root); err != nil {
 			diagnostics.add("invalid_path", projectID, prototype.ID, prototype.Root, err.Error(), "Set root to exactly one direct child directory of prototypes/.")
@@ -314,7 +363,15 @@ func Evaluate(source Source, projectID string) Response {
 			if code == "unsupported_file" {
 				message = "Prototype manifest is not a regular file"
 			}
-			diagnostics.add(code, projectID, prototype.ID, manifestPath, message, "Add a regular prototype.json with the complete schema_version 1 contract.")
+			diagnostics.add(code, projectID, prototype.ID, manifestPath, message, "Add a regular prototype.json with the complete schema_version 3 contract.")
+			continue
+		}
+		if schemaVersion(manifestBytes) == "2" {
+			diagnostics.add("unsupported_schema", projectID, prototype.ID, manifestPath, "Prototype schema v2 is no longer admitted", prototypeV3MigrationResolution)
+			continue
+		}
+		if !hasNonNullScenarios(manifestBytes) {
+			diagnostics.add("invalid_schema", projectID, prototype.ID, manifestPath, "required scenarios array is missing or null", "Use schema_version \"3\" and provide a non-null scenarios array; use [] when there are no authored scenarios.")
 			continue
 		}
 		var manifest Manifest
@@ -327,7 +384,7 @@ func Evaluate(source Source, projectID string) Response {
 		aggregateBytes += bytesRead
 		digestRecords = append(digestRecords, records...)
 		if valid {
-			items = append(items, Item{ID: prototype.ID, Name: prototype.Name, Description: prototype.Description, Root: prototype.Root, EntryPoint: manifest.EntryPoint, Screens: manifest.Screens})
+			items = append(items, Item{ID: prototype.ID, Name: prototype.Name, Description: prototype.Description, Root: prototype.Root, Status: prototype.Status, AuthoringMode: manifest.AuthoringMode, EntryPoint: manifest.EntryPoint, Screens: manifest.Screens, Transitions: manifest.Transitions, Scenarios: manifest.Scenarios})
 		}
 	}
 	for path, mode := range entryByPath {
@@ -370,8 +427,11 @@ func validateManifest(source Source, projectID string, prototype Prototype, mani
 		valid = false
 	}
 	manifestPath := prototype.Root + "/prototype.json"
-	if manifest.SchemaVersion != SchemaVersion || manifest.ID != prototype.ID || manifest.Screens == nil || manifest.Sources == nil || manifest.Assets == nil || manifest.Links == nil || manifest.Related == nil {
-		fail("invalid_schema", manifestPath, "manifest identity, version, or required arrays are invalid", "Match catalog ID, use schema_version \"1\", and provide every required array (empty arrays are allowed).")
+	if manifest.SchemaVersion != PrototypeSchemaVersion || manifest.ID != prototype.ID || manifest.Screens == nil || manifest.Sources == nil || manifest.Assets == nil || manifest.Transitions == nil || manifest.Scenarios == nil || manifest.Related == nil {
+		fail("invalid_schema", manifestPath, "manifest identity, version, or required arrays are invalid", "Match catalog ID, use schema_version \"3\", and provide every required array (empty arrays are allowed; scenarios may be []).")
+	}
+	if manifest.AuthoringMode != "image_first" && manifest.AuthoringMode != "design_system_first" {
+		fail("invalid_schema", manifestPath, "Prototype authoring mode is missing or unsupported", "Set authoring_mode to image_first or design_system_first.")
 	}
 	if manifest.DesignSystemRef != nil && (!validID(manifest.DesignSystemRef.ID) || !validDigest(manifest.DesignSystemRef.ContentDigest)) {
 		fail("invalid_reference", manifestPath, "Design System reference identity or digest is malformed", "Use a stable Design System ID and full lowercase sha256 digest, or null; resolution is evaluated separately.")
@@ -379,27 +439,65 @@ func validateManifest(source Source, projectID string, prototype Prototype, mani
 	if err := validateOwnedPath(prototype.Root, manifest.EntryPoint); err != nil {
 		fail("invalid_path", manifestPath, err.Error(), "Use a safe Prototype-root-relative entry_point.")
 	}
-	invalidCollectionCount := len(manifest.Screens) == 0 || len(manifest.Screens) > MaxScreens || len(manifest.Sources) == 0 || len(manifest.Links) > MaxLinks || len(manifest.Related) > MaxRelated
-	if invalidCollectionCount {
-		fail("limit_exceeded", manifestPath, "Screen, source, link, or related-reference count is outside its contract", "Provide at least one Screen and source and stay within each declared collection limit.")
-	}
+	invalidCollectionCount := len(manifest.Screens) == 0 || len(manifest.Screens) > MaxScreens || len(manifest.Sources) == 0 || len(manifest.Transitions) > MaxTransitions || len(manifest.Scenarios) > MaxScenarios || len(manifest.Related) > MaxRelated
 	screenIDs := make(map[string]bool)
 	screenPaths := make(map[string]bool)
+	stateIDsByScreen := make(map[string]map[string]bool)
+	approvedReferences := make([]ApprovedReference, 0)
+	stateCount := 0
 	for _, screen := range manifest.Screens {
 		if !validID(screen.ID) || screenIDs[screen.ID] {
 			fail("duplicate_id", manifestPath, "Screen ID is invalid or duplicated", "Use unique stable Screen IDs within this Prototype.")
 		}
 		screenIDs[screen.ID] = true
-		if !validDisplay(screen.Name, 160) || screen.Scope != nil {
-			fail("invalid_schema", manifestPath, "Screen name is invalid or scope is not explicitly null", "Use a 1–160 character Screen name and scope:null; do not invent scope keys.")
+		if !validDisplay(screen.Name, 160) || screen.Scope != nil || screen.States == nil || len(screen.States) == 0 {
+			fail("invalid_schema", manifestPath, "Screen name, explicit null scope, or required states are invalid", "Use a 1–160 character Screen name, scope:null, and at least one state.")
 		}
 		if err := validateOwnedPath(prototype.Root, screen.Path); err != nil {
 			fail("invalid_path", manifestPath, err.Error(), "Use an exact safe relative path inside this Prototype root.")
+		}
+		if !strings.HasSuffix(strings.ToLower(screen.Path), ".html") {
+			fail("invalid_schema", manifestPath, "Screen path is not an HTML source", "Set each Screen path to its declared .html source file.")
 		}
 		if screenPaths[screen.Path] {
 			fail("duplicate_id", ownedDiagnosticPath(prototype.Root, screen.Path), "Screen path is duplicated", "Give each Screen a unique source path.")
 		}
 		screenPaths[screen.Path] = true
+		stateIDsByScreen[screen.ID] = make(map[string]bool)
+		defaultFound := false
+		for _, state := range screen.States {
+			stateCount++
+			if !validID(state.ID) || stateIDsByScreen[screen.ID][state.ID] {
+				fail("duplicate_id", manifestPath, "State ID is invalid or duplicated in this Screen", "Use unique stable State IDs within each Screen.")
+			}
+			stateIDsByScreen[screen.ID][state.ID] = true
+			if state.ID == screen.DefaultStateID {
+				defaultFound = true
+			}
+			if !validDisplay(state.Name, 160) || !validImagePath(state.IdentifierImage) || state.ApprovedReferences == nil {
+				fail("invalid_schema", manifestPath, "State identity image or approved-reference array is invalid", "Use a 1–160 character name, a declared raster identifier image and a non-null approved_references array.")
+			}
+			referenceIDs := make(map[string]bool)
+			for _, reference := range state.ApprovedReferences {
+				if !validID(reference.ID) || referenceIDs[reference.ID] {
+					fail("duplicate_id", manifestPath, "approved visual reference ID is invalid or duplicated in this State", "Use unique stable reference IDs within each State.")
+				}
+				referenceIDs[reference.ID] = true
+			}
+			approvedReferences = append(approvedReferences, state.ApprovedReferences...)
+		}
+		if !validID(screen.DefaultStateID) || !defaultFound {
+			fail("invalid_reference", manifestPath, "Screen default_state_id does not identify one of its states", "Set default_state_id to a State ID declared by the same Screen.")
+		}
+	}
+	if stateCount == 0 || stateCount > MaxStates {
+		invalidCollectionCount = true
+	}
+	if len(approvedReferences) > MaxApprovedReferences {
+		invalidCollectionCount = true
+	}
+	if invalidCollectionCount {
+		fail("limit_exceeded", manifestPath, "Screen, State, source, transition, or evidence count is outside its contract", "Provide a Screen and source, at least one State per Screen, and stay within the declared collection limits.")
 	}
 	sourceSet, assetSet := make(map[string]bool), make(map[string]bool)
 	for _, path := range manifest.Sources {
@@ -430,14 +528,28 @@ func validateManifest(source Source, projectID string, prototype Prototype, mani
 			fail("invalid_reference", ownedDiagnosticPath(prototype.Root, screen.Path), "Screen path is not a declared source", "Add each Prototype-root-relative Screen path to sources.")
 		}
 	}
-	linkSeen := make(map[string]bool)
-	for _, link := range manifest.Links {
-		key := link.FromScreenID + "\x00" + link.ToScreenID
-		if !screenIDs[link.FromScreenID] || !screenIDs[link.ToScreenID] || linkSeen[key] {
-			fail("invalid_reference", manifestPath, "link endpoint is missing or pair is duplicated", "Link only existing Screens and list each directed pair once.")
-		}
-		linkSeen[key] = true
+	if !screenPaths[manifest.EntryPoint] {
+		fail("invalid_reference", manifestPath, "entry_point does not identify a declared Screen", "Set entry_point to one of the Screen paths so the default entry and viewer selection agree.")
 	}
+	for _, screen := range manifest.Screens {
+		for _, state := range screen.States {
+			if !assetSet[state.IdentifierImage] {
+				fail("invalid_reference", manifestPath, "State identifier image is not a declared asset", "Declare each State identifier_image in assets.")
+			}
+			for _, reference := range state.ApprovedReferences {
+				if !validID(reference.ID) || !validImagePath(reference.Image) {
+					fail("invalid_schema", manifestPath, "approved visual reference identity or image path is invalid", "Use a stable reference ID and a declared raster image path.")
+				}
+				if !assetSet[reference.Image] {
+					fail("invalid_reference", manifestPath, "Approved reference image is not a declared asset", "Declare each approved reference image in assets.")
+				}
+				if err := ValidateRelativePath(reference.ApprovalEvidence); err != nil || len([]byte(reference.ApprovalEvidence)) > MaxPathBytes {
+					fail("invalid_path", reference.ApprovalEvidence, "approved reference evidence path is unsafe", "Use a safe Foundation-root-relative evidence path also declared in related.")
+				}
+			}
+		}
+	}
+	relatedPaths := make(map[string]bool)
 	relatedSeen := make(map[string]bool)
 	for _, ref := range manifest.Related {
 		if ref.Kind != "todo" && ref.Kind != "decision" && ref.Kind != "documentation" {
@@ -453,6 +565,7 @@ func validateManifest(source Source, projectID string, prototype Prototype, mani
 			fail("duplicate_id", ref.Path, "related reference pair is duplicated", "List each kind/path pair once.")
 		}
 		relatedSeen[key] = true
+		relatedPaths[ref.Path] = true
 		if !invalidCollectionCount {
 			err := source.CheckRegular(ref.Path, MaxFileBytes)
 			if err == nil {
@@ -464,6 +577,41 @@ func validateManifest(source Source, projectID string, prototype Prototype, mani
 				fail("invalid_reference", ref.Path, "related evidence file is missing, unsafe, or not regular", "Reference an existing regular Foundation file in the selected revision.")
 			}
 		}
+	}
+	for _, reference := range approvedReferences {
+		if !relatedPaths[reference.ApprovalEvidence] {
+			fail("invalid_reference", manifestPath, "approved visual reference evidence is not declared in related", "Add the exact approval_evidence path to related so Builder can admit the evidence document safely.")
+		}
+	}
+	transitionSeen := make(map[string]bool)
+	for _, transition := range manifest.Transitions {
+		fromExists := stateIDsByScreen[transition.FromScreenID][transition.FromStateID]
+		toExists := stateIDsByScreen[transition.ToScreenID][transition.ToStateID]
+		key := transition.FromScreenID + "\x00" + transition.FromStateID + "\x00" + transition.Action + "\x00" + transition.ToScreenID + "\x00" + transition.ToStateID
+		if !fromExists || !toExists || !validDisplay(transition.Action, 160) || transitionSeen[key] {
+			fail("invalid_reference", manifestPath, "State transition endpoint, action, or identity is invalid", "Reference existing Screen/State pairs and give each transition a unique action label.")
+		}
+		transitionSeen[key] = true
+	}
+	scenarioIDs := make(map[string]bool, len(manifest.Scenarios))
+	scenarioStepCount := 0
+	for _, scenario := range manifest.Scenarios {
+		if !validID(scenario.ID) || scenarioIDs[scenario.ID] {
+			fail("duplicate_id", manifestPath, "Scenario ID is invalid or duplicated", "Use unique stable Scenario IDs within this Prototype.")
+		}
+		scenarioIDs[scenario.ID] = true
+		if !validDisplay(scenario.Name, 160) || scenario.Steps == nil || len(scenario.Steps) == 0 {
+			fail("invalid_schema", manifestPath, "Scenario name or nonempty steps array is invalid", "Use a 1–160 character name and a non-null, nonempty ordered steps array.")
+		}
+		scenarioStepCount += len(scenario.Steps)
+		for _, step := range scenario.Steps {
+			if !stateIDsByScreen[step.ScreenID][step.StateID] {
+				fail("invalid_reference", manifestPath, "Scenario step does not identify a declared Screen/State pair", "Set each step's screen_id and state_id to an existing pair in this Prototype; repeated and non-transition-adjacent pairs are allowed.")
+			}
+		}
+	}
+	if scenarioStepCount > MaxScenarioSteps {
+		fail("limit_exceeded", manifestPath, "Scenario steps exceed the 4096-step Prototype limit", "Reduce the total steps across all scenarios to at most 4096.")
 	}
 	want := make(map[string]bool)
 	want["prototype.json"] = true
@@ -578,6 +726,20 @@ func validID(value string) bool {
 func validDisplay(value string, max int) bool {
 	return utf8.ValidString(value) && len([]rune(value)) >= 1 && len([]rune(value)) <= max
 }
+
+func validImagePath(value string) bool {
+	if validateOwnedPath("", value) != nil {
+		return false
+	}
+	extension := value[strings.LastIndex(value, ".")+1:]
+	switch strings.ToLower(extension) {
+	case "png", "jpg", "jpeg", "webp", "avif":
+		return true
+	default:
+		return false
+	}
+}
+
 func validDigest(value string) bool {
 	if len(value) != 71 || !strings.HasPrefix(value, "sha256:") || strings.ToLower(value) != value {
 		return false
@@ -636,12 +798,12 @@ var catalogRule = &objectRule{fields: map[string]*objectRule{
 	"schema_version": nil, "project_id": nil, "prototypes": prototypeRule,
 }, required: []string{"schema_version", "project_id", "prototypes"}}
 
-var prototypeRule = &objectRule{fields: map[string]*objectRule{"id": nil, "name": nil, "description": nil, "root": nil}, required: []string{"id", "name", "description", "root"}}
+var prototypeRule = &objectRule{fields: map[string]*objectRule{"id": nil, "name": nil, "description": nil, "root": nil, "status": nil}, required: []string{"id", "name", "description", "root", "status"}}
 
 var manifestRule = &objectRule{fields: map[string]*objectRule{
-	"schema_version": nil, "id": nil, "entry_point": nil, "screens": nil, "sources": nil, "assets": nil, "links": nil, "related": nil,
+	"schema_version": nil, "id": nil, "authoring_mode": nil, "entry_point": nil, "screens": nil, "sources": nil, "assets": nil, "transitions": nil, "scenarios": nil, "related": nil,
 	"design_system_ref": {fields: map[string]*objectRule{"id": nil, "content_digest": nil}, required: []string{"id", "content_digest"}},
-}, required: []string{"schema_version", "id", "entry_point", "screens", "sources", "assets", "links", "related", "design_system_ref"}}
+}, required: []string{"schema_version", "id", "authoring_mode", "entry_point", "screens", "sources", "assets", "transitions", "scenarios", "related", "design_system_ref"}}
 
 var sourceBindingRule = &objectRule{fields: map[string]*objectRule{
 	"repository_id": nil, "checkout_root": nil, "revision": nil, "definition_path": nil,
@@ -665,9 +827,35 @@ var designSystemRule = &objectRule{fields: map[string]*objectRule{
 }, required: []string{"schema_version", "id", "name", "owner", "tokens", "components", "assets", "contrast_pairs"}}
 
 func init() {
-	manifestRule.fields["screens"] = &objectRule{fields: map[string]*objectRule{"id": nil, "name": nil, "path": nil, "scope": nil}, required: []string{"id", "name", "path", "scope"}}
-	manifestRule.fields["links"] = &objectRule{fields: map[string]*objectRule{"from_screen_id": nil, "to_screen_id": nil}, required: []string{"from_screen_id", "to_screen_id"}}
+	manifestRule.fields["screens"] = &objectRule{fields: map[string]*objectRule{"id": nil, "name": nil, "path": nil, "scope": nil, "default_state_id": nil, "states": stateRule}, required: []string{"id", "name", "path", "scope", "default_state_id", "states"}}
+	manifestRule.fields["transitions"] = &objectRule{fields: map[string]*objectRule{"from_screen_id": nil, "from_state_id": nil, "action": nil, "to_screen_id": nil, "to_state_id": nil}, required: []string{"from_screen_id", "from_state_id", "action", "to_screen_id", "to_state_id"}}
+	manifestRule.fields["scenarios"] = &objectRule{fields: map[string]*objectRule{"id": nil, "name": nil, "steps": {fields: map[string]*objectRule{"screen_id": nil, "state_id": nil}, required: []string{"screen_id", "state_id"}}}, required: []string{"id", "name", "steps"}}
 	manifestRule.fields["related"] = &objectRule{fields: map[string]*objectRule{"kind": nil, "path": nil}, required: []string{"kind", "path"}}
+}
+
+var stateRule = &objectRule{fields: map[string]*objectRule{"id": nil, "name": nil, "identifier_image": nil, "approved_references": approvedReferenceRule}, required: []string{"id", "name", "identifier_image", "approved_references"}}
+
+var approvedReferenceRule = &objectRule{fields: map[string]*objectRule{"id": nil, "image": nil, "approval_evidence": nil}, required: []string{"id", "image", "approval_evidence"}}
+
+const prototypeV3MigrationResolution = "Run fresh Prototype status; adapt every offending v2 catalog/manifest, including archived candidates, to schema_version 3; confirm the complete collection is go; then explicitly refresh registration. Registration alone cannot repair source."
+
+func schemaVersion(data []byte) string {
+	var envelope struct {
+		SchemaVersion string `json:"schema_version"`
+	}
+	if json.Unmarshal(data, &envelope) != nil {
+		return ""
+	}
+	return envelope.SchemaVersion
+}
+
+func hasNonNullScenarios(data []byte) bool {
+	var envelope map[string]json.RawMessage
+	if json.Unmarshal(data, &envelope) != nil {
+		return false
+	}
+	value, ok := envelope["scenarios"]
+	return ok && len(value) > 0 && !bytes.Equal(bytes.TrimSpace(value), []byte("null"))
 }
 
 func DecodeStrict(data []byte, target any) error {

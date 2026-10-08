@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	ac "delphi-local-api/internal/artifact_catalog"
+	"delphi-local-api/internal/codec"
 	"delphi-local-api/internal/source"
 )
 
@@ -57,7 +59,18 @@ func prepare(c prepContext) (Snapshot, error) {
 		if _, statErr := os.Lstat(filepath.Join(foundation, "prototypes", "catalog.json")); statErr == nil {
 			state = "invalid"
 		}
-		snapshot.Artifacts = append(snapshot.Artifacts, Artifact{ID: "prototypes", Kind: "prototype_collection", Name: "Prototype", State: state, Diagnostic: "Prototype catalog is unavailable or invalid"})
+		var observation ac.Response
+		if json.Unmarshal(prototype, &observation) == nil && observation.Target == ac.TargetPrototypes && observation.ProjectID == c.ProjectID {
+			snapshot.Observations["prototype_status"] = append(json.RawMessage(nil), prototype...)
+		}
+		diagnostic := "Prototype catalog is unavailable or invalid"
+		if first := prototypeDiagnostic(observation.Diagnostics); first != nil {
+			diagnostic = first.Message
+			if first.Resolution != "" {
+				diagnostic += ". " + first.Resolution
+			}
+		}
+		snapshot.Artifacts = append(snapshot.Artifacts, Artifact{ID: "prototypes", Kind: "prototype_collection", Name: "Prototype", State: state, Diagnostic: diagnostic})
 	} else {
 		snapshot.Observations["prototype_status"] = append(json.RawMessage(nil), prototype...)
 		artifacts, addErr := addPrototypeFiles(snapshot.Files, foundation, c.ProjectID, prototype)
@@ -336,9 +349,40 @@ func isCanonicalLandingEvidence(path string) bool {
 	}
 }
 
+func prototypeDiagnostic(diagnostics []ac.Diagnostic) *ac.Diagnostic {
+	for i := range diagnostics {
+		if diagnostics[i].Code == "unsupported_schema" {
+			return &diagnostics[i]
+		}
+	}
+	if len(diagnostics) > 0 {
+		return &diagnostics[0]
+	}
+	return nil
+}
+
 func addPrototypeFiles(files map[string][]byte, foundation, projectID string, result []byte) ([]Artifact, error) {
+	var envelope map[string]json.RawMessage
+	if json.Unmarshal(result, &envelope) != nil {
+		return nil, errors.New("invalid Prototype evaluator response")
+	}
+	for _, field := range []string{"schema_version", "project_id", "target", "authority_scope", "mode", "revision", "outcome", "inventory_digest", "items", "diagnostics", "design_system_validation"} {
+		if _, present := envelope[field]; !present {
+			return nil, errors.New("incomplete Prototype evaluator response")
+		}
+	}
 	var response ac.Response
-	if json.Unmarshal(result, &response) != nil || response.Outcome != "go" || response.InventoryDigest == nil {
+	decoder := json.NewDecoder(bytes.NewReader(result))
+	decoder.DisallowUnknownFields()
+	if codec.ValidateJSON(result, 0) != nil || decoder.Decode(&response) != nil || decoder.Decode(new(any)) != io.EOF ||
+		response.SchemaVersion != ac.PrototypeSchemaVersion ||
+		response.ProjectID != projectID ||
+		response.Target != ac.TargetPrototypes ||
+		response.AuthorityScope != ac.AuthorityScope ||
+		response.Mode != "working-tree" || response.Revision != nil ||
+		response.Outcome != "go" || response.InventoryDigest == nil ||
+		response.Items == nil || response.Diagnostics == nil || len(response.Diagnostics) != 0 ||
+		response.DesignSystemValidation != "not_evaluated" {
 		return nil, errors.New("invalid Prototype evaluator response")
 	}
 	catalogBytes, err := readSource(foundation, "prototypes/catalog.json")
@@ -346,12 +390,13 @@ func addPrototypeFiles(files map[string][]byte, foundation, projectID string, re
 		return nil, err
 	}
 	var catalog ac.Catalog
-	if ac.DecodeStrict(catalogBytes, &catalog) != nil {
+	if ac.DecodeStrict(catalogBytes, &catalog) != nil || catalog.SchemaVersion != ac.PrototypeSchemaVersion || catalog.ProjectID != projectID || len(catalog.Prototypes) != len(response.Items) {
 		return nil, errors.New("invalid admitted Prototype catalog")
 	}
 	admitted := map[string][]byte{"prototypes/catalog.json": catalogBytes}
 	records := []ac.DigestRecord{{SourceID: projectID, Path: "prototypes/catalog.json", Content: catalogBytes}}
 	artifacts := make([]Artifact, 0, len(response.Items))
+	seenItems := make(map[string]bool, len(response.Items))
 	for _, item := range response.Items {
 		var prototype *ac.Prototype
 		for i := range catalog.Prototypes {
@@ -360,9 +405,10 @@ func addPrototypeFiles(files map[string][]byte, foundation, projectID string, re
 				break
 			}
 		}
-		if prototype == nil {
+		if prototype == nil || seenItems[item.ID] {
 			return nil, errors.New("evaluator item is absent from Prototype catalog")
 		}
+		seenItems[item.ID] = true
 		manifestPath := prototype.Root + "/prototype.json"
 		manifestBytes, e := readSource(foundation, manifestPath)
 		if e != nil {
@@ -371,6 +417,15 @@ func addPrototypeFiles(files map[string][]byte, foundation, projectID string, re
 		var manifest ac.Manifest
 		if ac.DecodeStrict(manifestBytes, &manifest) != nil {
 			return nil, errors.New("invalid admitted Prototype manifest")
+		}
+		itemScreens, _ := json.Marshal(item.Screens)
+		manifestScreens, _ := json.Marshal(manifest.Screens)
+		itemTransitions, _ := json.Marshal(item.Transitions)
+		manifestTransitions, _ := json.Marshal(manifest.Transitions)
+		itemScenarios, _ := json.Marshal(item.Scenarios)
+		manifestScenarios, _ := json.Marshal(manifest.Scenarios)
+		if item.Name != prototype.Name || !sameOptionalString(item.Description, prototype.Description) || item.Root != prototype.Root || item.Status != prototype.Status || item.EntryPoint != manifest.EntryPoint || item.AuthoringMode != manifest.AuthoringMode || !bytes.Equal(itemScreens, manifestScreens) || !bytes.Equal(itemTransitions, manifestTransitions) || !bytes.Equal(itemScenarios, manifestScenarios) {
+			return nil, errors.New("Prototype evaluator metadata does not match the admitted source")
 		}
 		paths := []string{manifestPath}
 		artifactFiles := map[string][]byte{manifestPath: manifestBytes}
@@ -388,10 +443,12 @@ func addPrototypeFiles(files map[string][]byte, foundation, projectID string, re
 			paths = append(paths, path)
 			records = append(records, ac.DigestRecord{SourceID: projectID, Path: path, Content: data})
 		}
+		relatedPaths := make(map[string]bool, len(manifest.Related))
 		for _, related := range manifest.Related {
 			if !approvedPrototypeRelatedPath(related.Kind, related.Path) {
 				return nil, errors.New("invalid Prototype evidence reference")
 			}
+			relatedPaths[related.Path] = true
 			if _, exists := artifactFiles[related.Path]; exists {
 				continue
 			}
@@ -401,6 +458,15 @@ func addPrototypeFiles(files map[string][]byte, foundation, projectID string, re
 			}
 			artifactFiles[related.Path] = data
 			paths = append(paths, related.Path)
+		}
+		for _, screen := range manifest.Screens {
+			for _, state := range screen.States {
+				for _, reference := range state.ApprovedReferences {
+					if !relatedPaths[reference.ApprovalEvidence] {
+						return nil, errors.New("approved Prototype visual reference has no admitted evidence")
+					}
+				}
+			}
 		}
 		for path, data := range artifactFiles {
 			admitted[path] = data
@@ -419,6 +485,13 @@ func addPrototypeFiles(files map[string][]byte, foundation, projectID string, re
 		return []Artifact{{ID: "prototypes", Kind: "prototype_collection", Name: "Prototype", State: "pending"}}, nil
 	}
 	return artifacts, nil
+}
+
+func sameOptionalString(left, right *string) bool {
+	if left == nil || right == nil {
+		return left == nil && right == nil
+	}
+	return *left == *right
 }
 
 func approvedPrototypeRelatedPath(kind, value string) bool {

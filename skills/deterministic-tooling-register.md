@@ -187,6 +187,13 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 | `wf-laravel-domain-resolution-testing` | `already-backed` | Existing support via [`laravel_domain_resolution_test_audit.sh`](../tools/laravel_domain_resolution_test_audit.sh); use it to classify touched tests before claiming resolution coverage. |
 | `wf-laravel-tenant-access-guardrails` | `already-backed` | Existing support via [`laravel_tenant_access_guardrails_audit.sh`](../tools/laravel_tenant_access_guardrails_audit.sh); use it for static route-file guardrail checks before deeper validation. |
 
+## Prototype Authoring Skills
+
+| Skill | Classification | Support / Preferred Shape |
+| --- | --- | --- |
+| `create-prototype` | `partial-tool` | The shared local API validates v3 catalog/manifest/inventory structure and version references and reports registration currency through TEACH; candidate intent, screen grouping, visual quality, behavior, Design System use, and publication authority remain judgment-led. |
+| `create-prototype-scenario` | `partial-tool` | Reuses the v3 Prototype evaluator for exact Scenario structure, bounded steps, Screen/State resolution, and full inventory status; requested path meaning and identity resolution remain judgment-led. No separate Scenario validator is warranted. |
+
 ## NestJS Workflow Skills
 
 | Skill | Classification | Support / Preferred Shape |

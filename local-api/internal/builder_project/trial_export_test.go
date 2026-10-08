@@ -75,7 +75,7 @@ func TestExportDisposableTwoCompanyTrial(t *testing.T) {
 				t.Fatal(err)
 			}
 		} else {
-			if err := writeTrialFile(foundation, "prototypes/catalog.json", []byte(`{"schema_version":"1","project_id":"trial-project-b","prototypes":null}`)); err != nil {
+			if err := writeTrialFile(foundation, "prototypes/catalog.json", []byte(`{"schema_version":"2","project_id":"trial-project-b","prototypes":null}`)); err != nil {
 				t.Fatal(err)
 			}
 		}

@@ -28,7 +28,7 @@ func artifactFixture(t *testing.T) (string, string, string) {
 			t.Fatal(err)
 		}
 	}
-	write(filepath.Join(foundation, "prototypes/catalog.json"), `{"schema_version":"1","project_id":"fixture-project","prototypes":[]}`)
+	write(filepath.Join(foundation, "prototypes/catalog.json"), `{"schema_version":"3","project_id":"fixture-project","prototypes":[]}`)
 	gitFixture(t, foundation, "init", "-q")
 	gitFixture(t, foundation, "config", "user.email", "fixture@example.invalid")
 	gitFixture(t, foundation, "config", "user.name", "Fixture")

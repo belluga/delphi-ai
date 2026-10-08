@@ -62,6 +62,40 @@ func TestPrepareAdmitsStandardProjectDesignSystemWithoutBindingsFile(t *testing.
 	t.Fatal("Design System status missing from prepared snapshot")
 }
 
+func TestPreparePreservesPrototypeMigrationTeachWhilePreparingOtherArtifacts(t *testing.T) {
+	workspace := t.TempDir()
+	foundation := filepath.Join(workspace, "foundation")
+	if err := os.MkdirAll(foundation, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if out, err := exec.Command("git", "init", "--quiet", foundation).CombinedOutput(); err != nil {
+		t.Fatalf("git init: %v %s", err, out)
+	}
+	writeFixture(t, foundation, "prototypes/catalog.json", []byte(`{"schema_version":"2","project_id":"project-a","prototypes":[]}`))
+	bin := t.TempDir()
+	writeExecutable(t, bin, "knowledge-status", "#!/bin/sh\nprintf '%s\\n' '{\"schema_version\":\"1\",\"project_id\":\"project-a\",\"authority_scope\":\"local_review_only\",\"landing\":{},\"roadmap\":{}}'\n")
+	writeExecutable(t, bin, "artifact-status", "#!/bin/sh\nif [ \"$1\" = prototypes ]; then\n  printf '%s\\n' '{\"schema_version\":\"3\",\"project_id\":\"project-a\",\"target\":\"prototypes\",\"authority_scope\":\"local_structure_only\",\"mode\":\"working-tree\",\"revision\":null,\"outcome\":\"no_go\",\"inventory_digest\":null,\"items\":[],\"diagnostics\":[{\"code\":\"invalid_schema\",\"source_id\":null,\"artifact_id\":\"bad-prototype\",\"path\":\"prototypes/bad/prototype.json\",\"message\":\"Another manifest field is invalid\",\"resolution\":\"Correct the invalid field.\"},{\"code\":\"unsupported_schema\",\"source_id\":null,\"artifact_id\":null,\"path\":\"prototypes/catalog.json\",\"message\":\"Prototype schema v2 is not accepted\",\"resolution\":\"TEACH: run fresh Prototype status, adapt every offending catalog and manifest including archived candidates to schema_version 3, confirm the complete collection go, then explicitly refresh registration.\"}],\"design_system_validation\":\"not_evaluated\"}'\n  exit 2\nfi\nprintf '%s\\n' '{}'\n")
+	t.Setenv("DELPHI_LOCAL_API_BIN_DIR", bin)
+	snapshot, err := Prepare(Registration{ProjectID: "project-a", CompanyID: "company-a", Binding: Binding{WorkspaceRoot: workspace, ProjectRoot: ".", FoundationRoot: "foundation"}}, "", "")
+	if err != nil {
+		t.Fatalf("unrelated artifact preparation should continue: %v", err)
+	}
+	var prototypeArtifact *Artifact
+	for i := range snapshot.Artifacts {
+		if snapshot.Artifacts[i].Kind == "prototype_collection" {
+			prototypeArtifact = &snapshot.Artifacts[i]
+			break
+		}
+	}
+	if prototypeArtifact == nil || prototypeArtifact.State != "invalid" || !strings.Contains(prototypeArtifact.Diagnostic, "fresh Prototype status") || !strings.Contains(prototypeArtifact.Diagnostic, "including archived candidates") || !strings.Contains(prototypeArtifact.Diagnostic, "refresh registration") {
+		t.Fatalf("Prototype migration TEACH was not preserved: %+v", prototypeArtifact)
+	}
+	var observation ac.Response
+	if err := json.Unmarshal(snapshot.Observations["prototype_status"], &observation); err != nil || observation.Outcome != "no_go" || len(observation.Diagnostics) != 2 {
+		t.Fatalf("Prototype no-go observation was not retained: %+v err=%v", observation, err)
+	}
+}
+
 func writeExecutable(t *testing.T, root, name, contents string) {
 	t.Helper()
 	path := filepath.Join(root, name)
@@ -72,12 +106,21 @@ func writeExecutable(t *testing.T, root, name, contents string) {
 
 func TestPrototypeAdapterAdmitsTwoEvaluatorItemsAndExactInventory(t *testing.T) {
 	root := t.TempDir()
-	catalog := ac.Catalog{SchemaVersion: "1", ProjectID: "project-a", Prototypes: []ac.Prototype{{ID: "alpha", Name: "Alpha", Root: "prototypes/alpha"}, {ID: "beta", Name: "Beta", Root: "prototypes/beta"}}}
+	catalog := ac.Catalog{SchemaVersion: ac.PrototypeSchemaVersion, ProjectID: "project-a", Prototypes: []ac.Prototype{{ID: "alpha", Name: "Alpha", Root: "prototypes/alpha", Status: "active"}, {ID: "beta", Name: "Beta", Root: "prototypes/beta", Status: "archived"}}}
 	catalogBytes, _ := json.Marshal(catalog)
 	writeFixture(t, root, "prototypes/catalog.json", catalogBytes)
 	records := []ac.DigestRecord{{SourceID: "project-a", Path: "prototypes/catalog.json", Content: catalogBytes}}
+	items := make([]ac.Item, 0, len(catalog.Prototypes))
 	for _, id := range []string{"alpha", "beta"} {
-		manifest := ac.Manifest{SchemaVersion: "1", ID: id, EntryPoint: "index.html", Screens: []ac.Screen{{ID: "main", Name: "Main", Path: "index.html"}}, Sources: []string{"index.html"}, Assets: []string{"style.css"}, Links: []ac.Link{}, Related: []ac.Related{}, DesignSystemRef: nil}
+		manifest := apiFixtureManifest(id, "style.css")
+		if id == "alpha" {
+			manifest.Scenarios = []ac.Scenario{{ID: "onboarding", Name: "Onboarding review", Steps: []ac.ScenarioStep{{ScreenID: "main", StateID: "default"}, {ScreenID: "main", StateID: "default"}}}}
+		}
+		status := "active"
+		if id == "beta" {
+			status = "archived"
+		}
+		items = append(items, ac.Item{ID: id, Name: strings.ToUpper(id[:1]) + id[1:], Root: "prototypes/" + id, Status: status, AuthoringMode: manifest.AuthoringMode, EntryPoint: manifest.EntryPoint, Screens: manifest.Screens, Transitions: manifest.Transitions, Scenarios: manifest.Scenarios})
 		if id == "alpha" {
 			manifest.Related = []ac.Related{{Kind: "documentation", Path: "modules/declared.md"}, {Kind: "documentation", Path: "system_roadmap.md"}}
 			writeFixture(t, root, "modules/declared.md", []byte("# declared evidence"))
@@ -90,41 +133,113 @@ func TestPrototypeAdapterAdmitsTwoEvaluatorItemsAndExactInventory(t *testing.T) 
 		writeFixture(t, root, mp, mb)
 		writeFixture(t, root, "prototypes/"+id+"/index.html", html)
 		writeFixture(t, root, "prototypes/"+id+"/style.css", css)
-		records = append(records, ac.DigestRecord{SourceID: "project-a", Path: mp, Content: mb}, ac.DigestRecord{SourceID: "project-a", Path: "prototypes/" + id + "/index.html", Content: html}, ac.DigestRecord{SourceID: "project-a", Path: "prototypes/" + id + "/style.css", Content: css})
+		image := []byte("fixture-image")
+		writeFixture(t, root, "prototypes/"+id+"/images/main.webp", image)
+		records = append(records, ac.DigestRecord{SourceID: "project-a", Path: mp, Content: mb}, ac.DigestRecord{SourceID: "project-a", Path: "prototypes/" + id + "/index.html", Content: html}, ac.DigestRecord{SourceID: "project-a", Path: "prototypes/" + id + "/style.css", Content: css}, ac.DigestRecord{SourceID: "project-a", Path: "prototypes/" + id + "/images/main.webp", Content: image})
 	}
 	digest, err := ac.InventoryDigest("project-a", records)
 	if err != nil {
 		t.Fatal(err)
 	}
-	response, _ := json.Marshal(ac.Response{Outcome: "go", InventoryDigest: &digest, Items: []ac.Item{{ID: "alpha"}, {ID: "beta"}}})
+	responseBytes, _ := json.Marshal(prototypeAdapterResponse("project-a", digest, items))
 	files := map[string][]byte{}
-	artifacts, err := addPrototypeFiles(files, root, "project-a", response)
+	artifacts, err := addPrototypeFiles(files, root, "project-a", responseBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(artifacts) != 2 || artifacts[0].ID != "alpha" || artifacts[1].ID != "beta" || len(files) != 9 || string(files["modules/declared.md"]) != "# declared evidence" || string(files["system_roadmap.md"]) != "# canonical evidence" {
+	if len(artifacts) != 2 || artifacts[0].ID != "alpha" || artifacts[1].ID != "beta" || len(files) != 11 || string(files["modules/declared.md"]) != "# declared evidence" || string(files["system_roadmap.md"]) != "# canonical evidence" {
 		t.Fatalf("items=%d files=%d", len(artifacts), len(files))
 	}
+
+	badEnvelopeCases := []struct {
+		name   string
+		mutate func(*ac.Response)
+	}{
+		{name: "schema version", mutate: func(r *ac.Response) { r.SchemaVersion = "1" }},
+		{name: "project identity", mutate: func(r *ac.Response) { r.ProjectID = "other-project" }},
+		{name: "target", mutate: func(r *ac.Response) { r.Target = "design-system" }},
+		{name: "authority scope", mutate: func(r *ac.Response) { r.AuthorityScope = "remote" }},
+		{name: "mode", mutate: func(r *ac.Response) { r.Mode = "committed" }},
+		{name: "revision", mutate: func(r *ac.Response) { revision := strings.Repeat("a", 40); r.Revision = &revision }},
+		{name: "missing diagnostics", mutate: func(r *ac.Response) { r.Diagnostics = nil }},
+		{name: "nonempty diagnostics", mutate: func(r *ac.Response) {
+			r.Diagnostics = []ac.Diagnostic{{Code: "warning", Message: "partial", Resolution: "retry"}}
+		}},
+		{name: "design-system validation", mutate: func(r *ac.Response) { r.DesignSystemValidation = "valid" }},
+		{name: "missing digest", mutate: func(r *ac.Response) { r.InventoryDigest = nil }},
+		{name: "mismatched item description", mutate: func(r *ac.Response) { value := "not in catalog"; r.Items[0].Description = &value }},
+		{name: "mismatched scenario projection", mutate: func(r *ac.Response) { r.Items[0].Scenarios = []ac.Scenario{} }},
+	}
+	for _, test := range badEnvelopeCases {
+		t.Run("rejects "+test.name, func(t *testing.T) {
+			response := prototypeAdapterResponse("project-a", digest, clonePrototypeItems(t, items))
+			test.mutate(&response)
+			responseBytes, marshalErr := json.Marshal(response)
+			if marshalErr != nil {
+				t.Fatal(marshalErr)
+			}
+			admittedFiles := map[string][]byte{}
+			if _, err := addPrototypeFiles(admittedFiles, root, "project-a", responseBytes); err == nil || len(admittedFiles) != 0 {
+				t.Fatalf("invalid evaluator response was admitted: err=%v files=%v", err, admittedFiles)
+			}
+		})
+	}
+	for _, field := range []string{"schema_version", "project_id", "target", "authority_scope", "mode", "revision", "outcome", "inventory_digest", "items", "diagnostics", "design_system_validation"} {
+		t.Run("rejects missing envelope field "+field, func(t *testing.T) {
+			complete, marshalErr := json.Marshal(prototypeAdapterResponse("project-a", digest, clonePrototypeItems(t, items)))
+			if marshalErr != nil {
+				t.Fatal(marshalErr)
+			}
+			var fields map[string]json.RawMessage
+			if err := json.Unmarshal(complete, &fields); err != nil {
+				t.Fatal(err)
+			}
+			delete(fields, field)
+			incomplete, marshalErr := json.Marshal(fields)
+			if marshalErr != nil {
+				t.Fatal(marshalErr)
+			}
+			if _, err := addPrototypeFiles(map[string][]byte{}, root, "project-a", incomplete); err == nil {
+				t.Fatal("incomplete evaluator response was admitted")
+			}
+		})
+	}
+}
+
+func clonePrototypeItems(t *testing.T, items []ac.Item) []ac.Item {
+	t.Helper()
+	encoded, err := json.Marshal(items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var copy []ac.Item
+	if err := json.Unmarshal(encoded, &copy); err != nil {
+		t.Fatal(err)
+	}
+	return copy
 }
 
 func TestPrototypeAdapterRejectsPrivateRelatedBeforeAdmittingBytes(t *testing.T) {
 	root := t.TempDir()
-	catalog := ac.Catalog{SchemaVersion: "1", ProjectID: "project-a", Prototypes: []ac.Prototype{{ID: "alpha", Name: "Alpha", Root: "prototypes/alpha"}}}
+	catalog := ac.Catalog{SchemaVersion: ac.PrototypeSchemaVersion, ProjectID: "project-a", Prototypes: []ac.Prototype{{ID: "alpha", Name: "Alpha", Root: "prototypes/alpha", Status: "active"}}}
 	catalogBytes, _ := json.Marshal(catalog)
-	manifest := ac.Manifest{SchemaVersion: "1", ID: "alpha", EntryPoint: "index.html", Screens: []ac.Screen{{ID: "main", Name: "Main", Path: "index.html"}}, Sources: []string{"index.html"}, Assets: []string{}, Links: []ac.Link{}, Related: []ac.Related{{Kind: "documentation", Path: ".env"}}, DesignSystemRef: nil}
+	manifest := apiFixtureManifest("alpha")
+	manifest.Related = []ac.Related{{Kind: "documentation", Path: ".env"}}
 	manifestBytes, _ := json.Marshal(manifest)
 	entry := []byte("<main>safe content</main>")
 	writeFixture(t, root, "prototypes/catalog.json", catalogBytes)
 	writeFixture(t, root, "prototypes/alpha/prototype.json", manifestBytes)
 	writeFixture(t, root, "prototypes/alpha/index.html", entry)
 	writeFixture(t, root, ".env", []byte("PRIVATE_SHOULD_NOT_BE_SNAPSHOTTED"))
-	digest, err := ac.InventoryDigest("project-a", []ac.DigestRecord{{SourceID: "project-a", Path: "prototypes/catalog.json", Content: catalogBytes}, {SourceID: "project-a", Path: "prototypes/alpha/prototype.json", Content: manifestBytes}, {SourceID: "project-a", Path: "prototypes/alpha/index.html", Content: entry}})
+	image := []byte("fixture-image")
+	writeFixture(t, root, "prototypes/alpha/images/main.webp", image)
+	digest, err := ac.InventoryDigest("project-a", []ac.DigestRecord{{SourceID: "project-a", Path: "prototypes/catalog.json", Content: catalogBytes}, {SourceID: "project-a", Path: "prototypes/alpha/prototype.json", Content: manifestBytes}, {SourceID: "project-a", Path: "prototypes/alpha/index.html", Content: entry}, {SourceID: "project-a", Path: "prototypes/alpha/images/main.webp", Content: image}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	response, _ := json.Marshal(ac.Response{Outcome: "go", InventoryDigest: &digest, Items: []ac.Item{{ID: "alpha"}}})
+	responseBytes, _ := json.Marshal(prototypeAdapterResponse("project-a", digest, []ac.Item{{ID: "alpha", Name: "Alpha", Root: "prototypes/alpha", Status: "active", AuthoringMode: manifest.AuthoringMode, EntryPoint: manifest.EntryPoint, Screens: manifest.Screens, Transitions: manifest.Transitions}}))
 	files := map[string][]byte{}
-	artifacts, err := addPrototypeFiles(files, root, "project-a", response)
+	artifacts, err := addPrototypeFiles(files, root, "project-a", responseBytes)
 	if err == nil || len(files) != 0 || len(artifacts) != 0 {
 		t.Fatalf("private evidence admitted: artifacts=%+v files=%v err=%v", artifacts, files, err)
 	}
@@ -260,5 +375,20 @@ func writeFixture(t *testing.T, root, relative string, data []byte) {
 	}
 	if err := os.WriteFile(full, data, 0o644); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func apiFixtureManifest(id string, assets ...string) ac.Manifest {
+	return ac.Manifest{SchemaVersion: ac.PrototypeSchemaVersion, ID: id, AuthoringMode: "design_system_first", EntryPoint: "index.html",
+		Screens: []ac.Screen{{ID: "main", Name: "Main", Path: "index.html", DefaultStateID: "default", States: []ac.State{{ID: "default", Name: "Default", IdentifierImage: "images/main.webp", ApprovedReferences: []ac.ApprovedReference{}}}}},
+		Sources: []string{"index.html"}, Assets: append([]string{"images/main.webp"}, assets...), Transitions: []ac.Transition{}, Scenarios: []ac.Scenario{}, Related: []ac.Related{}, DesignSystemRef: nil}
+}
+
+func prototypeAdapterResponse(projectID, digest string, items []ac.Item) ac.Response {
+	return ac.Response{
+		SchemaVersion: ac.PrototypeSchemaVersion, ProjectID: projectID, Target: ac.TargetPrototypes,
+		AuthorityScope: ac.AuthorityScope, Mode: "working-tree", Revision: nil, Outcome: "go",
+		InventoryDigest: &digest, Items: items, Diagnostics: []ac.Diagnostic{},
+		DesignSystemValidation: "not_evaluated",
 	}
 }
