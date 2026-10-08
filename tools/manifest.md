@@ -9,7 +9,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 
 | Path | Type | Purpose |
 | --- | --- | --- |
-| `tools/audit_instruction_baselines.sh` | shell | Audit canonical Delphi skills/rules/workflows and mirror coherence. |
+| `tools/audit_instruction_baselines.sh` | shell | Audit canonical Delphi skills/rules/workflows, including Go workflow counterparts, and mirror coherence. |
 | `tools/audit_escalation_guard.py` | python | Read a tactical TODO `Audit Trigger Matrix`, emit a TEACH runtime decision for the minimum required audit floor, and block missing or inconsistent trigger declarations. |
 | `tools/agent_role_routing_guard.py` | python | Deterministically validate that a declared implementation, implementation-validation, monitoring, review, approval, or self-improvement surface is routed to the correct role/model/effort lane before execution begins; implementation defaults to principal-checkout single-writer and worktree-isolated routing is rejected without a separate human authorization reference explicitly naming worktrees or auxiliary checkouts. |
 | `tools/backend_concurrency_probe.sh` | shell | Send real concurrent HTTP requests and summarize response-code/latency evidence for concurrency/idempotency validation. |
@@ -98,7 +98,7 @@ This manifest covers the canonical `delphi-ai/tools/` directory. Thin root-level
 | `tools/sync_claude_skill_mirrors.sh` | shell | Sync canonical skills into curated Claude-compatible skill mirrors under `.claude/skills`. |
 | `tools/sync_cline_skill_mirrors.sh` | shell | Sync canonical skills into curated Cline-compatible skill mirrors. |
 | `tools/sync_codex_public_skill_mirrors.sh` | shell | Sync tracked canonical skills into curated public Codex mirrors under `~/.codex/skills/public`. |
-| `tools/sync_clinerules_mirrors.py` | python | Generate curated `.clinerules` mirror content from canonical Delphi rules/workflows, including the canonical `*-method` session-lifecycle path plus its legacy compatibility mirror. |
+| `tools/sync_clinerules_mirrors.py` | python | Generate curated `.clinerules` mirror content from canonical Delphi rules/workflows, including Go service-boundary rule/workflow mirrors and the canonical `*-method` session-lifecycle path plus its legacy compatibility mirror. |
 | `tools/sync_clinerules_mirrors.sh` | shell | Shell entrypoint for `.clinerules` mirror synchronization. |
 | `tools/submodule_workspace_pin.sh` | shell | Pin all configured downstream submodules to the exact gitlink SHAs recorded by the superproject without overriding dirty worktrees. |
 | `tools/submodule_workspace_status.sh` | shell | Print a generic multi-repo submodule workspace status report derived from `.gitmodules`. |

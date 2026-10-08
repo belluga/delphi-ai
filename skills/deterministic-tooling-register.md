@@ -187,6 +187,13 @@ Deterministic tooling extracted from this register should prefer diagnostic outp
 | `wf-laravel-domain-resolution-testing` | `already-backed` | Existing support via [`laravel_domain_resolution_test_audit.sh`](../tools/laravel_domain_resolution_test_audit.sh); use it to classify touched tests before claiming resolution coverage. |
 | `wf-laravel-tenant-access-guardrails` | `already-backed` | Existing support via [`laravel_tenant_access_guardrails_audit.sh`](../tools/laravel_tenant_access_guardrails_audit.sh); use it for static route-file guardrail checks before deeper validation. |
 
+## Go Workflow Skills
+
+| Skill | Classification | Support / Preferred Shape |
+| --- | --- | --- |
+| `rule-go-go-architecture-always-on` | `skill-only` | Canonical Go rule owns module, trust, cancellation, concurrency, and service-boundary judgment; project-owned Go commands supply the mechanical checks. |
+| `wf-go-change-service-boundary-method` | `partial-tool` | Owning `go.mod` detection is declared by `config/stack_capabilities.yaml`; `gofmt`, `go vet`, `go test`, and `go test -race` are project-selected toolchain checks. The workflow owns contract and runtime-evidence judgment. |
+
 ## Prototype Authoring Skills
 
 | Skill | Classification | Support / Preferred Shape |

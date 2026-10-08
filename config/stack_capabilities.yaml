@@ -111,9 +111,13 @@ capabilities:
     execution_policy: Prefer project-owned safe runners and foundation_documentation runtime contracts; do not assume Laravel remains the only backend for future projects.
 
   go:
-    lifecycle: future
-    purpose: Future backend/service capability for projects that migrate or introduce Go services.
-    default_surfaces: []
+    lifecycle: available
+    purpose: Go backend and service boundaries, HTTP contracts, module ownership, and project-declared build/test evidence.
+    default_surfaces:
+      - workflows/go/
+      - rules/stacks/go/
+      - skills/rule-go-go-architecture-always-on/
+      - skills/wf-go-change-service-boundary-method/
     activation_markers:
       - Go module files
       - Go service module docs
@@ -123,7 +127,7 @@ capabilities:
         - go.mod
       nested_files:
         - go.mod
-    execution_policy: Reserved capability. Adding Go scripts/rules later must remain additive and must not disable existing Laravel/Flutter/Docker support.
+    execution_policy: Use the owning go.mod, declared Go version, project commands, and service/runtime contract; do not infer a router, database, UI, container, or deployment platform from Go alone.
 
   nestjs:
     lifecycle: experimental
@@ -144,8 +148,8 @@ capabilities:
     execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use the owning manifest, package manager, scripts, Node/module-system contract, and independently activated integration capabilities.
 
   react:
-    lifecycle: experimental
-    purpose: Technically complete minimum React instruction and Node-audit package awaiting separately authorized lifecycle admission.
+    lifecycle: available
+    purpose: React UI boundaries, state/effect/accessibility discipline, and project-owned Node-audit evidence.
     default_surfaces:
       - workflows/react/
       - rules/stacks/react/
@@ -159,11 +163,11 @@ capabilities:
       nested_files: []
       package_json_requires_any:
         - "react-dom"
-    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use the owning manifest, project scripts, rendering target, and independently activated integration capabilities without inferring Vite or another stack.
+    execution_policy: Use the owning manifest, project scripts, rendering target, and independently activated integration capabilities without inferring Vite or another stack.
 
   vite:
-    lifecycle: experimental
-    purpose: Technically complete minimum Vite build/runtime and Node-audit package awaiting separately authorized lifecycle admission.
+    lifecycle: available
+    purpose: Vite build/runtime boundaries, client-env safety, and project-owned Node-audit evidence.
     default_surfaces:
       - workflows/vite/
       - rules/stacks/vite/
@@ -177,7 +181,7 @@ capabilities:
       nested_files: []
       package_json_requires_any:
         - "vite"
-    execution_policy: Explicit experimental use only until lifecycle promotion is separately authorized; use owning manifest/config/scripts and the declared serving target without inferring React or a platform.
+    execution_policy: Use the owning manifest/config/scripts and declared serving target without inferring React or a platform.
 
   postgresql:
     lifecycle: experimental

@@ -130,6 +130,22 @@ MIRRORS: tuple[Mirror, ...] = (
         append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/nestjs-change-application-boundary-method.md`\n",
     ),
     Mirror(
+        key="go-architecture",
+        kind="model_decision",
+        source="rules/stacks/go/go-architecture-always-on.md",
+        destination=".clinerules/model-decision/go-architecture.md",
+        title="Go Architecture",
+        append_text="## Workflow Reference\n\nSee: `.clinerules/workflows/go-change-service-boundary-method.md`\n",
+    ),
+    Mirror(
+        key="go-change-service-boundary-method",
+        kind="workflow",
+        source="workflows/go/change-service-boundary-method.md",
+        destination=".clinerules/workflows/go-change-service-boundary-method.md",
+        title="Workflow: Change a Go Service Boundary",
+        workflow_name="go-change-service-boundary-method",
+    ),
+    Mirror(
         key="nestjs-change-application-boundary-method",
         kind="workflow",
         source="workflows/nestjs/change-application-boundary-method.md",

@@ -197,6 +197,7 @@ check_workflow_counterparts() {
     case "$slug" in
       docker-*) expected="$DEL_ROOT/workflows/docker/${slug#docker-}.md" ;;
       flutter-*) expected="$DEL_ROOT/workflows/flutter/${slug#flutter-}.md" ;;
+      go-*) expected="$DEL_ROOT/workflows/go/${slug#go-}.md" ;;
       laravel-*) expected="$DEL_ROOT/workflows/laravel/${slug#laravel-}.md" ;;
       nestjs-*) expected="$DEL_ROOT/workflows/nestjs/${slug#nestjs-}.md" ;;
       react-*) expected="$DEL_ROOT/workflows/react/${slug#react-}.md" ;;

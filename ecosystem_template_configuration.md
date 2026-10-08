@@ -17,10 +17,10 @@ The current Belluga baseline keeps these capabilities available:
 | `docker` | available | Runtime orchestration, environment readiness, ingress, CI, and promotion coordination. |
 | `flutter` | available | Client app, Flutter web publication, device/browser validation, and reusable Flutter packages. |
 | `laravel` | available | Backend/API/domain workflows, package extraction, tenant access, and domain-resolution guardrails. |
-| `go` | future | Reserved backend/service capability for future migration or new services. |
+| `go` | available | Backend/service boundaries, HTTP contracts, module ownership, and project-owned Go build/test evidence. |
 | `nestjs` | experimental | Technically complete minimum module/boundary and Node-audit package awaiting separately authorized lifecycle admission. |
-| `react` | experimental | Technically complete minimum React UI-boundary and Node-audit package awaiting separately authorized lifecycle admission. |
-| `vite` | experimental | Technically complete minimum build/runtime package awaiting separately authorized lifecycle admission. |
+| `react` | available | React UI-boundary, state/effect/accessibility guidance, and Node-audit package. |
+| `vite` | available | Vite build/runtime guidance and Node-audit package. |
 | `postgresql` | experimental | Technically complete minimum relational-integrity package awaiting separately authorized lifecycle admission. |
 | `prisma` | experimental | Technically complete minimum schema/migration package awaiting separately authorized lifecycle admission. |
 | `railway` | experimental | Technically complete minimum service/deployment-contract package awaiting separately authorized lifecycle admission. |

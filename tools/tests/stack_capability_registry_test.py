@@ -89,7 +89,7 @@ class StackCapabilityRegistryTest(unittest.TestCase):
 
     def test_canonical_registry_contains_exact_experimental_candidates(self) -> None:
         registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
-        expected = {"nestjs", "react", "vite", "postgresql", "prisma", "railway"}
+        expected = {"nestjs", "postgresql", "prisma", "railway"}
         experimental = {
             name for name, capability in registry.capabilities.items()
             if capability.lifecycle == "experimental"
@@ -112,10 +112,21 @@ class StackCapabilityRegistryTest(unittest.TestCase):
         for unrelated in ("react", "vite", "postgresql", "prisma", "docker", "railway"):
             self.assertNotIn(f"/{unrelated}/", joined_surfaces)
 
-    def test_canonical_react_capability_has_an_independent_package_pending_admission(self) -> None:
+    def test_canonical_go_capability_has_an_independent_service_package(self) -> None:
+        registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
+        go = registry.capabilities["go"]
+        self.assertEqual(go.lifecycle, "available")
+        self.assertEqual(go.detection_markers.root_files, ("go.mod",))
+        self.assertIn("skills/rule-go-go-architecture-always-on/", go.default_surfaces)
+        self.assertIn("skills/wf-go-change-service-boundary-method/", go.default_surfaces)
+        joined_surfaces = "\n".join(go.default_surfaces)
+        for unrelated in ("react", "vite", "nestjs", "laravel", "postgresql", "docker"):
+            self.assertNotIn(f"/{unrelated}/", joined_surfaces)
+
+    def test_canonical_react_capability_has_an_independent_available_package(self) -> None:
         registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
         react = registry.capabilities["react"]
-        self.assertEqual(react.lifecycle, "experimental")
+        self.assertEqual(react.lifecycle, "available")
         self.assertEqual(
             react.detection_markers.package_json_requires_any,
             ("react-dom",),
@@ -128,7 +139,7 @@ class StackCapabilityRegistryTest(unittest.TestCase):
         for unrelated in ("nestjs", "vite", "postgresql", "prisma", "docker", "railway"):
             self.assertNotIn(f"/{unrelated}/", joined_surfaces)
 
-    def test_remaining_candidate_capabilities_have_independent_packages(self) -> None:
+    def test_remaining_capabilities_have_independent_packages(self) -> None:
         registry = load_registry(Path(__file__).resolve().parents[2] / "config" / "stack_capabilities.yaml")
         cases = {
             "vite": (("vite",), "skills/rule-vite-vite-build-runtime-always-on/"),
@@ -139,7 +150,7 @@ class StackCapabilityRegistryTest(unittest.TestCase):
         for name, (dependencies, rule_surface) in cases.items():
             with self.subTest(name=name):
                 capability = registry.capabilities[name]
-                self.assertEqual(capability.lifecycle, "experimental")
+                self.assertEqual(capability.lifecycle, "available" if name == "vite" else "experimental")
                 self.assertEqual(
                     capability.detection_markers.package_json_requires_any,
                     dependencies,
