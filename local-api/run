@@ -1,0 +1,341 @@
+#!/bin/sh
+set -eu
+
+usage() {
+	printf '%s\n' 'usage: delphi-ai/local-api/run context --project-id ID | artifact-status prototypes|design-system [identity/options] | knowledge-status status|review-packet/record-review [identity/options] | builder-project register|status|list|decline [identity/options] | test [--race]' >&2
+	exit 64
+}
+
+[ "$#" -ge 1 ] || usage
+operation=$1
+shift
+module_root=$(CDPATH= cd -P "$(dirname "$0")" && pwd) || { printf '%s\n' 'local-api: cannot resolve module root' >&2; exit 70; }
+csv_mount_field() {
+	field=$1=$2
+	value=$(printf '%s' "$field" | sed 's/"/""/g') || return 1
+	printf '"%s"' "$value"
+}
+module_source_field=$(csv_mount_field source "$module_root") || { printf '%s\n' 'local-api: cannot encode module mount' >&2; exit 70; }
+uid=$(id -u); gid=$(id -g)
+
+if [ "$operation" = test ]; then
+	race=
+	trial_output_root=
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+			--race) race=--race; shift ;;
+			--trial-output-root) [ "$#" -ge 2 ] || usage; trial_output_root=$2; shift 2 ;;
+			*) usage ;;
+		esac
+	done
+	trial_source_field=
+	if [ -n "$trial_output_root" ]; then
+		case "$trial_output_root" in /*) ;; *) usage ;; esac
+		[ "$trial_output_root" != / ] || usage
+		[ -d "$trial_output_root" ] || usage
+		trial_real=$(CDPATH= cd -P "$trial_output_root" && pwd) || usage
+		[ "$trial_real" = "$trial_output_root" ] || usage
+		[ -z "$(find "$trial_output_root" -mindepth 1 -print -quit)" ] || { printf '%s\n' 'local-api: trial output root must be empty' >&2; exit 64; }
+		trial_source_field=$(csv_mount_field source "$trial_output_root") || { printf '%s\n' 'local-api: cannot encode trial output mount' >&2; exit 70; }
+	fi
+	if [ -n "$trial_source_field" ]; then
+		docker run --rm --network bridge --mount "type=bind,$module_source_field,target=/delphi-local-api,readonly" --mount "type=bind,$trial_source_field,target=/trial-output" -w /delphi-local-api golang:1.23-alpine sh -c '
+set -eu
+apk add --no-cache git build-base su-exec >/dev/null
+host_uid=$1
+host_gid=$2
+race=$3
+trial=$4
+tmp=$(mktemp -d /tmp/delphi-local-api-test.XXXXXX)
+trap '\''rm -rf "$tmp"'\'' EXIT HUP INT TERM
+mkdir -p "$tmp/home" "$tmp/cache" "$tmp/path"
+chown -R "$host_uid:$host_gid" "$tmp"
+run_as_caller() {
+  su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" GOMAXPROCS=2 "$@"
+}
+if [ "$race" = --race ]; then
+  run_as_caller go vet -p 1 ./...
+  run_as_caller env DELPHI_LOCAL_API_TRIAL_OUTPUT_ROOT="$trial" go test -p 1 -race ./...
+else
+  run_as_caller go vet -p 1 ./...
+  run_as_caller env DELPHI_LOCAL_API_TRIAL_OUTPUT_ROOT="$trial" go test -p 1 ./...
+fi
+
+		' local-api-test "$uid" "$gid" "$race" /trial-output
+	else
+		docker run --rm --network bridge --mount "type=bind,$module_source_field,target=/delphi-local-api,readonly" -w /delphi-local-api golang:1.23-alpine sh -c '
+set -eu
+apk add --no-cache git build-base su-exec >/dev/null
+host_uid=$1; host_gid=$2; race=$3
+tmp=$(mktemp -d /tmp/delphi-local-api-test.XXXXXX)
+trap '\''rm -rf "$tmp"'\'' EXIT HUP INT TERM
+mkdir -p "$tmp/home" "$tmp/cache" "$tmp/path"; chown -R "$host_uid:$host_gid" "$tmp"
+run_as_caller() { su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" GOMAXPROCS=2 "$@"; }
+if [ "$race" = --race ]; then run_as_caller go vet -p 1 ./...; run_as_caller go test -p 1 -race ./...; else run_as_caller go vet -p 1 ./...; run_as_caller go test -p 1 ./...; fi
+' local-api-test "$uid" "$gid" "$race"
+	fi
+	status=$?
+	[ "$status" -eq 0 ] || exit "$status"
+	if [ -n "$trial_output_root" ]; then printf 'TRIAL_ROOT=%s\nTRIAL_WORKSPACE=%s/workspace\nTRIAL_STATE_ROOT=%s/state\n' "$trial_output_root" "$trial_output_root" "$trial_output_root"; fi
+		exit $?
+fi
+
+if [ "$operation" = context ]; then
+	operation=builder-project
+	set -- context "$@"
+fi
+
+if [ "$operation" = builder-project ] || [ "$operation" = artifact-status ] || [ "$operation" = knowledge-status ]; then
+	[ "$#" -ge 1 ] || usage
+	action=$1
+	shift
+	case "$operation:$action" in
+		builder-project:register|builder-project:status|builder-project:list|builder-project:decline|builder-project:context|builder-project:internal-context|artifact-status:prototypes|artifact-status:design-system|knowledge-status:status|knowledge-status:review-packet|knowledge-status:record-review) ;;
+		*) usage ;;
+	esac
+	state_root=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); assert d.get("schema_version")=="1"; print(d["state_root"])' "$module_root/private-context.json" 2>/dev/null) || { printf '%s\n' 'local-api: private API state configuration is unavailable; configure local-api/private-context.json.' >&2; exit 2; }
+	case "$state_root" in /*) ;; *) { printf '%s\n' 'local-api: private API state configuration is invalid.' >&2; exit 2; } ;; esac
+	[ -d "$state_root" ] || { printf '%s\n' 'local-api: shared state is unavailable; check the API-owned state_root setting.' >&2; exit 2; }
+	state_real=$(CDPATH= cd -P "$state_root" && pwd) || { printf '%s\n' 'local-api: shared state is unavailable.' >&2; exit 2; }
+	[ "$state_real" = "$state_root" ] || { printf '%s\n' 'local-api: API-owned state_root must not contain symlinks.' >&2; exit 64; }
+	workspace=
+	if [ "$operation:$action" != builder-project:list ]; then
+		workspace=$(git rev-parse --show-toplevel 2>/dev/null) || { printf '%s\n' 'local-api: invoke from the selected Project Git checkout.' >&2; exit 64; }
+		workspace_real=$(CDPATH= cd -P "$workspace" && pwd) || usage
+		[ "$workspace_real" = "$workspace" ] || { printf '%s\n' 'local-api: selected Project checkout must not contain symlink components.' >&2; exit 64; }
+	fi
+	project_id= company_id= default_owner_id= previous=
+	for argument in "$@"; do
+		if [ -n "$previous" ]; then
+			case "$previous" in project-id) project_id=$argument ;; company-id) company_id=$argument ;; default-owner-id) default_owner_id=$argument ;; esac
+			previous=
+			continue
+		fi
+		case "$argument" in
+			--state-root|-state-root|--workspace-root|-workspace-root|--project-root|-project-root|--foundation-root|-foundation-root|--source-bindings|-source-bindings|--state-root=*|-state-root=*|--workspace-root=*|-workspace-root=*|--project-root=*|-project-root=*|--foundation-root=*|-foundation-root=*|--source-bindings=*|-source-bindings=*)
+				printf '%s\n' 'local-api: caller-supplied paths and private bindings are not accepted; invoke from the selected Project checkout and provide identity only.' >&2
+				exit 64 ;;
+			--project-id|-project-id) previous=project-id ;;
+			--project-id=*) project_id=${argument#*=} ;;
+			-project-id=*) project_id=${argument#*=} ;;
+			--company-id|-company-id) previous=company-id ;;
+			--company-id=*) company_id=${argument#*=} ;;
+			-company-id=*) company_id=${argument#*=} ;;
+			--default-owner-id|-default-owner-id) previous=default-owner-id ;;
+			--default-owner-id=*) default_owner_id=${argument#*=} ;;
+			-default-owner-id=*) default_owner_id=${argument#*=} ;;
+		esac
+	done
+	[ -z "$previous" ] || { printf '%s\n' 'local-api: identity option requires a value.' >&2; exit 64; }
+	if [ "$operation:$action" != builder-project:list ]; then
+		[ -n "$project_id" ] || { printf '%s\n' 'local-api: --project-id is required.' >&2; exit 64; }
+	fi
+	if [ "$operation" = builder-project ]; then
+		if [ "$action" = list ]; then
+			set -- "$action" --state-root "$state_root" "$@"
+		else
+			set -- "$action" --state-root "$state_root" --workspace-root "$workspace" --project-root . "$@"
+		fi
+	else
+		if [ "$operation:$action" = artifact-status:design-system ]; then
+			if [ -n "$default_owner_id" ]; then
+				if [ -n "$company_id" ]; then context_json=$(DELPHI_LOCAL_API_INTERNAL_CONTEXT=1 "$0" builder-project internal-context --project-id "$project_id" --company-id "$company_id" --default-owner-id "$default_owner_id") || exit $?
+				else context_json=$(DELPHI_LOCAL_API_INTERNAL_CONTEXT=1 "$0" builder-project internal-context --project-id "$project_id" --default-owner-id "$default_owner_id") || exit $?; fi
+			else
+				if [ -n "$company_id" ]; then context_json=$(DELPHI_LOCAL_API_INTERNAL_CONTEXT=1 "$0" builder-project internal-context --project-id "$project_id" --company-id "$company_id") || exit $?
+				else context_json=$(DELPHI_LOCAL_API_INTERNAL_CONTEXT=1 "$0" builder-project internal-context --project-id "$project_id") || exit $?; fi
+			fi
+			foundation_root=$(printf '%s' "$context_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["foundation_root"])') || exit 2
+			source_bindings=$(printf '%s' "$context_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("source_bindings_path", ""))') || exit 2
+			stored_default_owner=$(printf '%s' "$context_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("default_owner_id", ""))') || exit 2
+			set -- design-system --workspace-root "$workspace" --project-root . --foundation-root "$foundation_root" "$@"
+			[ -z "$source_bindings" ] || set -- "$@" --source-bindings "$source_bindings"
+			if [ -z "$company_id" ]; then
+				resolved_company=$(printf '%s' "$context_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["company_id"])') || exit 2
+				[ -n "$resolved_company" ] || { printf '%s\n' 'local-api: Company identity is required for an unregistered Design System context.' >&2; exit 64; }
+				set -- "$@" --company-id "$resolved_company"
+			fi
+			if [ -z "$default_owner_id" ] && [ -n "$stored_default_owner" ]; then set -- "$@" --default-owner-id "$stored_default_owner"; fi
+		else
+			if [ -n "$company_id" ]; then
+				context_json=$("$0" builder-project context --project-id "$project_id" --company-id "$company_id") || exit $?
+			else
+				context_json=$("$0" builder-project context --project-id "$project_id") || exit $?
+			fi
+			foundation_root=$(printf '%s' "$context_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["foundation_root"])') || { printf '%s\n' 'local-api: selected Foundation context is unavailable; initialize it through Delphi.' >&2; exit 2; }
+			set -- "$action" --workspace-root "$workspace" --project-root . --foundation-root "$foundation_root" "$@"
+		fi
+	fi
+fi
+
+if [ "$operation" = builder-project ]; then
+	[ "$#" -ge 1 ] || usage
+	builder_action=$1
+	shift
+	case "$builder_action" in register|status|list|decline|context|internal-context) ;; *) usage ;; esac
+	if [ "$builder_action" = internal-context ] && [ "${DELPHI_LOCAL_API_INTERNAL_CONTEXT:-}" != 1 ]; then usage; fi
+	state_root=
+	workspace=
+	previous=
+	for argument in "$@"; do
+		if [ "$previous" = state ]; then state_root=$argument; previous=; continue; fi
+		if [ "$previous" = workspace ]; then workspace=$argument; previous=; continue; fi
+		case "$argument" in
+			--state-root|-state-root) previous=state ;;
+			--state-root=*) state_root=${argument#*=} ;;
+			-state-root=*) state_root=${argument#*=} ;;
+			--workspace-root|-workspace-root) previous=workspace ;;
+			--workspace-root=*) workspace=${argument#*=} ;;
+			-workspace-root=*) workspace=${argument#*=} ;;
+		esac
+	done
+	[ -z "$previous" ] || usage
+	[ -n "$state_root" ] || usage
+	case "$state_root" in /*) ;; *) usage ;; esac
+	[ "$state_root" != / ] || { printf '%s\n' 'local-api: state-root must not be /' >&2; exit 64; }
+	workspace_source_field=
+	workspace_env=
+	if [ "$builder_action" != list ]; then
+		case "$workspace" in /*) ;; *) usage ;; esac
+		[ "$workspace" != / ] || usage
+		[ -d "$workspace" ] || usage
+		workspace_real=$(CDPATH= cd -P "$workspace" && pwd) || usage
+		[ "$workspace_real" = "$workspace" ] || usage
+		workspace_source_field=$(csv_mount_field source "$workspace") || { printf '%s\n' 'local-api: cannot encode workspace mount' >&2; exit 70; }
+		workspace_env=$workspace
+	fi
+	[ -d "$state_root" ] || { printf '%s\n' 'local-api: state directory unavailable' >&2; exit 2; }
+	state_real=$(CDPATH= cd -P "$state_root" && pwd) || { printf '%s\n' 'local-api: state directory unavailable' >&2; exit 2; }
+	[ "$state_real" = "$state_root" ] || { printf '%s\n' 'local-api: state-root must not contain symlinks' >&2; exit 64; }
+	state_source_field=$(csv_mount_field source "$state_root") || { printf '%s\n' 'local-api: cannot encode state mount' >&2; exit 70; }
+	state_mount_suffix=,readonly
+	if [ "$builder_action" = register ] || [ "$builder_action" = decline ]; then state_mount_suffix=; fi
+	set +e
+	if [ -n "$workspace_source_field" ]; then
+		docker run --rm --network bridge --mount "type=bind,$module_source_field,target=/delphi-local-api,readonly" --mount "type=bind,$state_source_field,target=/state$state_mount_suffix" --mount "type=bind,$workspace_source_field,target=/workspace,readonly" -w /delphi-local-api golang:1.23-alpine sh -c '
+set -eu
+apk add --no-cache git su-exec >/dev/null || { printf "%s\n" "local-api: Docker bootstrap failed" >&2; exit 70; }
+host_uid=$1; host_gid=$2; host_workspace=$3; host_state=$4; shift 5
+tmp=$(mktemp -d /tmp/delphi-local-api-project.XXXXXX) || { printf "%s\n" "local-api: Docker build setup failed" >&2; exit 70; }
+trap "rm -rf \"$tmp\"" EXIT HUP INT TERM
+mkdir -p "$tmp/bin" "$tmp/home" "$tmp/cache" "$tmp/path"; chown -R "$host_uid:$host_gid" "$tmp"
+run_as_caller() { su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" GOMAXPROCS=2 "$@"; }
+for package in artifact-status knowledge-status builder-project; do run_as_caller go build -p 1 -trimpath -buildvcs=false -o "$tmp/bin/$package" "./cmd/$package" || { printf "%s\n" "local-api: Docker build failed" >&2; exit 70; }; done
+set +e; su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" DELPHI_LOCAL_API_BIN_DIR="$tmp/bin" DELPHI_LOCAL_API_HOST_WORKSPACE="$host_workspace" DELPHI_LOCAL_API_HOST_STATE_ROOT="$host_state" "$tmp/bin/builder-project" "$@"; status=$?; set -e; exit "$status"
+' local-api "$uid" "$gid" "$workspace_env" "$state_root" builder-project "$builder_action" "$@"
+	else
+		docker run --rm --network bridge --mount "type=bind,$module_source_field,target=/delphi-local-api,readonly" --mount "type=bind,$state_source_field,target=/state$state_mount_suffix" -w /delphi-local-api golang:1.23-alpine sh -c '
+set -eu
+apk add --no-cache git su-exec >/dev/null || { printf "%s\n" "local-api: Docker bootstrap failed" >&2; exit 70; }
+host_uid=$1; host_gid=$2; host_state=$3; shift 4
+tmp=$(mktemp -d /tmp/delphi-local-api-project.XXXXXX) || { printf "%s\n" "local-api: Docker build setup failed" >&2; exit 70; }
+trap "rm -rf \"$tmp\"" EXIT HUP INT TERM
+mkdir -p "$tmp/bin" "$tmp/home" "$tmp/cache" "$tmp/path"; chown -R "$host_uid:$host_gid" "$tmp"
+su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" GOMAXPROCS=2 go build -p 1 -trimpath -buildvcs=false -o "$tmp/bin/builder-project" ./cmd/builder-project || { printf "%s\n" "local-api: Docker build failed" >&2; exit 70; }
+set +e; su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" DELPHI_LOCAL_API_HOST_STATE_ROOT="$host_state" "$tmp/bin/builder-project" "$@"; status=$?; set -e; exit "$status"
+' local-api "$uid" "$gid" "$state_root" builder-project "$builder_action" "$@"
+	fi
+	status=$?
+	set -e
+	case "$status" in 0|2|64|70) exit "$status" ;; *) printf '%s\n' 'local-api: Docker execution failed' >&2; exit 70 ;; esac
+fi
+
+case "$operation" in artifact-status|knowledge-status) ;; *) usage ;; esac
+[ "$#" -ge 1 ] || usage
+action=$1
+shift
+case "$operation:$action" in
+	artifact-status:prototypes|artifact-status:design-system|knowledge-status:status|knowledge-status:review-packet|knowledge-status:record-review) ;;
+	*) usage ;;
+esac
+
+workspace=
+foundation=
+project=
+previous=
+for argument in "$@"; do
+	if [ "$previous" = workspace ]; then workspace=$argument; previous=; continue; fi
+	if [ "$previous" = foundation ]; then foundation=$argument; previous=; continue; fi
+	if [ "$previous" = project ]; then project=$argument; previous=; continue; fi
+	case "$argument" in
+		--workspace-root|-workspace-root) previous=workspace ;;
+		--workspace-root=*) workspace=${argument#*=} ;;
+		-workspace-root=*) workspace=${argument#*=} ;;
+		--foundation-root|-foundation-root) previous=foundation ;;
+		--foundation-root=*) foundation=${argument#*=} ;;
+		-foundation-root=*) foundation=${argument#*=} ;;
+		--project-root|-project-root) previous=project ;;
+		--project-root=*) project=${argument#*=} ;;
+		-project-root=*) project=${argument#*=} ;;
+	esac
+done
+[ -z "$previous" ] || usage
+case "$workspace" in /*) ;; *) usage ;; esac
+[ "$workspace" != / ] || usage
+[ -d "$workspace" ] || usage
+workspace_real=$(CDPATH= cd -P "$workspace" && pwd) || usage
+[ "$workspace_real" = "$workspace" ] || usage
+workspace_source_field=$(csv_mount_field source "$workspace") || { printf '%s\n' 'local-api: cannot encode workspace mount' >&2; exit 70; }
+
+foundation_mount=0
+foundation_host=
+if [ "$operation:$action" = knowledge-status:record-review ]; then
+	case "$foundation" in
+		''|/*|.|..|../*|*/..|*/../*|./*|*/./*) ;;
+		*)
+			foundation_host=$workspace/$foundation
+			project_host=$workspace/$project
+			[ "$project" != . ] || project_host=$workspace
+			if [ -d "$foundation_host" ] && [ -d "$project_host" ]; then
+				foundation_real=$(CDPATH= cd -P "$foundation_host" && pwd) || foundation_real=
+				project_real=$(CDPATH= cd -P "$project_host" && pwd) || project_real=
+				case "$foundation_real/" in "$workspace/"*)
+					case "$project_real/" in "$foundation_real/"*) ;;
+						*)
+							case "$module_root/" in "$foundation_real/"*) ;;
+								*) case "$foundation_real/" in "$module_root/"*) ;; *) [ "$foundation_real" = "$foundation_host" ] && foundation_mount=1 ;; esac ;;
+							esac
+							;;
+					esac
+					;;
+				esac
+			fi
+			;;
+	esac
+fi
+
+run_container() {
+	if [ "$foundation_mount" -eq 1 ]; then
+		foundation_source_field=$(csv_mount_field source "$foundation_host") || return 70
+		foundation_target_field=$(csv_mount_field target "/workspace/$foundation") || return 70
+		docker run --rm --network bridge --mount "type=bind,$workspace_source_field,target=/workspace,readonly" --mount "type=bind,$module_source_field,target=/delphi-local-api,readonly" --mount "type=bind,$foundation_source_field,$foundation_target_field" -w /delphi-local-api "$@"
+	else
+		docker run --rm --network bridge --mount "type=bind,$workspace_source_field,target=/workspace,readonly" --mount "type=bind,$module_source_field,target=/delphi-local-api,readonly" -w /delphi-local-api "$@"
+	fi
+}
+
+set +e
+run_container --env "DELPHI_LOCAL_API_HOST_WORKSPACE=$workspace" golang:1.23-alpine sh -c '
+set -eu
+apk add --no-cache git su-exec >/dev/null || { printf "%s\n" "local-api: Docker bootstrap failed" >&2; exit 70; }
+host_uid=$1
+host_gid=$2
+operation=$3
+action=$4
+tmp=$(mktemp -d /tmp/delphi-local-api.XXXXXX) || { printf "%s\n" "local-api: Docker build setup failed" >&2; exit 70; }
+cleanup() { rm -rf "$tmp"; }
+trap cleanup EXIT HUP INT TERM
+mkdir -p "$tmp/home" "$tmp/cache" "$tmp/path"
+chown -R "$host_uid:$host_gid" "$tmp" || { printf "%s\n" "local-api: Docker build setup failed" >&2; exit 70; }
+if [ "$operation" = artifact-status ]; then package=./cmd/artifact-status; else package=./cmd/knowledge-status; fi
+su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" GOMAXPROCS=2 go build -p 1 -trimpath -buildvcs=false -o "$tmp/local-api" "$package" || { printf "%s\n" "local-api: Docker build failed" >&2; exit 70; }
+shift 4
+set +e
+su-exec "$host_uid:$host_gid" env HOME="$tmp/home" GOCACHE="$tmp/cache" GOPATH="$tmp/path" "$tmp/local-api" "$action" "$@"
+status=$?
+set -e
+exit "$status"
+' local-api "$uid" "$gid" "$operation" "$action" "$@"
+status=$?
+set -e
+case "$status" in 0|2|64|70) exit "$status" ;; *) printf '%s\n' 'local-api: Docker execution failed' >&2; exit 70 ;; esac
